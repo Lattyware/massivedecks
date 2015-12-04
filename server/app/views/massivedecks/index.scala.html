@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="utf-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1">
+       <title>Massive Decks</title>
+       <script src="//cdn.muicss.com/mui-0.2.6/js/mui.min.js"></script>
+       <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+       <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+       <link rel="stylesheet" href="//cdn.muicss.com/mui-0.2.6/css/mui.min.css">
+       <link rel="stylesheet" href="@routes.Assets.at("stylesheets/massivedecks.css")">
+       <script src="@routes.Assets.at("javascripts/massivedecks.js")"></script>
+   </head>
+   <body>
+       <script src="@routes.Assets.at("javascripts/Main.js")"></script>
+       <script>
+         var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "" });
+
+         function openWebSocket(lobbyId, secret) {
+           var socket = new WebSocket("ws://0.0.0.0:9000/lobbies/" + lobbyId + "/notifications");
+           socket.onopen = function (event) {
+             socket.send(JSON.stringify(secret));
+           }
+           socket.onmessage = function (event) {
+             game.ports.notifications.send(event.data);
+           }
+           socket.onclose = function (event) {
+             openWebSocket(lobbyId, secret);
+           }
+         }
+
+         game.ports.jsAction.subscribe(function (lobbyIdAndSecret) {
+           if (lobbyIdAndSecret != null) {
+             openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);
+           }
+         });
+       </script>
+   </body>
+</html>
