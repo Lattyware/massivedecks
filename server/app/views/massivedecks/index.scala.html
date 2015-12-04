@@ -17,7 +17,15 @@
          var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "" });
 
          function openWebSocket(lobbyId, secret) {
-           var socket = new WebSocket("ws://0.0.0.0:9000/lobbies/" + lobbyId + "/notifications");
+           var loc = window.location, new_uri;
+           if (loc.protocol === "https:") {
+             new_uri = "wss:";
+           } else {
+             new_uri = "ws:";
+           }
+           new_uri += "//" + loc.host;
+           new_uri += loc.pathname + "lobbies/" + lobbyId + "/notifications";
+           var socket = new WebSocket(new_uri);
            socket.onopen = function (event) {
              socket.send(JSON.stringify(secret));
            }
