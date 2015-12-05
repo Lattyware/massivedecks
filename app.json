@@ -1,0 +1,15 @@
+{
+    "name": "Massive Decks",
+    "repository": "https://github.com/Lattyware/massivedecks",
+    "env": {
+        "ELM_COMPILE": "elm make client/src/MassiveDecks/Main.elm --output server/public/javascripts/Main.js"
+    },
+    "buildpacks": [
+        {
+            "url": "https://github.com/srid/heroku-buildpack-elm.git"
+        },
+        {
+            "url": "https://github.com/heroku/heroku-buildpack-play"
+        }
+    ]
+}

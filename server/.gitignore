@@ -7,5 +7,6 @@ target
 /.settings
 /.sbtserver
 /RUNNING_PID
+/project/.sbtserver
 /project/.sbtserver.lock
 /public/javascripts/Main.js
