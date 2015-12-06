@@ -3,3 +3,43 @@
 .game-code {
   font-family: monospace;
 }
+
+#config {
+  width: 100%;
+}
+
+#config-content {
+  max-width: 500px;
+  margin: 15px auto;
+
+  h1 {
+    text-align: center;
+  }
+
+  .decks {
+    margin-bottom: 0px;
+
+    table {
+      td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  #deck-id-input {
+    display: flex;
+
+    & > div {
+      flex-grow: 1;
+    }
+  }
+
+  #start-game {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}

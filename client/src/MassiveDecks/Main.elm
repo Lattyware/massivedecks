@@ -52,15 +52,8 @@ model : Model
 model = Start.model Maybe.Nothing Start.initialData
 
 
-debug : Bool
-debug = False
-
-
 update : Action -> Model -> (Model, Effects.Effects Action)
-update action model =
-  let
-    model = if (debug) then { model | error = Just (toString action) } else model
-  in
+update action model = Debug.log (toString action) (
     case action of
       NoAction ->
         (model, Effects.none)
@@ -78,6 +71,7 @@ update action model =
 
           SPlaying data ->
             Playing.update action model.error data
+  )
 
 
 view : Signal.Address Action -> Model -> Html

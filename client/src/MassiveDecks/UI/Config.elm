@@ -14,23 +14,37 @@ view : Signal.Address Action -> ConfigData -> Maybe String -> Html
 view address data error =
   let
     lobby = data.lobby
-    url = lobbyUrl lobby.id
+    deckIds = lobby.config.deckIds
+    enoughPlayers = ((List.length lobby.players) > 1)
+    enoughCards = ((List.length deckIds) > 0)
   in
     LobbyUI.view lobby.id [] lobby.players (List.concat [
-      [ div [ id "start-screen" ]
-        [ div [ id "start-screen-content" ] [ p [] [ text "Invite others to the game with the code '"
-                                                   , strong [ class "game-code" ] [ text lobby.id ]
-                                                   , text "' to enter on the main page, or give them this link: " ]
-                                            , p [] [ a [ href url ] [ text url ] ]
-                                            , h1 [] [ text "Game Setup" ]
-                                            , deckManagement address lobby.config.deckIds
-                                            ]
+      [ div [ id "config" ]
+        [ div [ id "config-content", class "mui-panel" ]
+          [ invite lobby.id
+          , divider
+          , h1 [] [ text "Game Setup" ]
+          , deckList address deckIds
+          , startGameButton address enoughPlayers enoughCards
+          ]
         ]
       ], errorMessage error ])
 
+invite : String -> Html
+invite lobbyId =
+  let
+    url = lobbyUrl lobbyId
+  in
+    div []
+      [ p [] [ text "Invite others to the game with the code '"
+             , strong [ class "game-code" ] [ text lobbyId ]
+             , text "' to enter on the main page, or give them this link: " ]
+      , p [] [ a [ href url ] [ text url ] ]
+      ]
 
-deckManagement : Signal.Address Action -> List String -> Html
-deckManagement address deckIds = div []
+
+deckIdInput : Signal.Address Action -> Html
+deckIdInput address = div [ id "deck-id-input" ]
   [ div [ class "mui-textfield" ]
     [ input [ type' "text"
             , placeholder "Deck Id"
@@ -41,7 +55,60 @@ deckManagement address deckIds = div []
              ) ] []
     , label [] [ icon "info-circle", text " A ", a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ], text " Deck Id" ]
     ]
-  , button [ class "mui-btn mui-btn--raised", onClick address (AddDeck Request) ] [ text "Add Deck" ]
-  , ul [] (List.map (\deckId -> li [] [ text deckId ]) deckIds)
-  , button [ class "mui-btn mui-btn--raised", onClick address (StartGame Request) ] [ text "Start Game" ]
+  , addDeckButton address
+  ]
+
+
+addDeckButton : Signal.Address Action -> Html
+addDeckButton address =
+  button [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab"
+         , onClick address (AddDeck Request) ] [ icon "plus" ]
+
+
+deckList : Signal.Address Action -> List String -> Html
+deckList address deckIds =
+  table [ class "decks mui-table" ]
+    [ thead []
+      [ tr []
+        [ th [] [ text "Id" ]
+        , th [] [ text "Name" ]
+        , th [] [ icon "square" ]
+        , th [] [ icon "square-o" ]
+        ]
+      ]
+    , tbody [] (List.concat
+      [ emptyDeckListInfo (List.isEmpty deckIds)
+      , List.map (\deckId -> tr [] [ td [] [
+        a [ href ("https://www.cardcastgame.com/browse/deck/" ++ deckId), target "_blank" ] [ text deckId ] ] ]) deckIds
+      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address ] ] ]
+      ])
+    ]
+
+
+emptyDeckListInfo : Bool -> List Html
+emptyDeckListInfo display =
+  if display then
+    [ tr [] [ td [ colspan 4 ]
+      [ icon "info-circle"
+      , text " You will need to add at least one "
+      , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast deck" ], text " to the game." ]
+      ]
+    ]
+  else
+    []
+
+
+startGameWarning : Bool -> Html
+startGameWarning canStart = if canStart then text "" else
+  span [] [ icon "info-circle", text "You will need at least two players to start the game." ]
+
+
+startGameButton : Signal.Address Action -> Bool -> Bool -> Html
+startGameButton address enoughPlayers enoughCards = div [ id "start-game" ]
+  [ startGameWarning enoughPlayers
+  , button
+    [ class "mui-btn mui-btn--primary mui-btn--raised"
+    , onClick address (StartGame Request)
+    , disabled (not (enoughPlayers && enoughCards))
+    ] [ text "Start Game" ]
   ]
