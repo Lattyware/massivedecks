@@ -2,6 +2,7 @@ module MassiveDecks.Actions.Action where
 
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Player exposing (Secret)
+import MassiveDecks.Models.State exposing (Error)
 
 
 type APICall a
@@ -23,3 +24,4 @@ type Action
   | Withdraw Int
   | Notification Lobby
   | Choose Int (APICall LobbyAndHand)
+  | RemoveErrorPanel Int

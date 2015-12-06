@@ -2,20 +2,28 @@ module MassiveDecks.UI.General where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import MassiveDecks.Models.State exposing (Error)
+import MassiveDecks.Actions.Action exposing (Action(..))
 
 
 icon : String -> Html
 icon name = node "i" [ class ("fa fa-" ++ name) ] []
 
 
-errorMessage : Maybe String -> List Html
-errorMessage message = case message of
-  Just message ->
-    [ div [ id "error" ] [ icon "exclamation-triangle", text " Error", divider, p [] [ text message ] ] ]
+errorMessage : Signal.Address Action -> Int -> Error -> Html
+errorMessage address index error =
+    li [ class "error" ] [ div [] [
+      a [ href "#", onClick address (RemoveErrorPanel index) ] [ icon "times", text " Close" ]
+        , p [] []
+        , icon "exclamation-triangle"
+        , text " Error"
+        , divider
+        , p [] [ text error.message ] ] ]
 
-  Nothing ->
-    []
-
+errorMessages : Signal.Address Action -> List Error -> Html
+errorMessages address errors =
+    ol [ id "errorPanel"] (List.indexedMap (errorMessage address) errors)
 
 divider : Html
 divider = div [ class "mui-divider" ] []

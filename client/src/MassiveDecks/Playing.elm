@@ -6,14 +6,14 @@ import Html exposing (Html)
 
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Card as Card
-import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData)
+import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData, Error)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.UI.Playing as UI
 import MassiveDecks.API as API
 
 
-update : Action -> Maybe String -> PlayingData -> (Model, Effects.Effects Action)
-update action error data = case action of
+update : Action -> List Error -> PlayingData -> (Model, Effects.Effects Action)
+update action errors data = case action of
   Pick card ->
     let
       canPlay = (List.length data.picked) < Maybe.withDefault 0 (Maybe.map (\round -> Card.slots round.call) data.lobby.round)
@@ -23,18 +23,18 @@ update action error data = case action of
       ) data.lobby.round)
     in
       if playing && canPlay then
-        (model error { data | picked = card :: data.picked }, Effects.none)
+        (model errors { data | picked = card :: data.picked }, Effects.none)
       else
-        (model error data, Effects.none)
+        (model errors data, Effects.none)
 
   Withdraw card ->
-    (model error { data | picked = List.filter ((/=) card) data.picked }, Effects.none)
+    (model errors { data | picked = List.filter ((/=) card) data.picked }, Effects.none)
 
   Play Request ->
-    (model error data, (API.play data.lobby.id data.secret data.picked) |> Task.map (Play << Result) |> API.toEffect)
+    (model errors data, (API.play data.lobby.id data.secret data.picked) |> Task.map (Play << Result) |> API.toEffect)
 
   Play (Result lobbyAndHand) ->
-    (model error
+    (model errors
       { data | lobby = lobbyAndHand.lobby
       , hand = lobbyAndHand.hand
       , picked = []
@@ -42,52 +42,52 @@ update action error data = case action of
 
   Notification lobby ->
     case lobby.round of
-      Just _ -> (model error { data | lobby = lobby }, Effects.none)
-      Nothing -> (configModel error (ConfigData lobby data.secret ""), Effects.none)
+      Just _ -> (model errors { data | lobby = lobby }, Effects.none)
+      Nothing -> (configModel errors (ConfigData lobby data.secret ""), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (model error { data | lobby = lobbyAndHand.lobby }, Effects.none)
-      Nothing -> (configModel error (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
+      Just _ -> (model errors { data | lobby = lobbyAndHand.lobby }, Effects.none)
+      Nothing -> (configModel errors (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
 
   Choose winner Request ->
-    (model error data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
+    (model errors data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
 
   Choose winner (Result lobbyAndHand) ->
-    (model error
+    (model errors
       { data | lobby = lobbyAndHand.lobby
       , hand = lobbyAndHand.hand
       , picked = []
       }, Effects.none)
 
   other ->
-    (model (Just ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Playing)."))
+    (model (Error ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Playing).") :: errors)
       data, Effects.none)
 
 
-model : Maybe String -> PlayingData -> Model
-model error data =
+model : List Error -> PlayingData -> Model
+model errors data =
   { state = SPlaying data
   , jsAction = Nothing
-  , error = error
+  , errors = errors
   }
 
 
-modelSub : Maybe String -> String -> Secret -> PlayingData -> Model
-modelSub error lobbyId secret data =
+modelSub : List Error -> String -> Secret -> PlayingData -> Model
+modelSub errors lobbyId secret data =
   { state = SPlaying data
   , jsAction = Just { lobbyId = lobbyId, secret = secret }
-  , error = error
+  , errors = errors
   }
 
 
-configModel : Maybe String -> ConfigData -> Model
-configModel error data =
+configModel : List Error -> ConfigData -> Model
+configModel errors data =
   { state = SConfig data
   , jsAction = Nothing
-  , error = error
+  , errors = errors
   }
 
 
-view : Signal.Address Action -> Maybe String -> PlayingData -> Html
-view address error playingData = UI.view address error playingData
+view : Signal.Address Action -> List Error -> PlayingData -> Html
+view address errors playingData = UI.view address errors playingData

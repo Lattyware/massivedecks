@@ -5,13 +5,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
-import MassiveDecks.Models.State exposing (ConfigData)
+import MassiveDecks.Models.State exposing (ConfigData, Error)
 import MassiveDecks.UI.Lobby as LobbyUI
 import MassiveDecks.UI.General exposing (..)
 
 
-view : Signal.Address Action -> ConfigData -> Maybe String -> Html
-view address data error =
+view : Signal.Address Action -> ConfigData -> List Error -> Html
+view address data errors =
   let
     lobby = data.lobby
     url = lobbyUrl lobby.id
@@ -26,7 +26,7 @@ view address data error =
                                             , deckManagement address lobby.config.deckIds
                                             ]
         ]
-      ], errorMessage error ])
+      ], [ errorMessages address errors ] ])
 
 
 deckManagement : Signal.Address Action -> List String -> Html

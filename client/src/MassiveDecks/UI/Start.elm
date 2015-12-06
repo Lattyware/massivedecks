@@ -4,12 +4,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import MassiveDecks.Models.State exposing (Error)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.UI.General exposing (..)
 
 
-view : Signal.Address Action -> Maybe String -> Html
-view address error = div [ id "start-screen" ] (List.concat [
+view : Signal.Address Action -> List Error -> Html
+view address errors = div [ id "start-screen" ] (List.concat [
   [ div [ id "start-screen-content", class "mui-panel" ]
     [ h1 [] [ text "Massive Decks" ]
     , nameEntry address
@@ -24,7 +25,7 @@ view address error = div [ id "start-screen" ] (List.concat [
       , joinGame address
       ]
     ]
-  ], errorMessage error ])
+  ], [errorMessages address errors] ])
 
 
 nameEntry : Signal.Address Action -> Html

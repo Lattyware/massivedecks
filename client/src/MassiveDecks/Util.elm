@@ -14,3 +14,7 @@ interleave list1 list2 =
 
         y :: ys ->
           y :: x :: interleave xs ys
+
+remove : List a -> Int -> List a
+remove list index =
+  (List.take index list) ++ (List.drop (index + 1) list)
