@@ -3,9 +3,10 @@ package controllers.massivedecks.game
 import java.util.UUID
 import javax.inject.Inject
 
+import scala.concurrent.Future
 import scala.util.Random
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef}
 import com.google.inject.assistedinject.Assisted
 import controllers.massivedecks.cardcast.{CardCastAPI, CardCastDeck}
 import models.massivedecks.Game._
@@ -26,7 +27,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private var notifications: List[ActorRef] = List()
   private var czarIndex: Int = 0
 
-  def config = Config(decks.map(deck => deck.id).toList)
+  def config = Config(decks.map(deck => deck.info).toList)
   def lobby = Lobby(id, config, players, game.map(game => game.round))
 
   def newPlayer(name: String): Secret = {
@@ -46,9 +47,14 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     secret
   }
 
-  def addDeck(secret: Secret, deckId: String): Unit = {
+  def retrieveDeck(secret: Secret, deckId: String): Future[CardCastDeck] = {
     validateSecretAndGetId(secret)
-    decks = decks + cardCast.deck(deckId)
+    cardCast.deck(deckId)
+  }
+
+  def addDeck(secret: Secret, deck: CardCastDeck): Unit = {
+    validateSecretAndGetId(secret)
+    decks = decks + deck
     sendNotifications()
   }
 

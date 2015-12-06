@@ -5,7 +5,15 @@ import MassiveDecks.Models.Card exposing (..)
 
 
 type alias Config =
-  { deckIds : List String
+  { decks : List DeckInfo
+  }
+
+
+type alias DeckInfo =
+  { id : String
+  , name : String
+  , calls : Int
+  , responses : Int
   }
 
 

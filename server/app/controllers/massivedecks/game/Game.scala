@@ -2,65 +2,108 @@ package controllers.massivedecks.game
 
 import javax.inject.Inject
 
-import scala.util.Try
+import scala.concurrent.ExecutionContext
+import scala.util.{Success, Failure, Try}
 
 import akka.actor.Actor
 import com.google.inject.assistedinject.Assisted
-import Actions.Lobby._
-import controllers.massivedecks.game.Actions.Player.{GetHand, NewPlayer}
 import play.api.libs.json.Json
 
 import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Player.Formatters._
 import models.massivedecks.Game.Formatters._
+import models.massivedecks.Player.Secret
+import controllers.massivedecks.cardcast.CardCastDeck
+import controllers.massivedecks.game.Game.AddRetrievedDeck
+import controllers.massivedecks.game.Actions.Player.{GetHand, NewPlayer}
+import controllers.massivedecks.game.Actions.Lobby._
 
-class Game @Inject()(private val state: State, @Assisted private val id: String) extends Actor {
+class Game @Inject()(private val state: State, @Assisted private val id: String)(implicit ec: ExecutionContext) extends Actor {
   def receive = {
     case message @ _ => doReceive(message)
   }
 
   def doReceive(message: Any) = {
-    sender() ! Try(message match {
+    message match {
       case GetLobby =>
-        Json.toJson(state.lobby)
+        sender() ! Try {
+          Json.toJson(state.lobby)
+        }
 
       case AddDeck(secret, deckId) =>
-        state.addDeck(secret, deckId)
-        Json.toJson(state.lobbyAndHand(secret))
+        val originalSender = sender()
+        val attempt = Try {
+          state.retrieveDeck(secret, deckId)
+            .map(deck => AddRetrievedDeck(secret, deck))
+            .onComplete({
+              case Success(result) => self.tell(result, originalSender)
+              case Failure(failure) => throw failure
+            })
+        }
+        if (attempt.isFailure) {
+          sender() ! attempt
+        }
+
+      case AddRetrievedDeck(secret, deck) =>
+        println(sender())
+        sender() ! Try {
+          state.addDeck(secret, deck)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
 
       case NewGame(secret) =>
-        state.newGame(secret)
-        Json.toJson(state.lobbyAndHand(secret))
+        sender() ! Try {
+          state.newGame(secret)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
 
       case Play(secret, ids) =>
-        state.play(secret, ids)
-        Json.toJson(state.lobbyAndHand(secret))
+        sender() ! Try {
+          state.play(secret, ids)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
 
       case Choose(secret, winner) =>
-        state.choose(secret, winner)
-        Json.toJson(state.lobbyAndHand(secret))
+        sender() ! Try {
+          state.choose(secret, winner)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
 
       case NewPlayer(name) =>
-        Json.toJson(state.newPlayer(name))
+        sender() ! Try {
+          Json.toJson(state.newPlayer(name))
+        }
 
       case GetHand(playerSecret) =>
-        Json.toJson(state.getHand(playerSecret))
+        sender() ! Try {
+          Json.toJson(state.getHand(playerSecret))
+        }
 
       case GetLobbyAndHand(playerSecret) =>
-        Json.toJson(state.lobbyAndHand(playerSecret))
+        sender() ! Try {
+          Json.toJson(state.lobbyAndHand(playerSecret))
+        }
 
       case Register(secret, socket) =>
-        state.register(secret, socket)
+        sender() ! Try {
+          state.register(secret, socket)
+        }
 
       case Unregister(secret, socket) =>
-        state.unregister(secret, socket)
+        sender() ! Try {
+          state.unregister(secret, socket)
+        }
 
       case _ =>
-        throw new IllegalArgumentException("Unknown message: " + message)
-    })
+        sender() ! Try {
+          throw new IllegalArgumentException("Unknown message: " + message)
+        }
+    }
   }
 }
 object Game {
+  case class AddRetrievedDeck(secret: Secret, deck: CardCastDeck)
+
   trait Factory {
     def apply(id: String): Actor
   }

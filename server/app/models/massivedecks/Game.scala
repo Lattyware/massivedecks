@@ -20,7 +20,9 @@ object Game {
 
   case class Response(text: String) extends Card
 
-  case class Config(deckIds: List[String])
+  case class DeckInfo(id: String, name: String, calls: Int, responses: Int)
+
+  case class Config(decks: List[DeckInfo])
 
   case class Round(czar: Player.Id, call: Call, responses: Responses) {
     require(responses.cards.isEmpty || responses.cards.get.forall(playerResponses => playerResponses.length == call.slots),
@@ -57,6 +59,7 @@ object Game {
     )
     implicit val responsesFormat: Format[Responses] = Json.format[Responses]
     implicit val roundFormat: Format[Round] = Json.format[Round]
+    implicit val deckInfoFormat: Format[DeckInfo] = Json.format[DeckInfo]
     implicit val configFormat: Format[Config] = Json.format[Config]
     implicit val handFormat: Format[Hand] = Json.format[Hand]
   }

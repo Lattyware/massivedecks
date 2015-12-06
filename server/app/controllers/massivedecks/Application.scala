@@ -23,7 +23,7 @@ import controllers.massivedecks.game.NotFoundException
 import models.massivedecks.Player.{Id, Secret}
 
 class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: ExecutionContext) extends Controller {
-  implicit val timeout: Timeout = 5.seconds
+  implicit val timeout: Timeout = 15.seconds // Should be more than the CardCast API timeout.
 
   def index() = Action {
     Ok(views.html.massivedecks.index())

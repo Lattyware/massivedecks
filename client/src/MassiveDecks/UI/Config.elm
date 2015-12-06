@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
+import MassiveDecks.Models.Game exposing (DeckInfo)
 import MassiveDecks.Models.State exposing (ConfigData, Error)
 import MassiveDecks.UI.Lobby as LobbyUI
 import MassiveDecks.UI.General exposing (..)
@@ -14,9 +15,9 @@ view : Signal.Address Action -> ConfigData -> List Error -> Html
 view address data errors =
   let
     lobby = data.lobby
-    deckIds = lobby.config.deckIds
+    decks = lobby.config.decks
     enoughPlayers = ((List.length lobby.players) > 1)
-    enoughCards = ((List.length deckIds) > 0)
+    enoughCards = not (List.isEmpty decks)
   in
     LobbyUI.view lobby.id [] lobby.players (List.concat [
       [ div [ id "config" ]
@@ -24,7 +25,7 @@ view address data errors =
           [ invite lobby.id
           , divider
           , h1 [] [ text "Game Setup" ]
-          , deckList address deckIds
+          , deckList address decks
           , startGameButton address enoughPlayers enoughCards
           ]
         ]
@@ -65,8 +66,8 @@ addDeckButton address =
          , onClick address (AddDeck Request) ] [ icon "plus" ]
 
 
-deckList : Signal.Address Action -> List String -> Html
-deckList address deckIds =
+deckList : Signal.Address Action -> List DeckInfo -> Html
+deckList address decks =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
@@ -77,9 +78,13 @@ deckList address deckIds =
         ]
       ]
     , tbody [] (List.concat
-      [ emptyDeckListInfo (List.isEmpty deckIds)
-      , List.map (\deckId -> tr [] [ td [] [
-        a [ href ("https://www.cardcastgame.com/browse/deck/" ++ deckId), target "_blank" ] [ text deckId ] ] ]) deckIds
+      [ emptyDeckListInfo (List.isEmpty decks)
+      , List.map (\deck -> tr []
+        [ td [] [ a [ href ("https://www.cardcastgame.com/browse/deck/" ++ deck.id), target "_blank" ] [ text deck.id ] ]
+        , td [] [ text deck.name ]
+        , td [] [ text (toString deck.calls) ]
+        , td [] [ text (toString deck.responses) ]
+        ]) decks
       , [ tr [] [ td [ colspan 4 ] [ deckIdInput address ] ] ]
       ])
     ]

@@ -21,9 +21,17 @@ lobbyDecoder = object4 Lobby
   (maybe ("round" := roundDecoder))
 
 
+deckInfoDecoder : Decoder DeckInfo
+deckInfoDecoder = object4 DeckInfo
+  ("id" := string)
+  ("name" := string)
+  ("calls" := int)
+  ("responses" := int)
+
+
 configDecoder : Decoder Config
 configDecoder = object1 Config
-  ("deckIds" := (list string))
+  ("decks" := (list deckInfoDecoder))
 
 
 handDecoder : Decoder Hand
