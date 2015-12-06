@@ -26,3 +26,6 @@ includeFilter in (Assets, LessKeys.less) := "massivedecks.less"
 routesGenerator := InjectedRoutesGenerator
 
 fork in run := true
+
+
+fork in run := true

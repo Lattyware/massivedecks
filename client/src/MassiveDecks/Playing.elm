@@ -23,7 +23,7 @@ update action errors data = case action of
       ) data.lobby.round)
     in
       if playing && canPlay then
-        (model errors { data | picked = card :: data.picked }, Effects.none)
+        (model errors { data | picked = List.append data.picked [card] }, Effects.none)
       else
         (model errors data, Effects.none)
 

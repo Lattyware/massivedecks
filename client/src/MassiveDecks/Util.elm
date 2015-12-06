@@ -18,3 +18,20 @@ interleave list1 list2 =
 remove : List a -> Int -> List a
 remove list index =
   (List.take index list) ++ (List.drop (index + 1) list)
+
+
+get : List a -> Int -> a
+get list index = case List.drop index list of                                                  
+    [] -> Native.Error.raise <| "Attempted to take element " ++ toString index
+                                ++ " of list " ++ toString list
+    (item::_) -> item  
+
+
+getAll : List a -> List Int -> List a
+getAll list indices =
+  List.map (get list) indices
+
+
+getAllWithIndex : List a -> List Int -> List (Int, a)
+getAllWithIndex list indices =
+  getAll (List.indexedMap (,) list) indices

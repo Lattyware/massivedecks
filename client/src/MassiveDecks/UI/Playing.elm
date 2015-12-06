@@ -22,9 +22,8 @@ view address errors data =
     content = (case lobby.round of
       Just round ->
         let
-          pickedWithIndex = (List.indexedMap (,) hand)
-            |> List.filter (\item -> List.member (fst item) data.picked)
-          picked = List.map snd pickedWithIndex
+          pickedWithIndex = Util.getAllWithIndex hand data.picked
+          picked = List.map (snd) pickedWithIndex
           isCzar = round.czar == data.secret.id
           pickedOrPlayed = case round.responses of
             Revealed cards -> playedView address isCzar cards
