@@ -37,7 +37,7 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
             .map(deck => AddRetrievedDeck(secret, deck))
             .onComplete({
               case Success(result) => self.tell(result, originalSender)
-              case Failure(failure) => throw failure
+              case Failure(failure) => originalSender ! Failure(failure)
             })
         }
         if (attempt.isFailure) {

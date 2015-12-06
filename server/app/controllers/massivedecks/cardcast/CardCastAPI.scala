@@ -5,6 +5,7 @@ import javax.inject.Inject
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 import akka.pattern.after
 import play.api.libs.concurrent.Akka
@@ -17,7 +18,10 @@ import models.massivedecks.Game.{Call, Response}
 class CardCastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
 
-  private def deckUrl(id: String): String = s"$apiUrl/decks/$id"
+  private def deckUrl(id: String): String = {
+    require(id.length > 0, "An ID can't be empty.")
+    s"$apiUrl/decks/$id"
+  }
   private def cardsUrl(id: String): String = s"${deckUrl(id)}/cards"
 
   /**
@@ -45,18 +49,35 @@ class CardCastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
     ws.url(url).get().map(response => response.json)
 
   private def parseInfo(deckInfo: JsValue): String = {
-    (deckInfo \ "name").validate[String].get
+    Try(
+      (deckInfo \ "name").validate[String].get
+    ).getOrElse {
+      parseError(deckInfo)
+    }
   }
 
   private def parseCards(cards: JsValue): (List[Call], List[Response]) = {
-    val calls = ListBuffer[Call]()
-    val responses = ListBuffer[Response]()
-    for (call: JsValue <- (cards \ "calls").validate[List[JsValue]].get) {
-      calls += Call((call \ "text").validate[List[String]].get)
+    Try({
+      val calls = ListBuffer[Call]()
+      val responses = ListBuffer[Response]()
+      for (call: JsValue <- (cards \ "calls").validate[List[JsValue]].get) {
+        calls += Call((call \ "text").validate[List[String]].get)
+      }
+      for (response: JsValue <- (cards \ "responses").validate[List[JsValue]].get) {
+        responses += Response((response \ "text").validate[List[String]].get.head)
+      }
+      (calls.toList, responses.toList)
+    }).getOrElse {
+      parseError(cards)
     }
-    for (response: JsValue <- (cards \ "responses").validate[List[JsValue]].get) {
-      responses += Response((response \ "text").validate[List[String]].get.head)
+  }
+
+  private def parseError[T](error: JsValue): T = {
+    println(error)
+    (error \ "id").validate[String].asOpt match {
+      case Some("not_found") => throw new IllegalArgumentException("The given CardCast deck was not found.")
+      case Some(errorName) => throw new IllegalStateException(s"CardCast gave an unknown error ('$errorName') when trying to retrieve the deck.")
+      case None => throw new IllegalStateException(s"CardCast gave an error that couldn't be parsed when trying to retrieve the deck.")
     }
-    (calls.toList, responses.toList)
   }
 }
