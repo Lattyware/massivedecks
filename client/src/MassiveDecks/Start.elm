@@ -69,4 +69,4 @@ initialData =
 
 
 view : Signal.Address Action -> List Error -> StartData -> Html
-view address errors data = UI.view address errors
+view address errors data = UI.view address errors data

@@ -1,5 +1,7 @@
 module MassiveDecks.UI.Config where
 
+import String
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -25,7 +27,7 @@ view address data errors =
           [ invite lobby.id
           , divider
           , h1 [] [ text "Game Setup" ]
-          , deckList address decks
+          , deckList address decks data.deckId
           , startGameButton address enoughPlayers enoughCards
           ]
         ]
@@ -44,37 +46,38 @@ invite lobbyId =
       ]
 
 
-deckIdInput : Signal.Address Action -> Html
-deckIdInput address = div [ id "deck-id-input" ]
+deckIdInput : Signal.Address Action -> String -> Html
+deckIdInput address deckIdValue = div [ id "deck-id-input" ]
   [ div [ class "mui-textfield" ]
-    [ input [ type' "text"
-            , placeholder "Deck Id"
-            , on "change" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
-            , onKeyUp address (\key -> case key of
-                13 -> AddDeck Request {- Return key. -}
-                _ -> NoAction
-             ) ] []
+    [ input
+      [ type' "text"
+      , placeholder "Deck Id"
+      , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
+      , onKeyUp address (\key -> case key of
+          13 -> AddDeck Request {- Return key. -}
+          _ -> NoAction)
+      ] []
     , label [] [ icon "info-circle", text " A ", a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ], text " Deck Id" ]
     ]
-  , addDeckButton address
+  , addDeckButton address (not (String.isEmpty deckIdValue))
   ]
 
 
-addDeckButton : Signal.Address Action -> Html
-addDeckButton address =
-  button [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab"
+addDeckButton : Signal.Address Action -> Bool -> Html
+addDeckButton address canAdd =
+  button [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab", disabled (not canAdd)
          , onClick address (AddDeck Request) ] [ icon "plus" ]
 
 
-deckList : Signal.Address Action -> List DeckInfo -> Html
-deckList address decks =
+deckList : Signal.Address Action -> List DeckInfo -> String -> Html
+deckList address decks deckIdValue =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
         [ th [] [ text "Id" ]
         , th [] [ text "Name" ]
-        , th [] [ icon "square" ]
-        , th [] [ icon "square-o" ]
+        , th [ title "Calls" ] [ icon "square" ]
+        , th [ title "Responses" ] [ icon "square-o" ]
         ]
       ]
     , tbody [] (List.concat
@@ -85,7 +88,7 @@ deckList address decks =
         , td [] [ text (toString deck.calls) ]
         , td [] [ text (toString deck.responses) ]
         ]) decks
-      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address ] ] ]
+      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckIdValue ] ] ]
       ])
     ]
 
