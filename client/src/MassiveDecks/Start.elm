@@ -7,57 +7,57 @@ import Html exposing (Html)
 
 import MassiveDecks.Models.State exposing (Model, State(..))
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
-import MassiveDecks.Models.State exposing (State(..), StartData, PlayingData)
+import MassiveDecks.Models.State exposing (State(..), StartData, PlayingData, Error)
 import MassiveDecks.UI.Start as UI
 import MassiveDecks.Config as Config
 import MassiveDecks.API as API
 import MassiveDecks.Playing as Playing
 
 
-update : Action -> Maybe String -> StartData -> (Model, Effects.Effects Action)
-update action error data = case action of
+update : Action -> List Error -> StartData -> (Model, Effects.Effects Action)
+update action errors data = case action of
   UpdateInputValue input value ->
     case input of
-      "name" -> (model error { data | name = value }, Effects.none)
-      "lobbyId" -> (model error { data | lobbyId = value }, Effects.none)
-      _ -> (model (Just "Got an update for an unknown input.") data, Effects.none)
+      "name" -> (model errors { data | name = value }, Effects.none)
+      "lobbyId" -> (model errors { data | lobbyId = value }, Effects.none)
+      _ -> (model ((Error "Got an update for an unknown input.") :: errors) data, Effects.none)
 
   NewLobby Request ->
-    (model error data, API.createLobby |> Task.map (NewLobby << Result) |> API.toEffect)
+    (model errors data, API.createLobby |> Task.map (NewLobby << Result) |> API.toEffect)
 
   NewLobby (Result lobby) ->
-    (model error data,
+    (model errors data,
       (API.newPlayer lobby.id data.name)
       |> Task.map (\secret -> JoinLobby lobby.id secret Request)
       |> API.toEffect)
 
   JoinExistingLobby ->
-    (model error data,
+    (model errors data,
       (API.newPlayer data.lobbyId data.name)
       |> Task.map (\secret -> JoinLobby data.lobbyId secret Request)
       |> API.toEffect)
 
   JoinLobby lobbyId secret Request ->
-    (model error data,
+    (model errors data,
       (API.getLobbyAndHand lobbyId secret)
       |> Task.map (\lobbyAndHand -> JoinLobby lobbyId secret (Result lobbyAndHand))
       |> API.toEffect)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (Playing.modelSub error lobbyId secret (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret []), Effects.none)
-      Nothing -> (Config.modelSub error lobbyId secret (Config.initialData lobbyAndHand.lobby secret), Effects.none)
+      Just _ -> (Playing.modelSub errors lobbyId secret (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret []), Effects.none)
+      Nothing -> (Config.modelSub errors lobbyId secret (Config.initialData lobbyAndHand.lobby secret), Effects.none)
 
   other ->
-    (model (Just ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Start)."))
+    (model (Error ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Start).") :: errors)
       data, Effects.none)
 
 
-model : Maybe String -> StartData -> Model
-model error data =
+model : List Error -> StartData -> Model
+model errors data =
   { state = SStart data
   , jsAction = Nothing
-  , error = error
+  , errors = errors
   }
 
 
@@ -68,5 +68,5 @@ initialData =
   }
 
 
-view : Signal.Address Action -> Maybe String -> StartData -> Html
-view address error data = UI.view address error
+view : Signal.Address Action -> List Error -> StartData -> Html
+view address errors data = UI.view address errors

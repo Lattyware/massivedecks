@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import MassiveDecks.Models.State exposing (PlayingData)
+import MassiveDecks.Models.State exposing (PlayingData, Error)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player exposing (Player, Id)
 import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
@@ -14,8 +14,8 @@ import MassiveDecks.UI.General exposing (..)
 import MassiveDecks.Util as Util
 
 
-view : Signal.Address Action -> Maybe String -> PlayingData -> Html
-view address error data =
+view : Signal.Address Action -> List Error -> PlayingData -> Html
+view address errors data =
   let
     lobby = data.lobby
     hand = data.hand.hand
@@ -38,7 +38,7 @@ view address error data =
       Just round -> [ icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ]
       Nothing -> [])
   in
-    LobbyUI.view data.lobby.id header lobby.players (List.concat [ content, errorMessage error ])
+    LobbyUI.view data.lobby.id header lobby.players (List.concat [ content, [ errorMessages address errors ] ])
 
 
 czarName : List Player -> Id -> String
