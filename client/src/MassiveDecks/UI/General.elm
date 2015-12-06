@@ -14,10 +14,11 @@ icon name = node "i" [ class ("fa fa-" ++ name) ] []
 errorMessage : Signal.Address Action -> Int -> Error -> Html
 errorMessage address index error =
     li [ class "error" ] [ div [] [
-      a [ href "#", onClick address (RemoveErrorPanel index) ] [ icon "times", text " Close" ]
-        , p [] []
-        , icon "exclamation-triangle"
-        , text " Error"
+      a [ href "#", onClick address (RemoveErrorPanel index) ] [ icon "times" ]
+        , h5 []
+          [ icon "exclamation-triangle"
+          , text " Error"
+          ]
         , divider
         , p [] [ text error.message ] ] ]
 

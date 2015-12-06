@@ -79,23 +79,26 @@ body.hide-scores {
 }
 
 #errorPanel {
+  display: block;
   margin: 0px;
   padding: 0px;
   list-style-type: none;
-  display: inline-block;
-  position: absolute;
+  position: fixed;
   bottom: 10px;
   right: 10px;
+  max-height: 50%;
+  overflow: auto;
+  z-index: 10;
 }
 
 .error {
+  position: relative;
   display: block;
   border: 1px solid #ff0000;
   background-color: #ffaaaa;
   border-radius: 10px;
   padding: 10px;
   width: 200px;
-  position: relative;
   text-align: center;
   margin: 5px;
 
@@ -103,9 +106,26 @@ body.hide-scores {
     margin: 10px;
   }
 
+  h5 {
+    margin: 0px;
+  }
+
+  a {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    text-align: center;
+    font-size: 20px;
+  }
+
   p {
     text-align: left;
     margin: 0px;
+  }
+
+  .mui-divider {
+    margin: 2px;
   }
 }
 
