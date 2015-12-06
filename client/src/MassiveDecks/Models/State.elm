@@ -8,7 +8,7 @@ import MassiveDecks.Models.Player exposing (Player, Secret)
 type alias Model =
   { state : State
   , jsAction : Maybe LobbyIdAndSecret
-  , error : Maybe String
+  , errors : List Error
   }
 
 
@@ -43,3 +43,7 @@ type alias LobbyIdAndSecret =
   { lobbyId : String
   , secret : Secret
   }
+
+
+type alias Error =
+  { message : String }
