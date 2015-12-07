@@ -1,7 +1,7 @@
 module MassiveDecks.Models.State where
 
 import MassiveDecks.Models.Card exposing (Hand)
-import MassiveDecks.Models.Game exposing (Config, Lobby)
+import MassiveDecks.Models.Game exposing (Config, Lobby, Round)
 import MassiveDecks.Models.Player exposing (Player, Secret)
 
 
@@ -36,6 +36,7 @@ type alias PlayingData =
   , hand : Hand
   , secret : Secret
   , picked : List Int
+  , lastFinishedRound : Maybe Round
   }
 
 

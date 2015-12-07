@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 import MassiveDecks.Models.State exposing (PlayingData, Error)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player exposing (Player, Id)
+import MassiveDecks.Models.Game exposing (Round)
 import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.UI.Lobby as LobbyUI
@@ -18,26 +19,61 @@ view : Signal.Address Action -> List Error -> PlayingData -> Html
 view address errors data =
   let
     lobby = data.lobby
-    hand = data.hand.hand
-    content = (case lobby.round of
-      Just round ->
-        let
-          pickedWithIndex = Util.getAllWithIndex hand data.picked
-          picked = List.map (snd) pickedWithIndex
-          isCzar = round.czar == data.secret.id
-          pickedOrPlayed = case round.responses of
-            Revealed cards -> playedView address isCzar cards
-            Hidden others -> pickedView address pickedWithIndex (Card.slots round.call)
-        in
-          [ playArea [ call round.call picked, pickedOrPlayed]
-                     , handView address data.picked isCzar hand ]
-      Nothing -> []
-    )
-    header = (case lobby.round of
-      Just round -> [ icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ]
-      Nothing -> [])
+    (content, header) =
+      case data.lastFinishedRound of
+        Just round -> winnerContentsAndHeader address round lobby.players
+        Nothing ->
+          case lobby.round of
+            Just round ->
+              (roundContents address data round,
+                [ icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ])
+            Nothing -> ([], [])
   in
     LobbyUI.view data.lobby.id header lobby.players (List.concat [ content, [ errorMessages address errors ] ])
+
+
+roundContents : Signal.Address Action -> PlayingData -> Round -> List Html
+roundContents address data round =
+  let
+    hand = data.hand.hand
+    pickedWithIndex = (List.indexedMap (,) hand)
+      |> List.filter (\item -> List.member (fst item) data.picked)
+    picked = List.map snd pickedWithIndex
+    isCzar = round.czar == data.secret.id
+    pickedOrPlayed = case round.responses of
+      Revealed responses -> playedView address isCzar responses
+      Hidden others -> pickedView address pickedWithIndex (Card.slots round.call)
+  in
+    [ playArea [ call round.call picked, pickedOrPlayed]
+               , handView address data.picked isCzar hand ]
+
+
+winnerContentsAndHeader : Signal.Address Action -> Round -> List Player -> (List Html, List Html)
+winnerContentsAndHeader address round players =
+  let
+    winning = case round.responses of
+      Revealed revealed ->
+          (Card.winningCards revealed.cards)
+          |> Maybe.andThen revealed.playedByAndWinner
+          |> Maybe.withDefault []
+      Hidden _ -> []
+    winner = case round.responses of
+      Revealed revealed ->
+          revealed.playedByAndWinner
+          |> Maybe.map .winner
+          |> Maybe.map (Util.get players)
+          |> Maybe.map .name
+          |> Maybe.withDefault ""
+      Hidden _ -> ""
+  in
+    ([ div [ class "winner mui-panel" ]
+       [ h1 [] [ icon "trophy" ]
+       , h2 [] [ text (" " ++ Card.filled round.call winning) ]
+       , h3 [] [ text ("- " ++ winner) ]
+       ]
+     , button [ id "next-round-button", class "mui-btn mui-btn--primary mui-btn--raised", onClick address NextRound ]
+         [ text "Next Round" ]
+     ], [ icon "trophy", text (" " ++ winner) ])
 
 
 czarName : List Player -> Id -> String
@@ -108,9 +144,9 @@ playButton address = li [ class "play-button" ] [ button
   [ icon "thumbs-up" ] ]
 
 
-playedView : Signal.Address Action -> Bool -> List PlayedCards -> Html
-playedView address isCzar cards =
-  ol [ class "played" ] (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) cards)
+playedView : Signal.Address Action -> Bool -> Card.RevealedResponses -> Html
+playedView address isCzar responses =
+  ol [ class "played" ] (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) responses.cards)
 
 
 playedCards : Signal.Address Action -> Bool -> Int -> PlayedCards -> Html

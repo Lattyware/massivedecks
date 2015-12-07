@@ -6,6 +6,7 @@ import Html exposing (Html)
 
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Card as Card
+import MassiveDecks.Models.Game exposing (Lobby)
 import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData, Error)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.UI.Playing as UI
@@ -34,35 +35,55 @@ update action errors data = case action of
     (model errors data, (API.play data.lobby.id data.secret data.picked) |> Task.map (Play << Result) |> API.toEffect)
 
   Play (Result lobbyAndHand) ->
-    (model errors
-      { data | lobby = lobbyAndHand.lobby
-      , hand = lobbyAndHand.hand
-      , picked = []
-      }, Effects.none)
+    let
+      data = (updateLobby data lobbyAndHand.lobby)
+    in
+      (model errors
+        { data | hand = lobbyAndHand.hand
+               , picked = []
+               }, Effects.none)
 
   Notification lobby ->
     case lobby.round of
-      Just _ -> (model errors { data | lobby = lobby }, Effects.none)
+      Just _ -> (model errors (updateLobby data lobby), Effects.none)
       Nothing -> (configModel errors (ConfigData lobby data.secret ""), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (model errors { data | lobby = lobbyAndHand.lobby }, Effects.none)
+      Just _ -> (model errors (updateLobby data lobbyAndHand.lobby), Effects.none)
       Nothing -> (configModel errors (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
 
   Choose winner Request ->
     (model errors data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
 
   Choose winner (Result lobbyAndHand) ->
-    (model errors
-      { data | lobby = lobbyAndHand.lobby
-      , hand = lobbyAndHand.hand
-      , picked = []
-      }, Effects.none)
+    let
+      data = (updateLobby data lobbyAndHand.lobby)
+    in
+      (model errors
+        { data | hand = lobbyAndHand.hand
+               , picked = []
+               }, Effects.none)
+
+  NextRound ->
+    (model errors { data | lastFinishedRound = Nothing }, Effects.none)
 
   other ->
     (model (Error ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Playing).") :: errors)
       data, Effects.none)
+
+
+updateLobby : PlayingData -> Lobby -> PlayingData
+updateLobby data lobby =
+  let
+    lastFinishedRound = if (Maybe.map .call data.lobby.round) == (Maybe.map .call lobby.round) then
+      data.lastFinishedRound
+    else
+      data.lobby.round
+  in
+    { data | lobby = lobby
+           , lastFinishedRound = lastFinishedRound
+           }
 
 
 model : List Error -> PlayingData -> Model

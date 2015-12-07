@@ -6,15 +6,14 @@ import javax.inject.Inject
 import scala.concurrent.Future
 import scala.util.Random
 
-import akka.actor.{ActorRef}
+import akka.actor.ActorRef
 import com.google.inject.assistedinject.Assisted
 import controllers.massivedecks.cardcast.{CardCastAPI, CardCastDeck}
 import models.massivedecks.Game._
-import models.massivedecks.Lobby.{LobbyAndHand, Lobby}
+import models.massivedecks.Lobby.Formatters._
+import models.massivedecks.Lobby.{Lobby, LobbyAndHand}
 import models.massivedecks.Player._
 import play.api.libs.json.Json
-
-import models.massivedecks.Lobby.Formatters._
 
 class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: String) {
   private var decks: Set[CardCastDeck] = Set()
@@ -26,6 +25,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private var playedOrder: Option[List[Id]] = None
   private var notifications: List[ActorRef] = List()
   private var czarIndex: Int = 0
+  private var history: List[Round] = List()
 
   def config = Config(decks.map(deck => deck.info).toList)
   def lobby = Lobby(id, config, players, game.map(game => game.round))
@@ -103,7 +103,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
       throw new IllegalStateException("Already played into this round.")
     }
     val round = state.round
-    if (round.responses.cards.isDefined) {
+    if (round.responses.revealed.isDefined) {
       throw new IllegalStateException("Already judging this round, can't play into it.")
     }
     require(ids.length == state.round.call.slots,
@@ -116,7 +116,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     playedInRound += (id -> Some(toPlay))
     setPlayerStatus(id, Played)
     game = Some(state.copy(
-      round = round.copy(responses=Responses.count(numberOfPlayersWhoHavePlayed)),
+      round = round.copy(responses=Responses.hidden(numberOfPlayersWhoHavePlayed)),
       hands = hands
     ))
     if (numberOfPlayersInRound == numberOfPlayersWhoHavePlayed) {
@@ -135,6 +135,13 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     } else {
       player
     })
+    val round = state.round
+    val revealed = round.responses.revealed.get
+    val wonRound = round.copy(responses=Responses.revealed(revealed.copy(playedByAndWinner=
+      Some(PlayedByAndWinner(playedOrder.get, winnerId)))))
+    game = Some(state.copy(round=wonRound))
+    history = wonRound :: history
+    sendNotifications()
     advanceRound()
     sendNotifications()
   }
@@ -196,7 +203,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     val shuffled = Random.shuffle(playedInRound)
     playedOrder = Some(shuffled.map(played => played._1).toList)
     game = Some(state.copy(
-      round = state.round.copy(responses=Responses.cards(shuffled.flatMap(played => played._2).toList)),
+      round = state.round.copy(responses=Responses.revealed(Revealed(shuffled.flatMap(played => played._2).toList, None))),
       hands = state.hands
     ))
   }
@@ -205,7 +212,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     playedOrder = None
     playedInRound = Map()
     val state = validateInGameAndGetState()
-    game = Some(state.copy(round = Round(nextCzar(), state.deck.drawCall(), Responses.count(0))))
+    game = Some(state.copy(round = Round(nextCzar(), state.deck.drawCall(), Responses.hidden(0))))
     for (player <- players) {
       setPlayerStatus(player.id, NotPlayed)
     }
@@ -240,7 +247,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private case class GameState(var deck: Deck, var hands: Map[Id, Hand], var round: Round)
   private object GameState {
     def apply(deck: Deck, hands: Map[Id, Hand], initialCzar: Id): GameState =
-      new GameState(deck, hands, Round(initialCzar, deck.drawCall(), Responses.count(0)))
+      new GameState(deck, hands, Round(initialCzar, deck.drawCall(), Responses.hidden(0)))
   }
 }
 object State {

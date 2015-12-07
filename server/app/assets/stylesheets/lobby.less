@@ -44,6 +44,42 @@
   }
 }
 
+.winner {
+  max-width: 500px;
+  margin: 15px auto;
+  padding: 5px 25px 5px 25px;
+
+  & > h1 {
+    margin: 5px;
+
+    & > .fa {
+      width: 100%;
+      text-align: center;
+      color: #FFD700;
+    }
+  }
+
+  & > h2 {
+    margin: 5px;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+
+  & > h3 {
+    margin: 5px;
+    width: 100%;
+    text-align: right;
+    font-style: italic;
+  }
+}
+
+#next-round-button {
+  display: block;
+  margin: 10px auto;
+}
+
 ol.picked {
   margin: 0px;
   padding: 0px;

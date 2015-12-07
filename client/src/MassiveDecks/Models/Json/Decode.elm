@@ -59,24 +59,37 @@ roundDecoder = object3 Round
 
 
 responsesDecoder : Decoder Responses
-responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case transport.count of
-    Just val -> case transport.cards of
+responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case transport.hidden of
+    Just val -> case transport.revealed of
       Just _ -> Result.Err "Got both count and cards."
       Nothing -> Result.Ok (Hidden val)
-    Nothing -> case transport.cards of
+    Nothing -> case transport.revealed of
       Just val -> Result.Ok (Revealed val)
       Nothing -> Result.Err "Got neither count nor cards."
   )
 
+
 responsesTransportDecoder : Decoder ResponsesTransport
 responsesTransportDecoder = object2 ResponsesTransport
-  (maybe ("count" := int))
-  (maybe ("cards" := list (list responseDecoder)))
+  (maybe ("hidden" := int))
+  (maybe ("revealed" := revealedResponsesDecoder))
 
 type alias ResponsesTransport =
-  { count : Maybe Int
-  , cards : Maybe (List (PlayedCards))
+  { hidden : Maybe Int
+  , revealed : Maybe RevealedResponses
   }
+
+
+revealedResponsesDecoder : Decoder RevealedResponses
+revealedResponsesDecoder = object2 RevealedResponses
+  ("cards" := list (list responseDecoder))
+  (maybe ("playedByAndWinner" := playedByAndWinnerDecoder))
+
+
+playedByAndWinnerDecoder : Decoder PlayedByAndWinner
+playedByAndWinnerDecoder = object2 PlayedByAndWinner
+  ("playedBy" := list (playerIdDecoder))
+  ("winner" := playerIdDecoder)
 
 
 callDecoder : Decoder Call

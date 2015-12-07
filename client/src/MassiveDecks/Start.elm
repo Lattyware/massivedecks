@@ -45,7 +45,7 @@ update action errors data = case action of
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (Playing.modelSub errors lobbyId secret (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret []), Effects.none)
+      Just _ -> (Playing.modelSub errors lobbyId secret (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing), Effects.none)
       Nothing -> (Config.modelSub errors lobbyId secret (Config.initialData lobbyAndHand.lobby secret), Effects.none)
 
   other ->

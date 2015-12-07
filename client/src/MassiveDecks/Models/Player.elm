@@ -12,6 +12,12 @@ type alias Player =
   }
 
 
+type alias PlayedByAndWinner =
+  { playedBy : List Id
+  , winner : Id
+  }
+
+
 type Status
   = NotPlayed
   | Played
