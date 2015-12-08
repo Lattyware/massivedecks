@@ -16,7 +16,7 @@ import org.hashids.Hashids
 @Singleton()
 class Store @Inject() (gameFactory: Game.Factory) extends Actor with InjectedActorSupport {
   private var games: Map[Long, ActorRef] = Map()
-  private val hashIds = Hashids.reference("massivedecks")
+  private val hashIds = Hashids.reference("massivedecks", 0, "abcdefghijklmnopqrstuvwxyz0123456789")
 
   def receive = {
     case NewLobby =>
@@ -38,5 +38,5 @@ class Store @Inject() (gameFactory: Game.Factory) extends Actor with InjectedAct
     }
   }
 
-  private def decodeId(id: String): Option[Long] = hashIds.decode(id).headOption
+  private def decodeId(id: String): Option[Long] = hashIds.decode(id.toLowerCase()).headOption
 }
