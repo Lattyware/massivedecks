@@ -62,6 +62,9 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     if (players.length < State.minimumPlayers) {
       throw new IllegalStateException(s"You need a minimum of ${State.minimumPlayers} to start a game.")
     }
+    if (game.isDefined) {
+      throw new IllegalStateException(s"A game is already in progress.")
+    }
     val deck = Deck(decks)
     val hands = (for (player <- players) yield player.id -> Hand(deck.drawResponses(Hand.size))).toMap
     game = Some(GameState(deck, hands, nextCzar()))
