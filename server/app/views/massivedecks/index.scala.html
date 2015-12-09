@@ -1,3 +1,4 @@
+@(url: String)
 <!DOCTYPE html>
 <html>
    <head>
@@ -14,8 +15,14 @@
    <body>
        <script src="@routes.Assets.at("javascripts/Main.js")"></script>
        <script>
-         var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "" });
-
+         var gameCode = window.location.hash.substr(1);
+         var initialState = {
+           url: "@url",
+           gameCode: gameCode == "" ? null : gameCode,
+           existingGame: null
+         };
+         var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });
+         game.ports.initialState.send(initialState)
          function openWebSocket(lobbyId, secret) {
            var loc = window.location, new_uri;
            if (loc.protocol === "https:") {

@@ -8,23 +8,24 @@ import Html.Events exposing (..)
 
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Models.Game exposing (DeckInfo)
-import MassiveDecks.Models.State exposing (ConfigData, Error)
+import MassiveDecks.Models.State exposing (ConfigData, Error, Global)
 import MassiveDecks.UI.Lobby as LobbyUI
 import MassiveDecks.UI.General exposing (..)
 
 
-view : Signal.Address Action -> ConfigData -> List Error -> Html
-view address data errors =
+view : Signal.Address Action -> ConfigData -> Global -> Html
+view address data global =
   let
+    errors = global.errors
     lobby = data.lobby
     decks = lobby.config.decks
     enoughPlayers = ((List.length lobby.players) > 1)
     enoughCards = not (List.isEmpty decks)
   in
-    LobbyUI.view lobby.id [] lobby.players (List.concat [
+    LobbyUI.view global.initialState.url lobby.id [] lobby.players (List.concat [
       [ div [ id "config" ]
         [ div [ id "config-content", class "mui-panel" ]
-          [ invite lobby.id
+          [ invite global.initialState.url lobby.id
           , divider
           , h1 [] [ text "Game Setup" ]
           , deckList address decks data.deckId
@@ -33,10 +34,10 @@ view address data errors =
         ]
       ], [ errorMessages address errors ] ])
 
-invite : String -> Html
-invite lobbyId =
+invite : String -> String -> Html
+invite appUrl lobbyId =
   let
-    url = lobbyUrl lobbyId
+    url = lobbyUrl appUrl lobbyId
   in
     div []
       [ p [] [ text "Invite others to the game with the code '"

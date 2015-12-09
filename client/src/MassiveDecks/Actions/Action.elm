@@ -1,5 +1,6 @@
 module MassiveDecks.Actions.Action where
 
+import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Player exposing (Secret)
 
@@ -25,3 +26,4 @@ type Action
   | Choose Int (APICall LobbyAndHand)
   | RemoveErrorPanel Int
   | NextRound
+  | SetInitialState InitialState

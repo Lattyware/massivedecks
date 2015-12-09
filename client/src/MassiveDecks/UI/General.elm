@@ -8,7 +8,11 @@ import MassiveDecks.Actions.Action exposing (Action(..))
 
 
 icon : String -> Html
-icon name = node "i" [ class ("fa fa-" ++ name) ] []
+icon name = i [ class ("fa fa-" ++ name) ] []
+
+
+spinner : Html
+spinner = i [ class "fa fa-circle-o-notch fa-spin" ] []
 
 
 errorMessage : Signal.Address Action -> Int -> Error -> Html
@@ -22,9 +26,11 @@ errorMessage address index error =
         , divider
         , p [] [ text error.message ] ] ]
 
+
 errorMessages : Signal.Address Action -> List Error -> Html
 errorMessages address errors =
     ol [ id "errorPanel"] (List.indexedMap (errorMessage address) errors)
+
 
 divider : Html
 divider = div [ class "mui-divider" ] []
@@ -50,22 +56,22 @@ gameMenu = div [ class "menu mui-dropdown" ]
   ]
 
 
-inviteOverlay : String -> Html
-inviteOverlay lobbyId =
+inviteOverlay : String -> String -> Html
+inviteOverlay appUrl lobbyId =
   let
-    url = lobbyUrl lobbyId
+    url = lobbyUrl appUrl lobbyId
   in
     div [ id "invite" ]
       [ div [ class "mui-panel" ]
         [ p [] [ text "To invite other players, simply send them this link: " ]
-        , p [] [ a [ href url, target "_blank" ] [ text url ] ]
+        , p [] [ a [ href url ] [ text url ] ]
         , p [] [ text "Or give them this game code to enter on the start page: " ]
         , p [] [ input [ readonly True, value lobbyId ] [] ] ]
         ]
 
 
-lobbyUrl : String -> String
-lobbyUrl lobbyId = "http://example.com/#" ++ lobbyId
+lobbyUrl : String -> String -> String
+lobbyUrl url lobbyId = url ++ "#" ++ lobbyId
 
 
 aboutOverlay : Html

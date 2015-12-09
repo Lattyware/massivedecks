@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import MassiveDecks.Models.State exposing (PlayingData, Error)
+import MassiveDecks.Models.State exposing (PlayingData, Error, Global)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player exposing (Player, Id)
 import MassiveDecks.Models.Game exposing (Round)
@@ -15,9 +15,10 @@ import MassiveDecks.UI.General exposing (..)
 import MassiveDecks.Util as Util
 
 
-view : Signal.Address Action -> List Error -> PlayingData -> Html
-view address errors data =
+view : Signal.Address Action -> Global -> PlayingData -> Html
+view address global data =
   let
+    errors = global.errors
     lobby = data.lobby
     (content, header) =
       case data.lastFinishedRound of
@@ -29,7 +30,7 @@ view address errors data =
                 [ icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ])
             Nothing -> ([], [])
   in
-    LobbyUI.view data.lobby.id header lobby.players (List.concat [ content, [ errorMessages address errors ] ])
+    LobbyUI.view global.initialState.url data.lobby.id header lobby.players (List.concat [ content, [ errorMessages address errors ] ])
 
 
 roundContents : Signal.Address Action -> PlayingData -> Round -> List Html

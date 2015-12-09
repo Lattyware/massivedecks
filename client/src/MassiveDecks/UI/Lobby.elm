@@ -6,13 +6,13 @@ import Html.Attributes exposing (..)
 import MassiveDecks.Models.Player exposing (Player, Status(..), statusName)
 import MassiveDecks.UI.General exposing (..)
 
-view : String -> List Html -> List Player -> List Html -> Html
-view lobbyId header players contents =
+view : String -> String -> List Html -> List Player -> List Html -> Html
+view url lobbyId header players contents =
   root [ appHeader header
        , spacer
        , scores players
        , contentWrapper contents
-       , inviteOverlay lobbyId
+       , inviteOverlay url lobbyId
        , aboutOverlay
        ]
 
