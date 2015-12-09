@@ -31,7 +31,6 @@
            gameCode: gameCode == "" ? null : gameCode,
            existingGame: existingGame
          };
-         console.log(initialState);
 
          var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });
          game.ports.initialState.send(initialState)
@@ -60,6 +59,7 @@
            if (lobbyIdAndSecret != null) {
              localStorage.setItem("existingGame", JSON.stringify(lobbyIdAndSecret))
              openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);
+             window.location = "#" + lobbyIdAndSecret.lobbyId;
            }
          });
        </script>
