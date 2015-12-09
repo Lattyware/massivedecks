@@ -41,7 +41,7 @@ scores players = div [ id "scores" ]
 score : Player -> Html
 score player = tr [ class (statusName player.status), title (statusDescription player.status) ]
   [ td [ class "state" ] [ (statusIcon player.status) ]
-  , td [ class "name" ] [ text player.name ]
+  , td [ class "name", title player.name ] [ text player.name ]
   , td [ class "score" ] [ text (toString player.score) ]
   ]
 
