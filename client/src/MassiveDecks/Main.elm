@@ -7,7 +7,7 @@ import StartApp
 import Json.Decode exposing (decodeString)
 
 import MassiveDecks.Models.State exposing (Model, State(..), LobbyIdAndSecret, Error, Global, InitialState)
-import MassiveDecks.Actions.Action exposing (Action(..))
+import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Start as Start
 import MassiveDecks.Config as Config
 import MassiveDecks.Playing as Playing
@@ -70,8 +70,18 @@ main : Signal Html
 main = game.html
 
 
-model : InitialState -> Model
-model initialState = Start.model (Global [] initialState) (Start.initialData (Maybe.withDefault "" initialState.gameCode))
+start : InitialState -> (Model, Effects.Effects Action)
+start initialState =
+  (Start.model (Global [] initialState) (Start.initialData (Maybe.withDefault "" initialState.gameCode)),
+    case initialState.existingGame of
+      Just existingGame ->
+        if (Just existingGame.lobbyId == initialState.gameCode) then
+          Task.succeed (JoinLobby existingGame.lobbyId existingGame.secret Request) |> Effects.task
+        else
+          Effects.none
+
+      Nothing -> Effects.none
+  )
 
 
 update : Action -> SetupModel -> (SetupModel, Effects.Effects Action)
@@ -80,7 +90,10 @@ update action setupModel =
     Waiting ->
       case action of
         SetInitialState initialState ->
-          (Started (model initialState), Effects.none)
+          let
+            (model, effects) = start initialState
+          in
+            (Started model, effects)
 
         _ ->
           (Waiting, Effects.none)

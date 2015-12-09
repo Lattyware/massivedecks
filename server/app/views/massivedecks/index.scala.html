@@ -1,5 +1,4 @@
-@(url: String)
-<!DOCTYPE html>
+@(url: String)<!DOCTYPE html>
 <html>
    <head>
        <meta charset="utf-8">
@@ -19,11 +18,21 @@
        <script src="@routes.Assets.at("javascripts/Main.js")"></script>
        <script>
          var gameCode = window.location.hash.substr(1);
+         var existingGame = localStorage.getItem("existingGame");
+         if (existingGame != null) {
+           try {
+             existingGame = JSON.parse(existingGame);
+           } catch (error) {
+             existingGame = null;
+           }
+         }
          var initialState = {
            url: "@url",
            gameCode: gameCode == "" ? null : gameCode,
-           existingGame: null
+           existingGame: existingGame
          };
+         console.log(initialState);
+
          var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });
          game.ports.initialState.send(initialState)
          function openWebSocket(lobbyId, secret) {
@@ -49,6 +58,7 @@
 
          game.ports.jsAction.subscribe(function (lobbyIdAndSecret) {
            if (lobbyIdAndSecret != null) {
+             localStorage.setItem("existingGame", JSON.stringify(lobbyIdAndSecret))
              openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);
            }
          });
