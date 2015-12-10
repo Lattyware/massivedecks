@@ -37,8 +37,7 @@ roundContents : Signal.Address Action -> PlayingData -> Round -> List Html
 roundContents address data round =
   let
     hand = data.hand.hand
-    pickedWithIndex = (List.indexedMap (,) hand)
-      |> List.filter (\item -> List.member (fst item) data.picked)
+    pickedWithIndex = Util.getAllWithIndex hand data.picked
     picked = List.map snd pickedWithIndex
     isCzar = round.czar == data.secret.id
     pickedOrPlayed = case round.responses of
