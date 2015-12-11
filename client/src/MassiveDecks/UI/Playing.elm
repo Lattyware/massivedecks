@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 
 import MassiveDecks.Models.State exposing (PlayingData, Error, Global)
 import MassiveDecks.Models.Card as Card
-import MassiveDecks.Models.Player exposing (Player, Id)
+import MassiveDecks.Models.Player exposing (Player, Id, Status(..))
 import MassiveDecks.Models.Game exposing (Round)
 import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
@@ -39,12 +39,15 @@ roundContents address data round =
     hand = data.hand.hand
     pickedWithIndex = Util.getAllWithIndex hand data.picked
     picked = List.map snd pickedWithIndex
-    isCzar = round.czar == data.secret.id
+    id = data.secret.id
+    isCzar = round.czar == id
+    hasPlayed = List.filter (\player -> player.id == id) data.lobby.players
+      |> List.any (\player -> player.status == Played)
     pickedOrPlayed = case round.responses of
       Revealed responses -> [ playedView address isCzar responses ]
       Hidden _ -> pickedView address pickedWithIndex (Card.slots round.call) data.shownPlayed
   in
-    [ playArea (List.concat [ [ call round.call picked ], pickedOrPlayed, [ handView address data.picked isCzar hand ] ]) ]
+    [ playArea (List.concat [ [ call round.call picked ], pickedOrPlayed, [ handView address data.picked (isCzar || hasPlayed) hand ] ]) ]
 
 
 winnerContentsAndHeader : Signal.Address Action -> Round -> List Player -> (List Html, List Html)
@@ -102,12 +105,12 @@ slots count placeholder picked =
 
 
 response : Signal.Address Action -> List Int -> Bool -> Int -> String -> Html
-response address picked isCzar responseId contents =
+response address picked disabled responseId contents =
   let
     isPicked = List.member responseId picked
     pickedClass = if isPicked then " picked" else ""
     classes = [ class ("card response mui-panel" ++ pickedClass) ]
-    clickHandler = if isPicked || isCzar then [] else [ onClick address (Pick responseId) ]
+    clickHandler = if isPicked || disabled then [] else [ onClick address (Pick responseId) ]
   in
     div (List.concat [ classes, clickHandler ]) [ div [ class "response-text" ] [ text contents ] ]
 
@@ -117,15 +120,15 @@ blankResponse positioning = div [ class "card mui-panel", positioning ] []
 
 
 handRender : Bool -> List Html -> Html
-handRender isCzar contents =
+handRender disabled contents =
   let
-    classes = "hand mui--divider-top" ++ if isCzar then " disabled" else ""
+    classes = "hand mui--divider-top" ++ if disabled then " disabled" else ""
   in
     ul [ class classes ] (List.map (\item -> li [] [ item ]) contents)
 
 
 handView : Signal.Address Action -> List Int -> Bool -> List Response -> Html
-handView address picked isCzar responses = handRender isCzar (List.indexedMap (response address picked isCzar) responses)
+handView address picked disabled responses = handRender disabled (List.indexedMap (response address picked disabled) responses)
 
 
 pickedResponse : Signal.Address Action -> (Int, String) -> Html
