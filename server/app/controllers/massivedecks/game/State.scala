@@ -242,7 +242,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 
   private def validateSecretAndGetId(secret: Secret): Id = {
     val id = secret.id
-    require(secrets.get(id).map(expected => expected.id).contains(id),
+    require(secrets.get(id).map(expected => expected.secret).contains(secret.secret),
       "Secret was wrong or player doesn't exist.")
     id
   }
