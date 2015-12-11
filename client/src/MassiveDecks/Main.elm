@@ -5,6 +5,7 @@ import Effects
 import Html exposing (Html)
 import StartApp
 import Json.Decode exposing (decodeString)
+import Random
 
 import MassiveDecks.Models.State exposing (Model, State(..), LobbyIdAndSecret, Error, Global, InitialState)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
@@ -72,7 +73,7 @@ main = game.html
 
 start : InitialState -> (Model, Effects.Effects Action)
 start initialState =
-  (Start.model (Global [] initialState) (Start.initialData (Maybe.withDefault "" initialState.gameCode)),
+  (Start.model (Global [] initialState (Random.initialSeed initialState.seed)) (Start.initialData (Maybe.withDefault "" initialState.gameCode)),
     case initialState.existingGame of
       Just existingGame ->
         if (Just existingGame.lobbyId == initialState.gameCode) then

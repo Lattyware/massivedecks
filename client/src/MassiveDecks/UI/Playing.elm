@@ -41,11 +41,10 @@ roundContents address data round =
     picked = List.map snd pickedWithIndex
     isCzar = round.czar == data.secret.id
     pickedOrPlayed = case round.responses of
-      Revealed responses -> playedView address isCzar responses
-      Hidden others -> pickedView address pickedWithIndex (Card.slots round.call)
+      Revealed responses -> [ playedView address isCzar responses ]
+      Hidden _ -> pickedView address pickedWithIndex (Card.slots round.call) data.shownPlayed
   in
-    [ playArea [ call round.call picked, pickedOrPlayed]
-               , handView address data.picked isCzar hand ]
+    [ playArea (List.concat [ [ call round.call picked ], pickedOrPlayed, [ handView address data.picked isCzar hand ] ]) ]
 
 
 winnerContentsAndHeader : Signal.Address Action -> Round -> List Player -> (List Html, List Html)
@@ -113,6 +112,10 @@ response address picked isCzar responseId contents =
     div (List.concat [ classes, clickHandler ]) [ div [ class "response-text" ] [ text contents ] ]
 
 
+blankResponse : Attribute -> Html
+blankResponse positioning = div [ class "card mui-panel", positioning ] []
+
+
 handRender : Bool -> List Html -> Html
 handRender isCzar contents =
   let
@@ -130,12 +133,14 @@ pickedResponse address (index, contents) =
   li [ onClick address (Withdraw index) ] [ div [ class "card response mui-panel" ] [ div [ class "response-text" ] [ text contents ] ] ]
 
 
-pickedView : Signal.Address Action -> List (Int, Response) -> Int -> Html
-pickedView address picked slots =
+pickedView : Signal.Address Action -> List (Int, Response) -> Int -> List Attribute -> List Html
+pickedView address picked slots shownPlayed =
   let
     pb = if (List.length picked < slots) then [] else [ playButton address ]
   in
-    ol [ class "picked" ] (List.concat [ (List.map (pickedResponse address) picked), pb ])
+    [ ol [ class "picked" ] (List.concat [ (List.map (pickedResponse address) picked), pb ])
+    , div [ class "others-picked" ] (List.map blankResponse shownPlayed)
+    ]
 
 
 playButton : Signal.Address Action -> Html

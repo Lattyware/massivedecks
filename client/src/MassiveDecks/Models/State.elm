@@ -1,5 +1,8 @@
 module MassiveDecks.Models.State where
 
+import Random
+import Html exposing (Attribute)
+
 import MassiveDecks.Models.Card exposing (Hand)
 import MassiveDecks.Models.Game exposing (Config, Lobby, Round)
 import MassiveDecks.Models.Player exposing (Player, Secret)
@@ -15,6 +18,7 @@ type alias Model =
 type alias Global =
   { errors : List Error
   , initialState : InitialState
+  , seed : Random.Seed
   }
 
 
@@ -43,6 +47,7 @@ type alias PlayingData =
   , secret : Secret
   , picked : List Int
   , lastFinishedRound : Maybe Round
+  , shownPlayed : List Attribute
   }
 
 
@@ -56,6 +61,7 @@ type alias InitialState =
   { url : String
   , gameCode : Maybe String
   , existingGame : Maybe LobbyIdAndSecret
+  , seed : Int
   }
 
 

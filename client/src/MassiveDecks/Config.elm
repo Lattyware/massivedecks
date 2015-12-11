@@ -33,7 +33,7 @@ update action global data = case action of
     (model global data, (API.newGame data.lobby.id data.secret) |> Task.map (StartGame << Result) |> API.toEffect)
 
   StartGame (Result lobbyAndHand) ->
-    (Playing.model global (PlayingData lobbyAndHand.lobby lobbyAndHand.hand data.secret [] Nothing), Effects.none)
+    (Playing.model global (PlayingData lobbyAndHand.lobby lobbyAndHand.hand data.secret [] Nothing []), Effects.none)
 
   Notification lobby ->
     case lobby.round of
@@ -45,7 +45,7 @@ update action global data = case action of
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (Playing.model global (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing), Effects.none)
+      Just _ -> (Playing.model global (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing []), Effects.none)
       Nothing -> (model global { data | lobby = lobbyAndHand.lobby }, Effects.none)
 
   other ->

@@ -29,7 +29,8 @@
          var initialState = {
            url: "@url",
            gameCode: gameCode == "" ? null : gameCode,
-           existingGame: existingGame
+           existingGame: existingGame,
+           seed: new Date().getTime()
          };
 
          var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });

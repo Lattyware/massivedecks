@@ -23,6 +23,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  position: relative;
+
+  .others-picked {
+    .card {
+      position: absolute;
+      z-index: -10;
+      transition: transform 3s, left 3s, right 3s, top 3s ease-out
+    }
+  }
 }
 
 .call {
