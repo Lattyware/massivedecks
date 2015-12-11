@@ -149,7 +149,7 @@ pickedView address picked slots shownPlayed =
 playButton : Signal.Address Action -> Html
 playButton address = li [ class "play-button" ] [ button
   [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address (Play Request) ]
-  [ icon "thumbs-up" ] ]
+  [ icon "check" ] ]
 
 
 playedView : Signal.Address Action -> Bool -> Card.RevealedResponses -> Html
