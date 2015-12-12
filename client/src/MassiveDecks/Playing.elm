@@ -9,9 +9,10 @@ import Random exposing (Generator, Seed, list, bool, int)
 
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Card as Card
-import MassiveDecks.Models.Game exposing (Lobby)
+import MassiveDecks.Models.Game exposing (Lobby, FinishedRound)
 import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData, Error, Global)
-import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
+import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
+import MassiveDecks.Actions.Event exposing (Event(..))
 import MassiveDecks.UI.Playing as UI
 import MassiveDecks.API as API
 import MassiveDecks.Util as Util
@@ -39,30 +40,22 @@ update action global data = case action of
     (model global data, (API.play data.lobby.id data.secret data.picked) |> Task.map (Play << Result) |> API.toEffect)
 
   Play (Result lobbyAndHand) ->
-    let
-      (data, effect, seed) = (updateLobby data lobbyAndHand.lobby global.seed)
-    in
-      (model { global | seed = seed }
-        { data | hand = lobbyAndHand.hand
+      (model global
+        { data | lobby = lobbyAndHand.lobby
+               , hand = lobbyAndHand.hand
                , picked = []
-               }, effect)
+               }, eventEffects data.lobby lobbyAndHand.lobby)
 
   Notification lobby ->
     case lobby.round of
-      Just _ ->
-        let
-          (data, effect, seed) = (updateLobby data lobby global.seed)
-        in
-          (model { global | seed = seed } data, effect)
+      Just _ -> (model global { data | lobby = lobby }, eventEffects data.lobby lobby)
       Nothing -> (configModel global (ConfigData lobby data.secret ""), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ ->
-        let
-          (data, effect, seed) = (updateLobby data lobbyAndHand.lobby global.seed)
-        in
-          (model { global | seed = seed } data, effect)
+      Just _ -> (model global { data | lobby = lobbyAndHand.lobby
+                                     , hand = lobbyAndHand.hand
+                                     }, eventEffects data.lobby lobbyAndHand.lobby)
       Nothing -> (configModel global (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
 
   Consider potentialWinner ->
@@ -72,13 +65,11 @@ update action global data = case action of
     (model global data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
 
   Choose winner (Result lobbyAndHand) ->
-    let
-      (data, effect, seed) = (updateLobby data lobbyAndHand.lobby global.seed)
-    in
-      (model { global | seed = seed }
-        { data | hand = lobbyAndHand.hand
+      (model global
+        { data | lobby = lobbyAndHand.lobby
+               , hand = lobbyAndHand.hand
                , picked = []
-               }, effect)
+               }, eventEffects data.lobby lobbyAndHand.lobby)
 
   NextRound ->
     (model global { data | lastFinishedRound = Nothing }, Effects.none)
@@ -89,6 +80,20 @@ update action global data = case action of
     in
       (model { global | seed = seed } { data | shownPlayed = shownPlayed }, Effects.none)
 
+  GameEvent event ->
+    case event of
+      RoundPlayed amount ->
+        let
+          (shownPlayed, effects, seed) = addShownPlayed amount data.shownPlayed global.seed
+        in
+          (model { global | seed = seed } { data | shownPlayed = shownPlayed }, effects)
+
+      RoundEnd call czar responses playedByAndWinner ->
+        (model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner) }, Effects.none)
+
+      _ ->
+        (model global data, Effects.none)
+
   other ->
     (model global data,
       DisplayError ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Playing).")
@@ -96,34 +101,19 @@ update action global data = case action of
       |> Effects.task)
 
 
-updateLobby : PlayingData -> Lobby -> Seed -> (PlayingData, Effects.Effects Action, Seed)
-updateLobby data lobby seed =
+addShownPlayed : Int -> List Attribute -> Seed -> (List Attribute, Effects.Effects Action, Seed)
+addShownPlayed amount existing seed =
   let
-    lastFinishedRound = if (Maybe.map .call data.lobby.round) == (Maybe.map .call lobby.round) then
-      data.lastFinishedRound
-    else
-      data.lobby.round
-    oldShownPlayed = data.shownPlayed
-    oldShownPlayedLength = (List.length oldShownPlayed)
-    (shownPlayed, effects, resultSeed) = case Maybe.map .responses data.lobby.round of
-      Just (Card.Hidden amount) ->
-        let
-          (newShownPlayed, newSeed) =
-            Random.generate (list (amount - oldShownPlayedLength) initialRandomPositioning) seed
-        in
-          (List.concat [ oldShownPlayed, newShownPlayed ]
-          ,(Task.sleep (Time.millisecond * 250)
-           `Task.andThen`
-           \_ -> (Task.succeed (AnimatePlayedCards (Util.range oldShownPlayedLength (List.length newShownPlayed)))))
-           |> Effects.task
-          ,newSeed)
-      _ -> ([], Effects.none, seed)
+    existingLength = List.length existing
+    (new, newSeed) = Random.generate (list (amount - existingLength) initialRandomPositioning) seed
   in
-    ({ data | lobby = lobby
-            , lastFinishedRound = lastFinishedRound
-            , shownPlayed = shownPlayed
-            }, effects, resultSeed)
-
+    ( List.concat [ existing, new ]
+    , (Task.sleep (Time.millisecond * 250)
+        `Task.andThen`
+        \_ -> (Task.succeed (AnimatePlayedCards (Util.range existingLength (List.length new)))))
+      |> Effects.task
+    , newSeed
+    )
 
 updatePositioning : List Int -> List Attribute -> Seed -> (List Attribute, Seed)
 updatePositioning toAnimate existing seed =

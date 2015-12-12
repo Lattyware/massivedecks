@@ -3,9 +3,9 @@ module MassiveDecks.Models.State where
 import Random
 import Html exposing (Attribute)
 
-import MassiveDecks.Models.Card exposing (Hand)
-import MassiveDecks.Models.Game exposing (Config, Lobby, Round)
-import MassiveDecks.Models.Player exposing (Player, Secret)
+import MassiveDecks.Models.Card exposing (Hand, Call, PlayedCards)
+import MassiveDecks.Models.Game exposing (Config, Lobby, Round, FinishedRound)
+import MassiveDecks.Models.Player exposing (Player, Secret, Id, PlayedByAndWinner)
 
 
 type alias Model =
@@ -47,7 +47,7 @@ type alias PlayingData =
   , secret : Secret
   , picked : List Int
   , considering : Maybe Int
-  , lastFinishedRound : Maybe Round
+  , lastFinishedRound : Maybe FinishedRound
   , shownPlayed : List Attribute
   }
 

@@ -109,7 +109,7 @@ emptyDeckListInfo display =
 
 startGameWarning : Bool -> Html
 startGameWarning canStart = if canStart then text "" else
-  span [] [ icon "info-circle", text "You will need at least two players to start the game." ]
+  span [] [ icon "info-circle", text " You will need at least two players to start the game." ]
 
 
 startGameButton : Signal.Address Action -> Bool -> Bool -> Html

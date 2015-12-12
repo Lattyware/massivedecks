@@ -7,7 +7,7 @@ import Html.Events exposing (..)
 import MassiveDecks.Models.State exposing (PlayingData, Error, Global)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player exposing (Player, Id, Status(..))
-import MassiveDecks.Models.Game exposing (Round)
+import MassiveDecks.Models.Game exposing (Round, FinishedRound)
 import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.UI.Lobby as LobbyUI
@@ -73,26 +73,15 @@ consideringView address considering consideringCards isCzar =
   let
     extra = if isCzar then [ chooseButton address considering ] else []
   in
-    ol [ class "considering" ] 
+    ol [ class "considering" ]
       (List.append (List.map (\card -> li [] [ (playedResponse card) ]) consideringCards) extra)
 
-winnerContentsAndHeader : Signal.Address Action -> Round -> List Player -> (List Html, List Html)
+winnerContentsAndHeader : Signal.Address Action -> FinishedRound -> List Player -> (List Html, List Html)
 winnerContentsAndHeader address round players =
   let
-    winning = case round.responses of
-      Revealed revealed ->
-          (Card.winningCards revealed.cards)
-          |> Maybe.andThen revealed.playedByAndWinner
-          |> Maybe.withDefault []
-      Hidden _ -> []
-    winner = case round.responses of
-      Revealed revealed ->
-          revealed.playedByAndWinner
-          |> Maybe.map .winner
-          |> Maybe.map (Util.get players)
-          |> Maybe.map .name
-          |> Maybe.withDefault ""
-      Hidden _ -> ""
+    cards = round.responses
+    winning = Card.winningCards cards round.playedByAndWinner |> Maybe.withDefault []
+    winner = (Util.get players round.playedByAndWinner.winner).name
   in
     ([ div [ class "winner mui-panel" ]
        [ h1 [] [ icon "trophy" ]

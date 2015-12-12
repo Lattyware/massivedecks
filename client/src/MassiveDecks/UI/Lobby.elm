@@ -49,10 +49,25 @@ score player = tr [ class (statusName player.status), title (statusDescription p
 appHeader : List Html -> Html
 appHeader contents = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
   [ div [ class "mui--appbar-line-height" ]
-    [ button [ class "scores-toggle mui-btn mui-btn--small mui-btn--primary mui--visible-xs-inline-block js-show-scores" ] [ icon "users" ]
-    , button [ class "scores-toggle mui-btn mui-btn--small mui-btn--primary mui--hidden-xs js-hide-scores" ] [ icon "users" ]
+    [ span [] (List.append [ scoresButton True, scoresButton False ] (scoresBadge 0))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
     , gameMenu ] ] ])
+
+
+scoresButton : Bool -> Html
+scoresButton shown =
+  let
+    showHideClasses = if shown then " mui--hidden-xs js-hide-scores" else " mui--visible-xs-inline-block js-show-scores"
+  in
+    button [ class ("scores-toggle mui-btn mui-btn--small mui-btn--primary badged" ++ showHideClasses)] [ icon "users" ]
+
+
+scoresBadge : Int -> List Html
+scoresBadge events =
+  if events > 0 then
+    [ div [ class "badge" ] [ icon "exclamation" ] ]
+  else
+    []
 
 
 statusDescription : Status -> String

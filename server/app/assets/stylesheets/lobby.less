@@ -233,6 +233,39 @@ ol.played {
   padding: 0px;
 }
 
+.badge {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  border-radius: 50% 50%;
+  font-size: 14px;
+  line-height: 14px;
+
+  position: relative;
+  z-index: 10;
+  left: -25px;
+  top: -10px;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: visible;
+  white-space: nowrap;
+
+  background: #E91E63;
+  color: #ffffff;
+
+  @media (min-width: @degrade-width) {
+    display: none !important;
+  }
+}
+
+body.hide-scores {
+  .badge {
+    display: inline-flex !important;
+  }
+}
+
 body {
   #scores {
     position: fixed;

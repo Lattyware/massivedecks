@@ -24,6 +24,14 @@ type alias Round =
   }
 
 
+type alias FinishedRound =
+  { call : Call
+  , czar : Id
+  , responses : (List PlayedCards)
+  , playedByAndWinner : PlayedByAndWinner
+  }
+
+
 type alias Lobby =
   { id : String
   , config : Config

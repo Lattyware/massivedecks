@@ -17,6 +17,7 @@ interleave list1 list2 =
         y :: ys ->
           y :: x :: interleave xs ys
 
+
 remove : List a -> Int -> List a
 remove list index =
   (List.take index list) ++ (List.drop (index + 1) list)
@@ -49,3 +50,7 @@ inOrder : List (Generator a) -> Generator (List a)
 inOrder generators = case generators of
   [] -> Random.map (\_ -> []) Random.bool
   head :: tail -> head `Random.andThen` (\value -> Random.map ((::) value) (inOrder tail))
+
+
+apply : List (a -> b) -> a -> List b
+apply fs value = List.map (\f -> f value) fs
