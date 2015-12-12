@@ -3,6 +3,12 @@
 .card {
   width: @card-width;
   height: @card-height;
+
+  @media (min-width: @enhance-width) {
+    width: @card-width-enhanced;
+    height: @card-width-enhanced;
+  }
+
   margin: 10px;
   padding: 15px;
   font-weight: bold;
@@ -46,20 +52,34 @@
 .call {
   background-color: #000000;
   color: #ffffff;
+  flex-shrink: 0;
 
-  & > div::first-letter {
-    text-transform: uppercase;
+  & > .call-text {
+    & > .slot {
+      text-decoration: underline;
+
+      &:empty {
+        display: inline-block;
+        height: 1.2em;
+        border-bottom: 1px solid #ffffff;
+        min-width: 40px;
+        max-width: 80px;
+      }
+    }
   }
 }
 
-.slot {
-  text-decoration: underline;
+.response {
+  background-color: #ffffff;
+  color: #000000;
 
-  &:empty {
-    display: inline-block;
-    border-bottom: 1px solid #ffffff;
-    width: 60px;
+  &.picked {
+    opacity: 0.5;
   }
+}
+
+.empty-spot {
+  opacity: 0.25;
 }
 
 .winner {
@@ -118,9 +138,9 @@ ol.picked {
     }
 
     &:not(:first-child) {
-      margin-left: -(@card-width - 30);
-      @media (min-width: @degrade-width) {
-        margin-left: 0px;
+      margin-left: -(@card-width * 0.85);
+      @media (min-width: @enhance-width) {
+        margin-left: -(@card-width-enhanced * 0.85);
       }
     }
   }
@@ -146,9 +166,9 @@ ol.considering {
     }
 
     &:not(:first-child) {
-      margin-left: -(@card-width - 30);
-      @media (min-width: @degrade-width) {
-        margin-left: 0px;
+      margin-left: -(@card-width * 0.85);
+      @media (min-width: @enhance-width) {
+        margin-left: -(@card-width-enhanced * 0.85);
       }
     }
   }
@@ -208,23 +228,6 @@ ol.played {
   }
 }
 
-.response {
-  background-color: #ffffff;
-  color: #000000;
-
-  &.picked {
-    opacity: 0.5;
-  }
-
-  &-text::first-letter {
-    text-transform: uppercase;
-  }
-
-  &-text::after {
-    content: ".";
-  }
-}
-
 .scores-toggle {
   flex: none;
   width: 50px;
@@ -255,7 +258,7 @@ ol.played {
   background: #E91E63;
   color: #ffffff;
 
-  @media (min-width: @degrade-width) {
+  @media (min-width: @enhance-width) {
     display: none !important;
   }
 }
@@ -277,7 +280,7 @@ body {
     z-index: 2;
     background-color: #fff;
     transition: transform 0.2s;
-    @media (min-width: @degrade-width) {
+    @media (min-width: @enhance-width) {
       transform: translate(@sidebar-width);
     }
 

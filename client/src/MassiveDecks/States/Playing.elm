@@ -89,7 +89,10 @@ update action global data = case action of
           (model { global | seed = seed } { data | shownPlayed = shownPlayed }, effects)
 
       RoundEnd call czar responses playedByAndWinner ->
-        (model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner) }, Effects.none)
+        (model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner)
+                             , shownPlayed = []
+                             }
+          , Effects.none)
 
       _ ->
         (model global data, Effects.none)
@@ -125,7 +128,7 @@ updatePositioning toAnimate existing seed =
 
 
 randomPositioning : Generator Attribute
-randomPositioning = Random.map4 positioning (int -75 75) (int 0 50) bool (int -5 5)
+randomPositioning = Random.map4 positioning (int -75 75) (int 0 50) bool (int -5 1)
 
 
 initialRandomPositioning : Generator Attribute

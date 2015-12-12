@@ -105,8 +105,18 @@ playArea contents = div [ class "play-area" ] contents
 
 
 call : List String -> List Response -> Html
-call contents picked = div [ class "card call mui-panel" ]
-                    [ div [ class "call-text "] (Util.interleave (slots (Card.slots contents) "" picked) (List.map text contents)) ]
+call contents picked =
+  let
+    responseFirst = contents |> List.head |> Maybe.map ((==) "") |> Maybe.withDefault False
+    (contents, picked) = if responseFirst then
+        (contents, Util.mapFirst Util.firstLetterToUpper picked)
+      else
+        (Util.mapFirst Util.firstLetterToUpper contents, picked)
+    spanned = List.map (\part -> span [] [ text part ]) contents
+    withSlots = Util.interleave (slots (Card.slots contents) "" picked) spanned
+    callContents = if responseFirst then List.tail withSlots |> Maybe.withDefault withSlots else withSlots
+  in
+    div [ class "card call mui-panel" ] [ div [ class "call-text" ] callContents ]
 
 
 slot : String -> Html
@@ -129,7 +139,8 @@ response address picked disabled responseId contents =
     classes = [ class ("card response mui-panel" ++ pickedClass) ]
     clickHandler = if isPicked || disabled then [] else [ onClick address (Pick responseId) ]
   in
-    div (List.concat [ classes, clickHandler ]) [ div [ class "response-text" ] [ text contents ] ]
+    div (List.concat [ classes, clickHandler ])
+      [ div [ class "response-text" ] [ text (Util.firstLetterToUpper contents), text "." ] ]
 
 
 blankResponse : Attribute -> Html
@@ -145,20 +156,25 @@ handRender disabled contents =
 
 
 handView : Signal.Address Action -> List Int -> Bool -> List Response -> Html
-handView address picked disabled responses = handRender disabled (List.indexedMap (response address picked disabled) responses)
+handView address picked disabled responses =
+  handRender disabled (List.indexedMap (response address picked disabled) responses)
 
 
 pickedResponse : Signal.Address Action -> (Int, String) -> Html
 pickedResponse address (index, contents) =
-  li [ onClick address (Withdraw index) ] [ div [ class "card response mui-panel" ] [ div [ class "response-text" ] [ text contents ] ] ]
+  li [ onClick address (Withdraw index) ]
+     [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
+                                                     [ text (Util.firstLetterToUpper contents), text "." ] ] ]
 
 
 pickedView : Signal.Address Action -> List (Int, Response) -> Int -> List Attribute -> List Html
 pickedView address picked slots shownPlayed =
   let
-    pb = if (List.length picked < slots) then [] else [ playButton address ]
+    numberPicked = List.length picked
+    pb = if (numberPicked < slots) then [] else [ playButton address ]
+    pickedResponses = List.map (pickedResponse address) picked
   in
-    [ ol [ class "picked" ] (List.concat [ (List.map (pickedResponse address) picked), pb ])
+    [ ol [ class "picked" ] (List.concat [ pickedResponses, pb ])
     , div [ class "others-picked" ] (List.map blankResponse shownPlayed)
     ]
 
@@ -171,7 +187,8 @@ playButton address = li [ class "play-button" ] [ button
 
 playedView : Signal.Address Action -> Bool -> Card.RevealedResponses -> Html
 playedView address isCzar responses =
-  ol [ class "played mui--divider-top" ] (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) responses.cards)
+  ol [ class "played mui--divider-top" ]
+     (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) responses.cards)
 
 
 playedCards : Signal.Address Action -> Bool -> Int -> PlayedCards -> Html
@@ -183,7 +200,9 @@ playedCards address isCzar playedId cards =
 
 playedResponse : Response -> Html
 playedResponse contents =
-  div [ class "card response mui-panel" ] [ div [ class "response-text" ] [ text contents ] ]
+  div [ class "card response mui-panel" ]
+    [ div [ class "response-text" ]
+          [ text (Util.firstLetterToUpper contents), text "." ] ]
 
 
 chooseButton : Signal.Address Action -> Int -> Html

@@ -1,6 +1,7 @@
 module MassiveDecks.Util where
 
 import Random exposing (Generator)
+import String
 
 
 interleave : List a -> List a -> List a
@@ -54,3 +55,11 @@ inOrder generators = case generators of
 
 apply : List (a -> b) -> a -> List b
 apply fs value = List.map (\f -> f value) fs
+
+
+firstLetterToUpper : String -> String
+firstLetterToUpper str = (String.toUpper (String.left 1 str)) ++ (String.dropLeft 1 str)
+
+
+mapFirst : (a -> a) -> List a -> List a
+mapFirst f xs = List.indexedMap (\index x -> if index == 0 then f x else x) xs

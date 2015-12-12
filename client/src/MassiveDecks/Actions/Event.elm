@@ -16,6 +16,7 @@ type Event
   | RoundEnd Call Id (List PlayedCards) PlayedByAndWinner
 
 
+{-| Generate events from a given change in lobby. -}
 events : Lobby -> Lobby -> List Event
 events oldLobby newLobby = List.concat
   [ diffPlayers oldLobby.players newLobby.players
