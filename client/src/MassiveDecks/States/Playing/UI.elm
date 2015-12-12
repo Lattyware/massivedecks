@@ -68,6 +68,7 @@ roundContents address data round =
       ]
     ]
 
+
 consideringView : Signal.Address Action -> Int -> List Response -> Bool -> Html
 consideringView address considering consideringCards isCzar =
   let
@@ -75,6 +76,7 @@ consideringView address considering consideringCards isCzar =
   in
     ol [ class "considering" ]
       (List.append (List.map (\card -> li [] [ (playedResponse card) ]) consideringCards) extra)
+
 
 winnerContentsAndHeader : Signal.Address Action -> FinishedRound -> List Player -> (List Html, List Html)
 winnerContentsAndHeader address round players =

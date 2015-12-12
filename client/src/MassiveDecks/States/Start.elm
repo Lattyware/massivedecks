@@ -7,7 +7,7 @@ import Html exposing (Html)
 
 import MassiveDecks.API as API
 import MassiveDecks.Models.State exposing (Model, State(..))
-import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
+import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), catchUpEffects)
 import MassiveDecks.Models.State exposing (State(..), StartData, PlayingData, Error, Global)
 import MassiveDecks.States.Start.UI as UI
 import MassiveDecks.States.Config as Config
@@ -47,7 +47,8 @@ update action global data = case action of
     case lobbyAndHand.lobby.round of
       Just _ ->
         (Playing.modelSub global lobbyId secret
-          (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing Nothing []), Effects.none)
+          (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing Nothing []),
+            catchUpEffects lobbyAndHand.lobby)
 
       Nothing ->
         (Config.modelSub global lobbyId secret

@@ -23,6 +23,18 @@ events oldLobby newLobby = List.concat
   ]
 
 
+{-| Generate events when joining an in-progress lobby to catch up. -}
+catchUpEvents : Lobby -> List Event
+catchUpEvents lobby =
+  case lobby.round of
+    Just round ->
+      case round.responses of
+        Hidden count -> [ roundPlayed count ]
+        Revealed _ -> []
+    Nothing ->
+      []
+
+
 diffPlayers : List Player -> List Player -> List Event
 diffPlayers oldPlayers newPlayers =
   List.concatMap (diffPlayer oldPlayers) newPlayers
@@ -53,6 +65,9 @@ diffRound oldRound newRound =
       List.filterMap identity
         [ Maybe.map roundEnd oldRound
         , Maybe.map roundStart newRound
+        , newRound `Maybe.andThen` (\newRound -> case newRound.responses of
+            Hidden count -> Just (roundPlayed count)
+            Revealed _ -> Nothing)
         ]
     else
       Maybe.map2 changedRound oldRound newRound |> Maybe.withDefault []

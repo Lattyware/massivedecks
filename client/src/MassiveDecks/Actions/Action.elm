@@ -6,7 +6,7 @@ import Effects
 import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Player as Player
-import MassiveDecks.Actions.Event exposing (Event, events)
+import MassiveDecks.Actions.Event exposing (Event, events, catchUpEvents)
 
 
 type APICall a
@@ -37,8 +37,18 @@ type Action
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action
-eventEffects oldLobby newLobby
-  = events oldLobby newLobby
+eventEffects oldLobby newLobby =
+  events oldLobby newLobby |> eventsToEffects
+
+
+catchUpEffects : Lobby -> Effects.Effects Action
+catchUpEffects lobby =
+  catchUpEvents lobby |> eventsToEffects
+
+
+eventsToEffects : List Event -> Effects.Effects Action
+eventsToEffects events
+  = events
   |> List.map GameEvent
   |> List.map Task.succeed
   |> List.map Effects.task
