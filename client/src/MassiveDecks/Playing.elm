@@ -65,6 +65,9 @@ update action global data = case action of
           (model { global | seed = seed } data, effect)
       Nothing -> (configModel global (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
 
+  Consider potentialWinner ->
+    (model global { data | considering = Just potentialWinner } , Effects.none)
+
   Choose winner Request ->
     (model global data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
 
@@ -84,7 +87,7 @@ update action global data = case action of
     let
       (shownPlayed, seed) = updatePositioning toAnimate data.shownPlayed global.seed
     in
-      (model { global | seed = seed } { data | shownPlayed = (Debug.log "shownPlayed" shownPlayed) }, Effects.none)
+      (model { global | seed = seed } { data | shownPlayed = shownPlayed }, Effects.none)
 
   other ->
     (model global data,
@@ -126,7 +129,7 @@ updatePositioning : List Int -> List Attribute -> Seed -> (List Attribute, Seed)
 updatePositioning toAnimate existing seed =
   let
     generator = (\index val -> if (List.member index toAnimate) then randomPositioning else Random.map (\_ -> val) bool)
-    generators = List.indexedMap generator (Debug.log "existing" existing)
+    generators = List.indexedMap generator existing
   in
     Random.generate (Util.inOrder generators) seed
 

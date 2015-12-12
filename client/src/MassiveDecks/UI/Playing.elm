@@ -43,12 +43,38 @@ roundContents address data round =
     isCzar = round.czar == id
     hasPlayed = List.filter (\player -> player.id == id) data.lobby.players
       |> List.any (\player -> player.status == Played)
-    pickedOrPlayed = case round.responses of
-      Revealed responses -> [ playedView address isCzar responses ]
+    callFill = case round.responses of
+      Revealed responses ->
+        Maybe.withDefault [] (Maybe.map (Util.get responses.cards) data.considering)
+      Hidden _ ->
+        picked
+    pickedOrChosen = case round.responses of
+      Revealed responses ->
+        case data.considering of
+          Just considering ->
+            let
+              consideringCards = Util.get responses.cards considering
+            in
+              [ consideringView address considering consideringCards isCzar ]
+          Nothing -> []
       Hidden _ -> pickedView address pickedWithIndex (Card.slots round.call) data.shownPlayed
+    playedOrHand = case round.responses of
+      Revealed responses -> playedView address isCzar responses
+      Hidden _ -> handView address data.picked (isCzar || hasPlayed) hand
   in
-    [ playArea (List.concat [ [ call round.call picked ], pickedOrPlayed, [ handView address data.picked (isCzar || hasPlayed) hand ] ]) ]
+    [ playArea
+      [ div [ class "round-area" ] (List.concat [ [ call round.call callFill ], pickedOrChosen ])
+      , playedOrHand
+      ]
+    ]
 
+consideringView : Signal.Address Action -> Int -> List Response -> Bool -> Html
+consideringView address considering consideringCards isCzar =
+  let
+    extra = if isCzar then [ chooseButton address considering ] else []
+  in
+    ol [ class "considering" ] 
+      (List.append (List.map (\card -> li [] [ (playedResponse card) ]) consideringCards) extra)
 
 winnerContentsAndHeader : Signal.Address Action -> Round -> List Player -> (List Html, List Html)
 winnerContentsAndHeader address round players =
@@ -154,15 +180,14 @@ playButton address = li [ class "play-button" ] [ button
 
 playedView : Signal.Address Action -> Bool -> Card.RevealedResponses -> Html
 playedView address isCzar responses =
-  ol [ class "played" ] (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) responses.cards)
+  ol [ class "played mui--divider-top" ] (List.indexedMap (\index pc -> li [] [ (playedCards address isCzar index pc) ]) responses.cards)
 
 
 playedCards : Signal.Address Action -> Bool -> Int -> PlayedCards -> Html
 playedCards address isCzar playedId cards =
-  let
-    extra = if isCzar then [ chooseButton address playedId ] else []
-  in
-    ol [] (List.concat [ (List.map (\card -> li [] [ (playedResponse card) ]) cards), extra ])
+    ol
+    [ onClick address (Consider playedId) ]
+    (List.map (\card -> li [] [ (playedResponse card) ]) cards)
 
 
 playedResponse : Response -> Html

@@ -46,6 +46,7 @@ type alias PlayingData =
   , hand : Hand
   , secret : Secret
   , picked : List Int
+  , considering : Maybe Int
   , lastFinishedRound : Maybe Round
   , shownPlayed : List Attribute
   }

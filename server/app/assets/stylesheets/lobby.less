@@ -21,15 +21,24 @@
 
 .play-area {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
   position: relative;
 
-  .others-picked {
-    .card {
-      position: absolute;
-      z-index: -10;
-      transition: transform 3s, left 3s, right 3s, top 3s ease-out
+  .round-area {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    .others-picked {
+      .card {
+        position: absolute;
+        z-index: -10;
+        transition: transform 1s, left 1s, right 1s, top 1s ease-out
+      }
     }
   }
 }
@@ -93,23 +102,23 @@ ol.picked {
   margin: 0px;
   padding: 0px;
   list-style-type: none;
+  white-space: nowrap;
 
   & > li {
     display: inline-block;
     position: relative;
+    white-space: normal;
+
+    .card {
+      margin: 10px 5px 10px 5px;
+    }
 
     & > .response {
-      width: @card-width - 30px;
       display: inline-block;
-
-      @media (min-width: @degrade-width) {
-        width: @card-width;
-      }
     }
 
     &:not(:first-child) {
-      margin-left: -@card-width + 30px;
-
+      margin-left: -(@card-width - 30);
       @media (min-width: @degrade-width) {
         margin-left: 0px;
       }
@@ -117,53 +126,72 @@ ol.picked {
   }
 }
 
-.play-area > ol.picked > li.play-button {
-  margin-left: -50px;
-  z-index: 1;
+.play-area > .round-area > ol.picked > li.play-button {
+  margin-left: -45px;
+}
+
+ol.considering {
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  & > li {
+    display: inline-block;
+    white-space: normal;
+
+    .card {
+      margin: 10px 5px 10px 5px;
+    }
+
+    &:not(:first-child) {
+      margin-left: -(@card-width - 30);
+      @media (min-width: @degrade-width) {
+        margin-left: 0px;
+      }
+    }
+  }
+}
+
+.play-area > .round-area > ol.considering > li.choose-button {
+  margin-left: -45px;
 }
 
 ol.played {
   margin: 0px;
   padding: 0px;
   list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 
   & > li {
     display: inline-block;
 
     & > ol {
-      margin: 0px;
+      margin: 0px 10px 0px 10px;
       padding: 0px;
       list-style-type: none;
       display: inline-block;
       position: relative;
+      white-space: nowrap;
 
       & > li {
+        white-space: normal;
         display: inline-block;
 
-        &:not(:first-child) {
-          margin-left: -@card-width + 30px;
-
-          @media (min-width: @degrade-width) {
-            margin-left: 0px;
-          }
+        .card {
+          margin: 10px 5px 10px 5px;
         }
       }
 
       & > li > .response {
-        width: @card-width - 30px;
         display: inline-block;
-
-        @media (min-width: @degrade-width) {
-          width: @card-width;
-        }
       }
     }
   }
-}
-
-.play-area > ol.played > li > ol > li.choose-button {
-  margin-left: -50px;
-  z-index: 1;
 }
 
 .hand {
@@ -172,6 +200,8 @@ ol.played {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+  width: 100%;
 
   &.disabled {
     opacity: 0.5;

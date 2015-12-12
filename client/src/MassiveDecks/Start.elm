@@ -45,8 +45,13 @@ update action global data = case action of
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (Playing.modelSub global lobbyId secret (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing []), Effects.none)
-      Nothing -> (Config.modelSub global lobbyId secret (Config.initialData lobbyAndHand.lobby secret), Effects.none)
+      Just _ ->
+        (Playing.modelSub global lobbyId secret
+          (PlayingData lobbyAndHand.lobby lobbyAndHand.hand secret [] Nothing Nothing []), Effects.none)
+
+      Nothing ->
+        (Config.modelSub global lobbyId secret
+          (Config.initialData lobbyAndHand.lobby secret), Effects.none)
 
   other ->
     (model global data,

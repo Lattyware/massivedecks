@@ -23,6 +23,7 @@ type Action
   | Play (APICall LobbyAndHand)
   | Withdraw Int
   | Notification Lobby
+  | Consider Int
   | Choose Int (APICall LobbyAndHand)
   | RemoveErrorPanel Int
   | NextRound
