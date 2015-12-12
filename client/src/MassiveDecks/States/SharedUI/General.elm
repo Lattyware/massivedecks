@@ -1,4 +1,4 @@
-module MassiveDecks.UI.General where
+module MassiveDecks.States.SharedUI.General where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

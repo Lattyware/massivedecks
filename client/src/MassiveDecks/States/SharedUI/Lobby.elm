@@ -1,10 +1,10 @@
-module MassiveDecks.UI.Lobby where
+module MassiveDecks.States.SharedUI.Lobby where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import MassiveDecks.Models.Player exposing (Player, Status(..), statusName)
-import MassiveDecks.UI.General exposing (..)
+import MassiveDecks.States.SharedUI.General exposing (..)
 
 view : String -> String -> List Html -> List Player -> List Html -> Html
 view url lobbyId header players contents =

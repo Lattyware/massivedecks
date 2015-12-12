@@ -9,12 +9,12 @@ import Random
 
 import MassiveDecks.Models.State exposing (Model, State(..), LobbyIdAndSecret, Error, Global, InitialState)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
-import MassiveDecks.Start as Start
-import MassiveDecks.Config as Config
-import MassiveDecks.Playing as Playing
 import MassiveDecks.Models.Json.Decode exposing (lobbyDecoder)
 import MassiveDecks.Util exposing (remove)
-import MassiveDecks.UI.General as UI
+import MassiveDecks.States.Start as Start
+import MassiveDecks.States.Config as Config
+import MassiveDecks.States.Playing as Playing
+import MassiveDecks.States.SharedUI.General as UI
 
 
 type SetupModel

@@ -1,4 +1,4 @@
-module MassiveDecks.Playing where
+module MassiveDecks.States.Playing where
 
 import Time
 import Task
@@ -13,7 +13,7 @@ import MassiveDecks.Models.Game exposing (Lobby, FinishedRound)
 import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData, Error, Global)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
-import MassiveDecks.UI.Playing as UI
+import MassiveDecks.States.Playing.UI as UI
 import MassiveDecks.API as API
 import MassiveDecks.Util as Util
 

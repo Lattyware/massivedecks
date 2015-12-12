@@ -1,4 +1,4 @@
-module MassiveDecks.UI.Start where
+module MassiveDecks.States.Start.UI where
 
 import String
 
@@ -8,7 +8,7 @@ import Html.Events exposing (..)
 
 import MassiveDecks.Models.State exposing (StartData, Global, Error)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
-import MassiveDecks.UI.General exposing (..)
+import MassiveDecks.States.SharedUI.General exposing (..)
 
 
 view : Signal.Address Action -> Global -> StartData -> Html

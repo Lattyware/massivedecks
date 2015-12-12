@@ -1,4 +1,4 @@
-module MassiveDecks.UI.Config where
+module MassiveDecks.States.Config.UI where
 
 import String
 
@@ -9,8 +9,8 @@ import Html.Events exposing (..)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Models.Game exposing (DeckInfo)
 import MassiveDecks.Models.State exposing (ConfigData, Error, Global)
-import MassiveDecks.UI.Lobby as LobbyUI
-import MassiveDecks.UI.General exposing (..)
+import MassiveDecks.States.SharedUI.Lobby as LobbyUI
+import MassiveDecks.States.SharedUI.General exposing (..)
 
 
 view : Signal.Address Action -> ConfigData -> Global -> Html

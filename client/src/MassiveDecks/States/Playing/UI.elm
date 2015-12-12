@@ -1,4 +1,4 @@
-module MassiveDecks.UI.Playing where
+module MassiveDecks.States.Playing.UI where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,8 +10,8 @@ import MassiveDecks.Models.Player exposing (Player, Id, Status(..))
 import MassiveDecks.Models.Game exposing (Round, FinishedRound)
 import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
-import MassiveDecks.UI.Lobby as LobbyUI
-import MassiveDecks.UI.General exposing (..)
+import MassiveDecks.States.SharedUI.Lobby as LobbyUI
+import MassiveDecks.States.SharedUI.General exposing (..)
 import MassiveDecks.Util as Util
 
 

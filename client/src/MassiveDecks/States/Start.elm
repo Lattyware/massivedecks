@@ -1,17 +1,17 @@
-module MassiveDecks.Start where
+module MassiveDecks.States.Start where
 
 import Task
 import Maybe
 import Effects
 import Html exposing (Html)
 
+import MassiveDecks.API as API
 import MassiveDecks.Models.State exposing (Model, State(..))
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Models.State exposing (State(..), StartData, PlayingData, Error, Global)
-import MassiveDecks.UI.Start as UI
-import MassiveDecks.Config as Config
-import MassiveDecks.API as API
-import MassiveDecks.Playing as Playing
+import MassiveDecks.States.Start.UI as UI
+import MassiveDecks.States.Config as Config
+import MassiveDecks.States.Playing as Playing
 
 
 update : Action -> Global -> StartData -> (Model, Effects.Effects Action)

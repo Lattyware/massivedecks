@@ -1,16 +1,16 @@
-module MassiveDecks.Config where
+module MassiveDecks.States.Config where
 
 import Task
 import Effects
 import Html exposing (Html)
 
+import MassiveDecks.States.Config.UI as UI
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Game exposing (Lobby)
 import MassiveDecks.Models.State exposing (Model, State(..), ConfigData, PlayingData, Error, Global)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
-import MassiveDecks.UI.Config as UI
 import MassiveDecks.API as API
-import MassiveDecks.Playing as Playing
+import MassiveDecks.States.Playing as Playing
 
 
 update : Action -> Global -> ConfigData -> (Model, Effects.Effects Action)
@@ -64,7 +64,7 @@ update action global data = case action of
 
   GameEvent _ ->
     (model global data, Effects.none)
-    
+
   other ->
     (model global data,
       DisplayError ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Config).")
