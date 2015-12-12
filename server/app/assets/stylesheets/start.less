@@ -1,11 +1,12 @@
 @import "variables.less";
+@start-width: 300px;
 
 #start-screen {
   width: 100%;
 }
 
 #start-screen-content {
-  max-width: 300px;
+  max-width: @start-width;
   margin: 15px auto;
 
   h1 {
@@ -13,6 +14,8 @@
     margin: 0px;
     text-align: center;
     font-weight: bold;
+    padding: 0px 0px 10px 0px;
+    margin: 0px 0px 20px 0px;
   }
 
   button {
@@ -21,15 +24,83 @@
   }
 
   .mui-textfield {
-    width: 100%;
+    width: 90%;
     margin: 10px auto 0px auto;
   }
 
   & > .mui-divider {
     width: 200px;
   }
+
+  .about-link {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin: 20px 0px 0px 0px;
+    padding: 10px 0px 0px 0px;
+  }
 }
 
 .nickname-entry {
   margin-bottom: 0px;
+}
+
+#forkongithub {
+  a {
+    width: 100%;
+    display: block;
+    background: #aaa;
+    color: #000;
+    text-decoration: none;
+    font-family: arial,sans-serif;
+    text-align: center;
+    font-weight: bold;
+    padding: 0px 40px;
+    font-size: 1em;
+    line-height: 2em;
+    position: relative;
+    transition: 0.5s;
+    margin-top: 10px;
+
+    @media screen and (min-width: (@start-width + 200)) {
+      width: 250px;
+      position: absolute;
+      top: 40px;
+      right: -60px;
+      transform: rotate(45deg);
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
+    }
+
+    &:hover {
+      background: #000;
+      color: #aaa;
+    }
+
+    &::before, &::after {
+      content: "";
+      width: 100%;
+      display: block;
+      position: absolute;
+      top:1px;
+      left:0;
+      height:1px;
+      background:#fff;
+    }
+
+    &::after {
+      bottom: 1px;
+      top: auto;
+    }
+  }
+
+  @media screen and (min-width: (@start-width + 200)) {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    width: 200px;
+    overflow: hidden;
+    height: 200px;
+    z-index: 9999;
+  }
 }

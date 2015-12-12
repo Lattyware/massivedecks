@@ -23,9 +23,9 @@ view address global data =
       Just val -> (inactive, active)
       Nothing -> (active, inactive)
   in
-    div [ id "start-screen" ] (List.concat [
+    div [ id "start-screen" ]
       [ div [ id "start-screen-content", class "mui-panel" ]
-        [ h1 [] [ text "Massive Decks" ]
+        [ h1 [ class "mui--divider-bottom" ] [ text "Massive Decks" ]
         , nameEntry address
         , ul [ class "mui-tabs__bar mui-tabs__bar--justified" ]
           [ li createLiClass
@@ -37,8 +37,14 @@ view address global data =
           [ lobbyIdEntry address data.lobbyId
           , joinGame address (nameEntered && lobbyIdEntered)
           ]
+        , a [ class "about-link mui--divider-top", href "#", attribute "onClick" "aboutOverlay(event)" ]
+            [ icon "question-circle" , text " About" ]
+        , errorMessages address errors
+        , aboutOverlay
+        , span [ id "forkongithub" ] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
+                                         [ icon "github", text " Fork me on GitHub" ] ]
         ]
-      ], [errorMessages address errors] ])
+      ]
 
 
 isNothing : Maybe a -> Bool

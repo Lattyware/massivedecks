@@ -19,10 +19,12 @@ jQuery(function($) {
   $('body').on('click', '.js-hide-scores', hideScores);
 });
 
-function inviteOverlay() {
+function inviteOverlay(event) {
   mui.overlay('on', $('#invite')[0].cloneNode(true));
+  event.preventDefault();
 }
 
-function aboutOverlay() {
+function aboutOverlay(event) {
   mui.overlay('on', $('#about')[0].cloneNode(true));
+  event.preventDefault();
 }
