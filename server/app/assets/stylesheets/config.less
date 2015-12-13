@@ -4,6 +4,10 @@
   font-family: monospace;
 }
 
+h2 {
+  margin: 0px;
+}
+
 #config {
   width: 100%;
 }
@@ -32,7 +36,14 @@
     display: flex;
 
     & > div {
+      margin: 0px;
       flex-grow: 1;
+    }
+  }
+
+  #rando {
+    button {
+      float: right;
     }
   }
 
@@ -41,5 +52,9 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    & > span {
+      margin-top: 10px;
+    }
   }
 }

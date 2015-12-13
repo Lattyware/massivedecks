@@ -77,6 +77,7 @@ statusDescription status = case status of
   Czar -> "Round Czar"
   Disconnected -> "Disconnected"
   Left -> "Left Game"
+  Ai -> "A Computer"
   Neutral -> ""
 
 
@@ -87,4 +88,5 @@ statusIcon status =  (case status of
   Czar -> icon "gavel"
   Disconnected -> icon "minus-circle"
   Left -> icon "sign-out"
+  Ai -> icon "cogs"
   Neutral -> text "")

@@ -26,9 +26,24 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private var notifications: List[ActorRef] = List()
   private var czarIndex: Int = 0
   private var history: List[Round] = List()
+  private var ais: Set[Secret] = Set()
 
   def config = Config(decks.map(deck => deck.info).toList)
   def lobby = Lobby(id, config, players, game.map(game => game.round))
+
+  def newAi(): Unit = {
+    val baseName = "Rando Cardrissian"
+    var i = 1
+    var name = baseName
+    while (players.exists(player => player.name == name)) {
+      i += 1
+      name = baseName + " " + i.toString
+    }
+    val secret = newPlayer(name)
+    setPlayerStatus(secret.id, Ai, force=true)
+    ais += secret
+    sendNotifications()
+  }
 
   def newPlayer(name: String): Secret = {
     require(players.forall(player => player.name != name), "The name is already in use.")
@@ -75,9 +90,14 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private val statusNotInRound: Set[Status] = Set(Left, Czar)
 
   def beginRound() = {
-    val czar = game.get.round.czar
+    val round = game.get.round
+    val czar = round.czar
     setPlayerStatus(czar, Czar)
     playedInRound = (for (player <- players if !statusNotInRound.contains(player.status)) yield player.id -> None).toMap
+    val firstSlots = (0 until round.call.slots).toList
+    for (ai <- ais) {
+      play(ai, firstSlots)
+    }
   }
 
   def lobbyAndHand(secret: Secret): LobbyAndHand = {
@@ -177,7 +197,11 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     }
     val playerId = players(czarIndex).id
     czarIndex += 1
-    playerId
+    if (ais.exists(ai => ai.id == playerId)) {
+      nextCzar()
+    } else {
+      playerId
+    }
   }
 
   private def playerStatusIfConnected(id: Id): Status = {
@@ -222,7 +246,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     beginRound()
   }
 
-  private val stickyStatus: Set[Status] = Set(Disconnected, Left)
+  private val stickyStatus: Set[Status] = Set(Disconnected, Left, Ai)
 
   private def setPlayerStatus(id: Id, status: Status, force: Boolean = false): Unit =
     players = players.map(player => if (player.id == id) {

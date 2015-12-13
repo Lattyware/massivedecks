@@ -24,6 +24,7 @@ type Status
   | Czar
   | Disconnected
   | Left
+  | Ai
   | Neutral
 
 
@@ -41,6 +42,7 @@ statusName status = case status of
   Disconnected -> "disconnected"
   Left -> "left"
   Neutral -> "neutral"
+  Ai -> "ai"
 
 
 nameToStatus : String -> Maybe Status
@@ -51,4 +53,5 @@ nameToStatus name = case name of
   "disconnected" -> Just Disconnected
   "left" -> Just Left
   "neutral" -> Just Neutral
+  "ai" -> Just Ai
   _ -> Nothing

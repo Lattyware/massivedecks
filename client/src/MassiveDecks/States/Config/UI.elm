@@ -28,7 +28,17 @@ view address data global =
           [ invite global.initialState.url lobby.id
           , divider
           , h1 [] [ text "Game Setup" ]
-          , deckList address decks data.loadingDecks data.deckId
+          , ul [ class "mui-tabs__bar" ]
+               [ li [ class "mui--is-active" ] [ a [ attribute "data-mui-toggle" "tab"
+                                                   , attribute "data-mui-controls" "decks" ] [ text "Decks" ]
+                                                   ]
+               , li [] [ a [ attribute "data-mui-toggle" "tab"
+                           , attribute "data-mui-controls" "house-rules" ] [ text "House Rules" ] ]
+               ]
+          , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
+                [ deckList address decks data.loadingDecks data.deckId ]
+          , div [ id "house-rules", class "mui-tabs__pane" ] [ rando address ]
+          , divider
           , startGameButton address enoughPlayers enoughCards
           ]
         ]
@@ -58,7 +68,11 @@ deckIdInput address deckIdValue = div [ id "deck-id-input" ]
           13 -> AddDeck {- Return key. -}
           _ -> NoAction)
       ] []
-    , label [] [ icon "info-circle", text " A ", a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ], text " Deck Id" ]
+    , label [] [ icon "info-circle"
+               , text " A "
+               , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ]
+               , text " Deck Id"
+               ]
     ]
   , addDeckButton address (not (String.isEmpty deckIdValue))
   ]
@@ -114,6 +128,16 @@ emptyDeckListInfo address display =
     ]
   else
     []
+
+
+rando : Signal.Address Action -> Html
+rando address = div [ id "rando" ]
+  [ h4 [] [ icon "random", text " Rando Cardrissian " ]
+  , button [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab", onClick address AddAi ]
+           [ icon "check" ]
+  , p [] [ text "Every round, one random card will be played for an imaginary player named Rando Cardrissian, if he "
+         , text "wins, all players go home in a state of everlasting shame." ]
+  ]
 
 
 startGameWarning : Bool -> Html

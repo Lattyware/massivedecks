@@ -1,6 +1,7 @@
 module MassiveDecks.API where
 
 import Json.Encode exposing (..)
+import Json.Decode
 
 import Task
 import Effects
@@ -28,6 +29,15 @@ newPlayer lobbyId name = send defaultSettings
 
 addDeck : String -> Secret -> String -> Task.Task Http.Error LobbyAndHand
 addDeck lobbyId secret deckId = lobbyAction lobbyId (commandEncoder "addDeck" secret [ ("deckId", string deckId) ])
+
+
+newAi : String -> Task.Task Http.Error ()
+newAi lobbyId = send defaultSettings
+  { verb = "POST"
+  , headers = []
+  , url = url ("/lobbies/" ++ lobbyId ++ "/players/newAi") []
+  , body = empty
+  } |> fromJson (Json.Decode.succeed ())
 
 
 newGame : String -> Secret -> Task.Task Http.Error LobbyAndHand

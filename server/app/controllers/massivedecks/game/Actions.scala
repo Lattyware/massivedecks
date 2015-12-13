@@ -61,6 +61,7 @@ object Actions {
     sealed trait Action
     case class NewPlayer(name: String) extends Action
     case class GetHand(secret: Secret) extends Action
+    case object AddAi extends Action
 
     object Formatters {
       implicit val newPlayerFormat: Format[NewPlayer] = Json.format[NewPlayer]

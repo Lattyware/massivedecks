@@ -37,6 +37,7 @@ type Action
   | SetInitialState InitialState
   | AnimatePlayedCards (List Int)
   | GameEvent Event
+  | AddAi
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action

@@ -41,6 +41,12 @@ update action global data = case action of
       (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks },
         toString error |> DisplayError |> Task.succeed |> Effects.task)
 
+  AddAi ->
+    (model global data,
+      (API.newAi data.lobby.id)
+      |> Task.map (\_ -> NoAction)
+      |> API.toEffect)
+
   StartGame Request ->
     (model global data, (API.newGame data.lobby.id data.secret) |> Task.map (StartGame << Result) |> API.toEffect)
 

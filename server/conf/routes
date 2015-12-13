@@ -9,6 +9,7 @@ GET     /lobbies/:id                            controllers.massivedecks.Applica
 GET     /lobbies/:id/notifications              controllers.massivedecks.Application.notifications(id: String)
 POST    /lobbies/:lobbyId                       controllers.massivedecks.Application.command(lobbyId: String)
 POST    /lobbies/:lobbyId/players               controllers.massivedecks.Application.newPlayer(lobbyId: String)
+POST    /lobbies/:lobbyId/players/newAi         controllers.massivedecks.Application.newAi(lobbyId: String)
 POST    /lobbies/:lobbyId/players/:playerId     controllers.massivedecks.Application.getPlayer(lobbyId: String, playerId: Int)
 
 # Map static resources from the /public folder to the /assets URL path

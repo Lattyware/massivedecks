@@ -10,7 +10,7 @@ object Player {
     val name: String
   }
   object Status {
-    private val types = List(NotPlayed, Played, Czar, Disconnected, Left, Neutral)
+    private val types = List(NotPlayed, Played, Czar, Disconnected, Left, Ai, Neutral)
     val fromName: Map[String, Status] = (for (status <- types) yield status.name -> status).toMap
   }
   case object NotPlayed extends Status {
@@ -27,6 +27,9 @@ object Player {
   }
   case object Left extends Status {
     val name = "left"
+  }
+  case object Ai extends Status {
+    val name = "ai"
   }
   case object Neutral extends Status {
     val name = "neutral"
