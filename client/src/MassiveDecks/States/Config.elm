@@ -1,5 +1,6 @@
 module MassiveDecks.States.Config where
 
+import String
 import Task
 import Effects
 import Html exposing (Html)
@@ -20,17 +21,25 @@ update action global data = case action of
       "deckId" -> (model global { data | deckId = value }, Effects.none)
       _ -> (model global data, DisplayError "Got an update for an unknown input." |> Task.succeed |> Effects.task)
 
-  AddDeck Request ->
-    (model global data,
-      (API.addDeck data.lobby.id data.secret data.deckId)
-      |> Task.map (AddDeck << Result)
-      |> API.toEffect)
+  AddDeck ->
+    (model global data, AddGivenDeck data.deckId Request |> Task.succeed |> Effects.task)
 
-  AddDeck (Result lobbyAndHand) ->
+  AddGivenDeck deckId Request ->
+    (model global { data | loadingDecks = List.append data.loadingDecks [ deckId ] },
+      ((API.addDeck data.lobby.id data.secret (String.toUpper deckId))
+      |> Task.map (AddGivenDeck deckId << Result))
+      `Task.onError` (\error -> FailAddDeck deckId error |> Task.succeed)
+      |> Effects.task)
+
+  AddGivenDeck deckId (Result lobbyAndHand) ->
     let
       (data, effects) = updateLobby data lobbyAndHand.lobby
     in
-      (model global data, effects)
+      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks }, effects)
+
+  FailAddDeck deckId error ->
+      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks },
+        toString error |> DisplayError |> Task.succeed |> Effects.task)
 
   StartGame Request ->
     (model global data, (API.newGame data.lobby.id data.secret) |> Task.map (StartGame << Result) |> API.toEffect)
@@ -101,6 +110,7 @@ initialData lobby secret =
   { lobby = lobby
   , secret = secret
   , deckId = ""
+  , loadingDecks = []
   }
 
 

@@ -2,6 +2,7 @@ module MassiveDecks.Actions.Action where
 
 import Task
 import Effects
+import Http exposing (Error)
 
 import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
@@ -21,7 +22,9 @@ type Action
   | NewLobby (APICall Lobby)
   | JoinExistingLobby
   | JoinLobby String Player.Secret (APICall LobbyAndHand)
-  | AddDeck (APICall LobbyAndHand)
+  | AddDeck
+  | AddGivenDeck String (APICall LobbyAndHand)
+  | FailAddDeck String Error
   | StartGame (APICall LobbyAndHand)
   | Pick Int
   | Play (APICall LobbyAndHand)

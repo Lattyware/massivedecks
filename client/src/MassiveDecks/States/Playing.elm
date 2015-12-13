@@ -49,14 +49,14 @@ update action global data = case action of
   Notification lobby ->
     case lobby.round of
       Just _ -> (model global { data | lobby = lobby }, eventEffects data.lobby lobby)
-      Nothing -> (configModel global (ConfigData lobby data.secret ""), Effects.none)
+      Nothing -> (configModel global (ConfigData lobby data.secret "" []), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
       Just _ -> (model global { data | lobby = lobbyAndHand.lobby
                                      , hand = lobbyAndHand.hand
                                      }, eventEffects data.lobby lobbyAndHand.lobby)
-      Nothing -> (configModel global (ConfigData lobbyAndHand.lobby data.secret ""), Effects.none)
+      Nothing -> (configModel global (ConfigData lobbyAndHand.lobby data.secret "" []), Effects.none)
 
   Consider potentialWinner ->
     (model global { data | considering = Just potentialWinner } , Effects.none)

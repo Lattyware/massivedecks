@@ -38,6 +38,7 @@ type alias ConfigData =
   { lobby : Lobby
   , secret : Secret
   , deckId : String
+  , loadingDecks : List String
   }
 
 

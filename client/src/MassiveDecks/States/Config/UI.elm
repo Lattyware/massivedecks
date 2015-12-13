@@ -28,7 +28,7 @@ view address data global =
           [ invite global.initialState.url lobby.id
           , divider
           , h1 [] [ text "Game Setup" ]
-          , deckList address decks data.deckId
+          , deckList address decks data.loadingDecks data.deckId
           , startGameButton address enoughPlayers enoughCards
           ]
         ]
@@ -55,7 +55,7 @@ deckIdInput address deckIdValue = div [ id "deck-id-input" ]
       , placeholder "Deck Id"
       , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
       , onKeyUp address (\key -> case key of
-          13 -> AddDeck Request {- Return key. -}
+          13 -> AddDeck {- Return key. -}
           _ -> NoAction)
       ] []
     , label [] [ icon "info-circle", text " A ", a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ], text " Deck Id" ]
@@ -67,11 +67,11 @@ deckIdInput address deckIdValue = div [ id "deck-id-input" ]
 addDeckButton : Signal.Address Action -> Bool -> Html
 addDeckButton address canAdd =
   button [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab", disabled (not canAdd)
-         , onClick address (AddDeck Request) ] [ icon "plus" ]
+         , onClick address AddDeck ] [ icon "plus" ]
 
 
-deckList : Signal.Address Action -> List DeckInfo -> String -> Html
-deckList address decks deckIdValue =
+deckList : Signal.Address Action -> List DeckInfo -> List String -> String -> Html
+deckList address decks loadingDecks deckIdValue =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
@@ -82,25 +82,34 @@ deckList address decks deckIdValue =
         ]
       ]
     , tbody [] (List.concat
-      [ emptyDeckListInfo (List.isEmpty decks)
+      [ emptyDeckListInfo address ((List.isEmpty decks) && List.isEmpty loadingDecks)
       , List.map (\deck -> tr []
-        [ td [] [ a [ href ("https://www.cardcastgame.com/browse/deck/" ++ deck.id), target "_blank" ] [ text deck.id ] ]
-        , td [] [ text deck.name ]
+        [ td [] [ deckLink deck.id ]
+        , td [ title deck.name ] [ text deck.name ]
         , td [] [ text (toString deck.calls) ]
         , td [] [ text (toString deck.responses) ]
         ]) decks
+      , List.map (\deck -> tr [] [ td [] [ deckLink deck ], td [ colspan 3 ] [ spinner ] ]) loadingDecks
       , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckIdValue ] ] ]
       ])
     ]
 
 
-emptyDeckListInfo : Bool -> List Html
-emptyDeckListInfo display =
+deckLink : String -> Html
+deckLink id = a [ href ("https://www.cardcastgame.com/browse/deck/" ++ id), target "_blank" ] [ text id ]
+
+
+emptyDeckListInfo : Signal.Address Action -> Bool -> List Html
+emptyDeckListInfo address display =
   if display then
     [ tr [] [ td [ colspan 4 ]
-      [ icon "info-circle"
-      , text " You will need to add at least one "
-      , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast deck" ], text " to the game." ]
+        [ icon "info-circle"
+        , text " You will need to add at least one "
+        , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast deck" ]
+        , text " to the game."
+        , text " Not sure? Try "
+        , a [ onClick address (AddGivenDeck "CAHBS" Request) ] [ text "the Cards Against Humanity base set." ]
+        ]
       ]
     ]
   else
