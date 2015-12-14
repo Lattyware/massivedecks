@@ -90,6 +90,12 @@ update action global data = case action of
     in
       (model global updatedData, Effects.none)
 
+  LeaveLobby ->
+    ({ state = SStart { name = "", lobbyId = "" }, subscription = Just Nothing, global = global },
+      (API.leave data.lobby.id data.secret)
+      |> Task.map (\_ -> NoAction)
+      |> API.toEffect)
+
   GameEvent event ->
     case event of
       PlayerStatus id status ->
@@ -135,7 +141,7 @@ updateLobby data lobby =
 model : Global -> ConfigData -> Model
 model global data =
   { state = SConfig data
-  , jsAction = Nothing
+  , subscription = Nothing
   , global = global
   }
 
@@ -143,7 +149,7 @@ model global data =
 modelSub : Global -> String -> Secret -> ConfigData -> Model
 modelSub global lobbyId secret data =
   { state = SConfig data
-  , jsAction = Just { lobbyId = lobbyId, secret = secret }
+  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
   , global = global
   }
 

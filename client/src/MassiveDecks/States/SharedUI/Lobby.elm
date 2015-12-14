@@ -54,7 +54,7 @@ appHeader address contents notification = (header [] [ div [ class "mui-appbar m
   [ div [ class "mui--appbar-line-height" ]
     [ span [] (List.append [ scoresButton True, scoresButton False ] (notificationPopup address notification))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
-    , gameMenu ] ] ])
+    , gameMenu address ] ] ])
 
 
 scoresButton : Bool -> Html

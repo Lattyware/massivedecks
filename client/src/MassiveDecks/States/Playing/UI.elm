@@ -46,17 +46,16 @@ roundContents address data round =
       |> List.any (\player -> player.status == Played)
     callFill = case round.responses of
       Revealed responses ->
-        Maybe.withDefault [] (Maybe.map (Util.get responses.cards) data.considering)
+        Maybe.withDefault [] (data.considering `Maybe.andThen` (Util.get responses.cards))
       Hidden _ ->
         picked
     pickedOrChosen = case round.responses of
       Revealed responses ->
         case data.considering of
           Just considering ->
-            let
-              consideringCards = Util.get responses.cards considering
-            in
-              [ consideringView address considering consideringCards isCzar ]
+            case Util.get responses.cards considering of
+              Just consideringCards -> [ consideringView address considering consideringCards isCzar ]
+              Nothing -> []
           Nothing -> []
       Hidden _ -> pickedView address pickedWithIndex (Card.slots round.call) data.shownPlayed
     playedOrHand = case round.responses of
@@ -84,7 +83,7 @@ winnerContentsAndHeader address round players =
   let
     cards = round.responses
     winning = Card.winningCards cards round.playedByAndWinner |> Maybe.withDefault []
-    winner = (Util.get players round.playedByAndWinner.winner).name
+    winner = Maybe.map .name (Util.get players round.playedByAndWinner.winner) |> Maybe.withDefault ""
   in
     ([ div [ class "winner mui-panel" ]
        [ h1 [] [ icon "trophy" ]

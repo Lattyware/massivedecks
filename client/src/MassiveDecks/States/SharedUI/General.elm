@@ -40,14 +40,14 @@ root : List Html -> Html
 root contents = div [ class "content" ] contents
 
 
-gameMenu : Html
-gameMenu = div [ class "menu mui-dropdown" ]
+gameMenu : Signal.Address Action -> Html
+gameMenu address = div [ class "menu mui-dropdown" ]
   [ button [ class "mui-btn mui-btn--small mui-btn--primary"
            , attribute "data-mui-toggle" "dropdown"
            ] [ icon "ellipsis-h" ]
   , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
      [ li [] [ a [ href "#", attribute "onClick" "inviteOverlay(event)" ] [ icon "bullhorn", text " Invite Players" ] ]
-     , li [] [ a [ href "#" ] [ icon "sign-out", text " Leave Game" ] ]
+     , li [] [ a [ onClick address LeaveLobby ] [ icon "sign-out", text " Leave Game" ] ]
      , li [ class "mui-divider" ] []
      , li [] [ a [ href "#", attribute "onClick" "aboutOverlay(event)" ] [ icon "info-circle", text " About" ] ]
      , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]

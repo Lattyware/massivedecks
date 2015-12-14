@@ -17,6 +17,7 @@
    <body>
        <script src="@routes.Assets.at("javascripts/Main.js")"></script>
        <script>
+         var socket = null;
          var gameCode = window.location.hash.substr(1);
          var existingGame = localStorage.getItem("existingGame");
          if (existingGame != null) {
@@ -34,7 +35,9 @@
          };
 
          var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });
-         game.ports.initialState.send(initialState)
+
+         game.ports.initialState.send(initialState);
+
          function openWebSocket(lobbyId, secret) {
            var loc = window.location, new_uri;
            if (loc.protocol === "https:") {
@@ -44,7 +47,10 @@
            }
            new_uri += "//" + loc.host;
            new_uri += loc.pathname + "lobbies/" + lobbyId + "/notifications";
-           var socket = new WebSocket(new_uri);
+           if (socket != null) {
+             socket.close();
+           }
+           socket = new WebSocket(new_uri);
            socket.onopen = function (event) {
              socket.send(JSON.stringify(secret));
            }
@@ -52,15 +58,26 @@
              game.ports.notifications.send(event.data);
            }
            socket.onclose = function (event) {
-             openWebSocket(lobbyId, secret);
+             if (socket != null) {
+               openWebSocket(lobbyId, secret);
+             }
            }
          }
 
-         game.ports.jsAction.subscribe(function (lobbyIdAndSecret) {
+         game.ports.subscription.subscribe(function (lobbyIdAndSecret) {
+           console.log(lobbyIdAndSecret);
            if (lobbyIdAndSecret != null) {
              localStorage.setItem("existingGame", JSON.stringify(lobbyIdAndSecret))
              openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);
              window.location = "#" + lobbyIdAndSecret.lobbyId;
+           } else {
+             if (socket != null) {
+               window.location = "#";
+               localStorage.removeItem("existingGame");
+               var oldSocket = socket;
+               socket = null;
+               oldSocket.close();
+             }
            }
          });
        </script>

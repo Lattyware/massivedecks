@@ -15,7 +15,7 @@ import models.massivedecks.Game.Formatters._
 import models.massivedecks.Player.Secret
 import controllers.massivedecks.cardcast.CardCastDeck
 import controllers.massivedecks.game.Game.AddRetrievedDeck
-import controllers.massivedecks.game.Actions.Player.{AddAi, GetHand, NewPlayer}
+import controllers.massivedecks.game.Actions.Player.{Leave, AddAi, GetHand, NewPlayer}
 import controllers.massivedecks.game.Actions.Lobby._
 
 class Game @Inject()(private val state: State, @Assisted private val id: String)(implicit ec: ExecutionContext) extends Actor {
@@ -98,6 +98,12 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
         sender() ! Try {
           state.newAi()
           Json.toJson("")
+        }
+
+      case Leave(secret) =>
+        sender() ! Try {
+          state.leave(secret)
+          Json.toJson(state.lobbyAndHand(secret))
         }
 
       case _ =>

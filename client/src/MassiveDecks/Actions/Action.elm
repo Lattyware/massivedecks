@@ -40,6 +40,7 @@ type Action
   | GameEvent Event
   | AddAi
   | DismissPlayerNotification (Maybe Notification.Player)
+  | LeaveLobby
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action

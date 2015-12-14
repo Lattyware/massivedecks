@@ -54,6 +54,12 @@ update action global data = case action of
         (Config.modelSub global lobbyId secret
           (Config.initialData lobbyAndHand.lobby secret), Effects.none)
 
+  Notification _ ->
+    (model global data, Effects.none)
+
+  DismissPlayerNotification _ ->
+    (model global data, Effects.none)
+
   other ->
     (model global data,
       DisplayError ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Start).")
@@ -64,7 +70,7 @@ update action global data = case action of
 model : Global -> StartData -> Model
 model global data =
   { state = SStart data
-  , jsAction = Nothing
+  , subscription = Nothing
   , global = global
   }
 

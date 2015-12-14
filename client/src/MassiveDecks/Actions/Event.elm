@@ -74,7 +74,7 @@ diffRound oldRound newRound =
   in
     if differentRound then
       List.filterMap identity
-        [ Maybe.map roundEnd oldRound
+        [ oldRound `Maybe.andThen` roundEnd
         , Maybe.map roundStart newRound
         , newRound `Maybe.andThen` (\newRound -> case newRound.responses of
             Hidden count -> Just (roundPlayed count)
@@ -124,13 +124,13 @@ roundJudging round =
   in
     RoundJudging played
 
-roundEnd : Round -> Event
+roundEnd : Round -> Maybe Event
 roundEnd round =
   let
     responses = case round.responses of
       Hidden _ -> Nothing
       Revealed responses -> Just responses
-    played = Maybe.map .cards responses |> Maybe.withDefault []
-    playedByAndWinner = responses `Maybe.andThen` .playedByAndWinner |> Maybe.withDefault (PlayedByAndWinner [] 0)
+    played = Maybe.map .cards responses
+    playedByAndWinner = responses `Maybe.andThen` .playedByAndWinner
   in
-    RoundEnd round.call round.czar played playedByAndWinner
+    Maybe.map2 (RoundEnd round.call round.czar) played playedByAndWinner

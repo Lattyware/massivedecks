@@ -81,6 +81,22 @@ update action global data = case action of
     in
       (model { global | seed = seed } { data | shownPlayed = shownPlayed }, Effects.none)
 
+  DismissPlayerNotification notification ->
+    let
+      updatedData =
+        if data.playerNotification == notification then
+          { data | playerNotification = Maybe.map Notification.hide data.playerNotification }
+        else
+          data
+    in
+      (model global updatedData, Effects.none)
+
+  LeaveLobby ->
+    ({ state = SStart { name = "", lobbyId = "" }, subscription = Just Nothing, global = global },
+      (API.leave data.lobby.id data.secret)
+      |> Task.map (\_ -> NoAction)
+      |> API.toEffect)
+
   GameEvent event ->
     case event of
       RoundPlayed amount ->
@@ -115,10 +131,15 @@ update action global data = case action of
 
 notificationChange : Global -> PlayingData -> Maybe Notification.Player -> (Model, Effects.Effects Action)
 notificationChange global data notification =
-  (model global { data | playerNotification = Maybe.oneOf
-    [ notification
-    , data.playerNotification
-    ]} , Effects.none)
+  let
+    newNotification = Maybe.oneOf
+      [ notification
+      , data.playerNotification
+      ]
+  in
+    ( model global { data | playerNotification = newNotification}
+    , Task.sleep (Time.second * 5) `Task.andThen` (\_ -> Task.succeed (DismissPlayerNotification newNotification)) |> Effects.task
+    )
 
 
 addShownPlayed : Int -> List Attribute -> Seed -> (List Attribute, Effects.Effects Action, Seed)
@@ -167,7 +188,7 @@ positioning rotation horizontalPos left verticalPos =
 model : Global -> PlayingData -> Model
 model global data =
   { state = SPlaying data
-  , jsAction = Nothing
+  , subscription = Nothing
   , global = global
   }
 
@@ -175,7 +196,7 @@ model global data =
 modelSub : Global -> String -> Secret -> PlayingData -> Model
 modelSub global lobbyId secret data =
   { state = SPlaying data
-  , jsAction = Just { lobbyId = lobbyId, secret = secret }
+  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
   , global = global
   }
 
@@ -183,7 +204,7 @@ modelSub global lobbyId secret data =
 configModel : Global -> ConfigData -> Model
 configModel global data =
   { state = SConfig data
-  , jsAction = Nothing
+  , subscription = Nothing
   , global = global
   }
 

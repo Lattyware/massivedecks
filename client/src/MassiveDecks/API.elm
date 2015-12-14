@@ -27,6 +27,15 @@ newPlayer lobbyId name = send defaultSettings
   } |> fromJson playerSecretDecoder
 
 
+leave : String -> Secret -> Task.Task Http.Error LobbyAndHand
+leave lobbyId secret = send defaultSettings
+  { verb = "POST"
+  , headers = [("Content-Type", "application/json")]
+  , url = url ("/lobbies/" ++ lobbyId ++ "/players/" ++ (toString secret.id) ++ "/leave") []
+  , body = Http.string ("{ \"secret\": \"" ++ secret.secret ++ "\"}")
+  } |> fromJson lobbyAndHandDecoder
+
+
 addDeck : String -> Secret -> String -> Task.Task Http.Error LobbyAndHand
 addDeck lobbyId secret deckId = lobbyAction lobbyId (commandEncoder "addDeck" secret [ ("deckId", string deckId) ])
 

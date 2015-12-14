@@ -74,7 +74,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   }
 
   def newGame(secret: Secret): Unit = {
-    if (players.length < State.minimumPlayers) {
+    if (numberOfPlayers < State.minimumPlayers) {
       throw new IllegalStateException(s"You need a minimum of ${State.minimumPlayers} to start a game.")
     }
     if (game.isDefined) {
@@ -169,14 +169,30 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     sendNotifications()
   }
 
-  def sendNotifications(): Unit = {
-    for (socket <- notifications) {
-      socket ! Json.toJson(lobby).toString()
+  def leave(secret: Secret): Unit = {
+    val id = validateSecretAndGetId(secret)
+    setPlayerStatus(id, Left, force=true)
+    playedInRound = playedInRound.filterKeys(pId => pId != id)
+    if (numberOfPlayers < State.minimumPlayers) {
+      endGame()
     }
+    game match {
+      case Some(state) =>
+        if (state.round.czar == id) {
+          invalidateRound()
+        } else {
+          if (numberOfPlayersInRound == numberOfPlayersWhoHavePlayed) {
+            beginJudging()
+          }
+        }
+      case None =>
+    }
+    sendNotifications()
   }
 
   def register(secret: Secret, socket: ActorRef): Unit = {
     val id = validateSecretAndGetId(secret)
+    require(playerForId(id).status != Left, "You have left this game.")
     setPlayerStatus(id, playerStatusIfConnected(id), force=true)
     notifications = socket :: notifications
     sendNotifications()
@@ -189,6 +205,23 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     sendNotifications()
   }
 
+  private def endGame(): Unit = {
+    playedOrder = None
+    playedInRound = Map()
+    game = None
+    czarIndex = 0
+  }
+
+  private def invalidateRound(): Unit = {
+    advanceRound()
+  }
+
+  private def sendNotifications(): Unit = {
+    for (socket <- notifications) {
+      socket ! Json.toJson(lobby).toString()
+    }
+  }
+
   private def playerForId(id: Id): Player = players.find(item => item.id == id).get
 
   private def nextCzar(): Id = {
@@ -197,7 +230,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     }
     val playerId = players(czarIndex).id
     czarIndex += 1
-    if (ais.exists(ai => ai.id == playerId)) {
+    if (ais.exists(ai => ai.id == playerId) || playerForId(playerId).status == Left) {
       nextCzar()
     } else {
       playerId
@@ -222,6 +255,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     }
   }
 
+  private def numberOfPlayers = players.count(player => player.status != Left)
   private def numberOfPlayersInRound = playedInRound.size
   private def numberOfPlayersWhoHavePlayed = playedInRound.values.count(play => play.isDefined)
 
@@ -236,9 +270,9 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   }
 
   private def advanceRound(): Unit = {
+    val state = validateInGameAndGetState()
     playedOrder = None
     playedInRound = Map()
-    val state = validateInGameAndGetState()
     game = Some(state.copy(round = Round(nextCzar(), state.deck.drawCall(), Responses.hidden(0))))
     for (player <- players) {
       setPlayerStatus(player.id, NotPlayed)
@@ -248,16 +282,19 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 
   private val stickyStatus: Set[Status] = Set(Disconnected, Left, Ai)
 
-  private def setPlayerStatus(id: Id, status: Status, force: Boolean = false): Unit =
-    players = players.map(player => if (player.id == id) {
-      if (force || !stickyStatus.contains(player.status)) {
-        player.copy(status = status)
+  private def setPlayerStatus(id: Id, status: Status, force: Boolean = false): Unit = {
+    if (playerForId(id).status != Left) {
+      players = players.map(player => if (player.id == id) {
+        if (force || !stickyStatus.contains(player.status)) {
+          player.copy(status = status)
+        } else {
+          player
+        }
       } else {
         player
-      }
-    } else {
-      player
-    })
+      })
+    }
+  }
 
   private def validateInGameAndGetState(): GameState = game match {
     case Some(state) => state

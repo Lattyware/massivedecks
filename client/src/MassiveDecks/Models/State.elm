@@ -11,7 +11,7 @@ import MassiveDecks.Models.Notification as Notification
 
 type alias Model =
   { state : State
-  , jsAction : Maybe LobbyIdAndSecret
+  , subscription : Maybe (Maybe LobbyIdAndSecret)
   , global: Global
   }
 

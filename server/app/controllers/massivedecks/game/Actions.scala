@@ -21,13 +21,13 @@ object Actions {
     sealed trait Action
     case object GetLobby extends Action
     sealed trait Command extends Action
+    case class Register(secret: Secret, socket: ActorRef) extends Action
+    case class Unregister(secret: Secret, socket: ActorRef) extends Action
     case class AddDeck(secret: Secret, deckId: String) extends Command
     case class NewGame(secret: Secret) extends Command
     case class Play(secret: Secret, ids: List[Int]) extends Command
     case class Choose(secret: Secret, winner: Int) extends Command
     case class GetLobbyAndHand(secret: Secret) extends Command
-    case class Register(secret: Secret, socket: ActorRef) extends Action
-    case class Unregister(secret: Secret, socket: ActorRef) extends Action
 
     object Action {
       def apply(json: JsValue): Option[Command] =
@@ -61,9 +61,11 @@ object Actions {
     sealed trait Action
     case class NewPlayer(name: String) extends Action
     case class GetHand(secret: Secret) extends Action
+    case class Leave(secret: Secret) extends Action
     case object AddAi extends Action
 
     object Formatters {
+      implicit val leaveFormat : Format[Leave] = Json.format[Leave]
       implicit val newPlayerFormat: Format[NewPlayer] = Json.format[NewPlayer]
       implicit val getHandFormat: Format[GetHand] = Json.format[GetHand]
     }

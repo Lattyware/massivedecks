@@ -38,14 +38,14 @@ port tasks = game.tasks
 port notifications : Signal String
 
 
-port jsAction : Signal (Maybe LobbyIdAndSecret)
-port jsAction
+port subscription : Signal (Maybe LobbyIdAndSecret)
+port subscription
   = game.model
   |> Signal.map (\setupModel -> case setupModel of
       Waiting -> Nothing
-      Started model -> Just model.jsAction
+      Started model -> Just model.subscription
     )
-  |>  Signal.filterMap identity Nothing
+  |>  Signal.filterMap (Maybe.withDefault Nothing) Nothing
 
 
 port initialState : Signal InitialState

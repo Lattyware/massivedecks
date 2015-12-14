@@ -17,7 +17,7 @@ import akka.util.Timeout
 import controllers.massivedecks.game.Actions.Lobby
 import controllers.massivedecks.game.Actions.Lobby.GetLobby
 import controllers.massivedecks.game.Actions.Player.Formatters._
-import controllers.massivedecks.game.Actions.Player.{AddAi, GetHand, NewPlayer}
+import controllers.massivedecks.game.Actions.Player.{Leave, AddAi, GetHand, NewPlayer}
 import controllers.massivedecks.game.Actions.Store.{LobbyAction, NewLobby, PlayerAction}
 import controllers.massivedecks.game.NotFoundException
 import models.massivedecks.Player.{Id, Secret}
@@ -73,6 +73,16 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
 
   def newAi(lobbyId: String) = Action.async {
     resultOrError(store ? PlayerAction(lobbyId, AddAi))
+  }
+
+  def leave(lobbyId: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
+    (request.body \ "secret").validate[String].asOpt match {
+      case Some(secret) =>
+        resultOrError(store ? PlayerAction(lobbyId, Leave(Secret(Id(playerId), secret))))
+
+      case None =>
+        Future.successful(BadRequest("Badly formed secret provided."))
+    }
   }
 
   private def resultOrError(response: Future[Any]): Future[Result] = {

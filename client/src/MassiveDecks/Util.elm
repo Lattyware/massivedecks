@@ -24,16 +24,15 @@ remove list index =
   (List.take index list) ++ (List.drop (index + 1) list)
 
 
-get : List a -> Int -> a
+get : List a -> Int -> Maybe a
 get list index = case List.drop index list of
-    [] -> Native.Error.raise <| "Attempted to take element " ++ toString index
-                                ++ " of list " ++ toString list
-    (item::_) -> item
+    [] -> Nothing
+    (item :: _) -> Just item
 
 
 getAll : List a -> List Int -> List a
 getAll list indices =
-  List.map (get list) indices
+  List.filterMap (get list) indices
 
 
 getAllWithIndex : List a -> List Int -> List (Int, a)
