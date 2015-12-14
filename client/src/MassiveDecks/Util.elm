@@ -63,3 +63,9 @@ firstLetterToUpper str = (String.toUpper (String.left 1 str)) ++ (String.dropLef
 
 mapFirst : (a -> a) -> List a -> List a
 mapFirst f xs = List.indexedMap (\index x -> if index == 0 then f x else x) xs
+
+
+find : (a -> Bool) -> List a -> Maybe a
+find check items
+  = List.filter check items
+  |> List.head

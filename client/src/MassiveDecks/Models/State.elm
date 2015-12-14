@@ -5,7 +5,8 @@ import Html exposing (Attribute)
 
 import MassiveDecks.Models.Card exposing (Hand, Call, PlayedCards)
 import MassiveDecks.Models.Game exposing (Config, Lobby, Round, FinishedRound)
-import MassiveDecks.Models.Player exposing (Player, Secret, Id, PlayedByAndWinner)
+import MassiveDecks.Models.Player exposing (Player, Secret, Status(..), Id, PlayedByAndWinner, byId)
+import MassiveDecks.Models.Notification as Notification
 
 
 type alias Model =
@@ -39,7 +40,12 @@ type alias ConfigData =
   , secret : Secret
   , deckId : String
   , loadingDecks : List String
+  , playerNotification : Maybe Notification.Player
   }
+
+
+configData : Lobby -> Secret -> ConfigData
+configData lobby secret = ConfigData lobby secret "" [] Nothing
 
 
 type alias PlayingData =
@@ -50,7 +56,12 @@ type alias PlayingData =
   , considering : Maybe Int
   , lastFinishedRound : Maybe FinishedRound
   , shownPlayed : List Attribute
+  , playerNotification : Maybe Notification.Player
   }
+
+
+playingData : Lobby -> Hand -> Secret -> PlayingData
+playingData lobby hand secret = PlayingData lobby hand secret [] Nothing Nothing [] Nothing
 
 
 type alias LobbyIdAndSecret =

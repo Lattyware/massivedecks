@@ -10,7 +10,8 @@ import Random exposing (Generator, Seed, list, bool, int)
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Game exposing (Lobby, FinishedRound)
-import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, PlayingData, Error, Global)
+import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, configData, PlayingData, Error, Global)
+import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
 import MassiveDecks.States.Playing.UI as UI
@@ -49,14 +50,14 @@ update action global data = case action of
   Notification lobby ->
     case lobby.round of
       Just _ -> (model global { data | lobby = lobby }, eventEffects data.lobby lobby)
-      Nothing -> (configModel global (ConfigData lobby data.secret "" []), Effects.none)
+      Nothing -> (configModel global (configData lobby data.secret), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
       Just _ -> (model global { data | lobby = lobbyAndHand.lobby
                                      , hand = lobbyAndHand.hand
                                      }, eventEffects data.lobby lobbyAndHand.lobby)
-      Nothing -> (configModel global (ConfigData lobbyAndHand.lobby data.secret "" []), Effects.none)
+      Nothing -> (configModel global (configData lobbyAndHand.lobby data.secret), Effects.none)
 
   Consider potentialWinner ->
     (model global { data | considering = Just potentialWinner } , Effects.none)
@@ -91,8 +92,16 @@ update action global data = case action of
       RoundEnd call czar responses playedByAndWinner ->
         (model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner)
                              , shownPlayed = []
-                             }
-          , Effects.none)
+                             } , Effects.none)
+
+      PlayerStatus id status ->
+        notificationChange global data (Notification.playerStatus id status data.lobby.players)
+
+      PlayerJoin id ->
+        notificationChange global data (Notification.playerJoin id data.lobby.players)
+
+      PlayerReconnect id ->
+        notificationChange global data (Notification.playerReconnect id data.lobby.players)
 
       _ ->
         (model global data, Effects.none)
@@ -102,6 +111,14 @@ update action global data = case action of
       DisplayError ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Playing).")
       |> Task.succeed
       |> Effects.task)
+
+
+notificationChange : Global -> PlayingData -> Maybe Notification.Player -> (Model, Effects.Effects Action)
+notificationChange global data notification =
+  (model global { data | playerNotification = Maybe.oneOf
+    [ notification
+    , data.playerNotification
+    ]} , Effects.none)
 
 
 addShownPlayed : Int -> List Attribute -> Seed -> (List Attribute, Effects.Effects Action, Seed)

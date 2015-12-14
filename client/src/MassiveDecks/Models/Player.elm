@@ -1,5 +1,7 @@
 module MassiveDecks.Models.Player where
 
+import MassiveDecks.Util as Util
+
 
 type alias Id = Int
 
@@ -55,3 +57,7 @@ nameToStatus name = case name of
   "neutral" -> Just Neutral
   "ai" -> Just Ai
   _ -> Nothing
+
+
+byId : Id -> List Player -> Maybe Player
+byId id players = Util.find (\player -> player.id == id) players

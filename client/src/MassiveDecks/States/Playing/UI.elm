@@ -30,7 +30,8 @@ view address global data =
                 [ icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ])
             Nothing -> ([], [])
   in
-    LobbyUI.view global.initialState.url data.lobby.id header lobby.players (List.concat [ content, [ errorMessages address errors ] ])
+    LobbyUI.view address global.initialState.url data.lobby.id header lobby.players data.playerNotification
+                 (List.concat [ content, [ errorMessages address errors ] ])
 
 
 roundContents : Signal.Address Action -> PlayingData -> Round -> List Html

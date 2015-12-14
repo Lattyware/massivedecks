@@ -237,26 +237,38 @@ ol.played {
 }
 
 .badge {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-  border-radius: 50% 50%;
-  font-size: 14px;
-  line-height: 14px;
+  display: inline-block;
+
+  color: #ffffff;
+  background-color: #555555;
+
+  padding: 5px;
+  border-radius: 2px;
+
+  line-height: normal;
 
   position: relative;
-  z-index: 10;
-  left: -25px;
-  top: -10px;
 
-  align-items: center;
-  justify-content: center;
+  transition: opacity 1s;
 
-  overflow: visible;
-  white-space: nowrap;
+  &.hide {
+    opacity: 0;
+  }
 
-  background: #E91E63;
-  color: #ffffff;
+  &:after {
+  	right: 100%;
+  	top: 50%;
+  	border: solid transparent;
+  	content: " ";
+  	height: 0;
+  	width: 0;
+  	position: absolute;
+  	pointer-events: none;
+  	border-color: rgba(85, 85, 85, 0);
+  	border-right-color: #555555;
+  	border-width: 10px;
+  	margin-top: -10px;
+  }
 
   @media (min-width: @enhance-width) {
     display: none !important;
@@ -265,7 +277,7 @@ ol.played {
 
 body.hide-scores {
   .badge {
-    display: inline-flex !important;
+    display: inline-block !important;
   }
 }
 

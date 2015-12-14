@@ -22,7 +22,7 @@ view address data global =
     enoughPlayers = ((List.length lobby.players) > 1)
     enoughCards = not (List.isEmpty decks)
   in
-    LobbyUI.view global.initialState.url lobby.id [] lobby.players (List.concat [
+    LobbyUI.view address global.initialState.url lobby.id [] lobby.players data.playerNotification (List.concat [
       [ div [ id "config" ]
         [ div [ id "config-content", class "mui-panel" ]
           [ invite global.initialState.url lobby.id

@@ -7,6 +7,7 @@ import Http exposing (Error)
 import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Player as Player
+import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Event exposing (Event, events, catchUpEvents)
 
 
@@ -38,6 +39,7 @@ type Action
   | AnimatePlayedCards (List Int)
   | GameEvent Event
   | AddAi
+  | DismissPlayerNotification (Maybe Notification.Player)
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action

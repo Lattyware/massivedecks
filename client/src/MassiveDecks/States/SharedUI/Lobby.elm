@@ -2,13 +2,16 @@ module MassiveDecks.States.SharedUI.Lobby where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
+import MassiveDecks.Actions.Action exposing (Action(..))
+import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Models.Player exposing (Player, Status(..), statusName)
 import MassiveDecks.States.SharedUI.General exposing (..)
 
-view : String -> String -> List Html -> List Player -> List Html -> Html
-view url lobbyId header players contents =
-  root [ appHeader header
+view : Signal.Address Action -> String -> String -> List Html -> List Player -> Maybe Notification.Player -> List Html -> Html
+view address url lobbyId header players notification contents =
+  root [ appHeader address header notification
        , spacer
        , scores players
        , contentWrapper contents
@@ -46,10 +49,10 @@ score player = tr [ class (statusName player.status), title (statusDescription p
   ]
 
 
-appHeader : List Html -> Html
-appHeader contents = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
+appHeader : Signal.Address Action -> List Html -> Maybe Notification.Player -> Html
+appHeader address contents notification = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
   [ div [ class "mui--appbar-line-height" ]
-    [ span [] (List.append [ scoresButton True, scoresButton False ] (scoresBadge 0))
+    [ span [] (List.append [ scoresButton True, scoresButton False ] (notificationPopup address notification))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
     , gameMenu ] ] ])
 
@@ -62,12 +65,21 @@ scoresButton shown =
     button [ class ("scores-toggle mui-btn mui-btn--small mui-btn--primary badged" ++ showHideClasses)] [ icon "users" ]
 
 
-scoresBadge : Int -> List Html
-scoresBadge events =
-  if events > 0 then
-    [ div [ class "badge" ] [ icon "exclamation" ] ]
-  else
-    []
+notificationPopup : Signal.Address Action -> Maybe Notification.Player -> List Html
+notificationPopup address notification =
+  case notification of
+    Just notification ->
+      let
+        hidden = if notification.visible then "" else "hide"
+      in
+        [ div [ class ("badge mui--z2 " ++ hidden)
+              , title notification.description
+              , onClick address (DismissPlayerNotification (Just notification))
+              ]
+              [ icon notification.icon, text (" " ++ notification.name) ]
+        ]
+    Nothing ->
+      [ div [ class ("badge mui--z2 hide") ] [] ]
 
 
 statusDescription : Status -> String
