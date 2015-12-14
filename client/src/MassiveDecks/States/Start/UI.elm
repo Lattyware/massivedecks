@@ -37,7 +37,11 @@ view address global data =
           [ lobbyIdEntry address data.lobbyId
           , joinGame address (nameEntered && lobbyIdEntered)
           ]
-        , a [ class "about-link mui--divider-top", href "#", attribute "onClick" "aboutOverlay(event)" ]
+        , a [ class "about-link mui--divider-top link"
+            , attribute "tabindex" "0"
+            , attribute "role" "button"
+            , attribute "onClick" "aboutOverlay()"
+            ]
             [ icon "question-circle" , text " About" ]
         , errorMessages address errors
         , aboutOverlay

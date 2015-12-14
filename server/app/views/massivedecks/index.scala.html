@@ -9,77 +9,15 @@
        <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
        <link rel="stylesheet" href="//cdn.muicss.com/mui-0.2.6/css/mui.min.css">
-       <link rel="stylesheet" href="@routes.Assets.at("stylesheets/massivedecks.css")">
-       <script src="@routes.Assets.at("javascripts/massivedecks.js")"></script>
-       <link rel="icon" sizes="192x192" href="@routes.Assets.at("images/icon.png")">
-       <link rel="manifest" href="@routes.Assets.at("manifest.json")">
+       <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/massivedecks.css")">
+       <script src="@routes.Assets.versioned("javascripts/massivedecks.js")"></script>
+       <link rel="icon" sizes="192x192" href="@routes.Assets.versioned("images/icon.png")">
+       <link rel="manifest" href="@routes.Assets.versioned("manifest.json")">
    </head>
    <body>
-       <script src="@routes.Assets.at("javascripts/Main.js")"></script>
+       <script src="@routes.Assets.versioned("javascripts/Main.js")"></script>
        <script>
-         var socket = null;
-         var gameCode = window.location.hash.substr(1);
-         var existingGame = localStorage.getItem("existingGame");
-         if (existingGame != null) {
-           try {
-             existingGame = JSON.parse(existingGame);
-           } catch (error) {
-             existingGame = null;
-           }
-         }
-         var initialState = {
-           url: "@url",
-           gameCode: gameCode == "" ? null : gameCode,
-           existingGame: existingGame,
-           seed: new Date().getTime()
-         };
-
-         var game = Elm.fullscreen(Elm.MassiveDecks.Main, { notifications: "", initialState: initialState });
-
-         game.ports.initialState.send(initialState);
-
-         function openWebSocket(lobbyId, secret) {
-           var loc = window.location, new_uri;
-           if (loc.protocol === "https:") {
-             new_uri = "wss:";
-           } else {
-             new_uri = "ws:";
-           }
-           new_uri += "//" + loc.host;
-           new_uri += loc.pathname + "lobbies/" + lobbyId + "/notifications";
-           if (socket != null) {
-             socket.close();
-           }
-           socket = new WebSocket(new_uri);
-           socket.onopen = function (event) {
-             socket.send(JSON.stringify(secret));
-           }
-           socket.onmessage = function (event) {
-             game.ports.notifications.send(event.data);
-           }
-           socket.onclose = function (event) {
-             if (socket != null) {
-               openWebSocket(lobbyId, secret);
-             }
-           }
-         }
-
-         game.ports.subscription.subscribe(function (lobbyIdAndSecret) {
-           console.log(lobbyIdAndSecret);
-           if (lobbyIdAndSecret != null) {
-             localStorage.setItem("existingGame", JSON.stringify(lobbyIdAndSecret))
-             openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);
-             window.location = "#" + lobbyIdAndSecret.lobbyId;
-           } else {
-             if (socket != null) {
-               window.location = "#";
-               localStorage.removeItem("existingGame");
-               var oldSocket = socket;
-               socket = null;
-               oldSocket.close();
-             }
-           }
-         });
+          start("@url");
        </script>
    </body>
 </html>

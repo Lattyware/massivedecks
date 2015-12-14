@@ -122,7 +122,11 @@ emptyDeckListInfo address display =
         , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast deck" ]
         , text " to the game."
         , text " Not sure? Try "
-        , a [ onClick address (AddGivenDeck "CAHBS" Request) ] [ text "the Cards Against Humanity base set." ]
+        , a [ class "link"
+            , attribute "tabindex" "0"
+            , attribute "role" "button"
+            , onClick address (AddGivenDeck "CAHBS" Request)
+            ] [ text "the Cards Against Humanity base set." ]
         ]
       ]
     ]

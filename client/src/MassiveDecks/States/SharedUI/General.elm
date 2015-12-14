@@ -17,14 +17,22 @@ spinner = i [ class "fa fa-circle-o-notch fa-spin" ] []
 
 errorMessage : Signal.Address Action -> Int -> Error -> Html
 errorMessage address index error =
-    li [ class "error" ] [ div [] [
-      a [ href "#", onClick address (RemoveErrorPanel index) ] [ icon "times" ]
-        , h5 []
-          [ icon "exclamation-triangle"
-          , text " Error"
-          ]
+    li
+      [ class "error" ]
+      [ div
+        []
+        [ a [ class "link"
+            , attribute "tabindex" "0"
+            , attribute "role" "button"
+            , onClick address (RemoveErrorPanel index)
+            ] [ icon "times" ]
+        , h5 [] [ icon "exclamation-triangle"
+                , text " Error"
+                ]
         , divider
-        , p [] [ text error.message ] ] ]
+        , p [] [ text error.message ]
+        ]
+      ]
 
 
 errorMessages : Signal.Address Action -> List Error -> Html
@@ -46,10 +54,22 @@ gameMenu address = div [ class "menu mui-dropdown" ]
            , attribute "data-mui-toggle" "dropdown"
            ] [ icon "ellipsis-h" ]
   , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
-     [ li [] [ a [ href "#", attribute "onClick" "inviteOverlay(event)" ] [ icon "bullhorn", text " Invite Players" ] ]
-     , li [] [ a [ onClick address LeaveLobby ] [ icon "sign-out", text " Leave Game" ] ]
+     [ li [] [ a [ class "link"
+                 , attribute "tabindex" "0"
+                 , attribute "role" "button"
+                 , attribute "onClick" "inviteOverlay()"
+                 ] [ icon "bullhorn", text " Invite Players" ] ]
+     , li [] [ a [ class "link"
+                 , attribute "tabindex" "0"
+                 , attribute "role" "button"
+                 , onClick address LeaveLobby
+                 ] [ icon "sign-out", text " Leave Game" ] ]
      , li [ class "mui-divider" ] []
-     , li [] [ a [ href "#", attribute "onClick" "aboutOverlay(event)" ] [ icon "info-circle", text " About" ] ]
+     , li [] [ a [ class "link"
+                 , attribute "tabindex" "0"
+                 , attribute "role" "button"
+                 , attribute "onClick" "aboutOverlay()"
+                 ] [ icon "info-circle", text " About" ] ]
      , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
                  [ icon "bug", text " Report a bug" ] ]
      ]
