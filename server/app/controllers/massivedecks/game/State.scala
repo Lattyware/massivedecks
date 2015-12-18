@@ -209,9 +209,13 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     sendNotifications()
   }
 
-  def skip(secret: Secret, players: List[Id]): Unit = {
+  def skip(secret: Secret, unfilteredPlayers: List[Id]): Unit = {
     validateSecretAndGetId(secret)
-    require((numberOfPlayers - players.length) > State.minimumPlayers, "Not enough players to skip.")
+    val players = unfilteredPlayers.filter(id => playerForId(id).status != Skipping)
+    require((numberOfPlayers - players.length) > State.minimumPlayers,
+      "Not enough players left in the game if the given players are skipped.")
+    require(players.map(id => playerForId(id)).forall(player => player.disconnected),
+      "Only disconnected players or players who haven't played after the round timer runs out can be skipped.")
     for (id <- players) {
       setPlayerStatus(id, Skipping)
       playedInRound = playedInRound.filterKeys(pId => pId != id)
@@ -369,6 +373,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 object State {
   val minimumPlayers: Int = 2
   val disconnectGracePeriod: FiniteDuration = 5.seconds
+  val playTime: FiniteDuration = 30.seconds
 
   trait Factory {
     def apply(id: String): State
