@@ -51,12 +51,6 @@ view address global data =
       ]
 
 
-isNothing : Maybe a -> Bool
-isNothing maybe = case maybe of
-  Just _ -> False
-  Nothing -> True
-
-
 nameEntry : Signal.Address Action -> Html
 nameEntry address = div [ class "nickname-entry mui-textfield" ]
   [ input [ type' "text"

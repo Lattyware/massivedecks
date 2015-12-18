@@ -3,9 +3,11 @@ package controllers.massivedecks.game
 import java.util.UUID
 import javax.inject.Inject
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
+import scala.concurrent.duration._
 
+import akka.pattern.after
 import akka.actor.ActorRef
 import com.google.inject.assistedinject.Assisted
 import controllers.massivedecks.cardcast.{CardCastAPI, CardCastDeck}
@@ -13,9 +15,11 @@ import models.massivedecks.Game._
 import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Lobby.{Lobby, LobbyAndHand}
 import models.massivedecks.Player._
+import play.api.libs.concurrent.Akka
 import play.api.libs.json.Json
+import play.api.Play.current
 
-class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: String) {
+class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: String)(implicit ec: ExecutionContext) {
   private var decks: Set[CardCastDeck] = Set()
   private var players: List[Player] = List()
   private var lastPlayerId: Int = -1
@@ -27,6 +31,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private var czarIndex: Int = 0
   private var history: List[Round] = List()
   private var ais: Set[Secret] = Set()
+  private var connected: Set[Id] = Set()
 
   def config = Config(decks.map(deck => deck.info).toList)
   def lobby = Lobby(id, config, players, game.map(game => game.round))
@@ -41,15 +46,25 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     }
     val secret = newPlayer(name)
     setPlayerStatus(secret.id, Ai, force=true)
+    connected += secret.id
     ais += secret
     sendNotifications()
+  }
+
+  private def setPlayerDisconnectedAfterGracePeriod(id: Id) = {
+    after(State.disconnectGracePeriod, using=Akka.system.scheduler)(Future {
+      if (setPlayerDisconnected(id, !connected.contains(id))) {
+        sendNotifications()
+      }
+    })
   }
 
   def newPlayer(name: String): Secret = {
     require(players.forall(player => player.name != name), "The name is already in use.")
     lastPlayerId += 1
     val id = Id(lastPlayerId)
-    players = players ++ List(Player(id, name, Disconnected, 0))
+    players = players ++ List(Player(id, name, Neutral, 0, disconnected=false, left=false))
+    setPlayerDisconnectedAfterGracePeriod(id)
     val secret = Secret(id, UUID.randomUUID().toString)
     secrets += (id -> secret)
     if (game.isDefined) {
@@ -87,13 +102,17 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     sendNotifications()
   }
 
-  private val statusNotInRound: Set[Status] = Set(Left, Czar)
+  private val statusNotInRound: Set[Status] = Set(Skipping, Czar)
 
   def beginRound() = {
+    for (player <- players) {
+      setPlayerStatus(player.id, NotPlayed)
+    }
     val round = game.get.round
     val czar = round.czar
     setPlayerStatus(czar, Czar)
-    playedInRound = (for (player <- players if !statusNotInRound.contains(player.status)) yield player.id -> None).toMap
+    playedInRound = (for (player <- players if !statusNotInRound.contains(player.status) && !player.left)
+      yield player.id -> None).toMap
     val firstSlots = (0 until round.call.slots).toList
     for (ai <- ais) {
       play(ai, firstSlots)
@@ -171,7 +190,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 
   def leave(secret: Secret): Unit = {
     val id = validateSecretAndGetId(secret)
-    setPlayerStatus(id, Left, force=true)
+    setPlayerLeft(id, left=true)
     playedInRound = playedInRound.filterKeys(pId => pId != id)
     if (numberOfPlayers < State.minimumPlayers) {
       endGame()
@@ -190,17 +209,52 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     sendNotifications()
   }
 
+  def skip(secret: Secret, players: List[Id]): Unit = {
+    validateSecretAndGetId(secret)
+    require((numberOfPlayers - players.length) > State.minimumPlayers, "Not enough players to skip.")
+    for (id <- players) {
+      setPlayerStatus(id, Skipping)
+      playedInRound = playedInRound.filterKeys(pId => pId != id)
+    }
+    game match {
+      case Some(state) =>
+        if (players.contains(state.round.czar)) {
+          invalidateRound()
+        } else {
+          if (numberOfPlayersInRound == numberOfPlayersWhoHavePlayed) {
+            beginJudging()
+          }
+        }
+      case None =>
+    }
+    sendNotifications()
+  }
+
+  def back(secret: Secret): Unit = {
+    val id = validateSecretAndGetId(secret)
+    val player = playerForId(id)
+    require(player.status == Skipping, "You are not being skipped.")
+    setPlayerStatus(id, Neutral, force=true)
+    sendNotifications()
+  }
+
   def register(secret: Secret, socket: ActorRef): Unit = {
     val id = validateSecretAndGetId(secret)
-    require(playerForId(id).status != Left, "You have left this game.")
-    setPlayerStatus(id, playerStatusIfConnected(id), force=true)
+    val player = playerForId(id)
+    require(!player.left, "You have left this game.")
+    setPlayerDisconnected(id, disconnected=false)
+    connected += id
+    if (player.status == Skipping) {
+      back(secret)
+    }
     notifications = socket :: notifications
     sendNotifications()
   }
 
   def unregister(secret: Secret, socket: ActorRef): Unit = {
     val id = validateSecretAndGetId(secret)
-    setPlayerStatus(id, Disconnected)
+    connected -= id
+    setPlayerDisconnectedAfterGracePeriod(id)
     notifications.filter(s => s != socket)
     sendNotifications()
   }
@@ -228,34 +282,17 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     if (czarIndex >= players.length) {
       czarIndex = 0
     }
-    val playerId = players(czarIndex).id
+    val player = players(czarIndex)
+    val playerId = player.id
     czarIndex += 1
-    if (ais.exists(ai => ai.id == playerId) || playerForId(playerId).status == Left) {
+    if (ais.exists(ai => ai.id == playerId) || player.left || player.status == Skipping) {
       nextCzar()
     } else {
       playerId
     }
   }
 
-  private def playerStatusIfConnected(id: Id): Status = {
-    val player = playerForId(id)
-    if (player.status == Left) { Left } else {
-      game match {
-        case Some(state) =>
-          if (state.round.czar == id) {
-            Czar
-          } else {
-            playedInRound.get(id) match {
-              case Some(playedState) => if (playedState.isDefined) { Played } else { NotPlayed }
-              case None => Neutral
-            }
-          }
-        case None => Neutral
-      }
-    }
-  }
-
-  private def numberOfPlayers = players.count(player => player.status != Left)
+  private def numberOfPlayers = players.count(player => !player.left)
   private def numberOfPlayersInRound = playedInRound.size
   private def numberOfPlayersWhoHavePlayed = playedInRound.values.count(play => play.isDefined)
 
@@ -274,26 +311,41 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     playedOrder = None
     playedInRound = Map()
     game = Some(state.copy(round = Round(nextCzar(), state.deck.drawCall(), Responses.hidden(0))))
-    for (player <- players) {
-      setPlayerStatus(player.id, NotPlayed)
-    }
     beginRound()
   }
 
-  private val stickyStatus: Set[Status] = Set(Disconnected, Left, Ai)
+  private val stickyStatus: Set[Status] = Set(Ai, Skipping)
 
   private def setPlayerStatus(id: Id, status: Status, force: Boolean = false): Unit = {
-    if (playerForId(id).status != Left) {
-      players = players.map(player => if (player.id == id) {
-        if (force || !stickyStatus.contains(player.status)) {
+    if (!playerForId(id).left) {
+      players = players.map(player =>
+        if (player.id == id && (force || !stickyStatus.contains(player.status))) {
           player.copy(status = status)
         } else {
           player
-        }
+        })
+    }
+  }
+
+  private def setPlayerDisconnected(id: Id, disconnected: Boolean): Boolean = {
+    var changed = false
+    players = players.map(player =>
+      if (player.id == id) {
+        changed = true
+        player.copy(disconnected=disconnected)
       } else {
         player
       })
-    }
+    changed
+  }
+
+  private def setPlayerLeft(id: Id, left: Boolean): Unit = {
+    players = players.map(player =>
+      if (player.id == id) {
+        player.copy(status=Neutral, left=left)
+      } else {
+        player
+      })
   }
 
   private def validateInGameAndGetState(): GameState = game match {
@@ -316,6 +368,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 }
 object State {
   val minimumPlayers: Int = 2
+  val disconnectGracePeriod: FiniteDuration = 5.seconds
 
   trait Factory {
     def apply(id: String): State

@@ -251,6 +251,8 @@ ol.played {
 
   transition: opacity 1s;
 
+  white-space: nowrap;
+
   &.hide {
     opacity: 0;
   }
@@ -291,7 +293,7 @@ body {
     overflow: auto;
     z-index: 2;
     background-color: #fff;
-    transition: transform 0.2s;
+    transition: transform @sidebar-transition-time;
     @media (min-width: @enhance-width) {
       transform: translate(@sidebar-width);
     }
@@ -301,7 +303,7 @@ body {
     }
 
     &.active {
-      transform: translate(@sidebar-width);
+      transform: translate(@sidebar-width) !important;
     }
 
     & > table {
@@ -321,7 +323,7 @@ body {
           opacity: 0.3;
         }
 
-        &.disconnected {
+        &.skipping {
           opacity: 0.6;
         }
 
@@ -345,6 +347,86 @@ body {
 
 body.hide-scores {
   #scores {
-      transform: translate(0px);
+    transform: translate(0px);
+  }
+}
+
+#warning-drawer {
+  position: fixed;
+  bottom: 0px;
+  left: 0;
+  right: 0px;
+
+  z-index: 100;
+
+  transition: opacity 1s, left @sidebar-transition-time;
+
+  max-height: 75%;
+
+  & > .contents {
+    overflow: auto;
+  }
+
+  & > .toggle {
+    float: right;
+    margin: 5px;
+    background-color: #FFCC00;
+    opacity: 0.75;
+  }
+
+  & > .top {
+    clear: both;
+    width: 100%;
+    height: 0px;
+    background-color: #FFCC00;
+  }
+
+  &.shut {
+    & > .top {
+      height: 3px;
+    }
+
+    & > .contents {
+      display: none;
+    }
+  }
+
+  &.hidden {
+    opacity: 0;
+  }
+
+  @media (min-width: @enhance-width) {
+    left: @sidebar-width;
+  }
+
+  #disconnected-notice {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: space-between;
+
+    background-color: #FFCC00;
+    padding: 2px;
+
+    & > h3 {
+      margin: 2px 5px;
+    }
+
+    & > .actions {
+      display: flex;
+      flex-wrap: nowrap;
+
+      & > button {
+        margin: 2px;
+      }
+    }
+  }
+}
+
+body.hide-scores {
+  #warning-drawer {
+    @media (min-width: @enhance-width) {
+      left: 0px;
+    }
   }
 }

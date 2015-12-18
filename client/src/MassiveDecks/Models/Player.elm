@@ -11,6 +11,8 @@ type alias Player =
   , name : String
   , status : Status
   , score : Int
+  , disconnected : Bool
+  , left : Bool
   }
 
 
@@ -24,10 +26,9 @@ type Status
   = NotPlayed
   | Played
   | Czar
-  | Disconnected
-  | Left
   | Ai
   | Neutral
+  | Skipping
 
 
 type alias Secret =
@@ -41,10 +42,9 @@ statusName status = case status of
   NotPlayed -> "not-played"
   Played -> "played"
   Czar -> "czar"
-  Disconnected -> "disconnected"
-  Left -> "left"
-  Neutral -> "neutral"
   Ai -> "ai"
+  Neutral -> "neutral"
+  Skipping -> "skipping"
 
 
 nameToStatus : String -> Maybe Status
@@ -52,10 +52,9 @@ nameToStatus name = case name of
   "not-played" -> Just NotPlayed
   "played" -> Just Played
   "czar" -> Just Czar
-  "disconnected" -> Just Disconnected
-  "left" -> Just Left
-  "neutral" -> Just Neutral
   "ai" -> Just Ai
+  "neutral" -> Just Neutral
+  "skipping" -> Just Skipping
   _ -> Nothing
 
 

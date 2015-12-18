@@ -17,6 +17,8 @@ body {
   min-height: 100%;
 
   margin-left: 0px;
+  transition: margin-left @sidebar-transition-time;
+
   @media (min-width: @enhance-width) {
     margin-left: @sidebar-width;
   }
@@ -35,7 +37,7 @@ header {
   }
   right: 0;
   z-index: 2;
-  transition: left 0.2s;
+  transition: left @sidebar-transition-time;
 
   & > div {
     width: 100%;
@@ -46,6 +48,15 @@ header {
       justify-content: space-between;
       align-items: baseline;
       padding: 0px;
+
+      & > .score-buttons {
+        position: relative;
+
+        & > .badge {
+          position:absolute;
+          top: 15px;
+        }
+      }
     }
   }
 }
@@ -63,12 +74,6 @@ header {
     font-size: 20px;
     margin: 0px 5px;
     padding: 0px;
-  }
-
-  & > ul > li > a > .fa {
-    display: inline-block;
-    text-align: center;
-    width: 20px;
   }
 }
 
@@ -157,4 +162,8 @@ body.hide-scores {
   & input {
     width: 100%;
   }
+}
+
+.clear {
+   clear: both;
 }

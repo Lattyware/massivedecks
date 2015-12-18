@@ -19,12 +19,16 @@ jQuery(function($) {
   $('body').on('click', '.js-hide-scores', hideScores);
 });
 
-function inviteOverlay(event) {
+function inviteOverlay() {
   mui.overlay('on', $('#invite')[0].cloneNode(true));
 }
 
-function aboutOverlay(event) {
+function aboutOverlay() {
   mui.overlay('on', $('#about')[0].cloneNode(true));
+}
+
+function toggleWarningDrawer() {
+  $('#warning-drawer').toggleClass('shut');
 }
 
 function start(url) {
@@ -76,7 +80,6 @@ function start(url) {
   }
 
   game.ports.subscription.subscribe(function (lobbyIdAndSecret) {
-    console.log(lobbyIdAndSecret);
     if (lobbyIdAndSecret != null) {
       localStorage.setItem("existingGame", JSON.stringify(lobbyIdAndSecret))
       openWebSocket(lobbyIdAndSecret.lobbyId, lobbyIdAndSecret.secret);

@@ -8,7 +8,7 @@ import Effects
 import Http exposing (post, url, empty, send, defaultSettings, fromJson)
 
 import MassiveDecks.Actions.Action exposing (Action(..))
-import MassiveDecks.Models.Player exposing (Secret)
+import MassiveDecks.Models.Player exposing (Secret, Id)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Json.Encode exposing (..)
 import MassiveDecks.Models.Json.Decode exposing (..)
@@ -59,6 +59,11 @@ play lobbyId secret ids = lobbyAction lobbyId (commandEncoder "play" secret [ ("
 
 choose : String -> Secret -> Int -> Task.Task Http.Error LobbyAndHand
 choose lobbyId secret winner = lobbyAction lobbyId (commandEncoder "choose" secret [ ("winner", int winner) ])
+
+
+skip : String -> Secret -> List Id -> Task.Task Http.Error LobbyAndHand
+skip lobbyId secret players =
+  lobbyAction lobbyId (commandEncoder "skip" secret [ ("players", list (List.map int players)) ])
 
 
 getLobbyAndHand : String -> Secret -> Task.Task Http.Error LobbyAndHand

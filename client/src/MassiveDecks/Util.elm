@@ -68,3 +68,24 @@ find : (a -> Bool) -> List a -> Maybe a
 find check items
   = List.filter check items
   |> List.head
+
+
+isNothing : Maybe a -> Bool
+isNothing maybe = case maybe of
+  Just _ -> False
+  Nothing -> True
+
+
+pluralHas : List a -> Maybe String
+pluralHas items = case List.length items of
+  0 -> Nothing
+  1 -> Just "has"
+  _ -> Just "have"
+
+
+joinWithAnd : List String -> Maybe String
+joinWithAnd items = case items of
+  [] -> Nothing
+  head :: [] -> Just head
+  first :: second :: [] -> Just (first ++ " and " ++ second)
+  head :: rest -> Just (head ++ ", " ++ (joinWithAnd rest |> Maybe.withDefault ""))

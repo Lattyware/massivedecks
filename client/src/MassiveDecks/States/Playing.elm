@@ -37,15 +37,8 @@ update action global data = case action of
   Withdraw card ->
     (model global { data | picked = List.filter ((/=) card) data.picked }, Effects.none)
 
-  Play Request ->
-    (model global data, (API.play data.lobby.id data.secret data.picked) |> Task.map (Play << Result) |> API.toEffect)
-
-  Play (Result lobbyAndHand) ->
-      (model global
-        { data | lobby = lobbyAndHand.lobby
-               , hand = lobbyAndHand.hand
-               , picked = []
-               }, eventEffects data.lobby lobbyAndHand.lobby)
+  Play ->
+    (model global data, (API.play data.lobby.id data.secret data.picked) |> Task.map UpdateLobbyAndHand |> API.toEffect)
 
   Notification lobby ->
     case lobby.round of
@@ -62,10 +55,13 @@ update action global data = case action of
   Consider potentialWinner ->
     (model global { data | considering = Just potentialWinner } , Effects.none)
 
-  Choose winner Request ->
-    (model global data, (API.choose data.lobby.id data.secret winner) |> Task.map (Choose winner << Result) |> API.toEffect)
+  Choose winner ->
+    (model global data, (API.choose data.lobby.id data.secret winner) |> Task.map UpdateLobbyAndHand |> API.toEffect)
 
-  Choose winner (Result lobbyAndHand) ->
+  Skip players ->
+    (model global data, (API.skip data.lobby.id data.secret players) |> Task.map UpdateLobbyAndHand |> API.toEffect)
+
+  UpdateLobbyAndHand lobbyAndHand ->
       (model global
         { data | lobby = lobbyAndHand.lobby
                , hand = lobbyAndHand.hand
@@ -110,14 +106,17 @@ update action global data = case action of
                              , shownPlayed = []
                              } , Effects.none)
 
-      PlayerStatus id status ->
-        notificationChange global data (Notification.playerStatus id status data.lobby.players)
-
       PlayerJoin id ->
         notificationChange global data (Notification.playerJoin id data.lobby.players)
 
       PlayerReconnect id ->
         notificationChange global data (Notification.playerReconnect id data.lobby.players)
+
+      PlayerDisconnect id ->
+        notificationChange global data (Notification.playerDisconnect id data.lobby.players)
+
+      PlayerLeft id ->
+        notificationChange global data (Notification.playerLeft id data.lobby.players)
 
       _ ->
         (model global data, Effects.none)

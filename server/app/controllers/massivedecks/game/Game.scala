@@ -106,6 +106,18 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
           Json.toJson(state.lobbyAndHand(secret))
         }
 
+      case Skip(secret, players) =>
+        sender() ! Try {
+          state.skip(secret, players)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
+
+      case Back(secret) =>
+        sender() ! Try {
+          state.back(secret)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
+
       case _ =>
         sender() ! Try {
           throw new IllegalArgumentException("Unknown message: " + message)

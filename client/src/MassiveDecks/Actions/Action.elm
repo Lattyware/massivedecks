@@ -28,11 +28,11 @@ type Action
   | FailAddDeck String Error
   | StartGame (APICall LobbyAndHand)
   | Pick Int
-  | Play (APICall LobbyAndHand)
+  | Play
   | Withdraw Int
   | Notification Lobby
   | Consider Int
-  | Choose Int (APICall LobbyAndHand)
+  | Choose Int
   | RemoveErrorPanel Int
   | NextRound
   | SetInitialState InitialState
@@ -41,6 +41,8 @@ type Action
   | AddAi
   | DismissPlayerNotification (Maybe Notification.Player)
   | LeaveLobby
+  | Skip (List Player.Id)
+  | UpdateLobbyAndHand LobbyAndHand
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action

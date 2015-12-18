@@ -31,7 +31,9 @@ view address global data =
             Nothing -> ([], [])
   in
     LobbyUI.view address global.initialState.url data.lobby.id header lobby.players data.playerNotification
-                 (List.concat [ content, [ errorMessages address errors ] ])
+                 (List.concat [ content,
+                              [ warningDrawer address (disconnectedNotice address lobby.players) ],
+                              [ errorMessages address errors ] ])
 
 
 roundContents : Signal.Address Action -> PlayingData -> Round -> List Html
@@ -181,7 +183,7 @@ pickedView address picked slots shownPlayed =
 
 playButton : Signal.Address Action -> Html
 playButton address = li [ class "play-button" ] [ button
-  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address (Play Request) ]
+  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address Play ]
   [ icon "check" ] ]
 
 
@@ -207,5 +209,55 @@ playedResponse contents =
 
 chooseButton : Signal.Address Action -> Int -> Html
 chooseButton address playedId = li [ class "choose-button" ] [ button
-  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address (Choose playedId Request) ]
+  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address (Choose playedId) ]
   [ icon "trophy" ] ]
+
+
+warningDrawer : Signal.Address Action -> List Html -> Html
+warningDrawer address contents =
+  let
+    hidden = List.isEmpty contents
+    classes =
+      [ ("hidden", hidden)
+      ]
+  in
+  div [ id "warning-drawer", classList classes ]
+      [ button [ attribute "onClick" "toggleWarningDrawer()"
+               , class "toggle mui-btn mui-btn--small mui-btn--fab"
+               , title "Warning notices."
+               ] [ icon "exclamation-triangle" ]
+      , div [ class "top" ] []
+      , div [ class "contents" ] contents
+      ]
+
+
+disconnectedNotice : Signal.Address Action -> List Player -> List Html
+disconnectedNotice address players =
+  let
+    disconnected = List.filter (\player -> player.disconnected && (not (player.status == Skipping))) players
+    disconnectedNames = Util.joinWithAnd (List.map .name disconnected)
+    disconnectedIds = List.map .id disconnected
+    has = Util.pluralHas disconnected
+  in
+    Maybe.map2 (renderDisconnectedNotice address disconnectedIds) disconnectedNames has
+    |> Maybe.map (\item -> [ item ])
+    |> Maybe.withDefault []
+
+
+renderDisconnectedNotice : Signal.Address Action -> List Id -> String -> String -> Html
+renderDisconnectedNotice address ids disconnectedNames has =
+  div [ id "disconnected-notice" ]
+      [ h3 [] [ icon "minus-circle" ]
+      , span [] [ text disconnectedNames
+                , text " "
+                , text has
+                , text " disconnected from the game."
+                ]
+      , div [ class "actions" ]
+            [ button [ class "mui-btn mui-btn--small"
+                     , onClick address (Skip ids)
+                     , title "They will be removed from this round, and won't be in future rounds until they reconnect."
+                     ]
+                     [ icon "fast-forward", text " Skip" ]
+            ]
+      ]

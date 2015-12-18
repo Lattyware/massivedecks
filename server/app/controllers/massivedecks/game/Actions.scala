@@ -28,6 +28,8 @@ object Actions {
     case class Play(secret: Secret, ids: List[Int]) extends Command
     case class Choose(secret: Secret, winner: Int) extends Command
     case class GetLobbyAndHand(secret: Secret) extends Command
+    case class Skip(secret: Secret, players: List[Id]) extends Command
+    case class Back(secret: Secret) extends Command
 
     object Action {
       def apply(json: JsValue): Option[Command] =
@@ -40,6 +42,8 @@ object Actions {
               case "play" => Json.fromJson[Play](command).asOpt
               case "choose" => Json.fromJson[Choose](command).asOpt
               case "getLobbyAndHand" => Json.fromJson[GetLobbyAndHand](command).asOpt
+              case "skip" => Json.fromJson[Skip](command).asOpt
+              case "back" => Json.fromJson[Back](command).asOpt
               case _ => None
             }
           })
@@ -54,6 +58,8 @@ object Actions {
       implicit val playFormat: Format[Play] = Json.format[Play]
       implicit val chooseFormat: Format[Choose] = Json.format[Choose]
       implicit val getLobbyAndHandFormat: Format[GetLobbyAndHand] = Json.format[GetLobbyAndHand]
+      implicit val skipFormat: Format[Skip] = Json.format[Skip]
+      implicit val backFormat: Format[Back] = Json.format[Back]
     }
   }
 

@@ -11,6 +11,10 @@ icon : String -> Html
 icon name = i [ class ("fa fa-" ++ name) ] []
 
 
+fwIcon : String -> Html
+fwIcon name = i [ class ("fa fa-fw fa-" ++ name) ] []
+
+
 spinner : Html
 spinner = i [ class "fa fa-circle-o-notch fa-spin" ] []
 
@@ -52,26 +56,27 @@ gameMenu : Signal.Address Action -> Html
 gameMenu address = div [ class "menu mui-dropdown" ]
   [ button [ class "mui-btn mui-btn--small mui-btn--primary"
            , attribute "data-mui-toggle" "dropdown"
-           ] [ icon "ellipsis-h" ]
+           , title "Game menu."
+           ] [ fwIcon "ellipsis-h" ]
   , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
      [ li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , attribute "onClick" "inviteOverlay()"
-                 ] [ icon "bullhorn", text " Invite Players" ] ]
+                 ] [ fwIcon "bullhorn", text " Invite Players" ] ]
      , li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , onClick address LeaveLobby
-                 ] [ icon "sign-out", text " Leave Game" ] ]
+                 ] [ fwIcon "sign-out", text " Leave Game" ] ]
      , li [ class "mui-divider" ] []
      , li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , attribute "onClick" "aboutOverlay()"
-                 ] [ icon "info-circle", text " About" ] ]
+                 ] [ fwIcon "info-circle", text " About" ] ]
      , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
-                 [ icon "bug", text " Report a bug" ] ]
+                 [ fwIcon "bug", text " Report a bug" ] ]
      ]
   ]
 

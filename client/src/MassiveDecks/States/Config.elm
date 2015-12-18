@@ -98,14 +98,17 @@ update action global data = case action of
 
   GameEvent event ->
     case event of
-      PlayerStatus id status ->
-        notificationChange global data (Notification.playerStatus id status data.lobby.players)
-
       PlayerJoin id ->
         notificationChange global data (Notification.playerJoin id data.lobby.players)
 
       PlayerReconnect id ->
         notificationChange global data (Notification.playerReconnect id data.lobby.players)
+
+      PlayerDisconnect id ->
+        notificationChange global data (Notification.playerDisconnect id data.lobby.players)
+
+      PlayerLeft id ->
+        notificationChange global data (Notification.playerLeft id data.lobby.players)
 
       _ ->
         (model global data, Effects.none)
@@ -126,7 +129,8 @@ notificationChange global data notification =
       ]
   in
     ( model global { data | playerNotification = newNotification}
-    , Task.sleep (Time.second * 5) `Task.andThen` (\_ -> Task.succeed (DismissPlayerNotification newNotification)) |> Effects.task
+    , Task.sleep (Time.second * 5) `Task.andThen` (\_ -> Task.succeed (DismissPlayerNotification newNotification))
+      |> Effects.task
     )
 
 

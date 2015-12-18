@@ -9,6 +9,8 @@ import MassiveDecks.Util as Util
 type Event
   = PlayerJoin Id
   | PlayerStatus Id Status
+  | PlayerLeft Id
+  | PlayerDisconnect Id
   | PlayerReconnect Id
   | PlayerScore Id Int
   | RoundStart Call Id
@@ -50,17 +52,11 @@ diffPlayer oldPlayers newPlayer =
     case oldPlayer of
       Just oldPlayer ->
         List.concat
-          [ if oldPlayer.status /= newPlayer.status then
-              List.append
-                (if oldPlayer.status == Disconnected then
-                   [ playerReconnect newPlayer ]
-                 else
-                   []
-                )
-                [ playerStatus newPlayer ]
-            else
-              []
+          [ if oldPlayer.status /= newPlayer.status then  [ playerStatus newPlayer ] else []
           , if oldPlayer.score /= newPlayer.score then [ playerScore newPlayer ] else []
+          , if (not oldPlayer.left) && newPlayer.left then [ playerLeft newPlayer ] else []
+          , if (not oldPlayer.disconnected) && newPlayer.disconnected then [ playerDisconnect newPlayer ] else []
+          , if oldPlayer.disconnected && (not newPlayer.disconnected) then [ playerReconnect newPlayer ] else []
           ]
 
       Nothing ->
@@ -107,6 +103,12 @@ playerStatus player = PlayerStatus player.id player.status
 
 playerScore : Player -> Event
 playerScore player = PlayerScore player.id player.score
+
+playerLeft : Player -> Event
+playerLeft player = PlayerLeft player.id
+
+playerDisconnect : Player -> Event
+playerDisconnect player = PlayerDisconnect player.id
 
 roundStart : Round -> Event
 roundStart round = RoundStart round.call round.czar

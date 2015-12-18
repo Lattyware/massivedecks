@@ -10,7 +10,7 @@ object Player {
     val name: String
   }
   object Status {
-    private val types = List(NotPlayed, Played, Czar, Disconnected, Left, Ai, Neutral)
+    private val types = List(NotPlayed, Played, Czar, Ai, Neutral, Skipping)
     val fromName: Map[String, Status] = (for (status <- types) yield status.name -> status).toMap
   }
   case object NotPlayed extends Status {
@@ -22,20 +22,17 @@ object Player {
   case object Czar extends Status {
     val name = "czar"
   }
-  case object Disconnected extends Status {
-    val name = "disconnected"
-  }
-  case object Left extends Status {
-    val name = "left"
-  }
   case object Ai extends Status {
     val name = "ai"
   }
   case object Neutral extends Status {
     val name = "neutral"
   }
+  case object Skipping extends Status {
+    val name = "skipping"
+  }
 
-  case class Player(id: Id, name: String, status: Status, score: Int) {
+  case class Player(id: Id, name: String, status: Status, score: Int, disconnected: Boolean, left: Boolean) {
     require(!name.isEmpty, "Name can't be empty!")
   }
 

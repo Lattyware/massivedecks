@@ -40,11 +40,13 @@ handDecoder = object1 Hand
 
 
 playerDecoder : Decoder Player
-playerDecoder = object4 Player
+playerDecoder = object6 Player
     ("id" := playerIdDecoder)
     ("name" := string)
     ("status" := playerStatusDecoder)
     ("score" := int)
+    ("disconnected" := bool)
+    ("left" := bool)
 
 
 playerStatusDecoder : Decoder Status
