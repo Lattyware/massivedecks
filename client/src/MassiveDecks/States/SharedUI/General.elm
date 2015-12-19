@@ -100,11 +100,19 @@ inviteOverlay appUrl lobbyId =
   in
     div [ id "invite" ]
       [ div [ class "mui-panel" ]
-        [ p [] [ text "To invite other players, simply send them this link: " ]
+        [ h1 [] [ icon "bullhorn", text " Invite Players" ]
+        , p [] [ text "To invite other players, simply send them this link: " ]
         , p [] [ a [ href url ] [ text url ] ]
         , p [] [ text "Or give them this game code to enter on the start page: " ]
-        , p [] [ input [ readonly True, value lobbyId ] [] ] ]
+        , p [] [ input [ readonly True, value lobbyId ] [] ]
+        , p [ class "close-link" ]
+            [ a [ class "link"
+                , attribute "tabindex" "0"
+                , attribute "role" "button"
+                , attribute "onClick" "closeOverlay()"
+                ] [ icon "times", text " Close" ] ]
         ]
+      ]
 
 
 lobbyUrl : String -> String -> String
@@ -115,28 +123,49 @@ aboutOverlay : Html
 aboutOverlay =
   div [ id "about" ]
     [ div [ class "mui-panel" ]
-      [ p [] [ text "Massive Decks is a clone of the excellent "
+      [ h1 [] [ icon "info-circle", text " About" ]
+      , p [] [ text "Massive Decks is a web game based on the excellent "
              , a [ href "https://cardsagainsthumanity.com/", target "_blank" ] [ text "Cards against Humanity" ]
-             , text " using the "
-             , a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "CardCast" ]
-             , text " APIs (try their app if you have a ChromeCast!) and is inspired by "
-             , a [ href "http://pretendyoure.xyz/zy/", target "_blank" ] [ text "Pretend You're Xyzzy" ]
-             , text " (where you should go if you want to play with people you don't know)."
+             , text " - a party game where you play white cards to try and produce the most amusing outcome when "
+             , text "combined with the given black card."
+             ]
+      , p [] [ text "Massive Decks is also inspired by: "
+             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "CardCast" ]
+                             , text " - an app that allows you to play on a ChromeCast."
+                             ]
+                     , li [] [ a [ href "http://pretendyoure.xyz/zy/", target "_blank" ] [ text "Pretend You're Xyzzy" ]
+                             , text " - a web game where you can jump in with people you don't know."
+                             ]
+                     ]
              ]
       , p [] [ text "This is an open source game developed in "
              , a [ href "http://elm-lang.org/", target "_blank" ] [ text "Elm" ]
              , text " for the client and "
              , a [ href "http://www.scala-lang.org/", target "_blank" ] [ text "Scala" ]
-             , text " for the server. We also use "
-             , a [ href "https://www.playframework.com/", target "_blank" ] [ text "the Play framework" ]
-             , text ", "
-             , a [ href "http://lesscss.org/", target "_blank" ] [ text "less" ]
-             , text ", and "
-             , a [ href "https://fortawesome.github.io/Font-Awesome/", target "_blank" ] [ text "Font Awesome" ]
-             , text ". Bug reports and contributions are welcome on our "
-             , a [ href "https://github.com/Lattyware/massivedecks", target "_blank" ] [ text "GitHub repository" ]
-             , text "."
+             , text " for the server."
              ]
+      , p [] [ text "We also use: "
+             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "CardCast" ]
+                             , text "'s APIs for getting decks of cards (you can go there to make your own!)."
+                             ]
+                     , li [] [ text "The "
+                             , a [ href "https://www.playframework.com/", target "_blank" ] [ text "Play framework" ]
+                             ]
+                     , li [] [ a [ href "http://lesscss.org/", target "_blank" ] [ text "Less" ] ]
+                     , li [] [ a [ href "https://fortawesome.github.io/Font-Awesome/", target "_blank" ] [ text "Font Awesome" ] ]
+                     , li [] [ a [ href "https://www.muicss.com", target "_blank" ] [ text "MUI" ] ]
+                     ]
+             ]
+      , p [] [ text "Bug reports and contributions are welcome on the "
+             , a [ href "https://github.com/Lattyware/massivedecks", target "_blank" ] [ text "GitHub repository" ]
+             , text ", where you can find the complete source to the game, under the GPLv3 license."
+             ]
+      , p [ class "close-link" ]
+          [ a [ class "link"
+              , attribute "tabindex" "0"
+              , attribute "role" "button"
+              , attribute "onClick" "closeOverlay()"
+              ] [ icon "times", text " Close" ] ]
       ]
     ]
 

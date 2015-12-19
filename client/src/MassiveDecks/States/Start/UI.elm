@@ -45,8 +45,8 @@ view address global data =
             [ icon "question-circle" , text " About" ]
         , errorMessages address errors
         , aboutOverlay
-        , span [ id "forkongithub" ] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
-                                         [ icon "github", text " Fork me on GitHub" ] ]
+        , div [ id "forkongithub" ] [ div [] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
+                                                 [ icon "github", text " Fork me on GitHub" ] ] ]
         ]
       ]
 

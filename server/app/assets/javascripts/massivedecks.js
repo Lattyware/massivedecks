@@ -27,6 +27,10 @@ function aboutOverlay() {
   mui.overlay('on', $('#about')[0].cloneNode(true));
 }
 
+function closeOverlay() {
+  mui.overlay('off');
+}
+
 function toggleWarningDrawer() {
   $('#warning-drawer').toggleClass('shut');
 }

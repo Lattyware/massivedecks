@@ -143,11 +143,15 @@ body.hide-scores {
 #mui-overlay {
   display: flex;
   justify-content: center;
-  align-content: center;
-  align-items: center;
+  align-content: flex-start;
+  align-items: flex-start;
 
   #invite, #about {
     display: block;
+  }
+
+  .close-link {
+    text-align: right;
   }
 }
 
@@ -155,7 +159,7 @@ body.hide-scores {
   display: none;
 
   & > div {
-    max-width: 400px;
+    max-width: 500px;
     margin: 20px;
   }
 
