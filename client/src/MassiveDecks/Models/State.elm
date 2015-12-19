@@ -31,7 +31,9 @@ type State
 
 type alias StartData =
   { name : String
+  , nameError : Maybe String
   , lobbyId : String
+  , lobbyIdError : Maybe String
   }
 
 
@@ -39,13 +41,14 @@ type alias ConfigData =
   { lobby : Lobby
   , secret : Secret
   , deckId : String
+  , deckIdError : Maybe String
   , loadingDecks : List String
   , playerNotification : Maybe Notification.Player
   }
 
 
 configData : Lobby -> Secret -> ConfigData
-configData lobby secret = ConfigData lobby secret "" [] Nothing
+configData lobby secret = ConfigData lobby secret "" Nothing [] Nothing
 
 
 type alias PlayingData =

@@ -26,7 +26,7 @@ view address global data =
     div [ id "start-screen" ]
       [ div [ id "start-screen-content", class "mui-panel" ]
         [ h1 [ class "mui--divider-bottom" ] [ text "Massive Decks" ]
-        , nameEntry address
+        , nameEntry address data.nameError
         , ul [ class "mui-tabs__bar mui-tabs__bar--justified" ]
           [ li createLiClass
               [ a [ attribute "data-mui-toggle" "tab", attribute "data-mui-controls" "pane-new" ] [ text "Create" ] ]
@@ -34,7 +34,7 @@ view address global data =
           ]
         , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ newGame address nameEntered ]
         , div [ class ("mui-tabs__pane" ++ joinDivClass), id "pane-existing" ]
-          [ lobbyIdEntry address data.lobbyId
+          [ lobbyIdEntry address data.lobbyId data.lobbyIdError
           , joinGame address (nameEntered && lobbyIdEntered)
           ]
         , a [ class "about-link mui--divider-top link"
@@ -51,29 +51,33 @@ view address global data =
       ]
 
 
-nameEntry : Signal.Address Action -> Html
-nameEntry address = div [ class "nickname-entry mui-textfield" ]
-  [ input [ type' "text"
-          , placeholder "Nickname"
-          , on "input" targetValue (\name -> Signal.message address (UpdateInputValue "name" name))
+nameEntry : Signal.Address Action -> Maybe String -> Html
+nameEntry address error =
+  div [] (List.append
+    [ div [ class "nickname-entry mui-textfield" ]
+        [ input [ type' "text"
+                , placeholder "Nickname"
+                , on "input" targetValue (\name -> Signal.message address (UpdateInputValue "name" name))
+                ]
+                []
+        , label [] [ icon "info-circle", text " Your name in the game." ]
+        ]
+    ] (inputError error))
+
+lobbyIdEntry : Signal.Address Action -> String -> Maybe String -> Html
+lobbyIdEntry address val error =
+  div [] (List.append
+    [ div [ class "lobby-id-entry mui-textfield" ]
+        [ input
+          [ type' "text"
+          , placeholder "Game Code"
+          , on "input" targetValue (\name -> Signal.message address (UpdateInputValue "lobbyId" name))
+          , value val
           ]
           []
-  , label [] [ icon "info-circle", text " Your name in the game." ]
-  ]
-
-
-lobbyIdEntry : Signal.Address Action -> String -> Html
-lobbyIdEntry address val =
-    div [ class "lobby-id-entry mui-textfield" ]
-      [ input
-        [ type' "text"
-        , placeholder "Game Code"
-        , on "input" targetValue (\name -> Signal.message address (UpdateInputValue "lobbyId" name))
-        , value val
+        , label [] [ icon "info-circle", text " The code for the game to join." ]
         ]
-        []
-      , label [] [ icon "info-circle", text " The code for the game to join." ]
-      ]
+    ] (inputError error))
 
 
 joinGame : Signal.Address Action -> Bool -> Html

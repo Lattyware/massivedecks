@@ -101,8 +101,15 @@ genericErrorDecoder : Http.Response -> Error a
 genericErrorDecoder response = Unknown response.status response.statusText
 
 
-handleErrors : (a -> Action) -> Request a Action -> Task c Action
-handleErrors knownErrorHandler request =
+toEffectsWithOnError : (a -> Action) -> (b -> Action) -> (Error a -> Action) -> Request a b -> Effects Action
+toEffectsWithOnError errorHandler successHandler onError task
+  = Task.map successHandler task
+  |> handleErrors errorHandler (Just onError)
+  |> Effects.task
+
+
+handleErrors : (a -> Action) -> Maybe (Error a -> Action) -> Request a Action -> Task c Action
+handleErrors knownErrorHandler onError request =
   let
     errorToAction error = case error of
       Communication (Http.RawTimeout) ->
@@ -116,13 +123,15 @@ handleErrors knownErrorHandler request =
       Known knownError ->
         knownErrorHandler knownError
   in
-    request `Task.onError` (\error -> Task.succeed (errorToAction error))
+    request `Task.onError` (\error -> Task.succeed (case onError of
+      Just onError -> Batch [ errorToAction error, onError error ]
+      Nothing -> errorToAction error))
 
 
 toEffect : (a -> Action) -> (b -> Action) -> Request a b -> Effects Action
 toEffect errorHandler successHandler task
   = Task.map successHandler task
-  |> handleErrors errorHandler
+  |> handleErrors errorHandler Nothing
   |> Effects.task
 
 

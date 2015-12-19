@@ -36,7 +36,7 @@ view address data global =
                            , attribute "data-mui-controls" "house-rules" ] [ text "House Rules" ] ]
                ]
           , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
-                [ deckList address decks data.loadingDecks data.deckId ]
+                [ deckList address decks data.loadingDecks data.deckId data.deckIdError ]
           , div [ id "house-rules", class "mui-tabs__pane" ] [ rando address ]
           , divider
           , startGameButton address enoughPlayers enoughCards
@@ -57,25 +57,28 @@ invite appUrl lobbyId =
       ]
 
 
-deckIdInput : Signal.Address Action -> String -> Html
-deckIdInput address deckIdValue = div [ id "deck-id-input" ]
-  [ div [ class "mui-textfield" ]
-    [ input
-      [ type' "text"
-      , placeholder "Deck Id"
-      , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
-      , onKeyUp address (\key -> case key of
-          13 -> AddDeck {- Return key. -}
-          _ -> NoAction)
-      ] []
-    , label [] [ icon "info-circle"
-               , text " A "
-               , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ]
-               , text " Deck Id"
-               ]
-    ]
-  , addDeckButton address (not (String.isEmpty deckIdValue))
-  ]
+deckIdInput : Signal.Address Action -> String -> Maybe String -> Html
+deckIdInput address deckIdValue error =
+  div [] (List.append
+    [ div [ id "deck-id-input" ]
+        [ div [ class "mui-textfield" ]
+          [ input
+            [ type' "text"
+            , placeholder "Deck Id"
+            , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
+            , onKeyUp address (\key -> case key of
+                13 -> AddDeck {- Return key. -}
+                _ -> NoAction)
+            ] []
+          , label [] [ icon "info-circle"
+                     , text " A "
+                     , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ]
+                     , text " Deck Id"
+                     ]
+          ]
+        , addDeckButton address (not (String.isEmpty deckIdValue))
+        ]
+    ] (inputError error))
 
 
 addDeckButton : Signal.Address Action -> Bool -> Html
@@ -84,8 +87,8 @@ addDeckButton address canAdd =
          , onClick address AddDeck ] [ icon "plus" ]
 
 
-deckList : Signal.Address Action -> List DeckInfo -> List String -> String -> Html
-deckList address decks loadingDecks deckIdValue =
+deckList : Signal.Address Action -> List DeckInfo -> List String -> String -> Maybe String -> Html
+deckList address decks loadingDecks deckIdValue error =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
@@ -104,7 +107,7 @@ deckList address decks loadingDecks deckIdValue =
         , td [] [ text (toString deck.responses) ]
         ]) decks
       , List.map (\deck -> tr [] [ td [] [ deckLink deck ], td [ colspan 3 ] [ spinner ] ]) loadingDecks
-      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckIdValue ] ] ]
+      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckIdValue error ] ] ]
       ])
     ]
 

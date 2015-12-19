@@ -2,7 +2,6 @@ module MassiveDecks.Actions.Action where
 
 import Task
 import Effects
-import Http exposing (Error)
 
 import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
@@ -19,13 +18,15 @@ type APICall a
 type Action
   = NoAction
   | DisplayError String
+  | RemoveErrorPanel Int
+  | SetInputError String (Maybe String)
   | UpdateInputValue String String
   | NewLobby (APICall Lobby)
   | JoinExistingLobby
   | JoinLobby String Player.Secret (APICall LobbyAndHand)
   | AddDeck
   | AddGivenDeck String (APICall LobbyAndHand)
-  | FailAddDeck String Error
+  | FailAddDeck String
   | StartGame
   | Pick Int
   | Play
@@ -33,7 +34,6 @@ type Action
   | Notification Lobby
   | Consider Int
   | Choose Int
-  | RemoveErrorPanel Int
   | NextRound
   | SetInitialState InitialState
   | AnimatePlayedCards (List Int)
@@ -43,6 +43,7 @@ type Action
   | LeaveLobby
   | Skip (List Player.Id)
   | UpdateLobbyAndHand LobbyAndHand
+  | Batch (List Action)
 
 
 eventEffects : Lobby -> Lobby -> Effects.Effects Action

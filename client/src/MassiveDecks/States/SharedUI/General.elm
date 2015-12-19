@@ -139,3 +139,9 @@ aboutOverlay =
              ]
       ]
     ]
+
+
+inputError : Maybe String -> List Html
+inputError error =
+  (Maybe.map (\error -> [ span [ class "input-error" ] [ icon "exclamation", text " ", text error ] ]) error
+    |> Maybe.withDefault [])

@@ -41,10 +41,12 @@ noArguments value _ = Just value
 
 type NewPlayerError
   = NameInUse
+  | LobbyNotFound
 
 newPlayerErrorDecoder : SpecificErrorDecoder NewPlayerError
 newPlayerErrorDecoder = specificErrorDecoder (List.concat
   [ [ (400, "name-in-use", [], noArguments NameInUse)
+    , (404, "lobby-not-found", [], noArguments LobbyNotFound)
     ]
   ])
 

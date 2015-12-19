@@ -106,6 +106,9 @@ update action setupModel =
             NoAction ->
               (model, Effects.none)
 
+            Batch actions ->
+              (model, List.map Task.succeed actions |> List.map Effects.task |> Effects.batch)
+
             DisplayError message ->
               let
                 global = model.global

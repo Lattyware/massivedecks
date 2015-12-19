@@ -9,7 +9,7 @@ import Html exposing (Html)
 import MassiveDecks.States.Config.UI as UI
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Game exposing (Lobby)
-import MassiveDecks.Models.State exposing (Model, State(..), ConfigData, playingData, Error, Global)
+import MassiveDecks.Models.State exposing (Model, State(..), ConfigData, StartData, playingData, Error, Global)
 import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
@@ -25,26 +25,32 @@ update action global data = case action of
       "deckId" -> (model global { data | deckId = value }, Effects.none)
       _ -> (model global data, DisplayError "Got an update for an unknown input." |> Task.succeed |> Effects.task)
 
+  SetInputError input error ->
+    case input of
+      "deckId" -> (model global { data | deckIdError = error }, Effects.none)
+      _ -> (model global data, DisplayError "Got an error for an unknown input." |> Task.succeed |> Effects.task)
+
   AddDeck ->
     (model global data, AddGivenDeck data.deckId Request |> Task.succeed |> Effects.task)
 
   AddGivenDeck deckId Request ->
     (model global { data | loadingDecks = List.append data.loadingDecks [ deckId ] },
       ((API.addDeck data.lobby.id data.secret (String.toUpper deckId))
-        |> Request.toEffect (\error -> DisplayError (toString error)) (AddGivenDeck deckId << Result)))
-      {- }|> Task.map (AddGivenDeck deckId << Result))
-      `Task.onError` (\error -> FailAddDeck deckId error |> Task.succeed)
-      |> Effects.task) -}
+        |> Request.toEffectsWithOnError
+            addDeckErrorHandler
+            (AddGivenDeck deckId << Result)
+            (\error -> FailAddDeck deckId)))
 
   AddGivenDeck deckId (Result lobbyAndHand) ->
     let
       (data, effects) = updateLobby data lobbyAndHand.lobby
     in
-      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks }, effects)
+      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks
+                           , deckIdError = Nothing
+                           }, effects)
 
-  FailAddDeck deckId error ->
-      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks },
-        toString error |> DisplayError |> Task.succeed |> Effects.task)
+  FailAddDeck deckId ->
+      (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks }, Effects.none)
 
   AddAi ->
     (model global data,
@@ -93,7 +99,7 @@ update action global data = case action of
       (model global updatedData, Effects.none)
 
   LeaveLobby ->
-    ({ state = SStart { name = "", lobbyId = "" }, subscription = Just Nothing, global = global },
+    ({ state = SStart (StartData "" Nothing "" Nothing), subscription = Just Nothing, global = global },
       (API.leave data.lobby.id data.secret)
         |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
@@ -119,6 +125,12 @@ update action global data = case action of
       DisplayError ("Got an action (" ++ (toString other) ++ ") that can't be handled in the current state (Config).")
       |> Task.succeed
       |> Effects.task)
+
+
+addDeckErrorHandler : API.AddDeckError -> Action
+addDeckErrorHandler error = case error of
+  API.DeckNotFound -> SetInputError "deckId" (Just "The given deck doesn't exist, check the id is correct.")
+  API.CardCastTimeout -> SetInputError "deckId" (Just "We couldn't get a response from CardCast. Try again later.")
 
 
 notificationChange : Global -> ConfigData -> Maybe Notification.Player -> (Model, Effects.Effects Action)
@@ -157,10 +169,6 @@ modelSub global lobbyId secret data =
   , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
   , global = global
   }
-
-
-initialData : Lobby -> Secret -> ConfigData
-initialData lobby secret = ConfigData lobby secret "" [] Nothing
 
 
 view : Signal.Address Action -> Global -> ConfigData -> Html
