@@ -42,6 +42,7 @@ type Action
   | DismissPlayerNotification (Maybe Notification.Player)
   | LeaveLobby
   | Skip (List Player.Id)
+  | Back
   | UpdateLobbyAndHand LobbyAndHand
   | Batch (List Action)
 

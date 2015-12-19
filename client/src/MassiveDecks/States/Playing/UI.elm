@@ -31,9 +31,15 @@ view address global data =
             Nothing -> ([], [])
   in
     LobbyUI.view address global.initialState.url data.lobby.id header lobby.players data.playerNotification
-                 (List.concat [ content,
-                              [ warningDrawer address (disconnectedNotice address lobby.players) ],
-                              [ errorMessages address errors ] ])
+                 (List.concat [ infoBar data
+                              , content
+                              , [ warningDrawer address
+                                    (List.concat [ skippingNotice address lobby.players data.secret.id
+                                                 , disconnectedNotice address lobby.players
+                                                 ])
+                                ]
+                              , [ errorMessages address errors ]
+                              ])
 
 
 roundContents : Signal.Address Action -> PlayingData -> Round -> List Html
@@ -213,6 +219,50 @@ chooseButton address playedId = li [ class "choose-button" ] [ button
   [ icon "trophy" ] ]
 
 
+infoBar : PlayingData -> List Html
+infoBar data =
+  let
+    content = Maybe.oneOf [ statusInfo data.lobby.players data.secret.id, stateInfo data.lobby.round ]
+  in
+    case content of
+      Just message ->
+        [ div [ id "info-bar" ]
+           [ icon "info-circle"
+           , text " "
+           , text message
+           ]
+        ]
+      Nothing ->
+        []
+
+
+statusInfo : List Player -> Id -> Maybe String
+statusInfo players id =
+  case players |> Util.find (\player -> player.id == id) |> Maybe.map .status of
+    Just status ->
+      case status of
+        Skipping ->
+          Nothing {- There is a warning for this instead. -}
+        Neutral ->
+          Just "You joined while this round was already in play, you will be able to play next round."
+        Czar ->
+          Just "As card czar for this round - you don't play into the round, you pick the winner."
+        _ ->
+          Nothing
+    Nothing ->
+      Nothing
+
+
+stateInfo : Maybe Round -> Maybe String
+stateInfo round =
+  round `Maybe.andThen` (\round ->
+    case round.responses of
+      Hidden _ ->
+        Nothing
+      Revealed _ ->
+        Just "The card czar is now picking a winner.")
+
+
 warningDrawer : Signal.Address Action -> List Html -> Html
 warningDrawer address contents =
   let
@@ -231,6 +281,37 @@ warningDrawer address contents =
       ]
 
 
+skippingNotice : Signal.Address Action -> List Player -> Id -> List Html
+skippingNotice address players id =
+  let
+    status = players |> Util.find (\player -> player.id == id) |> Maybe.map .status
+    renderSkippingNoticeIfSkipping = (\status ->
+      case status of
+        Skipping ->
+          renderSkippingNotice address
+        _ ->
+          [])
+  in
+    Maybe.map renderSkippingNoticeIfSkipping status |> Maybe.withDefault []
+
+
+renderSkippingNotice : Signal.Address Action -> List Html
+renderSkippingNotice address =
+  [ div [ class "notice" ]
+    [ h3 [] [ icon "fast-forward" ]
+    , span [] [ text "You are currently being skipped because you took too long to play."
+              ]
+    , div [ class "actions" ]
+          [ button [ class "mui-btn mui-btn--small"
+                   , onClick address Back
+                   , title "Rejoin the game."
+                   ]
+                   [ icon "sign-in", text " Rejoin" ]
+          ]
+    ]
+ ]
+
+
 disconnectedNotice : Signal.Address Action -> List Player -> List Html
 disconnectedNotice address players =
   let
@@ -246,7 +327,7 @@ disconnectedNotice address players =
 
 renderDisconnectedNotice : Signal.Address Action -> List Id -> String -> String -> Html
 renderDisconnectedNotice address ids disconnectedNames has =
-  div [ id "disconnected-notice" ]
+  div [ class "notice" ]
       [ h3 [] [ icon "minus-circle" ]
       , span [] [ text disconnectedNames
                 , text " "
