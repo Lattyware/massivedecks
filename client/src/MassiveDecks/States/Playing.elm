@@ -16,6 +16,7 @@ import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffec
 import MassiveDecks.Actions.Event exposing (Event(..))
 import MassiveDecks.States.Playing.UI as UI
 import MassiveDecks.API as API
+import MassiveDecks.API.Request as Request
 import MassiveDecks.Util as Util
 
 
@@ -38,7 +39,9 @@ update action global data = case action of
     (model global { data | picked = List.filter ((/=) card) data.picked }, Effects.none)
 
   Play ->
-    (model global data, (API.play data.lobby.id data.secret data.picked) |> Task.map UpdateLobbyAndHand |> API.toEffect)
+    (model global data,
+      (API.play data.lobby.id data.secret data.picked)
+        |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   Notification lobby ->
     case lobby.round of
@@ -56,20 +59,24 @@ update action global data = case action of
     (model global { data | considering = Just potentialWinner } , Effects.none)
 
   Choose winner ->
-    (model global data, (API.choose data.lobby.id data.secret winner) |> Task.map UpdateLobbyAndHand |> API.toEffect)
+    (model global data, (API.choose data.lobby.id data.secret winner)
+      |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   Skip players ->
-    (model global data, (API.skip data.lobby.id data.secret players) |> Task.map UpdateLobbyAndHand |> API.toEffect)
+    (model global data, (API.skip data.lobby.id data.secret players)
+      |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   UpdateLobbyAndHand lobbyAndHand ->
       (model global
         { data | lobby = lobbyAndHand.lobby
                , hand = lobbyAndHand.hand
-               , picked = []
                }, eventEffects data.lobby lobbyAndHand.lobby)
 
   NextRound ->
-    (model global { data | lastFinishedRound = Nothing }, Effects.none)
+    (model global { data | lastFinishedRound = Nothing
+                         , picked = []
+                         , considering = Nothing
+                         }, Effects.none)
 
   AnimatePlayedCards toAnimate ->
     let
@@ -89,9 +96,7 @@ update action global data = case action of
 
   LeaveLobby ->
     ({ state = SStart { name = "", lobbyId = "" }, subscription = Just Nothing, global = global },
-      (API.leave data.lobby.id data.secret)
-      |> Task.map (\_ -> NoAction)
-      |> API.toEffect)
+      (API.leave data.lobby.id data.secret) |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
   GameEvent event ->
     case event of

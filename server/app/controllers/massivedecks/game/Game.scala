@@ -120,7 +120,7 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
 
       case _ =>
         sender() ! Try {
-          throw new IllegalArgumentException("Unknown message: " + message)
+          throw new Exception("Unknown message: " + message)
         }
     }
   }

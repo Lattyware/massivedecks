@@ -15,6 +15,7 @@ import models.massivedecks.Game._
 import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Lobby.{Lobby, LobbyAndHand}
 import models.massivedecks.Player._
+import controllers.massivedecks.game.BadRequestException._
 import play.api.libs.concurrent.Akka
 import play.api.libs.json.Json
 import play.api.Play.current
@@ -60,7 +61,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   }
 
   def newPlayer(name: String): Secret = {
-    require(players.forall(player => player.name != name), "The name is already in use.")
+    verify(players.forall(player => player.name != name), "{\"error\":\"name-in-use\"}")
     lastPlayerId += 1
     val id = Id(lastPlayerId)
     players = players ++ List(Player(id, name, Neutral, 0, disconnected=false, left=false))
@@ -90,10 +91,10 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 
   def newGame(secret: Secret): Unit = {
     if (numberOfPlayers < State.minimumPlayers) {
-      throw new IllegalStateException(s"You need a minimum of ${State.minimumPlayers} to start a game.")
+      throw new BadRequestException(s"""{\"error\":\"not-enough-players\",\"required\":${State.minimumPlayers}}""")
     }
     if (game.isDefined) {
-      throw new IllegalStateException(s"A game is already in progress.")
+      throw new BadRequestException("{\"error\":\"game-in-progress\"}")
     }
     val deck = Deck(decks)
     val hands = (for (player <- players) yield player.id -> Hand(deck.drawResponses(Hand.size))).toMap
@@ -140,16 +141,16 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   def play(secret: Secret, ids: List[Int]): Unit = {
     val id = validateSecretAndGetId(secret)
     val state = validateInGameAndGetState()
-    require (playedInRound.get(id).isDefined, "You can't play into this round.")
+    verify(playedInRound.get(id).isDefined, "{\"error\":\"not-in-round\"}")
     if (playedInRound(id).isDefined) {
-      throw new IllegalStateException("Already played into this round.")
+      throw new BadRequestException("{\"error\":\"already-played\"}")
     }
     val round = state.round
     if (round.responses.revealed.isDefined) {
-      throw new IllegalStateException("Already judging this round, can't play into it.")
+      throw new BadRequestException("{\"error\":\"already-judging\"}")
     }
-    require(ids.length == state.round.call.slots,
-      s"Wrong number of cards played (got ${ids.length}, expected ${state.round.call.slots}).")
+    verify(ids.length == state.round.call.slots,
+      s"""{\"error\":\"wrong-number-of-cards-played\",\"got\":${ids.length},\"expected\":${state.round.call.slots}}""")
     val hand = state.hands(id).hand
     val toPlay: List[Response] = ids.map(hand)
     val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ state.deck.drawResponses(toPlay.length))
@@ -170,7 +171,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   def choose(secret: Secret, winner: Int): Unit = {
     val id = validateSecretAndGetId(secret)
     val state = validateInGameAndGetState()
-    require(id == state.round.czar, "Only the current Czar can pick a winner.")
+    verify(id == state.round.czar, "{\"error\":\"not-czar\"}")
     val winnerId = playedOrder.get.apply(winner)
     players = players.map(player => if (player.id == winnerId) {
       player.copy(score = player.score + 1)
@@ -212,10 +213,10 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   def skip(secret: Secret, unfilteredPlayers: List[Id]): Unit = {
     validateSecretAndGetId(secret)
     val players = unfilteredPlayers.filter(id => playerForId(id).status != Skipping)
-    require((numberOfPlayers - players.length) > State.minimumPlayers,
-      "Not enough players left in the game if the given players are skipped.")
-    require(players.map(id => playerForId(id)).forall(player => player.disconnected),
-      "Only disconnected players or players who haven't played after the round timer runs out can be skipped.")
+    verify((numberOfPlayers - players.length) > State.minimumPlayers,
+      "{\"error\":\"not-enough-players-to-skip\"}")
+    verify(players.map(id => playerForId(id)).forall(player => player.disconnected),
+      "{\"error\":\"players-must-be-skippable\"}")
     for (id <- players) {
       setPlayerStatus(id, Skipping)
       playedInRound = playedInRound.filterKeys(pId => pId != id)
@@ -237,7 +238,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   def back(secret: Secret): Unit = {
     val id = validateSecretAndGetId(secret)
     val player = playerForId(id)
-    require(player.status == Skipping, "You are not being skipped.")
+    verify(player.status == Skipping, "{\"error\":\"not-being-skipped\"}")
     setPlayerStatus(id, Neutral, force=true)
     sendNotifications()
   }
@@ -245,7 +246,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   def register(secret: Secret, socket: ActorRef): Unit = {
     val id = validateSecretAndGetId(secret)
     val player = playerForId(id)
-    require(!player.left, "You have left this game.")
+    verify(!player.left, "{\"error\":\"already-left-game\"}")
     setPlayerDisconnected(id, disconnected=false)
     connected += id
     if (player.status == Skipping) {
@@ -334,7 +335,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private def setPlayerDisconnected(id: Id, disconnected: Boolean): Boolean = {
     var changed = false
     players = players.map(player =>
-      if (player.id == id) {
+      if (player.id == id && !player.left) {
         changed = true
         player.copy(disconnected=disconnected)
       } else {
@@ -346,7 +347,7 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
   private def setPlayerLeft(id: Id, left: Boolean): Unit = {
     players = players.map(player =>
       if (player.id == id) {
-        player.copy(status=Neutral, left=left)
+        player.copy(status=Neutral, disconnected=if (left) { false } else { player.disconnected }, left=left)
       } else {
         player
       })
@@ -354,13 +355,13 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
 
   private def validateInGameAndGetState(): GameState = game match {
     case Some(state) => state
-    case None => throw new IllegalStateException("No game in progress.")
+    case None => throw new BadRequestException("{\"error\":\"no-game-in-progress\"}")
   }
 
   private def validateSecretAndGetId(secret: Secret): Id = {
     val id = secret.id
-    require(secrets.get(id).map(expected => expected.secret).contains(secret.secret),
-      "Secret was wrong or player doesn't exist.")
+    verify(secrets.get(id).map(expected => expected.secret).contains(secret.secret),
+      "{\"error\":\"secret-wrong-or-not-a-player\"}")
     id
   }
 

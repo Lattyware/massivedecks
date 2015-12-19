@@ -19,7 +19,7 @@ import controllers.massivedecks.game.Actions.Lobby.GetLobby
 import controllers.massivedecks.game.Actions.Player.Formatters._
 import controllers.massivedecks.game.Actions.Player.{Leave, AddAi, GetHand, NewPlayer}
 import controllers.massivedecks.game.Actions.Store.{LobbyAction, NewLobby, PlayerAction}
-import controllers.massivedecks.game.NotFoundException
+import controllers.massivedecks.game.{BadRequestException, RequestFailedException, NotFoundException}
 import models.massivedecks.Player.{Id, Secret}
 
 class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: ExecutionContext) extends Controller {
@@ -47,7 +47,7 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
         resultOrError(store ? LobbyAction(lobbyId, action))
 
       case None =>
-        Future.successful(BadRequest("Invalid command."))
+        Future.successful(BadRequest("{\"error\":\"invalid-command\"}"))
     }
   }
 
@@ -57,7 +57,7 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
         resultOrError(store ? PlayerAction(lobbyId, action))
 
       case None =>
-        Future.successful(BadRequest("Badly formed name provided."))
+        Future.successful(BadRequest("{\"error\":\"badly-formed-name\"}"))
     }
   }
 
@@ -67,7 +67,7 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
         resultOrError(store ? PlayerAction(lobbyId, GetHand(Secret(Id(playerId), secret))))
 
       case None =>
-        Future.successful(BadRequest("Badly formed secret provided."))
+        Future.successful(BadRequest("{\"error\":\"badly-formed-secret\"}"))
     }
   }
 
@@ -81,7 +81,7 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
         resultOrError(store ? PlayerAction(lobbyId, Leave(Secret(Id(playerId), secret))))
 
       case None =>
-        Future.successful(BadRequest("Badly formed secret provided."))
+        Future.successful(BadRequest("{\"error\":\"badly-formed-secret\"}"))
     }
   }
 
@@ -91,14 +91,15 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
       case Success(json) =>
         Ok(json).as(JSON)
 
-      case Failure(error) =>
-        if (error.isInstanceOf[IllegalArgumentException] ||
-          error.isInstanceOf[IllegalStateException]) {
-          BadRequest(error.getMessage).as(TEXT)
-        } else if (error.isInstanceOf[NotFoundException]) {
-          NotFound
-        } else {
-          throw error
+      case Failure(error) => error match {
+          case BadRequestException(msg) =>
+            BadRequest(msg)
+          case NotFoundException(msg) =>
+            NotFound(msg).as(JSON)
+          case RequestFailedException(msg) =>
+            BadGateway(msg).as(JSON)
+          case _ =>
+            throw error
         }
     })
   }

@@ -14,6 +14,7 @@ import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
 import MassiveDecks.API as API
+import MassiveDecks.API.Request as Request
 import MassiveDecks.States.Playing as Playing
 
 
@@ -30,9 +31,10 @@ update action global data = case action of
   AddGivenDeck deckId Request ->
     (model global { data | loadingDecks = List.append data.loadingDecks [ deckId ] },
       ((API.addDeck data.lobby.id data.secret (String.toUpper deckId))
-      |> Task.map (AddGivenDeck deckId << Result))
+        |> Request.toEffect (\error -> DisplayError (toString error)) (AddGivenDeck deckId << Result)))
+      {- }|> Task.map (AddGivenDeck deckId << Result))
       `Task.onError` (\error -> FailAddDeck deckId error |> Task.succeed)
-      |> Effects.task)
+      |> Effects.task) -}
 
   AddGivenDeck deckId (Result lobbyAndHand) ->
     let
@@ -47,13 +49,13 @@ update action global data = case action of
   AddAi ->
     (model global data,
       (API.newAi data.lobby.id)
-      |> Task.map (\_ -> NoAction)
-      |> API.toEffect)
+        |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
-  StartGame Request ->
-    (model global data, (API.newGame data.lobby.id data.secret) |> Task.map (StartGame << Result) |> API.toEffect)
+  StartGame ->
+    (model global data, (API.newGame data.lobby.id data.secret)
+      |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
-  StartGame (Result lobbyAndHand) ->
+  UpdateLobbyAndHand lobbyAndHand ->
     (Playing.model global (playingData lobbyAndHand.lobby lobbyAndHand.hand data.secret),
       eventEffects data.lobby lobbyAndHand.lobby)
 
@@ -61,8 +63,8 @@ update action global data = case action of
     case lobby.round of
       Just _ -> (model global data,
         (API.getLobbyAndHand lobby.id data.secret)
-        |> Task.map (\lobbyAndHand -> JoinLobby lobby.id data.secret (Result lobbyAndHand))
-        |> API.toEffect)
+          |> Request.toEffect (\error -> DisplayError (toString error))
+            (\lobbyAndHand -> JoinLobby lobby.id data.secret (Result lobbyAndHand)))
       Nothing ->
         let
           (data, effects) = updateLobby data lobby
@@ -93,8 +95,7 @@ update action global data = case action of
   LeaveLobby ->
     ({ state = SStart { name = "", lobbyId = "" }, subscription = Just Nothing, global = global },
       (API.leave data.lobby.id data.secret)
-      |> Task.map (\_ -> NoAction)
-      |> API.toEffect)
+        |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
   GameEvent event ->
     case event of

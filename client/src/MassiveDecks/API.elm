@@ -1,88 +1,205 @@
 module MassiveDecks.API where
 
-import Json.Encode exposing (..)
-import Json.Decode
+import Json.Encode as Json
+import Json.Decode exposing (succeed)
 
-import Task
-import Effects
-import Http exposing (post, url, empty, send, defaultSettings, fromJson)
+import Http exposing (send, defaultSettings)
 
-import MassiveDecks.Actions.Action exposing (Action(..))
+import MassiveDecks.API.Request exposing (Request, SpecificErrorDecoder, toRequest, jsonBody, specificErrorDecoder, oneArgument, twoArguments)
 import MassiveDecks.Models.Player exposing (Secret, Id)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Json.Encode exposing (..)
 import MassiveDecks.Models.Json.Decode exposing (..)
 
 
-createLobby : Task.Task Http.Error Lobby
-createLobby = post lobbyDecoder (url "/lobbies" []) empty
+headers : List (String, String)
+headers = [("Content-Type", "application/json")]
 
 
-newPlayer : String -> String -> Task.Task Http.Error Secret
-newPlayer lobbyId name = send defaultSettings
-  { verb = "POST"
-  , headers = [("Content-Type", "application/json")]
-  , url = url ("/lobbies/" ++ lobbyId ++ "/players") []
-  , body = Http.string ("{ \"name\": \"" ++ name ++ "\"}")
-  } |> fromJson playerSecretDecoder
+commandBody : String -> Secret -> List (String, Json.Value) -> Http.Body
+commandBody command secret data =
+  jsonBody (Json.object (List.append
+    [ ("command", Json.string command)
+    , ("secret", playerSecretEncoder secret)
+    ] data))
 
 
-leave : String -> Secret -> Task.Task Http.Error LobbyAndHand
-leave lobbyId secret = send defaultSettings
-  { verb = "POST"
-  , headers = [("Content-Type", "application/json")]
-  , url = url ("/lobbies/" ++ lobbyId ++ "/players/" ++ (toString secret.id) ++ "/leave") []
-  , body = Http.string ("{ \"secret\": \"" ++ secret.secret ++ "\"}")
-  } |> fromJson lobbyAndHandDecoder
+createLobby : Request () Lobby
+createLobby =
+  send defaultSettings
+    { verb = "POST"
+    , headers = []
+    , url = "/lobbies"
+    , body = Http.empty
+    }
+  |> toRequest lobbyDecoder (\_ -> Nothing)
 
 
-addDeck : String -> Secret -> String -> Task.Task Http.Error LobbyAndHand
-addDeck lobbyId secret deckId = lobbyAction lobbyId (commandEncoder "addDeck" secret [ ("deckId", string deckId) ])
+noArguments : a -> List Json.Value -> Maybe a
+noArguments value _ = Just value
 
 
-newAi : String -> Task.Task Http.Error ()
-newAi lobbyId = send defaultSettings
-  { verb = "POST"
-  , headers = []
-  , url = url ("/lobbies/" ++ lobbyId ++ "/players/newAi") []
-  , body = empty
-  } |> fromJson (Json.Decode.succeed ())
+type NewPlayerError
+  = NameInUse
+
+newPlayerErrorDecoder : SpecificErrorDecoder NewPlayerError
+newPlayerErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (400, "name-in-use", [], noArguments NameInUse)
+    ]
+  ])
+
+newPlayer : String -> String -> Request NewPlayerError Secret
+newPlayer lobbyId name =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId ++ "/players"
+    , body = jsonBody (Json.object [ ("name", Json.string name) ])
+    }
+  |> toRequest playerSecretDecoder newPlayerErrorDecoder
 
 
-newGame : String -> Secret -> Task.Task Http.Error LobbyAndHand
-newGame lobbyId secret = lobbyAction lobbyId (commandEncoder "newGame" secret [])
+leave : String -> Secret -> Request () LobbyAndHand
+leave lobbyId secret =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId ++ "/players/" ++ (toString secret.id) ++ "/leave"
+    , body = jsonBody (Json.object [ ("secret", Json.string secret.secret) ])
+    }
+  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
 
 
-play : String -> Secret -> List Int -> Task.Task Http.Error LobbyAndHand
-play lobbyId secret ids = lobbyAction lobbyId (commandEncoder "play" secret [ ("ids", list (List.map int ids)) ])
+type AddDeckError
+  = CardCastTimeout
+  | DeckNotFound
+
+addDeckErrorDecoder : SpecificErrorDecoder AddDeckError
+addDeckErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (502, "cardcast-timeout", [], noArguments CardCastTimeout)
+    , (400, "deck-not-found", [], noArguments DeckNotFound)
+    ]
+  ])
+
+addDeck : String -> Secret -> String -> Request AddDeckError LobbyAndHand
+addDeck lobbyId secret deckId =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "addDeck" secret [ ("deckId", Json.string deckId) ]
+    }
+  |> toRequest lobbyAndHandDecoder addDeckErrorDecoder
 
 
-choose : String -> Secret -> Int -> Task.Task Http.Error LobbyAndHand
-choose lobbyId secret winner = lobbyAction lobbyId (commandEncoder "choose" secret [ ("winner", int winner) ])
+newAi : String -> Request () ()
+newAi lobbyId =
+  send defaultSettings
+    { verb = "POST"
+    , headers = []
+    , url = "/lobbies/" ++ lobbyId ++ "/players/newAi"
+    , body = Http.empty
+    }
+  |> toRequest (succeed ()) (\_ -> Nothing)
 
 
-skip : String -> Secret -> List Id -> Task.Task Http.Error LobbyAndHand
+type NewGameError
+  = NotEnoughPlayers Int
+  | GameInProgress
+
+newGameErrorDecoder : SpecificErrorDecoder NewGameError
+newGameErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (400, "game-in-progress", [], noArguments GameInProgress)
+    , (400, "not-enough-players", [ "required" ], oneArgument Json.Decode.int NotEnoughPlayers)
+    ]
+  ])
+
+newGame : String -> Secret -> Request NewGameError LobbyAndHand
+newGame lobbyId secret =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "newGame" secret []
+    }
+  |> toRequest lobbyAndHandDecoder newGameErrorDecoder
+
+
+type PlayError
+  = NotInRound
+  | AlreadyPlayed
+  | AlreadyJudging
+  | WrongNumberOfCards Int Int
+
+playErrorDecoder : SpecificErrorDecoder PlayError
+playErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (400, "not-in-round", [], noArguments NotInRound)
+    , (400, "already-played", [], noArguments AlreadyPlayed)
+    , (400, "already-judging", [], noArguments AlreadyJudging)
+    , (400, "wrong-number-of-cards-played", [ "got", "expected" ]
+      , twoArguments (Json.Decode.int, Json.Decode.int) WrongNumberOfCards)
+    ]
+  ])
+
+play : String -> Secret -> List Int -> Request PlayError LobbyAndHand
+play lobbyId secret ids =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "play" secret [ ("ids", Json.list (List.map Json.int ids)) ]
+    }
+  |> toRequest lobbyAndHandDecoder playErrorDecoder
+
+
+type ChooseError
+  = NotCzar
+
+chooseErrorDecoder : SpecificErrorDecoder ChooseError
+chooseErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (400, "not-czar", [], noArguments NotCzar)
+    ]
+  ])
+
+choose : String -> Secret -> Int -> Request ChooseError LobbyAndHand
+choose lobbyId secret winner =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "choose" secret [ ("winner", Json.int winner) ]
+    }
+  |> toRequest lobbyAndHandDecoder chooseErrorDecoder
+
+
+type SkipError
+  = NotEnoughPlayersToSkip
+  | PlayersNotSkippable
+
+skipErrorDecoder : SpecificErrorDecoder SkipError
+skipErrorDecoder = specificErrorDecoder (List.concat
+  [ [ (400, "not-enough-players-to-skip", [], noArguments NotEnoughPlayersToSkip)
+    , (400, "players-must-be-skippable", [], noArguments PlayersNotSkippable)
+    ]
+  ])
+
+skip : String -> Secret -> List Id -> Request SkipError LobbyAndHand
 skip lobbyId secret players =
-  lobbyAction lobbyId (commandEncoder "skip" secret [ ("players", list (List.map int players)) ])
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "skip" secret [ ("players", Json.list (List.map Json.int players)) ]
+    }
+  |> toRequest lobbyAndHandDecoder skipErrorDecoder
 
 
-getLobbyAndHand : String -> Secret -> Task.Task Http.Error LobbyAndHand
+getLobbyAndHand : String -> Secret -> Request () LobbyAndHand
 getLobbyAndHand lobbyId secret =
-  lobbyAction lobbyId (commandEncoder "getLobbyAndHand" secret [])
-
-
-lobbyAction : String -> String -> Task.Task Http.Error LobbyAndHand
-lobbyAction lobbyId content = send defaultSettings
-  { verb = "POST"
-  , headers = [("Content-Type", "application/json")]
-  , url = url ("/lobbies/" ++ lobbyId) []
-  , body = Http.string (content)
-  } |> fromJson lobbyAndHandDecoder
-
-
-toEffect : Task.Task Http.Error Action -> Effects.Effects Action
-toEffect task =  task `Task.onError` handleError |> Effects.task
-
-
-handleError : Http.Error -> Task.Task b Action
-handleError error = toString error |> DisplayError |> Task.succeed
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "getLobbyAndHand" secret []
+    }
+  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)

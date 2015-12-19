@@ -154,7 +154,7 @@ startGameButton address enoughPlayers enoughCards = div [ id "start-game" ]
   [ startGameWarning enoughPlayers
   , button
     [ class "mui-btn mui-btn--primary mui-btn--raised"
-    , onClick address (StartGame Request)
+    , onClick address StartGame
     , disabled (not (enoughPlayers && enoughCards))
     ] [ text "Start Game" ]
   ]

@@ -6,6 +6,7 @@ import Effects
 import Html exposing (Html)
 
 import MassiveDecks.API as API
+import MassiveDecks.API.Request as Request
 import MassiveDecks.Models.State exposing (Model, State(..))
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), catchUpEffects)
 import MassiveDecks.Models.State exposing (State(..), StartData, playingData, Error, Global)
@@ -23,25 +24,23 @@ update action global data = case action of
       _ -> (model global data, DisplayError "Got an update for an unknown input." |> Task.succeed |> Effects.task)
 
   NewLobby Request ->
-    (model global data, API.createLobby |> Task.map (NewLobby << Result) |> API.toEffect)
+    (model global data, API.createLobby
+      |> Request.toEffect (\error -> DisplayError (toString error)) (NewLobby << Result))
 
   NewLobby (Result lobby) ->
     (model global data,
       (API.newPlayer lobby.id data.name)
-      |> Task.map (\secret -> JoinLobby lobby.id secret Request)
-      |> API.toEffect)
+        |> Request.toEffect (\error -> DisplayError (toString error)) (\secret -> JoinLobby lobby.id secret Request))
 
   JoinExistingLobby ->
     (model global data,
-        (API.newPlayer data.lobbyId data.name)
-        |> Task.map (\secret -> JoinLobby data.lobbyId secret Request)
-        |> API.toEffect)
+      (API.newPlayer data.lobbyId data.name)
+        |> Request.toEffect (\error -> DisplayError (toString error)) (\secret -> JoinLobby data.lobbyId secret Request))
 
   JoinLobby lobbyId secret Request ->
     (model global data,
       (API.getLobbyAndHand lobbyId secret)
-      |> Task.map (\lobbyAndHand -> JoinLobby lobbyId secret (Result lobbyAndHand))
-      |> API.toEffect)
+        |> Request.toEffect (\error -> DisplayError (toString error)) (\lobbyAndHand -> JoinLobby lobbyId secret (Result lobbyAndHand)))
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of

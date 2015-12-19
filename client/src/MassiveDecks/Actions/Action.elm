@@ -26,7 +26,7 @@ type Action
   | AddDeck
   | AddGivenDeck String (APICall LobbyAndHand)
   | FailAddDeck String Error
-  | StartGame (APICall LobbyAndHand)
+  | StartGame
   | Pick Int
   | Play
   | Withdraw Int

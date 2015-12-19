@@ -1,8 +1,10 @@
 module MassiveDecks.States.SharedUI.General where
 
+import Http exposing (url)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+
 import MassiveDecks.Models.State exposing (Error)
 import MassiveDecks.Actions.Action exposing (Action(..))
 
@@ -19,8 +21,17 @@ spinner : Html
 spinner = i [ class "fa fa-circle-o-notch fa-spin" ] []
 
 
+reportText : String -> String
+reportText message =
+  ("I was [a short explanation of what you were doing] when I got the following error: \n\n"
+    ++ message)
+
+
 errorMessage : Signal.Address Action -> Int -> Error -> Html
 errorMessage address index error =
+  let
+    reportUrl = (url "https://github.com/Lattyware/massivedecks/issues/new" [( "body", reportText error.message ) ])
+  in
     li
       [ class "error" ]
       [ div
@@ -35,6 +46,7 @@ errorMessage address index error =
                 ]
         , divider
         , p [] [ text error.message ]
+        , p [] [ a [ href reportUrl, target "_blank" ] [ icon "bug", text " Report this as a bug." ] ]
         ]
       ]
 
