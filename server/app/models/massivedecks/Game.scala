@@ -61,7 +61,7 @@ object Game {
 
   case class Hand(hand: List[Response])
   object Hand {
-    val size: Int = 7
+    val size: Int = 10
   }
 
   object Formatters {
