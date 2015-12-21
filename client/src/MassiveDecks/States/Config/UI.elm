@@ -64,7 +64,7 @@ deckIdInput address deckIdValue error =
         [ div [ class "mui-textfield" ]
           [ input
             [ type' "text"
-            , placeholder "Deck Id"
+            , placeholder "Play Code"
             , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
             , onKeyUp address (\key -> case key of
                 13 -> AddDeck {- Return key. -}
@@ -73,7 +73,7 @@ deckIdInput address deckIdValue error =
           , label [] [ icon "info-circle"
                      , text " A "
                      , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ]
-                     , text " Deck Id"
+                     , text " Play Code"
                      ]
           ]
         , addDeckButton address (not (String.isEmpty deckIdValue))
