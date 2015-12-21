@@ -158,7 +158,11 @@ aboutOverlay =
              ]
       , p [] [ text "Bug reports and contributions are welcome on the "
              , a [ href "https://github.com/Lattyware/massivedecks", target "_blank" ] [ text "GitHub repository" ]
-             , text ", where you can find the complete source to the game, under the GPLv3 license."
+             , text ", where you can find the complete source to the game, under the GPLv3 license. The game concept "
+             , text "'Cards against Humanity' is used under a "
+             , a [ href "https://creativecommons.org/licenses/by-nc-sa/2.0/", target "_blank" ] [ text "Creative Commons BY-NC-SA 2.0 license" ]
+             , text " granted by "
+             , a [ href "https://cardsagainsthumanity.com/", target "_blank" ] [ text "Cards against Humanity" ]
              ]
       , p [ class "close-link" ]
           [ a [ class "link"
