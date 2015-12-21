@@ -17,7 +17,7 @@ import play.api.libs.ws.WSClient
 
 import models.massivedecks.Game.{Call, Response}
 
-class CardCastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
+class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
 
   private def deckUrl(id: String): String = {
@@ -27,19 +27,19 @@ class CardCastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   private def cardsUrl(id: String): String = s"${deckUrl(id)}/cards"
 
   /**
-    * Get a future that either returns the deck or blows up after 10 seconds of waiting on CardCast.
+    * Get a future that either returns the deck or blows up after 10 seconds of waiting on Cardcast.
     * @param id The id of the deck to get.
-    * @param timeout How long to wait on CardCast.
+    * @param timeout How long to wait on Cardcast.
     * @return See above.
     */
-  def deck(id: String, timeout: FiniteDuration = 10.seconds): Future[CardCastDeck] = {
+  def deck(id: String, timeout: FiniteDuration = 10.seconds): Future[CardcastDeck] = {
     val deckInfo = requestJson(deckUrl(id)).map(parseInfo)
     val cards = requestJson(cardsUrl(id)).map(parseCards)
 
     val deck = for {
       name <- deckInfo
       (calls, responses) <- cards
-    } yield CardCastDeck(id, name, calls, responses)
+    } yield CardcastDeck(id, name, calls, responses)
 
     val timeoutError = after(timeout, using=Akka.system.scheduler)(
       Future.failed(new RequestFailedException("{\"error\":\"cardcast-timeout\"}")))
@@ -78,8 +78,8 @@ class CardCastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
     println(error)
     (error \ "id").validate[String].asOpt match {
       case Some("not_found") => throw new BadRequestException("{\"error\":\"deck-not-found\"}")
-      case Some(errorName) => throw new Exception(s"CardCast gave an unknown error ('$errorName') when trying to retrieve the deck.")
-      case None => throw new Exception(s"CardCast gave an error that couldn't be parsed when trying to retrieve the deck.")
+      case Some(errorName) => throw new Exception(s"Cardcast gave an unknown error ('$errorName') when trying to retrieve the deck.")
+      case None => throw new Exception(s"Cardcast gave an error that couldn't be parsed when trying to retrieve the deck.")
     }
   }
 }

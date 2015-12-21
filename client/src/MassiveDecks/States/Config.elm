@@ -130,7 +130,7 @@ update action global data = case action of
 addDeckErrorHandler : API.AddDeckError -> Action
 addDeckErrorHandler error = case error of
   API.DeckNotFound -> SetInputError "deckId" (Just "The given deck doesn't exist, check the play code is correct.")
-  API.CardCastTimeout -> SetInputError "deckId" (Just "We couldn't get a response from CardCast. Try again later.")
+  API.CardcastTimeout -> SetInputError "deckId" (Just "We couldn't get a response from Cardcast. Try again later.")
 
 
 notificationChange : Global -> ConfigData -> Maybe Notification.Player -> (Model, Effects.Effects Action)

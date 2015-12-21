@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 import akka.pattern.after
 import akka.actor.ActorRef
 import com.google.inject.assistedinject.Assisted
-import controllers.massivedecks.cardcast.{CardCastAPI, CardCastDeck}
+import controllers.massivedecks.cardcast.{CardcastAPI, CardcastDeck}
 import models.massivedecks.Game._
 import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Lobby.{Lobby, LobbyAndHand}
@@ -20,8 +20,8 @@ import play.api.libs.concurrent.Akka
 import play.api.libs.json.Json
 import play.api.Play.current
 
-class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: String)(implicit ec: ExecutionContext) {
-  private var decks: Set[CardCastDeck] = Set()
+class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: String)(implicit ec: ExecutionContext) {
+  private var decks: Set[CardcastDeck] = Set()
   private var players: List[Player] = List()
   private var lastPlayerId: Int = -1
   private var secrets: Map[Id, Secret] = Map()
@@ -78,12 +78,12 @@ class State @Inject()(private val cardCast: CardCastAPI, @Assisted val id: Strin
     secret
   }
 
-  def retrieveDeck(secret: Secret, deckId: String): Future[CardCastDeck] = {
+  def retrieveDeck(secret: Secret, deckId: String): Future[CardcastDeck] = {
     validateSecretAndGetId(secret)
     cardCast.deck(deckId)
   }
 
-  def addDeck(secret: Secret, deck: CardCastDeck): Unit = {
+  def addDeck(secret: Secret, deck: CardcastDeck): Unit = {
     validateSecretAndGetId(secret)
     decks = decks + deck
     sendNotifications()

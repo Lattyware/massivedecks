@@ -13,7 +13,7 @@ import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Player.Formatters._
 import models.massivedecks.Game.Formatters._
 import models.massivedecks.Player.Secret
-import controllers.massivedecks.cardcast.CardCastDeck
+import controllers.massivedecks.cardcast.CardcastDeck
 import controllers.massivedecks.game.Game.AddRetrievedDeck
 import controllers.massivedecks.game.Actions.Player.{Leave, AddAi, GetHand, NewPlayer}
 import controllers.massivedecks.game.Actions.Lobby._
@@ -126,7 +126,7 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
   }
 }
 object Game {
-  case class AddRetrievedDeck(secret: Secret, deck: CardCastDeck)
+  case class AddRetrievedDeck(secret: Secret, deck: CardcastDeck)
 
   trait Factory {
     def apply(id: String): Actor

@@ -130,7 +130,7 @@ aboutOverlay =
              , text "combined with the given black card."
              ]
       , p [] [ text "Massive Decks is also inspired by: "
-             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "CardCast" ]
+             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "Cardcast" ]
                              , text " - an app that allows you to play on a ChromeCast."
                              ]
                      , li [] [ a [ href "http://pretendyoure.xyz/zy/", target "_blank" ] [ text "Pretend You're Xyzzy" ]
@@ -145,7 +145,7 @@ aboutOverlay =
              , text " for the server."
              ]
       , p [] [ text "We also use: "
-             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "CardCast" ]
+             , ul [] [ li [] [ a [ href "https://www.cardcastgame.com/", target "_blank" ] [ text "Cardcast" ]
                              , text "'s APIs for getting decks of cards (you can go there to make your own!)."
                              ]
                      , li [] [ text "The "

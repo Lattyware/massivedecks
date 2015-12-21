@@ -72,7 +72,7 @@ deckIdInput address deckIdValue error =
             ] []
           , label [] [ icon "info-circle"
                      , text " A "
-                     , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast" ]
+                     , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "Cardcast" ]
                      , text " Play Code"
                      ]
           ]
@@ -122,7 +122,7 @@ emptyDeckListInfo address display =
     [ tr [] [ td [ colspan 4 ]
         [ icon "info-circle"
         , text " You will need to add at least one "
-        , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "CardCast deck" ]
+        , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "Cardcast deck" ]
         , text " to the game."
         , text " Not sure? Try "
         , a [ class "link"

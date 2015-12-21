@@ -2,14 +2,14 @@ package controllers.massivedecks.game
 
 import scala.util.Random
 
-import controllers.massivedecks.cardcast.CardCastDeck
+import controllers.massivedecks.cardcast.CardcastDeck
 import models.massivedecks.Game.{Response, Call}
 
 /**
   * A live deck of cards in a game, constructed from a collection of decks.
   * @param decks The decks.
   */
-case class Deck(decks: Set[CardCastDeck]) {
+case class Deck(decks: Set[CardcastDeck]) {
   var calls: List[Call] = List()
   var responses: List[Response] = List()
   resetCalls()

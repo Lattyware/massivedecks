@@ -23,7 +23,7 @@ import controllers.massivedecks.game.{BadRequestException, RequestFailedExceptio
 import models.massivedecks.Player.{Id, Secret}
 
 class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: ExecutionContext) extends Controller {
-  implicit val timeout: Timeout = 15.seconds // Should be more than the CardCast API timeout.
+  implicit val timeout: Timeout = 15.seconds // Should be more than the Cardcast API timeout.
 
   def index() = Action { implicit request =>
     Ok(views.html.massivedecks.index(routes.Application.index().absoluteURL()))

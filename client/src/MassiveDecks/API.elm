@@ -73,12 +73,12 @@ leave lobbyId secret =
 
 
 type AddDeckError
-  = CardCastTimeout
+  = CardcastTimeout
   | DeckNotFound
 
 addDeckErrorDecoder : SpecificErrorDecoder AddDeckError
 addDeckErrorDecoder = specificErrorDecoder (List.concat
-  [ [ (502, "cardcast-timeout", [], noArguments CardCastTimeout)
+  [ [ (502, "cardcast-timeout", [], noArguments CardcastTimeout)
     , (400, "deck-not-found", [], noArguments DeckNotFound)
     ]
   ])

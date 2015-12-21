@@ -1,6 +1,6 @@
 # Massive Decks
 
-Massive Decks is a clone of the excellent [Cards against Humanity][CaH] using the [CardCast][CC] APIs (try their app if you have a ChromeCast!) and is inspired by [Pretend You're Xyzzy][PYX] (where you should go if you want to play with people you don't know).
+Massive Decks is a clone of the excellent [Cards against Humanity][CaH] using the [Cardcast][CC] APIs (try their app if you have a ChromeCast!) and is inspired by [Pretend You're Xyzzy][PYX] (where you should go if you want to play with people you don't know).
 
 You can try a version running at http://massivedecks.herokuapp.com/
 
