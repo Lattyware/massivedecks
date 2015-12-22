@@ -5,7 +5,6 @@ module MassiveDecks.Actions.Action
   , batch
 
   , eventEffects
-  , catchUpEffects
 
   ) where
 
@@ -16,7 +15,7 @@ import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
 import MassiveDecks.Models.Player as Player
 import MassiveDecks.Models.Notification as Notification
-import MassiveDecks.Actions.Event exposing (Event, events, catchUpEvents)
+import MassiveDecks.Actions.Event exposing (Event, events)
 
 
 {-| When an API request is made, there must be two actions - the first is the action that triggers the call to server,
@@ -128,14 +127,6 @@ See the `Event` documentation for more on events.
 eventEffects : Lobby -> Lobby -> Effects.Effects Action
 eventEffects oldLobby newLobby =
   events oldLobby newLobby |> eventsToEffects
-
-
-{-| Creates effects that will cause `GameEvent`s `Action`s to bring the client up-to-speed with the current lobby state.
-See the `Event` documentation for more on events.
--}
-catchUpEffects : Lobby -> Effects.Effects Action
-catchUpEffects lobby =
-  catchUpEvents lobby |> eventsToEffects
 
 
 {- Private -}

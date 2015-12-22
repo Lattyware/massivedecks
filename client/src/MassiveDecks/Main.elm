@@ -1,8 +1,4 @@
-module MassiveDecks.Main
-
-  ( main
-
-  ) where
+module MassiveDecks.Main (main) where
 
 import Task
 import Effects

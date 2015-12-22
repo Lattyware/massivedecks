@@ -34,14 +34,15 @@ update : Action -> Global -> PlayingData -> (Model, Effects.Effects Action)
 update action global data = case action of
   Pick card ->
     let
-      canPlay = (List.length data.picked) < Maybe.withDefault 0 (Maybe.map (\round -> Card.slots round.call) data.lobby.round)
+      slots = Maybe.withDefault 0 (Maybe.map (\round -> Card.slots round.call) data.lobby.round)
+      canPlay = (List.length data.picked) < slots
       playing = Maybe.withDefault False (Maybe.map (\round -> case round.responses of
         Card.Revealed _ -> False
         Card.Hidden _ -> True
       ) data.lobby.round)
     in
       if playing && canPlay then
-        (model global { data | picked = List.append data.picked [card] }, Effects.none)
+        (model global { data | picked = List.append data.picked [ card ] }, Effects.none)
       else
         (model global data, Effects.none)
 
@@ -49,27 +50,25 @@ update action global data = case action of
     (model global { data | picked = List.filter ((/=) card) data.picked }, Effects.none)
 
   Play ->
-    (model global data,
+    (model global { data | picked = [] },
       (API.play data.lobby.id data.secret data.picked)
         |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   Notification lobby ->
     case lobby.round of
-      Just _ -> (model global { data | lobby = lobby }, eventEffects data.lobby lobby)
+      Just _ -> updateLobby global data lobby
       Nothing -> (configModel global (configData lobby data.secret), Effects.none)
 
   JoinLobby lobbyId secret (Result lobbyAndHand) ->
     case lobbyAndHand.lobby.round of
-      Just _ -> (model global { data | lobby = lobbyAndHand.lobby
-                                     , hand = lobbyAndHand.hand
-                                     }, eventEffects data.lobby lobbyAndHand.lobby)
+      Just _ -> updateLobby global { data | hand = lobbyAndHand.hand } lobbyAndHand.lobby
       Nothing -> (configModel global (configData lobbyAndHand.lobby data.secret), Effects.none)
 
   Consider potentialWinner ->
     (model global { data | considering = Just potentialWinner } , Effects.none)
 
   Choose winner ->
-    (model global data, (API.choose data.lobby.id data.secret winner)
+    (model global { data | considering = Nothing }, (API.choose data.lobby.id data.secret winner)
       |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   Skip players ->
@@ -77,16 +76,11 @@ update action global data = case action of
       |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
   UpdateLobbyAndHand lobbyAndHand ->
-      (model global
-        { data | lobby = lobbyAndHand.lobby
-               , hand = lobbyAndHand.hand
-               }, eventEffects data.lobby lobbyAndHand.lobby)
+    updateLobby global { data | hand = lobbyAndHand.hand } lobbyAndHand.lobby
 
   NextRound ->
     (model global { data | lastFinishedRound = Nothing
-                         , picked = []
-                         , considering = Nothing
-                         }, Effects.none)
+                         , considering = Nothing }, Effects.none)
 
   AnimatePlayedCards toAnimate ->
     let
@@ -110,16 +104,10 @@ update action global data = case action of
 
   GameEvent event ->
     case event of
-      RoundPlayed amount ->
-        let
-          (shownPlayed, effects, seed) = addShownPlayed amount data.shownPlayed global.seed
-        in
-          (model { global | seed = seed } { data | shownPlayed = shownPlayed }, effects)
-
       RoundEnd call czar responses playedByAndWinner ->
-        (model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner)
-                             , shownPlayed = []
-                             } , Effects.none)
+        ( model global { data | lastFinishedRound = Just (FinishedRound call czar responses playedByAndWinner) }
+        , Effects.none
+        )
 
       PlayerJoin id ->
         notificationChange global data (Notification.playerJoin id data.lobby.players)
@@ -184,6 +172,22 @@ view address global playingData = UI.view address global playingData
 {- Private -}
 
 
+updateLobby : Global -> PlayingData -> Lobby -> (Model, Effects.Effects Action)
+updateLobby global data newLobby =
+  let
+    amount = newLobby.round `Maybe.andThen` (\round ->
+      case round.responses of
+        Card.Hidden count -> Just count
+        Card.Revealed _ -> Nothing)
+    (shownPlayed, effects, seed) = Maybe.map (addShownPlayed data.shownPlayed global.seed) amount
+      |> Maybe.withDefault ([], Effects.none, global.seed)
+    events = eventEffects data.lobby newLobby
+  in
+    (model { global | seed = seed }
+      { data | lobby = newLobby
+             , shownPlayed = shownPlayed }, Effects.batch [ effects, events ])
+
+
 notificationChange : Global -> PlayingData -> Maybe Notification.Player -> (Model, Effects.Effects Action)
 notificationChange global data notification =
   let
@@ -193,12 +197,15 @@ notificationChange global data notification =
       ]
   in
     ( model global { data | playerNotification = newNotification}
-    , Task.sleep (Time.second * 5) `Task.andThen` (\_ -> Task.succeed (DismissPlayerNotification newNotification)) |> Effects.task
+    , Task.sleep (Time.second * 5)
+        `Task.andThen`
+      (\_ -> Task.succeed (DismissPlayerNotification newNotification))
+        |> Effects.task
     )
 
 
-addShownPlayed : Int -> List Attribute -> Seed -> (List Attribute, Effects.Effects Action, Seed)
-addShownPlayed amount existing seed =
+addShownPlayed : List Attribute -> Seed -> Int -> (List Attribute, Effects.Effects Action, Seed)
+addShownPlayed existing seed amount =
   let
     existingLength = List.length existing
     (new, newSeed) = Random.generate (list (amount - existingLength) initialRandomPositioning) seed

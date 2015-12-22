@@ -1,9 +1,7 @@
 module MassiveDecks.Actions.Event
 
   ( Event(..)
-
   , events
-  , catchUpEvents
 
   ) where
 
@@ -18,11 +16,6 @@ game has changed and events should be fired. This means that these checks only n
 
 The use case for events is where something ephemeral needs to happen as a result of a change in the game state
 (e.g: an animation or notification).
-
-Note that if a player joins a game in progress (including, for example, refreshing the page), they will not have events
-replayed to them, as such, building up state from events should be avoided. Where it drastically reduces complexity, it
-is possible to fire 'catch up events' when they join in this way, to allow the state to be built up.
-See `catchUpEvents`.
 -}
 type Event
   = PlayerJoin Id
@@ -32,7 +25,7 @@ type Event
   | PlayerReconnect Id
   | PlayerScore Id Int
   | RoundStart Call Id
-  | RoundPlayed Int {- Has catch up events. -}
+  | RoundPlayed Int
   | RoundJudging (List PlayedCards)
   | RoundEnd Call Id (List PlayedCards) PlayedByAndWinner
 
@@ -47,21 +40,6 @@ events oldLobby newLobby = List.concat
   [ diffPlayers oldLobby.players newLobby.players
   , diffRound oldLobby.round newLobby.round
   ]
-
-
-{-| Generate events when joining an in-progress lobby to 'catch up'.
-
-Should be equivalent to running `events` on an empty lobby and this one, except only for events that support catch-up.
--}
-catchUpEvents : Lobby -> List Event
-catchUpEvents lobby =
-  case lobby.round of
-    Just round ->
-      case round.responses of
-        Hidden count -> [ roundPlayed count ]
-        Revealed _ -> []
-    Nothing ->
-      []
 
 
 {- Private -}
