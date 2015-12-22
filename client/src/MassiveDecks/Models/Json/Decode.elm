@@ -1,4 +1,21 @@
-module MassiveDecks.Models.Json.Decode where
+module MassiveDecks.Models.Json.Decode
+
+  ( lobbyAndHandDecoder
+  , lobbyDecoder
+  , deckInfoDecoder
+  , configDecoder
+  , handDecoder
+  , playerDecoder
+  , playerStatusDecoder
+  , roundDecoder
+  , responsesDecoder
+  , callDecoder
+  , responseDecoder
+  , revealedResponsesDecoder
+  , playerIdDecoder
+  , playerSecretDecoder
+
+  ) where
 
 import Json.Decode exposing (..)
 
@@ -70,18 +87,6 @@ responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case t
       Nothing -> Result.Err "Got neither count nor cards."
   )
 
-
-responsesTransportDecoder : Decoder ResponsesTransport
-responsesTransportDecoder = object2 ResponsesTransport
-  (maybe ("hidden" := int))
-  (maybe ("revealed" := revealedResponsesDecoder))
-
-type alias ResponsesTransport =
-  { hidden : Maybe Int
-  , revealed : Maybe RevealedResponses
-  }
-
-
 revealedResponsesDecoder : Decoder RevealedResponses
 revealedResponsesDecoder = object2 RevealedResponses
   ("cards" := list (list responseDecoder))
@@ -110,3 +115,17 @@ playerSecretDecoder : Decoder Secret
 playerSecretDecoder = object2 Secret
     ("id" := playerIdDecoder)
     ("secret" := string)
+
+
+{- Private -}
+
+
+responsesTransportDecoder : Decoder ResponsesTransport
+responsesTransportDecoder = object2 ResponsesTransport
+  (maybe ("hidden" := int))
+  (maybe ("revealed" := revealedResponsesDecoder))
+
+type alias ResponsesTransport =
+  { hidden : Maybe Int
+  , revealed : Maybe RevealedResponses
+  }

@@ -1,4 +1,4 @@
-module MassiveDecks.States.Config.UI where
+module MassiveDecks.States.Config.UI (view) where
 
 import String
 

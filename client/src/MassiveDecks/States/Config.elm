@@ -1,4 +1,11 @@
-module MassiveDecks.States.Config where
+module MassiveDecks.States.Config
+
+  ( update
+  , model
+  , modelSub
+  , view
+
+  ) where
 
 import Time
 import String
@@ -18,6 +25,8 @@ import MassiveDecks.API.Request as Request
 import MassiveDecks.States.Playing as Playing
 
 
+{-| Update the game model given the action that needs to happen.
+-}
 update : Action -> Global -> ConfigData -> (Model, Effects.Effects Action)
 update action global data = case action of
   UpdateInputValue input value ->
@@ -127,6 +136,35 @@ update action global data = case action of
       |> Effects.task)
 
 
+{-| Create a model for the config state.
+-}
+model : Global -> ConfigData -> Model
+model global data =
+  { state = SConfig data
+  , subscription = Nothing
+  , global = global
+  }
+
+
+{-| Create a model for the config state that also subscribes to a notification websocket for the given lobby.
+-}
+modelSub : Global -> String -> Secret -> ConfigData -> Model
+modelSub global lobbyId secret data =
+  { state = SConfig data
+  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
+  , global = global
+  }
+
+
+{-| Render the configuration state.
+-}
+view : Signal.Address Action -> Global -> ConfigData -> Html
+view address global data = UI.view address data global
+
+
+{- Private -}
+
+
 addDeckErrorHandler : API.AddDeckError -> Action
 addDeckErrorHandler error = case error of
   API.DeckNotFound -> SetInputError "deckId" (Just "The given deck doesn't exist, check the play code is correct.")
@@ -153,23 +191,3 @@ updateLobby data lobby =
     events = eventEffects data.lobby lobby
   in
     ({ data | lobby = lobby }, events)
-
-
-model : Global -> ConfigData -> Model
-model global data =
-  { state = SConfig data
-  , subscription = Nothing
-  , global = global
-  }
-
-
-modelSub : Global -> String -> Secret -> ConfigData -> Model
-modelSub global lobbyId secret data =
-  { state = SConfig data
-  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
-  , global = global
-  }
-
-
-view : Signal.Address Action -> Global -> ConfigData -> Html
-view address global data = UI.view address data global

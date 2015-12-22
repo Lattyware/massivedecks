@@ -1,4 +1,12 @@
-module MassiveDecks.States.Start where
+module MassiveDecks.States.Start
+
+  ( update
+  , model
+  , view
+  , initialData
+
+  ) where
+
 
 import Task
 import Maybe
@@ -15,6 +23,8 @@ import MassiveDecks.States.Config as Config
 import MassiveDecks.States.Playing as Playing
 
 
+{-| Update the game model given the action that needs to happen.
+-}
 update : Action -> Global -> StartData -> (Model, Effects.Effects Action)
 update action global data = case action of
   UpdateInputValue input value ->
@@ -74,12 +84,8 @@ update action global data = case action of
       |> Effects.task)
 
 
-newPlayerErrorHandler : API.NewPlayerError -> Action
-newPlayerErrorHandler error = case error of
-  API.LobbyNotFound -> SetInputError "lobbyId" (Just "This game doesn't exist - check you have the right code.")
-  API.NameInUse -> SetInputError "name" (Just "This name is in use in the game, try something else.")
-
-
+{-| Create a model for the start state.
+-}
 model : Global -> StartData -> Model
 model global data =
   { state = SStart data
@@ -88,6 +94,8 @@ model global data =
   }
 
 
+{-| Blank start data.
+-}
 initialData : String -> StartData
 initialData lobbyId =
   { name = ""
@@ -97,5 +105,16 @@ initialData lobbyId =
   }
 
 
+{-| Render the start state.
+-}
 view : Signal.Address Action -> Global -> StartData -> Html
 view address global data = UI.view address global data
+
+
+{- Private -}
+
+
+newPlayerErrorHandler : API.NewPlayerError -> Action
+newPlayerErrorHandler error = case error of
+  API.LobbyNotFound -> SetInputError "lobbyId" (Just "This game doesn't exist - check you have the right code.")
+  API.NameInUse -> SetInputError "name" (Just "This name is in use in the game, try something else.")

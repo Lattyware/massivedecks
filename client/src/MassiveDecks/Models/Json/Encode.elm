@@ -1,4 +1,11 @@
-module MassiveDecks.Models.Json.Encode where
+module MassiveDecks.Models.Json.Encode
+
+  ( commandEncoder
+  , deckIdEncoder
+  , playerSecretEncoder
+  , playerIdEncoder
+
+  ) where
 
 import Json.Encode exposing (..)
 

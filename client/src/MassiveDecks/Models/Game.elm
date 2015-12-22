@@ -4,11 +4,15 @@ import MassiveDecks.Models.Player exposing (..)
 import MassiveDecks.Models.Card exposing (..)
 
 
+{-| Configuration for a game.
+-}
 type alias Config =
   { decks : List DeckInfo
   }
 
 
+{-| Information about a deck of cards.
+-}
 type alias DeckInfo =
   { id : String
   , name : String
@@ -17,6 +21,8 @@ type alias DeckInfo =
   }
 
 
+{-| A round in the game.
+-}
 type alias Round =
   { czar : Id
   , call : Call
@@ -24,6 +30,8 @@ type alias Round =
   }
 
 
+{-| A round that has been completed.
+-}
 type alias FinishedRound =
   { call : Call
   , czar : Id
@@ -32,6 +40,8 @@ type alias FinishedRound =
   }
 
 
+{-| A lobby.
+-}
 type alias Lobby =
   { id : String
   , config : Config
@@ -40,6 +50,8 @@ type alias Lobby =
   }
 
 
+{-| A lobby and a player's hand.
+-}
 type alias LobbyAndHand =
   { lobby: Lobby
   , hand: Hand

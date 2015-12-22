@@ -1,4 +1,11 @@
-module MassiveDecks.Actions.Event where
+module MassiveDecks.Actions.Event
+
+  ( Event(..)
+
+  , events
+  , catchUpEvents
+
+  ) where
 
 import MassiveDecks.Models.Game exposing (..)
 import MassiveDecks.Models.Player exposing (..)
@@ -6,6 +13,17 @@ import MassiveDecks.Models.Card exposing (..)
 import MassiveDecks.Util as Util
 
 
+{-| Events represent high-level changes in the game. When the game state is updated, it is checked to determine if the
+game has changed and events should be fired. This means that these checks only need to be done in one place.
+
+The use case for events is where something ephemeral needs to happen as a result of a change in the game state
+(e.g: an animation or notification).
+
+Note that if a player joins a game in progress (including, for example, refreshing the page), they will not have events
+replayed to them, as such, building up state from events should be avoided. Where it drastically reduces complexity, it
+is possible to fire 'catch up events' when they join in this way, to allow the state to be built up.
+See `catchUpEvents`.
+-}
 type Event
   = PlayerJoin Id
   | PlayerStatus Id Status
@@ -14,12 +32,16 @@ type Event
   | PlayerReconnect Id
   | PlayerScore Id Int
   | RoundStart Call Id
-  | RoundPlayed Int
+  | RoundPlayed Int {- Has catch up events. -}
   | RoundJudging (List PlayedCards)
   | RoundEnd Call Id (List PlayedCards) PlayedByAndWinner
 
 
-{-| Generate events from a given change in lobby. -}
+{-| Generate events from a given change in lobby.
+
+Essentially, this does a diff between the two lobbies, and then generates events based on the differences. If there is
+an extra player in the new lobby, a `PlayerJoin` event will be produced.
+-}
 events : Lobby -> Lobby -> List Event
 events oldLobby newLobby = List.concat
   [ diffPlayers oldLobby.players newLobby.players
@@ -27,7 +49,10 @@ events oldLobby newLobby = List.concat
   ]
 
 
-{-| Generate events when joining an in-progress lobby to catch up. -}
+{-| Generate events when joining an in-progress lobby to 'catch up'.
+
+Should be equivalent to running `events` on an empty lobby and this one, except only for events that support catch-up.
+-}
 catchUpEvents : Lobby -> List Event
 catchUpEvents lobby =
   case lobby.round of
@@ -37,6 +62,9 @@ catchUpEvents lobby =
         Revealed _ -> []
     Nothing ->
       []
+
+
+{- Private -}
 
 
 diffPlayers : List Player -> List Player -> List Event

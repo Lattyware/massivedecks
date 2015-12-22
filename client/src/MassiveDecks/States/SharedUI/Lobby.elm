@@ -1,4 +1,4 @@
-module MassiveDecks.States.SharedUI.Lobby where
+module MassiveDecks.States.SharedUI.Lobby (view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

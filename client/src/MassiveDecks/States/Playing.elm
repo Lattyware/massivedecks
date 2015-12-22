@@ -1,4 +1,12 @@
-module MassiveDecks.States.Playing where
+module MassiveDecks.States.Playing
+
+  ( update
+  , model
+  , modelSub
+  , view
+
+  ) where
+
 
 import Time
 import Task
@@ -20,6 +28,8 @@ import MassiveDecks.API.Request as Request
 import MassiveDecks.Util as Util
 
 
+{-| Update the game model given the action that needs to happen.
+-}
 update : Action -> Global -> PlayingData -> (Model, Effects.Effects Action)
 update action global data = case action of
   Pick card ->
@@ -133,6 +143,47 @@ update action global data = case action of
       |> Effects.task)
 
 
+{-| Create a model for the playing state.
+-}
+model : Global -> PlayingData -> Model
+model global data =
+  { state = SPlaying data
+  , subscription = Nothing
+  , global = global
+  }
+
+
+{-| Create a model for the playing state that also subscribes to a notification websocket for the given lobby.
+-}
+modelSub : Global -> String -> Secret -> PlayingData -> Model
+modelSub global lobbyId secret data =
+  { state = SPlaying data
+  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
+  , global = global
+  }
+
+
+{-| Create a model for the config state.
+
+We'd pull this in from `Config`, but then we'd have a circular import.
+-}
+configModel : Global -> ConfigData -> Model
+configModel global data =
+  { state = SConfig data
+  , subscription = Nothing
+  , global = global
+  }
+
+
+{-| Render the playing state.
+-}
+view : Signal.Address Action -> Global -> PlayingData -> Html
+view address global playingData = UI.view address global playingData
+
+
+{- Private -}
+
+
 notificationChange : Global -> PlayingData -> Maybe Notification.Player -> (Model, Effects.Effects Action)
 notificationChange global data notification =
   let
@@ -187,31 +238,3 @@ positioning rotation horizontalPos left verticalPos =
       , (horizontalDirection, (toString horizontalPos) ++ "%")
       , ("top", (toString verticalPos) ++ "%")
       ]
-
-
-model : Global -> PlayingData -> Model
-model global data =
-  { state = SPlaying data
-  , subscription = Nothing
-  , global = global
-  }
-
-
-modelSub : Global -> String -> Secret -> PlayingData -> Model
-modelSub global lobbyId secret data =
-  { state = SPlaying data
-  , subscription = Just (Just { lobbyId = lobbyId, secret = secret })
-  , global = global
-  }
-
-
-configModel : Global -> ConfigData -> Model
-configModel global data =
-  { state = SConfig data
-  , subscription = Nothing
-  , global = global
-  }
-
-
-view : Signal.Address Action -> Global -> PlayingData -> Html
-view address global playingData = UI.view address global playingData

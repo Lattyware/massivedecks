@@ -1,4 +1,19 @@
-module MassiveDecks.States.SharedUI.General where
+module MassiveDecks.States.SharedUI.General
+
+  ( icon
+  , fwIcon
+  , spinner
+
+  , root
+  , divider
+  , gameMenu
+  , errorMessages
+  , aboutOverlay
+  , inviteOverlay
+  , inputError
+  , lobbyUrl
+
+  ) where
 
 import Http exposing (url)
 import Html exposing (..)
@@ -9,61 +24,45 @@ import MassiveDecks.Models.State exposing (Error)
 import MassiveDecks.Actions.Action exposing (Action(..))
 
 
+{-| A FointAwesome icon by name.
+-}
 icon : String -> Html
 icon name = i [ class ("fa fa-" ++ name) ] []
 
 
+{-| A full width FointAwesome icon by name.
+-}
 fwIcon : String -> Html
 fwIcon name = i [ class ("fa fa-fw fa-" ++ name) ] []
 
 
+{-| A loading spinner.
+-}
 spinner : Html
 spinner = i [ class "fa fa-circle-o-notch fa-spin" ] []
 
 
-reportText : String -> String
-reportText message =
-  ("I was [a short explanation of what you were doing] when I got the following error: \n\n"
-    ++ message)
-
-
-errorMessage : Signal.Address Action -> Int -> Error -> Html
-errorMessage address index error =
-  let
-    reportUrl = (url "https://github.com/Lattyware/massivedecks/issues/new" [( "body", reportText error.message ) ])
-  in
-    li
-      [ class "error" ]
-      [ div
-        []
-        [ a [ class "link"
-            , attribute "tabindex" "0"
-            , attribute "role" "button"
-            , onClick address (RemoveErrorPanel index)
-            ] [ icon "times" ]
-        , h5 [] [ icon "exclamation-triangle"
-                , text " Error"
-                ]
-        , divider
-        , p [] [ text error.message ]
-        , p [] [ a [ href reportUrl, target "_blank" ] [ icon "bug", text " Report this as a bug." ] ]
-        ]
-      ]
-
-
+{-| A panel displaying error messages.
+-}
 errorMessages : Signal.Address Action -> List Error -> Html
 errorMessages address errors =
-    ol [ id "errorPanel"] (List.indexedMap (errorMessage address) errors)
+    ol [ id "error-panel"] (List.indexedMap (errorMessage address) errors)
 
 
+{- A divider.
+-}
 divider : Html
 divider = div [ class "mui-divider" ] []
 
 
+{-| The root node all content goes in.
+-}
 root : List Html -> Html
 root contents = div [ class "content" ] contents
 
 
+{-| The menu for the game.
+-}
 gameMenu : Signal.Address Action -> Html
 gameMenu address = div [ class "menu mui-dropdown" ]
   [ button [ class "mui-btn mui-btn--small mui-btn--primary"
@@ -93,6 +92,8 @@ gameMenu address = div [ class "menu mui-dropdown" ]
   ]
 
 
+{-| The overlay for inviting players to a lobby.
+-}
 inviteOverlay : String -> String -> Html
 inviteOverlay appUrl lobbyId =
   let
@@ -115,10 +116,14 @@ inviteOverlay appUrl lobbyId =
       ]
 
 
+{-| An url to a lobby from the base url and the lobby id.
+-}
 lobbyUrl : String -> String -> String
 lobbyUrl url lobbyId = url ++ "#" ++ lobbyId
 
 
+{-| The about overlay for telling players about the game.
+-}
 aboutOverlay : Html
 aboutOverlay =
   div [ id "about" ]
@@ -174,7 +179,42 @@ aboutOverlay =
     ]
 
 
+{-| An error message for an input field.
+-}
 inputError : Maybe String -> List Html
 inputError error =
   (Maybe.map (\error -> [ span [ class "input-error" ] [ icon "exclamation", text " ", text error ] ]) error
     |> Maybe.withDefault [])
+
+
+{- Private -}
+
+
+reportText : String -> String
+reportText message =
+  ("I was [a short explanation of what you were doing] when I got the following error: \n\n"
+    ++ message)
+
+
+errorMessage : Signal.Address Action -> Int -> Error -> Html
+errorMessage address index error =
+  let
+    reportUrl = (url "https://github.com/Lattyware/massivedecks/issues/new" [( "body", reportText error.message ) ])
+  in
+    li
+      [ class "error" ]
+      [ div
+        []
+        [ a [ class "link"
+            , attribute "tabindex" "0"
+            , attribute "role" "button"
+            , onClick address (RemoveErrorPanel index)
+            ] [ icon "times" ]
+        , h5 [] [ icon "exclamation-triangle"
+                , text " Error"
+                ]
+        , divider
+        , p [] [ text error.message ]
+        , p [] [ a [ href reportUrl, target "_blank" ] [ icon "bug", text " Report this as a bug." ] ]
+        ]
+      ]

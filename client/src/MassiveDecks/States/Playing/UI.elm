@@ -1,4 +1,4 @@
-module MassiveDecks.States.Playing.UI where
+module MassiveDecks.States.Playing.UI (view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -318,15 +318,14 @@ disconnectedNotice address players =
     disconnected = List.filter (\player -> player.disconnected && (not (player.status == Skipping))) players
     disconnectedNames = Util.joinWithAnd (List.map .name disconnected)
     disconnectedIds = List.map .id disconnected
-    has = Util.pluralHas disconnected
   in
-    Maybe.map2 (renderDisconnectedNotice address disconnectedIds) disconnectedNames has
+    Maybe.map (renderDisconnectedNotice address disconnectedIds (Util.pluralHas disconnected)) disconnectedNames
     |> Maybe.map (\item -> [ item ])
     |> Maybe.withDefault []
 
 
 renderDisconnectedNotice : Signal.Address Action -> List Id -> String -> String -> Html
-renderDisconnectedNotice address ids disconnectedNames has =
+renderDisconnectedNotice address ids has disconnectedNames =
   div [ class "notice" ]
       [ h3 [] [ icon "minus-circle" ]
       , span [] [ text disconnectedNames

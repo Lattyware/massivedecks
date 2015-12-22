@@ -1,4 +1,4 @@
-module MassiveDecks.States.Start.UI where
+module MassiveDecks.States.Start.UI (view) where
 
 import String
 

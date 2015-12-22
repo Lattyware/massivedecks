@@ -1,4 +1,8 @@
-module MassiveDecks.Main where
+module MassiveDecks.Main
+
+  ( main
+
+  ) where
 
 import Task
 import Effects
@@ -17,11 +21,15 @@ import MassiveDecks.States.Playing as Playing
 import MassiveDecks.States.SharedUI.General as UI
 
 
+{-| A wrapper for the model to wait for initial data before doing anything.
+-}
 type SetupModel
   = Waiting
   | Started Model
 
 
+{-| The core game configuration.
+-}
 game : StartApp.App SetupModel
 game = StartApp.start
   { init = (Waiting, Effects.none)
@@ -31,13 +39,19 @@ game = StartApp.start
   }
 
 
+{-| A port to run tasks (e.g: http requests).
+-}
 port tasks : Signal (Task.Task Effects.Never ())
 port tasks = game.tasks
 
 
+{-| A port to get notifications about game changes from the websocket.
+-}
 port notifications : Signal String
 
 
+{-| A port to allow the creation of and subscription to a websocket.
+-}
 port subscription : Signal (Maybe LobbyIdAndSecret)
 port subscription
   = game.model
@@ -48,15 +62,20 @@ port subscription
   |>  Signal.filterMap (Maybe.withDefault Nothing) Nothing
 
 
+{-| A port to take in the initial state before the game starts.
+Should only get one value, and should get it as soon as the game loads.
+-}
 port initialState : Signal InitialState
 
 
+{-| Turn the data from the initial state port into an action to set the initial state.
+-}
 initialStateAction : Signal Action
-initialStateAction =
-  initialState
-  |> Signal.map SetInitialState
+initialStateAction = initialState |> Signal.map SetInitialState
 
 
+{-| Decode inbound notifications ready to be fed into the game state as actions.
+-}
 notificationDecoded : Signal Action
 notificationDecoded =
   notifications
@@ -67,10 +86,14 @@ notificationDecoded =
       Nothing -> NoAction)
 
 
+{-| Run the game.
+-}
 main : Signal Html
 main = game.html
 
 
+{-| Produce a start state for the game based on the initial data.
+-}
 start : InitialState -> (Model, Effects.Effects Action)
 start initialState =
   (Start.model (Global [] initialState (Random.initialSeed initialState.seed)) (Start.initialData (Maybe.withDefault "" initialState.gameCode)),
@@ -85,6 +108,8 @@ start initialState =
   )
 
 
+{-| Change the state of the game as needed given the action.
+-}
 update : Action -> SetupModel -> (SetupModel, Effects.Effects Action)
 update action setupModel =
   case setupModel of
@@ -135,6 +160,8 @@ update action setupModel =
         (Started (fst result), (snd result))
 
 
+{-| Render the game.
+-}
 view : Signal.Address Action -> SetupModel -> Html
 view address setupModel =
   case setupModel of

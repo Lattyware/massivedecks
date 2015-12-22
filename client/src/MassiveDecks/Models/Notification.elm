@@ -1,8 +1,19 @@
-module MassiveDecks.Models.Notification where
+module MassiveDecks.Models.Notification
+
+  ( Player
+  , hide
+  , playerJoin
+  , playerReconnect
+  , playerDisconnect
+  , playerLeft
+
+  ) where
 
 import MassiveDecks.Models.Player as Player
 
 
+{-| A notification about a player.
+-}
 type alias Player =
   { icon : String
   , name : String
@@ -11,41 +22,41 @@ type alias Player =
   }
 
 
-player : String -> String -> String -> Player
-player icon name description = Player icon name description True
-
-
+{-| Hide the given notificaiton.
+-}
 hide : Player -> Player
 hide notification = { notification | visible = False }
 
 
+{-| Create a notification for a player joining the game.
+-}
 playerJoin : Player.Id -> List Player.Player -> Maybe Player
-playerJoin id players =
-  let
-    name = Player.byId id players |> Maybe.map .name
-  in
-    Maybe.map (\name -> player "sign-in" name (name ++ " has joined the game.")) name
+playerJoin id players = playerFromIdAndPlayers id players "sign-in" " has joined the game."
 
 
+{-| Create a notification for a player reconnecting to the game.
+-}
 playerReconnect : Player.Id -> List Player.Player -> Maybe Player
-playerReconnect id players =
-  let
-    name = Player.byId id players |> Maybe.map .name
-  in
-    Maybe.map (\name -> player "sign-in" name (name ++ " has reconnected to the game.")) name
+playerReconnect id players = playerFromIdAndPlayers id players "sign-in" " has reconnected to the game."
 
 
+{-| Create a notification for a player disconnecting from the game.
+-}
 playerDisconnect : Player.Id -> List Player.Player -> Maybe Player
-playerDisconnect id players =
-  let
-    name = Player.byId id players |> Maybe.map .name
-  in
-    Maybe.map (\name -> player "minus-circle" name (name ++ " has disconnected from the game.")) name
+playerDisconnect id players = playerFromIdAndPlayers id players "minus-circle" " has disconnected from the game."
 
 
+{-| Create a notification for a player leaving the game.
+-}
 playerLeft : Player.Id -> List Player.Player -> Maybe Player
-playerLeft id players =
-  let
-    name = Player.byId id players |> Maybe.map .name
-  in
-    Maybe.map (\name -> player "sign-out" name (name ++ " has left the game.")) name
+playerLeft id players = playerFromIdAndPlayers id players "sign-out" " has left the game."
+
+
+{- Private -}
+
+
+playerFromIdAndPlayers : Player.Id -> List Player.Player -> String -> String -> Maybe Player
+playerFromIdAndPlayers id players icon suffix
+    = Player.byId id players
+    |> Maybe.map .name
+    |> Maybe.map (\name -> Player icon name (name ++ suffix) True)
