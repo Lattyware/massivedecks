@@ -18,7 +18,7 @@ import Random exposing (Generator, Seed, list, bool, int)
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Game exposing (Lobby, FinishedRound)
-import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, StartData, configData, PlayingData, Error, Global)
+import MassiveDecks.Models.State exposing (State(..), Model, ConfigData, StartData, startData, configData, PlayingData, Error, Global)
 import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
@@ -103,7 +103,7 @@ update action global data = case action of
       (model global updatedData, Effects.none)
 
   LeaveLobby ->
-    ({ state = SStart (StartData "" Nothing "" Nothing), subscription = Just Nothing, global = global },
+    ({ state = SStart startData, subscription = Just Nothing, global = global },
       (API.leave data.lobby.id data.secret) |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
   GameEvent event ->

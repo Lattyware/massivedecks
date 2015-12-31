@@ -14,9 +14,11 @@ import Effects
 import Html exposing (Html)
 
 import MassiveDecks.States.Config.UI as UI
+import MassiveDecks.Models.Input.Change as Change
+import MassiveDecks.Models.Input.Identity as Identity
 import MassiveDecks.Models.Player exposing (Secret)
 import MassiveDecks.Models.Game exposing (Lobby)
-import MassiveDecks.Models.State exposing (Model, State(..), ConfigData, StartData, playingData, Error, Global)
+import MassiveDecks.Models.State exposing (Model, State(..), ConfigData, StartData, startData, playingData, Error, Global)
 import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..), eventEffects)
 import MassiveDecks.Actions.Event exposing (Event(..))
@@ -29,18 +31,13 @@ import MassiveDecks.States.Playing as Playing
 -}
 update : Action -> Global -> ConfigData -> (Model, Effects.Effects Action)
 update action global data = case action of
-  UpdateInputValue input value ->
-    case input of
-      "deckId" -> (model global { data | deckId = value }, Effects.none)
-      _ -> (model global data, DisplayError "Got an update for an unknown input." |> Task.succeed |> Effects.task)
-
-  SetInputError input error ->
-    case input of
-      "deckId" -> (model global { data | deckIdError = error }, Effects.none)
-      _ -> (model global data, DisplayError "Got an error for an unknown input." |> Task.succeed |> Effects.task)
+  InputUpdate change ->
+    case change of
+      Change.Start change -> (model global data, Effects.none)
+      Change.Config change -> (model global (change data), Effects.none)
 
   AddDeck ->
-    (model global data, AddGivenDeck data.deckId Request |> Task.succeed |> Effects.task)
+    (model global data, AddGivenDeck data.deckId.value Request |> Task.succeed |> Effects.task)
 
   AddGivenDeck deckId Request ->
     (model global { data | loadingDecks = List.append data.loadingDecks [ deckId ] },
@@ -55,7 +52,7 @@ update action global data = case action of
       (data, effects) = updateLobby data lobbyAndHand.lobby
     in
       (model global { data | loadingDecks = List.filter ((/=) deckId) data.loadingDecks
-                           , deckIdError = Nothing
+                           , deckId = Change.clearError data.deckId
                            }, effects)
 
   FailAddDeck deckId ->
@@ -108,7 +105,7 @@ update action global data = case action of
       (model global updatedData, Effects.none)
 
   LeaveLobby ->
-    ({ state = SStart (StartData "" Nothing "" Nothing), subscription = Just Nothing, global = global },
+    ({ state = SStart startData, subscription = Just Nothing, global = global },
       (API.leave data.lobby.id data.secret)
         |> Request.toEffect (\_ -> NoAction) (\_ -> NoAction))
 
@@ -166,9 +163,16 @@ view address global data = UI.view address data global
 
 
 addDeckErrorHandler : API.AddDeckError -> Action
-addDeckErrorHandler error = case error of
-  API.DeckNotFound -> SetInputError "deckId" (Just "The given deck doesn't exist, check the play code is correct.")
-  API.CardcastTimeout -> SetInputError "deckId" (Just "We couldn't get a response from Cardcast. Try again later.")
+addDeckErrorHandler error =
+  let
+    change = case error of
+      API.DeckNotFound ->
+        Identity.target (Change.error "The given deck doesn't exist, check the play code is correct.") Identity.deckId
+
+      API.CardcastTimeout ->
+        Identity.target (Change.error "We couldn't get a response from Cardcast. Try again later.") Identity.deckId
+  in
+    InputUpdate change
 
 
 notificationChange : Global -> ConfigData -> Maybe Notification.Player -> (Model, Effects.Effects Action)

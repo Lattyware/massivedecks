@@ -15,6 +15,8 @@ import Html exposing (Html)
 
 import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
+import MassiveDecks.Models.Input.Change as Change
+import MassiveDecks.Models.Input.Identity as Identity
 import MassiveDecks.Models.State exposing (Model, State(..))
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Models.State exposing (State(..), StartData, playingData, configData, Error, Global)
@@ -27,19 +29,10 @@ import MassiveDecks.States.Playing as Playing
 -}
 update : Action -> Global -> StartData -> (Model, Effects.Effects Action)
 update action global data = case action of
-  UpdateInputValue input value ->
-    case input of
-      "name" -> (model global { data | name = value }, Effects.none)
-      "lobbyId" -> (model global { data | lobbyId = value }, Effects.none)
-      _ -> (model global data, DisplayError "Got an update for an unknown input." |> Task.succeed |> Effects.task)
-
-  SetInputError input error ->
-    case input of
-      "name" -> (model global { data | nameError = error
-                                     , lobbyIdError = Nothing }, Effects.none)
-      "lobbyId" -> (model global { data | lobbyIdError = error
-                                        , nameError = Nothing }, Effects.none)
-      _ -> (model global data, DisplayError "Got an error for an unknown input." |> Task.succeed |> Effects.task)
+  InputUpdate change ->
+    case change of
+      Change.Start change -> (model global (change data), Effects.none)
+      Change.Config change -> (model global data, Effects.none)
 
   NewLobby Request ->
     (model global data, API.createLobby
@@ -47,13 +40,13 @@ update action global data = case action of
 
   NewLobby (Result lobby) ->
     (model global data,
-      (API.newPlayer lobby.id data.name)
+      (API.newPlayer lobby.id data.name.value)
         |> Request.toEffect newPlayerErrorHandler (\secret -> JoinLobby lobby.id secret Request))
 
   JoinExistingLobby ->
     (model global data,
-      (API.newPlayer data.lobbyId data.name)
-        |> Request.toEffect newPlayerErrorHandler (\secret -> JoinLobby data.lobbyId secret Request))
+      (API.newPlayer data.lobbyId.value data.name.value)
+        |> Request.toEffect newPlayerErrorHandler (\secret -> JoinLobby data.lobbyId.value secret Request))
 
   JoinLobby lobbyId secret Request ->
     (model global data,
@@ -98,10 +91,8 @@ model global data =
 -}
 initialData : String -> StartData
 initialData lobbyId =
-  { name = ""
-  , nameError = Nothing
-  , lobbyId = lobbyId
-  , lobbyIdError = Nothing
+  { name = {value = "", error = Nothing}
+  , lobbyId = { value = lobbyId, error = Nothing }
   }
 
 
@@ -115,6 +106,13 @@ view address global data = UI.view address global data
 
 
 newPlayerErrorHandler : API.NewPlayerError -> Action
-newPlayerErrorHandler error = case error of
-  API.LobbyNotFound -> SetInputError "lobbyId" (Just "This game doesn't exist - check you have the right code.")
-  API.NameInUse -> SetInputError "name" (Just "This name is in use in the game, try something else.")
+newPlayerErrorHandler error =
+  let
+    change = case error of
+      API.LobbyNotFound ->
+        Identity.target (Change.error "This game doesn't exist - check you have the right code.") Identity.lobbyId
+
+      API.NameInUse ->
+        Identity.target (Change.error "This name is in use in the game, try something else.") Identity.name
+  in
+    InputUpdate change

@@ -10,8 +10,11 @@ module MassiveDecks.States.SharedUI.General
   , errorMessages
   , aboutOverlay
   , inviteOverlay
-  , inputError
   , lobbyUrl
+
+  , inputField
+  , onInputUpdate
+  , inputError
 
   ) where
 
@@ -20,8 +23,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import MassiveDecks.Models.Input as Input
+import MassiveDecks.Models.Input.Identity exposing (Identity)
+import MassiveDecks.Models.Input.Change as Change exposing (Change)
 import MassiveDecks.Models.State exposing (Error)
-import MassiveDecks.Actions.Action exposing (Action(..))
+import MassiveDecks.Actions.Action exposing (Action(..), inputUpdateCallback)
 
 
 {-| A FointAwesome icon by name.
@@ -177,6 +183,28 @@ aboutOverlay =
               ] [ icon "times", text " Close" ] ]
       ]
     ]
+
+
+{-| An input field.
+-}
+inputField : Signal.Address Action -> String -> String -> Identity -> List Html -> Input.State -> Html
+inputField address class placeholderText inputIdentity labelContents state =
+    div [] (List.append
+      [ div [ classList [ ("mui-textfield", True), (class, True) ] ]
+          [ input [ type' "text"
+                  , placeholder placeholderText
+                  , onInputUpdate address inputIdentity
+                  ]
+                  []
+          , label [] (List.append [ icon "info-circle", text " " ] labelContents)
+          ]
+      ] (inputError state.error))
+
+
+{-| An attribute that adds a callback to the input where, when it changes, an apporpriate InputUpdate event is fired.
+-}
+onInputUpdate : Signal.Address Action -> Identity -> Attribute
+onInputUpdate address target = on "input" targetValue (inputUpdateCallback address (Change.update >> target))
 
 
 {-| An error message for an input field.

@@ -5,6 +5,7 @@ module MassiveDecks.Models.State
   , State(..)
 
   , StartData
+  , startData
   , ConfigData
   , configData
   , PlayingData
@@ -19,6 +20,7 @@ module MassiveDecks.Models.State
 import Random
 import Html exposing (Attribute)
 
+import MassiveDecks.Models.Input as Input
 import MassiveDecks.Models.Card exposing (Hand, Call, PlayedCards)
 import MassiveDecks.Models.Game exposing (Config, Lobby, Round, FinishedRound)
 import MassiveDecks.Models.Player exposing (Player, Secret, Status(..), Id, PlayedByAndWinner, byId)
@@ -59,11 +61,15 @@ type State
 {-| Data for the start state of the game.
 -}
 type alias StartData =
-  { name : String
-  , nameError : Maybe String
-  , lobbyId : String
-  , lobbyIdError : Maybe String
+  { name : Input.State
+  , lobbyId : Input.State
   }
+
+
+{-| Create a `StartData` in it's initial state.
+-}
+startData : StartData
+startData = StartData Input.empty Input.empty
 
 
 {-| Data for the configuration state of the game.
@@ -71,8 +77,7 @@ type alias StartData =
 type alias ConfigData =
   { lobby : Lobby
   , secret : Secret
-  , deckId : String
-  , deckIdError : Maybe String
+  , deckId : Input.State
   , loadingDecks : List String
   , playerNotification : Maybe Notification.Player
   }
@@ -81,7 +86,7 @@ type alias ConfigData =
 {-| Create a `ConfigData` in it's initial state.
 -}
 configData : Lobby -> Secret -> ConfigData
-configData lobby secret = ConfigData lobby secret "" Nothing [] Nothing
+configData lobby secret = ConfigData lobby secret Input.empty [] Nothing
 
 
 {-| Data for the playing state of the game.

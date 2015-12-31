@@ -6,6 +6,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import MassiveDecks.Models.Input as Input
+import MassiveDecks.Models.Input.Identity as InputIdentity
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.Models.Game exposing (DeckInfo)
 import MassiveDecks.Models.State exposing (ConfigData, Error, Global)
@@ -36,7 +38,7 @@ view address data global =
                            , attribute "data-mui-controls" "house-rules" ] [ text "House Rules" ] ]
                ]
           , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
-                [ deckList address decks data.loadingDecks data.deckId data.deckIdError ]
+                [ deckList address decks data.loadingDecks data.deckId ]
           , div [ id "house-rules", class "mui-tabs__pane" ] [ rando address ]
           , divider
           , startGameButton address enoughPlayers enoughCards
@@ -57,17 +59,17 @@ invite appUrl lobbyId =
       ]
 
 
-deckIdInput : Signal.Address Action -> String -> Maybe String -> Html
-deckIdInput address deckIdValue error =
+deckIdInput : Signal.Address Action -> Input.State -> Html
+deckIdInput address state =
   div [] (List.append
     [ div [ id "deck-id-input" ]
         [ div [ class "mui-textfield" ]
           [ input
             [ type' "text"
             , placeholder "Play Code"
-            , on "input" targetValue (\deckId -> Signal.message address (UpdateInputValue "deckId" deckId))
+            , onInputUpdate address InputIdentity.deckId
             , onKeyUp address (\key -> case key of
-                13 -> AddDeck {- Return key. -}
+                13 -> AddDeck {- 13 is the Return key. -}
                 _ -> NoAction)
             ] []
           , label [] [ icon "info-circle"
@@ -76,9 +78,9 @@ deckIdInput address deckIdValue error =
                      , text " Play Code"
                      ]
           ]
-        , addDeckButton address (not (String.isEmpty deckIdValue))
+        , addDeckButton address (not (String.isEmpty state.value))
         ]
-    ] (inputError error))
+    ] (inputError state.error))
 
 
 addDeckButton : Signal.Address Action -> Bool -> Html
@@ -87,8 +89,8 @@ addDeckButton address canAdd =
          , onClick address AddDeck ] [ icon "plus" ]
 
 
-deckList : Signal.Address Action -> List DeckInfo -> List String -> String -> Maybe String -> Html
-deckList address decks loadingDecks deckIdValue error =
+deckList : Signal.Address Action -> List DeckInfo -> List String -> Input.State -> Html
+deckList address decks loadingDecks deckId =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
@@ -107,7 +109,7 @@ deckList address decks loadingDecks deckIdValue error =
         , td [] [ text (toString deck.responses) ]
         ]) decks
       , List.map (\deck -> tr [] [ td [] [ deckLink deck ], td [ colspan 3 ] [ spinner ] ]) loadingDecks
-      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckIdValue error ] ] ]
+      , [ tr [] [ td [ colspan 4 ] [ deckIdInput address deckId ] ] ]
       ])
     ]
 

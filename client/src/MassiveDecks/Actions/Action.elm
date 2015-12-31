@@ -6,6 +6,8 @@ module MassiveDecks.Actions.Action
 
   , eventEffects
 
+  , inputUpdateCallback
+
   ) where
 
 import Task
@@ -13,6 +15,7 @@ import Effects
 
 import MassiveDecks.Models.State exposing (InitialState)
 import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
+import MassiveDecks.Models.Input.Change as Change
 import MassiveDecks.Models.Player as Player
 import MassiveDecks.Models.Notification as Notification
 import MassiveDecks.Actions.Event exposing (Event, events)
@@ -45,8 +48,7 @@ or any input from JavaScript (via ports) is represented by an action.
   * `RemoveErrorPanel` - Remove an error.
   * `Batch` - An action that is a group of other actions. Just does them in order.
 * General (Used across all states.)
-  * `SetInputError` - Set the error text for an input field.
-  * `UpdateInputValue` - Update the model to reflect the value of an input field.
+  * `InputUpdate` - Update the model to reflect a change to an input.
 * Start State
   * `NewLobby` - Creates a new game lobby.
   * `JoinExistingLobby` - Add a new player to the given lobby.
@@ -83,8 +85,7 @@ type Action
   | RemoveErrorPanel Int
   | Batch (List Action)
   {- General (Used across all states.) -}
-  | SetInputError String (Maybe String)
-  | UpdateInputValue String String
+  | InputUpdate Change.WithTarget
   {- Start -}
   | NewLobby (APICall Lobby)
   | JoinExistingLobby
@@ -127,6 +128,12 @@ See the `Event` documentation for more on events.
 eventEffects : Lobby -> Lobby -> Effects.Effects Action
 eventEffects oldLobby newLobby =
   events oldLobby newLobby |> eventsToEffects
+
+
+{-| Creates a message of an `InputUpdate` to the given address, with the given targeted change.
+-}
+inputUpdateCallback : Signal.Address Action -> (String -> Change.WithTarget) -> String -> Signal.Message
+inputUpdateCallback address change value = Signal.message address (change value |> InputUpdate)
 
 
 {- Private -}
