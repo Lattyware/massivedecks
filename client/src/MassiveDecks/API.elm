@@ -26,6 +26,8 @@ module MassiveDecks.API
 
   , getLobbyAndHand
 
+  , back
+
   ) where
 
 import Json.Encode as Json
@@ -232,7 +234,7 @@ type SkipError
   = NotEnoughPlayersToSkip
   | PlayersNotSkippable
 
-{-| Make a request to skip the givne players in the given lobby using the given secret to authenticate.
+{-| Make a request to skip the given players in the given lobby using the given secret to authenticate.
 -}
 skip : String -> Secret -> List Id -> Request SkipError LobbyAndHand
 skip lobbyId secret players =
@@ -260,6 +262,19 @@ getLobbyAndHand lobbyId secret =
     , headers = headers
     , url = "/lobbies/" ++ lobbyId
     , body = commandBody "getLobbyAndHand" secret []
+    }
+  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
+
+
+{-| Make a request to stop being skipped.
+-}
+back : String -> Secret -> Request () LobbyAndHand
+back lobbyId secret =
+  send defaultSettings
+    { verb = "POST"
+    , headers = headers
+    , url = "/lobbies/" ++ lobbyId
+    , body = commandBody "back" secret []
     }
   |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
 

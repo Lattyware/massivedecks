@@ -61,7 +61,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   }
 
   def newPlayer(name: String): Secret = {
-    verify(players.forall(player => player.name != name), "{\"error\":\"name-in-use\"}")
+    verify(players.forall(player => player.name != name), "name-in-use")
     lastPlayerId += 1
     val id = Id(lastPlayerId)
     players = players ++ List(Player(id, name, Neutral, 0, disconnected=false, left=false))
@@ -91,10 +91,10 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
 
   def newGame(secret: Secret): Unit = {
     if (numberOfPlayers < State.minimumPlayers) {
-      throw new BadRequestException(s"""{\"error\":\"not-enough-players\",\"required\":${State.minimumPlayers}}""")
+      throw BadRequestException.json("not-enough-players", "required" -> State.minimumPlayers)
     }
     if (game.isDefined) {
-      throw new BadRequestException("{\"error\":\"game-in-progress\"}")
+      throw BadRequestException.json("game-in-progress")
     }
     val deck = Deck(decks)
     val hands = (for (player <- players) yield player.id -> Hand(deck.drawResponses(Hand.size))).toMap
@@ -141,16 +141,16 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   def play(secret: Secret, ids: List[Int]): Unit = {
     val id = validateSecretAndGetId(secret)
     val state = validateInGameAndGetState()
-    verify(playedInRound.get(id).isDefined, "{\"error\":\"not-in-round\"}")
+    verify(playedInRound.get(id).isDefined, "not-in-round")
     if (playedInRound(id).isDefined) {
-      throw new BadRequestException("{\"error\":\"already-played\"}")
+      throw BadRequestException.json("already-played")
     }
     val round = state.round
     if (round.responses.revealed.isDefined) {
-      throw new BadRequestException("{\"error\":\"already-judging\"}")
+      throw BadRequestException.json("already-judging")
     }
     verify(ids.length == state.round.call.slots,
-      s"""{\"error\":\"wrong-number-of-cards-played\",\"got\":${ids.length},\"expected\":${state.round.call.slots}}""")
+      "wrong-number-of-cards-played", "got" -> ids.length, "expected" -> state.round.call.slots)
     val hand = state.hands(id).hand
     val toPlay: List[Response] = ids.map(hand)
     val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ state.deck.drawResponses(toPlay.length))
@@ -171,7 +171,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   def choose(secret: Secret, winner: Int): Unit = {
     val id = validateSecretAndGetId(secret)
     val state = validateInGameAndGetState()
-    verify(id == state.round.czar, "{\"error\":\"not-czar\"}")
+    verify(id == state.round.czar, "not-czar")
     val winnerId = playedOrder.get.apply(winner)
     players = players.map(player => if (player.id == winnerId) {
       player.copy(score = player.score + 1)
@@ -213,10 +213,8 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   def skip(secret: Secret, unfilteredPlayers: List[Id]): Unit = {
     validateSecretAndGetId(secret)
     val players = unfilteredPlayers.filter(id => playerForId(id).status != Skipping)
-    verify((numberOfPlayers - players.length) > State.minimumPlayers,
-      "{\"error\":\"not-enough-players-to-skip\"}")
-    verify(players.map(id => playerForId(id)).forall(player => player.disconnected),
-      "{\"error\":\"players-must-be-skippable\"}")
+    verify((numberOfPlayers - players.length) > State.minimumPlayers, "not-enough-players-to-skip")
+    verify(players.map(id => playerForId(id)).forall(player => player.disconnected), "players-must-be-skippable")
     for (id <- players) {
       setPlayerStatus(id, Skipping)
       playedInRound = playedInRound.filterKeys(pId => pId != id)
@@ -238,7 +236,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   def back(secret: Secret): Unit = {
     val id = validateSecretAndGetId(secret)
     val player = playerForId(id)
-    verify(player.status == Skipping, "{\"error\":\"not-being-skipped\"}")
+    verify(player.status == Skipping, "not-being-skipped")
     setPlayerStatus(id, Neutral, force=true)
     sendNotifications()
   }
@@ -246,7 +244,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   def register(secret: Secret, socket: ActorRef): Unit = {
     val id = validateSecretAndGetId(secret)
     val player = playerForId(id)
-    verify(!player.left, "{\"error\":\"already-left-game\"}")
+    verify(!player.left, "already-left-game")
     setPlayerDisconnected(id, disconnected=false)
     connected += id
     if (player.status == Skipping) {
@@ -355,13 +353,12 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
 
   private def validateInGameAndGetState(): GameState = game match {
     case Some(state) => state
-    case None => throw new BadRequestException("{\"error\":\"no-game-in-progress\"}")
+    case None => throw BadRequestException.json("no-game-in-progress")
   }
 
   private def validateSecretAndGetId(secret: Secret): Id = {
     val id = secret.id
-    verify(secrets.get(id).map(expected => expected.secret).contains(secret.secret),
-      "{\"error\":\"secret-wrong-or-not-a-player\"}")
+    verify(secrets.get(id).map(expected => expected.secret).contains(secret.secret), "secret-wrong-or-not-a-player")
     id
   }
 
@@ -374,7 +371,6 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
 object State {
   val minimumPlayers: Int = 2
   val disconnectGracePeriod: FiniteDuration = 5.seconds
-  val playTime: FiniteDuration = 30.seconds
 
   trait Factory {
     def apply(id: String): State

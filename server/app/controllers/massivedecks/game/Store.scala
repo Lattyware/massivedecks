@@ -34,7 +34,7 @@ class Store @Inject() (gameFactory: Game.Factory) extends Actor with InjectedAct
   private def sendActionToLobby(id: String, action: Any): Unit = {
     decodeId(id).flatMap(decodedId => games.get(decodedId)) match {
       case Some(game) => game.forward(action)
-      case None => sender() ! Failure(new NotFoundException("{\"error\":\"lobby-not-found\"}"))
+      case None => sender() ! Failure(NotFoundException.json("lobby-not-found"))
     }
   }
 

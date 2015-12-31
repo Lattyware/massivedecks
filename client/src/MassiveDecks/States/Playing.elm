@@ -75,6 +75,10 @@ update action global data = case action of
     (model global data, (API.skip data.lobby.id data.secret players)
       |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
 
+  Back ->
+    (model global data, (API.back data.lobby.id data.secret)
+      |> Request.toEffect (\error -> DisplayError (toString error)) UpdateLobbyAndHand)
+
   UpdateLobbyAndHand lobbyAndHand ->
     updateLobby global { data | hand = lobbyAndHand.hand } lobbyAndHand.lobby
 

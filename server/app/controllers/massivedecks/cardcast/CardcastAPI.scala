@@ -21,7 +21,7 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
 
   private def deckUrl(id: String): String = {
-    verify(id.length > 0, "{\"error\":\"deck-not-found\"}")
+    verify(id.length > 0, "deck-not-found")
     s"$apiUrl/decks/$id"
   }
   private def cardsUrl(id: String): String = s"${deckUrl(id)}/cards"
@@ -42,7 +42,7 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
     } yield CardcastDeck(id, name, calls, responses)
 
     val timeoutError = after(timeout, using=Akka.system.scheduler)(
-      Future.failed(new RequestFailedException("{\"error\":\"cardcast-timeout\"}")))
+      Future.failed(RequestFailedException.json("cardcast-timeout")))
 
     Future firstCompletedOf Seq(deck, timeoutError)
   }
@@ -77,7 +77,7 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   private def parseError[T](error: JsValue): T = {
     println(error)
     (error \ "id").validate[String].asOpt match {
-      case Some("not_found") => throw new BadRequestException("{\"error\":\"deck-not-found\"}")
+      case Some("not_found") => throw BadRequestException.json("deck-not-found")
       case Some(errorName) => throw new Exception(s"Cardcast gave an unknown error ('$errorName') when trying to retrieve the deck.")
       case None => throw new Exception(s"Cardcast gave an error that couldn't be parsed when trying to retrieve the deck.")
     }
