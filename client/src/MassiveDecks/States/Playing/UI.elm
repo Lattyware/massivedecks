@@ -312,6 +312,40 @@ renderSkippingNotice address =
  ]
 
 
+timeoutNotice : Signal.Address Action -> List Player -> Bool -> List Html
+timeoutNotice address players timeout =
+  let
+    timedOutPlayers = List.filter (\player -> player.status == NotPlayed) players
+    timedOutNames = Util.joinWithAnd (List.map .name timedOutPlayers)
+    timedOutIds = List.map .id timedOutPlayers
+  in
+    if timeout then
+      Maybe.map (renderTimeoutNotice address timedOutIds (Util.pluralHas timedOutPlayers)) timedOutNames
+      |> Maybe.map (\item -> [ item ])
+      |> Maybe.withDefault []
+    else
+      []
+
+
+renderTimeoutNotice : Signal.Address Action -> List Id -> String -> String -> Html
+renderTimeoutNotice address ids has names =
+  div [ class "notice" ]
+      [ h3 [] [ icon "minus-circle" ]
+      , span [] [ text names
+                , text " "
+                , text has
+                , text " not played into the round before the round timer ran out."
+                ]
+      , div [ class "actions" ]
+            [ button [ class "mui-btn mui-btn--small"
+                     , onClick address (Skip ids)
+                     , title "They will be removed from this round, and won't be in future rounds until they come back."
+                     ]
+                     [ icon "fast-forward", text " Skip" ]
+            ]
+      ]
+
+
 disconnectedNotice : Signal.Address Action -> List Player -> List Html
 disconnectedNotice address players =
   let
