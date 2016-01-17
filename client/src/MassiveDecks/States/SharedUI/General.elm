@@ -185,17 +185,22 @@ aboutOverlay =
     ]
 
 
-{-| An input field.
+{-| An input field for a user to type some value into.
 -}
-inputField : Signal.Address Action -> String -> String -> Identity -> List Html -> Input.State -> Html
-inputField address class placeholderText inputIdentity labelContents state =
+inputField : Signal.Address Action -> String -> String -> Identity -> List Html -> Input.State -> Maybe String -> Html
+inputField address class placeholderText inputIdentity labelContents state initialValue =
+  let
+    attributes = [ type' "text"
+                 , placeholder placeholderText
+                 , onInputUpdate address inputIdentity
+                 ]
+    inputAttributes = case initialValue of
+      Nothing -> attributes
+      Just initialValue -> value initialValue :: attributes
+  in
     div [] (List.append
       [ div [ classList [ ("mui-textfield", True), (class, True) ] ]
-          [ input [ type' "text"
-                  , placeholder placeholderText
-                  , onInputUpdate address inputIdentity
-                  ]
-                  []
+          [ input inputAttributes []
           , label [] (List.append [ icon "info-circle", text " " ] labelContents)
           ]
       ] (inputError state.error))

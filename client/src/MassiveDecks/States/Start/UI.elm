@@ -36,7 +36,7 @@ view address global data =
           ]
         , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ newGame address nameEntered ]
         , div [ class ("mui-tabs__pane" ++ joinDivClass), id "pane-existing" ]
-          [ lobbyIdEntry address data.lobbyId
+          [ lobbyIdEntry address global.initialState.gameCode data.lobbyId
           , joinGame address (nameEntered && lobbyIdEntered)
           ]
         , a [ class "about-link mui--divider-top link"
@@ -55,12 +55,18 @@ view address global data =
 
 nameEntry : Signal.Address Action -> Input.State -> Html
 nameEntry address state =
-  inputField address "nickname-entry" "Nickname" InputIdentity.name [ text "Your name in the game." ] state
+  let
+    label = [ text "Your name in the game." ]
+  in
+    inputField address "nickname-entry" "Nickname" InputIdentity.name label state Nothing
 
 
-lobbyIdEntry : Signal.Address Action -> Input.State -> Html
-lobbyIdEntry address state =
-  inputField address "lobby-id-entry" "Game Code" InputIdentity.lobbyId [ text "The code for the game to join." ] state
+lobbyIdEntry : Signal.Address Action -> Maybe String -> Input.State -> Html
+lobbyIdEntry address initialValue state =
+  let
+    label = [ text "The code for the game to join." ]
+  in
+    inputField address "lobby-id-entry" "Game Code" InputIdentity.lobbyId label state initialValue
 
 
 joinGame : Signal.Address Action -> Bool -> Html
