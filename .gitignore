@@ -1,3 +1,14 @@
-/elm-stuff
-/node_modules
 RUNNING_PID
+/elm-stuff/
+/node_modules/
+logs
+target
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/.sbtserver
+/project/.sbtserver
+/project/.sbtserver.lock
+/public/javascripts/Main.js
