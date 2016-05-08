@@ -12,7 +12,7 @@ module MassiveDecks.Models.Card
 
   , slots
   , filled
-  
+
   , playedCardsByPlayer
   , winningCards
 
@@ -28,12 +28,18 @@ import MassiveDecks.Util as Util
 {-| A call (black card) is composed of a list of strings making up the text of the card, with a blank space ('slot') for
 a response implicitly existing inbetween each string.
 -}
-type alias Call = List String
+type alias Call =
+  { id: String
+  , parts: List String
+  }
 
 
 {-| A response (white card).
 -}
-type alias Response = String
+type alias Response =
+  { id: String
+  , text: String
+  }
 
 
 {-| Responses as they exist in a round. Either those responses are:
@@ -68,13 +74,13 @@ type alias PlayedCards = List Response
 {-| The number of slots on a given call.
 -}
 slots : Call -> Int
-slots call = (List.length call) - 1
+slots call = (List.length call.parts) - 1
 
 
 {-| Produce a string of the given call with the given played cards injected into it.
 -}
 filled : Call -> PlayedCards -> String
-filled call playedCards = String.concat (Util.interleave playedCards call)
+filled call playedCards = String.concat (Util.interleave (List.map .text playedCards) call.parts)
 
 
 {-| Join the player ids to the cards played into a round.

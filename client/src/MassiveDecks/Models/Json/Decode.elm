@@ -100,11 +100,15 @@ playedByAndWinnerDecoder = object2 PlayedByAndWinner
 
 
 callDecoder : Decoder Call
-callDecoder = list string
+callDecoder = object2 Call
+  ("id" := string)
+  ("parts" := list string)
 
 
 responseDecoder : Decoder Response
-responseDecoder = string
+responseDecoder = object2 Response
+  ("id" := string)
+  ("text" := string)
 
 
 playerIdDecoder : Decoder Id

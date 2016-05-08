@@ -63,10 +63,10 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
       val calls = ListBuffer[Call]()
       val responses = ListBuffer[Response]()
       for (call: JsValue <- (cards \ "calls").validate[List[JsValue]].get) {
-        calls += Call((call \ "text").validate[List[String]].get)
+        calls += Call((call \ "id").validate[String].get, (call \ "text").validate[List[String]].get)
       }
       for (response: JsValue <- (cards \ "responses").validate[List[JsValue]].get) {
-        responses += Response((response \ "text").validate[List[String]].get.head)
+        responses += Response((response \ "id").validate[String].get, (response \ "text").validate[List[String]].get.head)
       }
       (calls.toList, responses.toList)
     }).getOrElse {

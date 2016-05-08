@@ -9,7 +9,7 @@ object Game {
 
   sealed trait Card
 
-  case class Call(parts: List[String]) extends Card {
+  case class Call(id: String, parts: List[String]) extends Card {
     require(parts.length > 1, "A call must have at least one slot.")
 
     def slots: Int = parts.length - 1
@@ -18,7 +18,7 @@ object Game {
       intersperse(parts, responses.map(response => response.text)).mkString("")
   }
 
-  case class Response(text: String) extends Card
+  case class Response(id: String, text: String) extends Card
 
   case class DeckInfo(id: String, name: String, calls: Int, responses: Int)
 
@@ -67,14 +67,8 @@ object Game {
   }
 
   object Formatters {
-    implicit val callFormat: Format[Call] = Format(
-      Reads(response => response.validate[List[String]].map(Call.apply)),
-      Writes(response => JsArray(response.parts.map(JsString)))
-    )
-    implicit val responseFormat: Format[Response] = Format(
-      Reads(response => response.validate[String].map(Response)),
-      Writes(response => JsString(response.text))
-    )
+    implicit val callFormat: Format[Call] = Json.format[Call]
+    implicit val responseFormat: Format[Response] = Json.format[Response]
     implicit val playedByAndWinnerFormat: Format[PlayedByAndWinner] = Json.format[PlayedByAndWinner]
     implicit val revealedFormat: Format[Revealed] = Json.format[Revealed]
     implicit val responsesFormat: Format[Responses] = Json.format[Responses]

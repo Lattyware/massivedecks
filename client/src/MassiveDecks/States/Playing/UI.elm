@@ -8,7 +8,7 @@ import MassiveDecks.Models.State exposing (PlayingData, Error, Global)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player exposing (Player, Id, Status(..))
 import MassiveDecks.Models.Game exposing (Round, FinishedRound)
-import MassiveDecks.Models.Card exposing (Response, Responses(..), PlayedCards)
+import MassiveDecks.Models.Card exposing (Call, Response, Responses(..), PlayedCards)
 import MassiveDecks.Actions.Action exposing (Action(..), APICall(..))
 import MassiveDecks.States.SharedUI.Lobby as LobbyUI
 import MassiveDecks.States.SharedUI.General exposing (..)
@@ -112,16 +112,17 @@ playArea : List Html -> Html
 playArea contents = div [ class "play-area" ] contents
 
 
-call : List String -> List Response -> Html
-call contents picked =
+call : Call -> List Response -> Html
+call call picked =
   let
-    responseFirst = contents |> List.head |> Maybe.map ((==) "") |> Maybe.withDefault False
-    (contents, picked) = if responseFirst then
-        (contents, Util.mapFirst Util.firstLetterToUpper picked)
+    responseFirst = call.parts |> List.head |> Maybe.map ((==) "") |> Maybe.withDefault False
+    pickedText = List.map .text picked
+    (parts, responses) = if responseFirst then
+        (call.parts, Util.mapFirst Util.firstLetterToUpper pickedText)
       else
-        (Util.mapFirst Util.firstLetterToUpper contents, picked)
-    spanned = List.map (\part -> span [] [ text part ]) contents
-    withSlots = Util.interleave (slots (Card.slots contents) "" picked) spanned
+        (Util.mapFirst Util.firstLetterToUpper call.parts, pickedText)
+    spanned = List.map (\part -> span [] [ text part ]) call.parts
+    withSlots = Util.interleave (slots (Card.slots call) "" responses) spanned
     callContents = if responseFirst then List.tail withSlots |> Maybe.withDefault withSlots else withSlots
   in
     div [ class "card call mui-panel" ] [ div [ class "call-text" ] callContents ]
@@ -131,7 +132,7 @@ slot : String -> Html
 slot value = (span [ class "slot" ] [ text value ])
 
 
-slots : Int -> String -> List Response -> List Html
+slots : Int -> String -> List String -> List Html
 slots count placeholder picked =
   let
     extra = count - List.length picked
@@ -139,8 +140,8 @@ slots count placeholder picked =
     List.concat [picked, List.repeat extra placeholder] |> List.map slot
 
 
-response : Signal.Address Action -> List Int -> Bool -> Int -> String -> Html
-response address picked disabled responseId contents =
+response : Signal.Address Action -> List Int -> Bool -> Int -> Response -> Html
+response address picked disabled responseId response =
   let
     isPicked = List.member responseId picked
     pickedClass = if isPicked then " picked" else ""
@@ -148,7 +149,7 @@ response address picked disabled responseId contents =
     clickHandler = if isPicked || disabled then [] else [ onClick address (Pick responseId) ]
   in
     div (List.concat [ classes, clickHandler ])
-      [ div [ class "response-text" ] [ text (Util.firstLetterToUpper contents), text "." ] ]
+      [ div [ class "response-text" ] [ text (Util.firstLetterToUpper response.text), text "." ] ]
 
 
 blankResponse : Attribute -> Html
@@ -168,11 +169,11 @@ handView address picked disabled responses =
   handRender disabled (List.indexedMap (response address picked disabled) responses)
 
 
-pickedResponse : Signal.Address Action -> (Int, String) -> Html
-pickedResponse address (index, contents) =
+pickedResponse : Signal.Address Action -> (Int, Response) -> Html
+pickedResponse address (index, response) =
   li []
      [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
-                                                     [ text (Util.firstLetterToUpper contents)
+                                                     [ text (Util.firstLetterToUpper response.text)
                                                      , text "."
                                                      ]
                                                , withdrawButton address index
@@ -219,10 +220,10 @@ playedCards address isCzar playedId cards =
 
 
 playedResponse : Response -> Html
-playedResponse contents =
+playedResponse response =
   div [ class "card response mui-panel" ]
     [ div [ class "response-text" ]
-          [ text (Util.firstLetterToUpper contents), text "." ] ]
+          [ text (Util.firstLetterToUpper response.text), text "." ] ]
 
 
 chooseButton : Signal.Address Action -> Int -> Html
