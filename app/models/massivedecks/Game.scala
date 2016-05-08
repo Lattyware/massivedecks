@@ -63,6 +63,7 @@ object Game {
   case class Hand(hand: List[Response])
   object Hand {
     val size: Int = 10
+    val extraDrawAfter: Int = 2
   }
 
   object Formatters {

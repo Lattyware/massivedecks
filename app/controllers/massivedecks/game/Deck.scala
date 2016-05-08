@@ -31,7 +31,7 @@ case class Deck(decks: Set[CardcastDeck]) {
   def drawResponses(count: Int): List[Response] = {
     if (responses.length < count) {
       val partial = responses.take(count)
-      shuffleResponses()
+      resetResponses()
       partial ++ drawResponses(count - partial.length)
     } else {
       val drawn = responses.take(count)

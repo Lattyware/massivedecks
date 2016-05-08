@@ -106,17 +106,26 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   private val statusNotInRound: Set[Status] = Set(Skipping, Czar)
 
   def beginRound() = {
+    val state = validateInGameAndGetState()
     for (player <- players) {
       setPlayerStatus(player.id, NotPlayed)
     }
-    val round = game.get.round
+    val round = state.round
     val czar = round.czar
     setPlayerStatus(czar, Czar)
     playedInRound = (for (player <- players if !statusNotInRound.contains(player.status) && !player.left)
       yield player.id -> None).toMap
-    val firstSlots = (0 until round.call.slots).toList
+    val slots = round.call.slots
+    if (slots > Hand.extraDrawAfter) {
+      val toDraw = slots - Hand.extraDrawAfter + 1
+      for ((player, _) <- playedInRound) {
+        val hand = state.hands(player).hand
+        val newHand = Hand(hand ++ state.deck.drawResponses(toDraw))
+        state.hands += (player -> newHand)
+      }
+    }
     for (ai <- ais) {
-      play(ai, firstSlots)
+      play(ai, (0 until slots).toList)
     }
   }
 
@@ -153,7 +162,8 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
       "wrong-number-of-cards-played", "got" -> ids.length, "expected" -> state.round.call.slots)
     val hand = state.hands(id).hand
     val toPlay: List[Response] = ids.map(hand)
-    val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ state.deck.drawResponses(toPlay.length))
+    val toDraw = Hand.size - (hand.length - toPlay.length)
+    val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ state.deck.drawResponses(toDraw))
     var hands = state.hands
     hands += (id -> newHand)
     playedInRound += (id -> Some(toPlay))
