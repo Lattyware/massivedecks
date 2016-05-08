@@ -50,8 +50,8 @@ roundContents address data round =
     picked = List.map snd pickedWithIndex
     id = data.secret.id
     isCzar = round.czar == id
-    hasPlayed = List.filter (\player -> player.id == id) data.lobby.players
-      |> List.any (\player -> player.status == Played)
+    canPlay = List.filter (\player -> player.id == id) data.lobby.players
+      |> List.all (\player -> player.status == NotPlayed)
     callFill = case round.responses of
       Revealed responses ->
         Maybe.withDefault [] (data.considering `Maybe.andThen` (Util.get responses.cards))
@@ -68,7 +68,7 @@ roundContents address data round =
       Hidden _ -> pickedView address pickedWithIndex (Card.slots round.call) data.shownPlayed
     playedOrHand = case round.responses of
       Revealed responses -> playedView address isCzar responses
-      Hidden _ -> handView address data.picked (isCzar || hasPlayed) hand
+      Hidden _ -> handView address data.picked (not canPlay) hand
   in
     [ playArea
       [ div [ class "round-area" ] (List.concat [ [ call round.call callFill ], pickedOrChosen ])
@@ -170,9 +170,13 @@ handView address picked disabled responses =
 
 pickedResponse : Signal.Address Action -> (Int, String) -> Html
 pickedResponse address (index, contents) =
-  li [ onClick address (Withdraw index) ]
+  li []
      [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
-                                                     [ text (Util.firstLetterToUpper contents), text "." ] ] ]
+                                                     [ text (Util.firstLetterToUpper contents)
+                                                     , text "."
+                                                     ]
+                                               , withdrawButton address index
+                                               ] ]
 
 
 pickedView : Signal.Address Action -> List (Int, Response) -> Int -> List Attribute -> List Html
@@ -187,9 +191,17 @@ pickedView address picked slots shownPlayed =
     ]
 
 
+withdrawButton : Signal.Address Action -> Int -> Html
+withdrawButton address index = button
+  [ class "withdraw-button mui-btn mui-btn--small mui-btn--danger mui-btn--fab"
+  , title "Take back this response."
+  , onClick address (Withdraw index) ]
+  [ icon "times" ]
+
+
 playButton : Signal.Address Action -> Html
 playButton address = li [ class "play-button" ] [ button
-  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick address Play ]
+  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", title "Play these responses.", onClick address Play ]
   [ icon "check" ] ]
 
 

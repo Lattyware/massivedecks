@@ -135,12 +135,19 @@ ol.picked {
 
     & > .response {
       display: inline-block;
+      position: relative;
+
+      & > .withdraw-button {
+        position: absolute;
+        left: -4px;
+        bottom: -9px;
+      }
     }
 
     &:not(:first-child) {
-      margin-left: -(@card-width * 0.85);
+      margin-left: -(@card-width * @card-overlap);
       @media (min-width: @enhance-width) {
-        margin-left: -(@card-width-enhanced * 0.85);
+        margin-left: -(@card-width-enhanced * @card-overlap);
       }
     }
   }
@@ -166,9 +173,9 @@ ol.considering {
     }
 
     &:not(:first-child) {
-      margin-left: -(@card-width * 0.85);
+      margin-left: -(@card-width * @card-overlap);
       @media (min-width: @enhance-width) {
-        margin-left: -(@card-width-enhanced * 0.85);
+        margin-left: -(@card-width-enhanced * @card-overlap);
       }
     }
   }
