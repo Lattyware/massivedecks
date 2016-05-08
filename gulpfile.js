@@ -12,7 +12,7 @@ gulp.task('make', function() {
       elm({filetype: 'js'})
     ).on('error', gutil.log)
     .pipe(
-      gulp.dest('server/public/javascripts')
+      gulp.dest('public/javascripts')
     )
 });
 
