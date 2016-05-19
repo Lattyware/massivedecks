@@ -18,7 +18,7 @@ view : Lobby.Model -> Html Message
 view lobbyModel =
   let
     model = lobbyModel.config
-    lobby = lobbyModel.lobbyAndHand.lobby
+    lobby = lobbyModel.lobby
     decks = lobby.config.decks
     enoughPlayers = ((List.length lobby.players) > 1)
     enoughCards = not (List.isEmpty decks)

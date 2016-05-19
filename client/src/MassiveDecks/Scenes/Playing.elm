@@ -59,11 +59,11 @@ view model =
 
 {-| Handles messages and alters the model as appropriate.
 -}
-update : Message -> Lobby.Model -> (Lobby.Model, Cmd ConsumerMessage)
+update : Message -> Lobby.Model -> (Model, Cmd ConsumerMessage)
 update message lobbyModel =
   let
     model = lobbyModel.playing
-    lobby = lobbyModel.lobbyAndHand.lobby
+    lobby = lobbyModel.lobby
     secret = lobbyModel.secret
     gameCode = lobby.gameCode
   in
@@ -78,62 +78,61 @@ update message lobbyModel =
           ) lobby.round)
         in
           if playing && canPlay then
-            lobbyModel |> updateModel (\model -> { model | picked = model.picked ++ [ cardId ] })
+            ({ model | picked = model.picked ++ [ cardId ] }, Cmd.none)
           else
-            (lobbyModel, Cmd.none)
+            (model, Cmd.none)
 
       Withdraw cardId ->
-        lobbyModel |> updateModel (\model -> { model | picked = List.filter ((/=) cardId) model.picked })
+        ({ model | picked = List.filter ((/=) cardId) model.picked }, Cmd.none)
 
       Play ->
-        lobbyModel
-          |> updateModel (\model -> { model | picked = [] })
-          :> cmd (Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        ( { model | picked = [] }
+        , Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage)
+        )
 
       Consider potentialWinnerIndex ->
-        lobbyModel |> updateModel (\model -> { model | considering = Just potentialWinnerIndex })
+        ( { model | considering = Just potentialWinnerIndex }
+        , Cmd.none
+        )
 
       Choose winnerIndex ->
-        lobbyModel
-          |> updateModel (\model -> { model | considering = Nothing })
-          :> cmd (Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        ( { model | considering = Nothing }
+        , Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage)
+        )
 
       NextRound ->
-        lobbyModel |> updateModel (\model -> { model | considering = Nothing
-                                                     , finishedRound = Nothing
-                                                     })
+        ( { model | considering = Nothing
+                  , finishedRound = Nothing
+          }
+        , Cmd.none
+        )
 
       CheckForPlayedCardsToAnimate ->
-        lobbyModel
-          |> cmd (if List.isEmpty model.shownPlayed.toAnimate then Cmd.none else Util.cmd (LocalMessage AnimatePlayedCards))
+        ( model
+        , if List.isEmpty model.shownPlayed.toAnimate then Cmd.none else Util.cmd (LocalMessage AnimatePlayedCards)
+        )
 
       AnimatePlayedCards ->
         let
           (shownPlayed, seed) = updatePositioning model.shownPlayed model.seed
         in
-          lobbyModel |> updateModel (\model -> { model | seed = seed
-                                                       , shownPlayed = shownPlayed
-                                                       })
+          ( { model | seed = seed
+                    , shownPlayed = shownPlayed
+                    }
+          , Cmd.none
+          )
 
       Skip playerIds ->
-        lobbyModel |> cmd (Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
 
       Back ->
-        lobbyModel |> cmd (Request.send' (API.back gameCode secret) ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        (model, Request.send' (API.back gameCode secret) ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
 
       UpdateLobbyAndHand lobbyAndHand ->
         lobbyModel |> updateLobbyAndHand lobbyAndHand
 
 
-type alias Update = Lobby.Model -> (Lobby.Model, Cmd ConsumerMessage)
-
-
-updateModel : (Model -> Model) -> Update
-updateModel update lobbyModel = ({ lobbyModel | playing = update lobbyModel.playing }, Cmd.none)
-
-
-cmd : Cmd ConsumerMessage -> Update
-cmd command lobbyModel = (lobbyModel, command)
+type alias Update = Lobby.Model -> (Model, Cmd ConsumerMessage)
 
 
 updateLobbyAndHand : Game.LobbyAndHand -> Update
@@ -160,9 +159,7 @@ updateLobbyAndHand lobbyAndHand lobbyModel =
     newModel = { model | shownPlayed = newShownPlayed
                        , seed = seed}
   in
-    ({ lobbyModel | lobbyAndHand = lobbyAndHand
-                  , playing = newModel
-                  }, Cmd.none)
+    (newModel, Util.cmd (LobbyUpdate lobbyAndHand))
 
 
 chooseErrorHandler : API.ChooseError -> ConsumerMessage

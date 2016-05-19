@@ -9,7 +9,6 @@ import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
-import MassiveDecks.Models.Game as Game
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.Config.Messages exposing (ConsumerMessage(..), Message(..), InputId(..), Deck(..))
 import MassiveDecks.Scenes.Config.Models exposing (Model)
@@ -41,90 +40,58 @@ view lobbyModel = UI.view lobbyModel |> Html.map LocalMessage
 
 {-| Handles messages and alters the model as appropriate.
 -}
-update : Message -> Lobby.Model -> (Lobby.Model, Cmd ConsumerMessage)
+update : Message -> Lobby.Model -> (Model, Cmd ConsumerMessage)
 update message lobbyModel =
   let
-    gameCode = lobbyModel.lobbyAndHand.lobby.gameCode
+    gameCode = lobbyModel.lobby.gameCode
     secret = lobbyModel.secret
+    model = lobbyModel.config
   in
     case message of
       ConfigureDecks (Request rawDeckId) ->
         let
           deckId = String.toUpper rawDeckId
         in
-          lobbyModel
-            |> updateConfig (\model -> ({ model | loadingDecks = model.loadingDecks ++ [ deckId ] }, Cmd.none))
-            :> cmd (Request.send (API.addDeck gameCode secret deckId)
-                                  (addDeckErrorHandler deckId)
-                                  ErrorMessage
-                                  ((Add deckId) >> ConfigureDecks >> LocalMessage))
-            :> clearDeckIdError
+          { model | loadingDecks = model.loadingDecks ++ [ deckId ] } !
+            [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage ((Add deckId) >> ConfigureDecks >> LocalMessage)
+            , inputClearErrorCmd DeckId
+            ]
 
       ConfigureDecks (Add deckId lobbyAndHand) ->
-        lobbyModel
-          |> updateLobbyAndHand lobbyAndHand
-          :> removeDeckLoadingSpinner deckId
+        (removeDeckLoadingSpinner deckId model, Util.cmd (LobbyUpdate lobbyAndHand))
 
       ConfigureDecks (Fail deckId errorMessage) ->
-        lobbyModel
-          |> deckIdError errorMessage
-          :> removeDeckLoadingSpinner deckId
+        (removeDeckLoadingSpinner deckId model, inputSetErrorCmd DeckId errorMessage)
 
       InputMessage message ->
-        lobbyModel
-          |> updateDeckIdInput (Input.update message lobbyModel.config.deckIdInput)
+        let
+          (deckIdInput, msg) = Input.update message lobbyModel.config.deckIdInput
+        in
+          ({ model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg)
 
       AddAi ->
-        lobbyModel
-          |> cmd (Request.send' (API.newAi gameCode) ErrorMessage (\_ -> LocalMessage NoOp))
+        (model, Request.send' (API.newAi gameCode) ErrorMessage (\_ -> LocalMessage NoOp))
 
       StartGame ->
-        lobbyModel
-          |> cmd (Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage (GameStarted >> LocalMessage))
+        (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage (GameStarted >> LocalMessage))
 
       GameStarted lobbyAndHand ->
-        lobbyModel
-          |> updateLobbyAndHand lobbyAndHand
+        (model, Util.cmd (LobbyUpdate lobbyAndHand))
 
       NoOp ->
-        (lobbyModel, Cmd.none)
+        (model, Cmd.none)
 
 
-type alias Update = Lobby.Model -> (Lobby.Model, Cmd ConsumerMessage)
+inputClearErrorCmd : InputId -> Cmd ConsumerMessage
+inputClearErrorCmd inputId = (inputId, Nothing |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd
 
 
-clearDeckIdError : Update
-clearDeckIdError lobbyModel = (lobbyModel, (DeckId, Nothing |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd)
+inputSetErrorCmd : InputId -> String -> Cmd ConsumerMessage
+inputSetErrorCmd inputId error = (inputId, Just error |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd
 
 
-deckIdError : String -> Update
-deckIdError error lobbyModel = (lobbyModel, (DeckId, Just error |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd)
-
-
-cmd : Cmd ConsumerMessage -> Update
-cmd command lobbyModel = (lobbyModel, command)
-
-
-updateLobbyAndHand : Game.LobbyAndHand -> Update
-updateLobbyAndHand lobbyAndHand lobbyModel = ({ lobbyModel | lobbyAndHand = lobbyAndHand }, Cmd.none)
-
-
-updateConfig : (Model -> (Model, Cmd ConsumerMessage)) -> Update
-updateConfig update lobbyModel =
-  let
-    result = update lobbyModel.config
-  in
-    ({ lobbyModel | config = fst result }, snd result)
-
-
-removeDeckLoadingSpinner : String -> Update
-removeDeckLoadingSpinner deckId =
-  updateConfig (\model -> ({ model | loadingDecks = List.filter ((/=) deckId) model.loadingDecks }, Cmd.none))
-
-
-updateDeckIdInput : (Input.Model InputId Message, Cmd Message) -> Update
-updateDeckIdInput update lobbyModel =
-  updateConfig (\model -> ({ model | deckIdInput = fst update }, snd update |> Cmd.map LocalMessage)) lobbyModel
+removeDeckLoadingSpinner : String -> Model -> Model
+removeDeckLoadingSpinner deckId model = { model | loadingDecks = List.filter ((/=) deckId) model.loadingDecks }
 
 
 addDeckErrorHandler : String -> API.AddDeckError -> ConsumerMessage

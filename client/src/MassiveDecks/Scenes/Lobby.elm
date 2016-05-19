@@ -32,7 +32,8 @@ import MassiveDecks.Util as Util
 -}
 init : Init -> Game.LobbyAndHand -> Player.Secret -> (Model, Cmd ConsumerMessage)
 init init lobbyAndHand secret =
-  ( { lobbyAndHand = lobbyAndHand
+  ( { lobby = lobbyAndHand.lobby
+    , hand = lobbyAndHand.hand
     , config = Config.init
     , playing = Playing.init init
     , secret = secret
@@ -54,11 +55,11 @@ sendSecretToWebSocket url gameCode secret = WebSocket.send (webSocketUrl url gam
 subscriptions : Model -> Sub ConsumerMessage
 subscriptions model =
   let
-    delegated = case model.lobbyAndHand.lobby.round of
+    delegated = case model.lobby.round of
       Nothing -> Config.subscriptions model.config |> Sub.map ConfigMessage
       Just round -> Sub.none
 
-    websocket = WebSocket.listen (webSocketUrl model.init.url model.lobbyAndHand.lobby.gameCode) webSocketResponseDecoder
+    websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
   in
     Sub.batch [ delegated |> Sub.map LocalMessage
               , websocket |> Sub.map LocalMessage
@@ -116,28 +117,31 @@ update message model =
         Config.ErrorMessage errorMessage ->
           (model, ErrorMessage errorMessage |> Util.cmd)
 
+        Config.LobbyUpdate lobbyAndHand ->
+          model |> updateLobbyAndHand lobbyAndHand
+
         Config.LocalMessage localMessage ->
           let
-            (newModel, cmd) = Config.update localMessage model
+            (config, cmd) = Config.update localMessage model
           in
-            (newModel, Cmd.map (LocalMessage << ConfigMessage) cmd)
+            ({ model | config = config }, Cmd.map (LocalMessage << ConfigMessage) cmd)
 
     PlayingMessage playingMessage ->
       case playingMessage of
         Playing.ErrorMessage errorMessage ->
           (model, ErrorMessage errorMessage |> Util.cmd)
 
+        Playing.LobbyUpdate lobbyAndHand ->
+          model |> updateLobbyAndHand lobbyAndHand
+
         Playing.LocalMessage localMessage ->
           let
-            (newModel, cmd) = Playing.update localMessage model
+            (playing, cmd) = Playing.update localMessage model
           in
-            (newModel, Cmd.map (LocalMessage << PlayingMessage) cmd)
+            ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
 
     LobbyUpdated lobby ->
-      let
-        lobbyAndHand = model.lobbyAndHand
-      in
-        ({ model | lobbyAndHand = { lobbyAndHand | lobby = lobby } }, Cmd.none)
+      model |> updateLobbyAndHand { lobby = lobby, hand = model.hand }
 
     DismissNotification notification ->
       let
@@ -151,7 +155,7 @@ update message model =
 
     GameEvent event ->
       let
-        players = model.lobbyAndHand.lobby.players
+        players = model.lobby.players
       in
         case event of
           Event.RoundEnd call czar responses playedByAndWinner ->
@@ -178,6 +182,18 @@ update message model =
 
     NoOp ->
       (model, Cmd.none)
+
+
+type alias Update = Model -> (Model, Cmd ConsumerMessage)
+
+
+updateLobbyAndHand : Game.LobbyAndHand -> Update
+updateLobbyAndHand lobbyAndHand model =
+  let
+    events = Event.events model.lobby lobbyAndHand.lobby |> List.map (GameEvent >> LocalMessage >> Util.cmd)
+  in
+    { model | lobby = lobbyAndHand.lobby
+            , hand = lobbyAndHand.hand} ! events
 
 
 {-| Handles a change to the displayed notification.

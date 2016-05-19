@@ -8,7 +8,8 @@ import MassiveDecks.Models.Game as Game
 {-| This type is used for all sending of messages, allowing us to send messages handled outside this scene.
 -}
 type ConsumerMessage
-  = ErrorMessage Errors.Message
+  = LobbyUpdate Game.LobbyAndHand
+  | ErrorMessage Errors.Message
   | LocalMessage Message
 
 

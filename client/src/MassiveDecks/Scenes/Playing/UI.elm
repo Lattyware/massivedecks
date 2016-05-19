@@ -17,7 +17,7 @@ view : Lobby.Model -> (List (Html Message), List (Html Message))
 view lobbyModel =
   let
     model = lobbyModel.playing
-    lobby = lobbyModel.lobbyAndHand.lobby
+    lobby = lobbyModel.lobby
   in
     case model.finishedRound of
       Just round ->
@@ -35,8 +35,8 @@ view lobbyModel =
 roundContents : Lobby.Model -> Game.Round -> List (Html Message)
 roundContents lobbyModel round =
   let
-    lobby = lobbyModel.lobbyAndHand.lobby
-    hand = lobbyModel.lobbyAndHand.hand.hand
+    lobby = lobbyModel.lobby
+    hand = lobbyModel.hand.hand
     model = lobbyModel.playing
     pickedWithIndex = Util.getAllWithIndex hand model.picked
     picked = List.map snd pickedWithIndex

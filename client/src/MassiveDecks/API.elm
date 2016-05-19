@@ -181,6 +181,23 @@ back : String -> Player.Secret -> Request Never Game.LobbyAndHand
 back = commandRequest "back" [] []
 
 
+{-| Errors specific to redrawing.
+* `NotEnoughPoints` - The player does not have enough points to redraw.
+-}
+type RedrawError
+  = NotEnoughPoints
+
+{-| Make a request to redraw the players hand, losing a point.
+-}
+redraw : String -> Player.Secret -> Request RedrawError Game.LobbyAndHand
+redraw =
+  commandRequest
+    "redraw"
+    []
+    [ ((400, "not-enough-points-to-redraw"), Decode.succeed NotEnoughPoints)
+    ]
+
+
 {- Private -}
 
 

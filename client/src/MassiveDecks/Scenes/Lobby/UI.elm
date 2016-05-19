@@ -19,7 +19,7 @@ import MassiveDecks.Util as Util
 view : Model -> Html ConsumerMessage
 view model =
   let
-    lobby = model.lobbyAndHand.lobby
+    lobby = model.lobby
     url = model.init.url
     gameCode = lobby.gameCode
     players = lobby.players
