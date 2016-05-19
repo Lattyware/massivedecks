@@ -20,7 +20,7 @@ import play.api.libs.concurrent.Akka
 import play.api.libs.json.Json
 import play.api.Play.current
 
-class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: String)(implicit ec: ExecutionContext) {
+class State @Inject()(private val cardCast: CardcastAPI, @Assisted val gameCode: String)(implicit ec: ExecutionContext) {
   private var decks: Set[CardcastDeck] = Set()
   private var players: List[Player] = List()
   private var lastPlayerId: Int = -1
@@ -35,7 +35,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val id: Strin
   private var connected: Set[Id] = Set()
 
   def config = Config(decks.map(deck => deck.info).toList)
-  def lobby = Lobby(id, config, players, game.map(game => game.round))
+  def lobby = Lobby(gameCode, config, players, game.map(game => game.round))
 
   def newAi(): Unit = {
     val baseName = "Rando Cardrissian"

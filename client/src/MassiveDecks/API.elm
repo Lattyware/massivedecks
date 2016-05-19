@@ -1,58 +1,19 @@
-module MassiveDecks.API
+module MassiveDecks.API exposing (..)
 
-  ( createLobby
+import Json.Decode as Decode exposing ((:=))
+import Json.Encode as Encode
 
-  , NewPlayerError(..)
-  , newPlayer
-
-  , leave
-
-  , AddDeckError(..)
-  , addDeck
-
-  , newAi
-
-  , NewGameError(..)
-  , newGame
-
-  , PlayError(..)
-  , play
-
-  , ChooseError(..)
-  , choose
-
-  , SkipError(..)
-  , skip
-
-  , getLobbyAndHand
-
-  , back
-
-  ) where
-
-import Json.Encode as Json
-import Json.Decode exposing (succeed)
-
-import Http exposing (send, defaultSettings)
-
-import MassiveDecks.API.Request exposing (Request, SpecificErrorDecoder, toRequest, jsonBody, specificErrorDecoder, noArguments, oneArgument, twoArguments)
-import MassiveDecks.Models.Player exposing (Secret, Id)
-import MassiveDecks.Models.Game exposing (Lobby, LobbyAndHand)
-import MassiveDecks.Models.Json.Encode exposing (..)
-import MassiveDecks.Models.Json.Decode exposing (..)
+import MassiveDecks.API.Request exposing (..)
+import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Player as Player exposing (Player)
+import MassiveDecks.Models.JSON.Decode exposing (..)
+import MassiveDecks.Models.JSON.Encode exposing (..)
 
 
 {-| Makes a request to create a new game lobby to the server. On success, returns that lobby.
 -}
-createLobby : Request () Lobby
-createLobby =
-  send defaultSettings
-    { verb = "POST"
-    , headers = []
-    , url = "/lobbies"
-    , body = Http.empty
-    }
-  |> toRequest lobbyDecoder (\_ -> Nothing)
+createLobby : Request Never Game.Lobby
+createLobby = request "POST" "/lobbies" Nothing [] lobbyDecoder
 
 
 {-| Errors specific to new player requests.
@@ -65,34 +26,22 @@ type NewPlayerError
 
 {-| Makes a request to add a new player to the given lobby. On success, returns a `Secret` for that player.
 -}
-newPlayer : String -> String -> Request NewPlayerError Secret
-newPlayer lobbyId name =
-  let
-    newPlayerErrorDecoder = specificErrorDecoder
-      [ (400, "name-in-use", [], noArguments NameInUse)
-      , (404, "lobby-not-found", [], noArguments LobbyNotFound)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId ++ "/players"
-      , body = jsonBody (Json.object [ ("name", Json.string name) ])
-      }
-    |> toRequest playerSecretDecoder newPlayerErrorDecoder
+newPlayer : String -> String -> Request NewPlayerError Player.Secret
+newPlayer gameCode name =
+  request
+    "POST"
+    ("/lobbies/" ++ gameCode ++ "/players")
+    (Just (encodeName name))
+    [ ((400, "name-in-use"), Decode.succeed NameInUse)
+    , ((404, "lobby-not-found"), Decode.succeed LobbyNotFound)
+    ]
+    playerSecretDecoder
 
 
-{-| Makes a request to the server to permanently leave the given lobby, using the given secret to authenticate.
+{-| Get the lobby and the hand for the player with the given secret (using it to authenticate).
 -}
-leave : String -> Secret -> Request () LobbyAndHand
-leave lobbyId secret =
-  send defaultSettings
-    { verb = "POST"
-    , headers = headers
-    , url = "/lobbies/" ++ lobbyId ++ "/players/" ++ (toString secret.id) ++ "/leave"
-    , body = jsonBody (Json.object [ ("secret", Json.string secret.secret) ])
-    }
-  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
+getLobbyAndHand : String -> Player.Secret -> Request Never Game.LobbyAndHand
+getLobbyAndHand = commandRequest "getLobbyAndHand" [] []
 
 
 {-| Errors specific to add deck requests.
@@ -106,34 +55,28 @@ type AddDeckError
 {-| Makes a request to add the deck for the given play code to the game configuration, using the given secret to
 authenticate.
 -}
-addDeck : String -> Secret -> String -> Request AddDeckError LobbyAndHand
-addDeck lobbyId secret deckId =
-  let
-    addDeckErrorDecoder = specificErrorDecoder
-      [ (502, "cardcast-timeout", [], noArguments CardcastTimeout)
-      , (400, "deck-not-found", [], noArguments DeckNotFound)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId
-      , body = commandBody "addDeck" secret [ ("deckId", Json.string deckId) ]
-      }
-    |> toRequest lobbyAndHandDecoder addDeckErrorDecoder
+addDeck : String -> Player.Secret -> String -> Request AddDeckError Game.LobbyAndHand
+addDeck gameCode secret deckId =
+  commandRequest
+    "addDeck"
+    [ ("deckId", Encode.string deckId) ]
+    [ ((502, "cardcast-timeout"), Decode.succeed CardcastTimeout)
+    , ((400, "deck-not-found"), Decode.succeed DeckNotFound)
+    ]
+    gameCode
+    secret
 
 
 {-| Makes a request to the server to add a new AI player to the game.
 -}
-newAi : String -> Request () ()
-newAi lobbyId =
-  send defaultSettings
-    { verb = "POST"
-    , headers = []
-    , url = "/lobbies/" ++ lobbyId ++ "/players/newAi"
-    , body = Http.empty
-    }
-  |> toRequest (succeed ()) (\_ -> Nothing)
+newAi : String -> Request Never ()
+newAi gameCode =
+  request
+    "POST"
+    ("/lobbies/" ++ gameCode ++ "/players/newAi")
+    Nothing
+    []
+    (Decode.succeed ())
 
 
 {-| Errors specific to starting a new game.
@@ -144,23 +87,38 @@ type NewGameError
   = NotEnoughPlayers Int
   | GameInProgress
 
+
 {-| Makes a request to the server to start a new game in the given lobby, using the given secret to authenticate.
 -}
-newGame : String -> Secret -> Request NewGameError LobbyAndHand
-newGame lobbyId secret =
-  let
-    newGameErrorDecoder = specificErrorDecoder
-      [ (400, "game-in-progress", [], noArguments GameInProgress)
-      , (400, "not-enough-players", [ "required" ], oneArgument Json.Decode.int NotEnoughPlayers)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId
-      , body = commandBody "newGame" secret []
-      }
-    |> toRequest lobbyAndHandDecoder newGameErrorDecoder
+newGame : String -> Player.Secret -> Request NewGameError Game.LobbyAndHand
+newGame gameCode secret =
+  commandRequest
+    "newGame"
+    []
+    [ ((400, "game-in-progress"), Decode.succeed GameInProgress)
+    , ((400, "not-enough-players"), Decode.object1 NotEnoughPlayers ("required" := Decode.int))
+    ]
+    gameCode
+    secret
+
+
+{-| Errors specific to choosing a winner for the round.
+* `NotCzar` - The player is not the card czar.
+-}
+type ChooseError
+  = NotCzar
+
+{-| Make a request to choose the given (by index) winning response for round for the given lobby, using the given secret
+to authenticate.
+-}
+choose : String -> Player.Secret -> Int -> Request ChooseError Game.LobbyAndHand
+choose gameCode secret winner =
+  commandRequest
+    "choose"
+    [ ("winner", Encode.int winner) ]
+    [ ((400, "not-czar"), Decode.succeed NotCzar) ]
+    gameCode
+    secret
 
 
 {-| Errors specific to playing responses into the round.
@@ -179,49 +137,18 @@ type PlayError
 {-| Make a request to play the given (by index) cards from the player's hand into the round for the given lobby, using
 the given secret to authenticate.
 -}
-play : String -> Secret -> List Int -> Request PlayError LobbyAndHand
-play lobbyId secret ids =
-  let
-    playErrorDecoder = specificErrorDecoder
-      [ (400, "not-in-round", [], noArguments NotInRound)
-      , (400, "already-played", [], noArguments AlreadyPlayed)
-      , (400, "already-judging", [], noArguments AlreadyJudging)
-      , (400, "wrong-number-of-cards-played", [ "got", "expected" ]
-        , twoArguments (Json.Decode.int, Json.Decode.int) WrongNumberOfCards)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId
-      , body = commandBody "play" secret [ ("ids", Json.list (List.map Json.int ids)) ]
-      }
-    |> toRequest lobbyAndHandDecoder playErrorDecoder
-
-
-{-| Errors specific to choosing a winner for the round.
-* `NotCzar` - The player is not the card czar.
--}
-type ChooseError
-  = NotCzar
-
-{-| Make a request to choose the given (by index) winning response for round for the given lobby, using the given secret
-to authenticate.
--}
-choose : String -> Secret -> Int -> Request ChooseError LobbyAndHand
-choose lobbyId secret winner =
-  let
-    chooseErrorDecoder = specificErrorDecoder
-      [ (400, "not-czar", [], noArguments NotCzar)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId
-      , body = commandBody "choose" secret [ ("winner", Json.int winner) ]
-      }
-    |> toRequest lobbyAndHandDecoder chooseErrorDecoder
+play : String -> Player.Secret -> List Int -> Request PlayError Game.LobbyAndHand
+play gameCode secret ids =
+  commandRequest
+    "play"
+    [ ("ids", Encode.list (List.map Encode.int ids)) ]
+    [ ((400, "not-in-round"), Decode.succeed NotInRound)
+    , ((400, "already-played"), Decode.succeed AlreadyPlayed)
+    , ((400, "already-judging"), Decode.succeed AlreadyJudging)
+    , ((400, "wrong-number-of-cards-played"), Decode.object2 WrongNumberOfCards ("got" := Decode.int) ("expected" := Decode.int))
+    ]
+    gameCode
+    secret
 
 
 {-| Errors specific to skipping a player in the lobby.
@@ -236,59 +163,29 @@ type SkipError
 
 {-| Make a request to skip the given players in the given lobby using the given secret to authenticate.
 -}
-skip : String -> Secret -> List Id -> Request SkipError LobbyAndHand
-skip lobbyId secret players =
-  let
-    skipErrorDecoder = specificErrorDecoder
-      [ (400, "not-enough-players-to-skip", [], noArguments NotEnoughPlayersToSkip)
-      , (400, "players-must-be-skippable", [], noArguments PlayersNotSkippable)
-      ]
-  in
-    send defaultSettings
-      { verb = "POST"
-      , headers = headers
-      , url = "/lobbies/" ++ lobbyId
-      , body = commandBody "skip" secret [ ("players", Json.list (List.map Json.int players)) ]
-      }
-    |> toRequest lobbyAndHandDecoder skipErrorDecoder
-
-
-{-| Get the lobby and the hand for the player with the given secret (using it to authenticate).
--}
-getLobbyAndHand : String -> Secret -> Request () LobbyAndHand
-getLobbyAndHand lobbyId secret =
-  send defaultSettings
-    { verb = "POST"
-    , headers = headers
-    , url = "/lobbies/" ++ lobbyId
-    , body = commandBody "getLobbyAndHand" secret []
-    }
-  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
+skip : String -> Player.Secret -> List Player.Id -> Request SkipError Game.LobbyAndHand
+skip gameCode secret players =
+  commandRequest
+    "skip"
+    [ ("players", Encode.list (List.map Encode.int players)) ]
+    [ ((400, "not-enough-players-to-skip"), Decode.succeed NotEnoughPlayersToSkip)
+    , ((400, "players-must-be-skippable"), Decode.succeed PlayersNotSkippable)
+    ]
+    gameCode
+    secret
 
 
 {-| Make a request to stop being skipped.
 -}
-back : String -> Secret -> Request () LobbyAndHand
-back lobbyId secret =
-  send defaultSettings
-    { verb = "POST"
-    , headers = headers
-    , url = "/lobbies/" ++ lobbyId
-    , body = commandBody "back" secret []
-    }
-  |> toRequest lobbyAndHandDecoder (\_ -> Nothing)
+back : String -> Player.Secret -> Request Never Game.LobbyAndHand
+back = commandRequest "back" [] []
 
 
 {- Private -}
 
 
-headers : List (String, String)
-headers = [("Content-Type", "application/json")]
-
-
-commandBody : String -> Secret -> List (String, Json.Value) -> Http.Body
-commandBody command secret data =
-  jsonBody (Json.object (List.append
-    [ ("command", Json.string command)
-    , ("secret", playerSecretEncoder secret)
-    ] data))
+{-| Construct a request for a command.
+-}
+commandRequest : String -> List ( String, Encode.Value ) -> List (KnownError a) -> String -> Player.Secret -> Request a Game.LobbyAndHand
+commandRequest name args errors gameCode secret =
+  request "POST" ("/lobbies/" ++ gameCode) (Just (encodeCommand name secret args)) errors lobbyAndHandDecoder

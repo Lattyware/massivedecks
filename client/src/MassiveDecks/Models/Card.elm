@@ -1,22 +1,4 @@
-module MassiveDecks.Models.Card
-
-  ( Call
-  , Response
-
-  , Responses(..)
-  , RevealedResponses
-
-  , Hand
-
-  , PlayedCards
-
-  , slots
-  , filled
-
-  , playedCardsByPlayer
-  , winningCards
-
-  ) where
+module MassiveDecks.Models.Card exposing (..)
 
 import String
 import Dict exposing (Dict)

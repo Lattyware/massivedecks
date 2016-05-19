@@ -7,7 +7,7 @@ gulp.task('default', ['make'], function() {
 
 gulp.task('make', function() {
   return gulp
-    .src('client/src/MassiveDecks/Main.elm')
+    .src('client/src/MassiveDecks.elm')
     .pipe(
       elm({filetype: 'js'})
     ).on('error', gutil.log)
@@ -16,6 +16,6 @@ gulp.task('make', function() {
     )
 });
 
-gulp.task('watch', function () {
+gulp.task('watch', ['make'], function () {
    gulp.watch('client/src/**/*.elm', ['make']);
 });

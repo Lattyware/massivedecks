@@ -1,41 +1,34 @@
-module MassiveDecks.Actions.Event
+module MassiveDecks.Scenes.Lobby.Event exposing (Event(..), events)
 
-  ( Event(..)
-  , events
-
-  ) where
-
-import MassiveDecks.Models.Game exposing (..)
-import MassiveDecks.Models.Player exposing (..)
-import MassiveDecks.Models.Card exposing (..)
+import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Player as Player exposing (Player)
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Util as Util
 
 
 {-| Events represent high-level changes in the game. When the game state is updated, it is checked to determine if the
 game has changed and events should be fired. This means that these checks only need to be done in one place.
-
 The use case for events is where something ephemeral needs to happen as a result of a change in the game state
 (e.g: an animation or notification).
 -}
 type Event
-  = PlayerJoin Id
-  | PlayerStatus Id Status
-  | PlayerLeft Id
-  | PlayerDisconnect Id
-  | PlayerReconnect Id
-  | PlayerScore Id Int
-  | RoundStart Call Id
+  = PlayerJoin Player.Id
+  | PlayerStatus Player.Id Player.Status
+  | PlayerLeft Player.Id
+  | PlayerDisconnect Player.Id
+  | PlayerReconnect Player.Id
+  | PlayerScore Player.Id Int
+  | RoundStart Card.Call Player.Id
   | RoundPlayed Int
-  | RoundJudging (List PlayedCards)
-  | RoundEnd Call Id (List PlayedCards) PlayedByAndWinner
+  | RoundJudging (List Card.PlayedCards)
+  | RoundEnd Card.Call Player.Id (List Card.PlayedCards) Player.PlayedByAndWinner
 
 
 {-| Generate events from a given change in lobby.
-
 Essentially, this does a diff between the two lobbies, and then generates events based on the differences. If there is
 an extra player in the new lobby, a `PlayerJoin` event will be produced.
 -}
-events : Lobby -> Lobby -> List Event
+events : Game.Lobby -> Game.Lobby -> List Event
 events oldLobby newLobby = List.concat
   [ diffPlayers oldLobby.players newLobby.players
   , diffRound oldLobby.round newLobby.round
@@ -69,7 +62,7 @@ diffPlayer oldPlayers newPlayer =
         Util.apply [ playerJoin, playerStatus, playerScore ] newPlayer
 
 
-diffRound : Maybe Round -> Maybe Round -> List Event
+diffRound : Maybe Game.Round -> Maybe Game.Round -> List Event
 diffRound oldRound newRound =
   let
     differentRound = Maybe.map .call oldRound /= Maybe.map .call newRound
@@ -79,20 +72,20 @@ diffRound oldRound newRound =
         [ oldRound `Maybe.andThen` roundEnd
         , Maybe.map roundStart newRound
         , newRound `Maybe.andThen` (\newRound -> case newRound.responses of
-            Hidden count -> Just (roundPlayed count)
-            Revealed _ -> Nothing)
+            Card.Hidden count -> Just (roundPlayed count)
+            Card.Revealed _ -> Nothing)
         ]
     else
       Maybe.map2 changedRound oldRound newRound |> Maybe.withDefault []
 
-changedRound : Round -> Round -> List Event
+changedRound : Game.Round -> Game.Round -> List Event
 changedRound oldRound newRound =
   case oldRound.responses of
-    Hidden oldCount ->
+    Card.Hidden oldCount ->
       case newRound.responses of
-        Hidden newCount -> if (oldCount < newCount) then [ roundPlayed (newCount - oldCount) ] else []
-        Revealed _ -> [ roundJudging newRound ]
-    Revealed _ ->
+        Card.Hidden newCount -> if (oldCount < newCount) then [ roundPlayed (newCount - oldCount) ] else []
+        Card.Revealed _ -> [ roundJudging newRound ]
+    Card.Revealed _ ->
       []
 
 
@@ -116,28 +109,28 @@ playerLeft player = PlayerLeft player.id
 playerDisconnect : Player -> Event
 playerDisconnect player = PlayerDisconnect player.id
 
-roundStart : Round -> Event
+roundStart : Game.Round -> Event
 roundStart round = RoundStart round.call round.czar
 
 roundPlayed : Int -> Event
 roundPlayed amount = RoundPlayed amount
 
-roundJudging : Round -> Event
+roundJudging : Game.Round -> Event
 roundJudging round =
   let
     responses = case round.responses of
-      Hidden _ -> Nothing
-      Revealed responses -> Just responses
+      Card.Hidden _ -> Nothing
+      Card.Revealed responses -> Just responses
     played = Maybe.map .cards responses |> Maybe.withDefault []
   in
     RoundJudging played
 
-roundEnd : Round -> Maybe Event
+roundEnd : Game.Round -> Maybe Event
 roundEnd round =
   let
     responses = case round.responses of
-      Hidden _ -> Nothing
-      Revealed responses -> Just responses
+      Card.Hidden _ -> Nothing
+      Card.Revealed responses -> Just responses
     played = Maybe.map .cards responses
     playedByAndWinner = responses `Maybe.andThen` .playedByAndWinner
   in

@@ -38,48 +38,48 @@ class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: Execu
     request => out => NotificationHandler.props(lobbyId, store, out)
   }
 
-  def getLobby(id: String) = Action.async {
-    resultOrError(store ? LobbyAction(id, GetLobby))
+  def getLobby(gameCode: String) = Action.async {
+    resultOrError(store ? LobbyAction(gameCode, GetLobby))
   }
 
-  def command(lobbyId: String) = Action.async(parse.json) { request: Request[JsValue] =>
+  def command(gameCode: String) = Action.async(parse.json) { request: Request[JsValue] =>
     Lobby.Action(request.body) match {
       case Some(action) =>
-        resultOrError(store ? LobbyAction(lobbyId, action))
+        resultOrError(store ? LobbyAction(gameCode, action))
 
       case None =>
         Future.successful(BadRequest(JsonError.of("invalid-command")))
     }
   }
 
-  def newPlayer(lobbyId: String) = Action.async(parse.json) { request: Request[JsValue] =>
+  def newPlayer(gameCode: String) = Action.async(parse.json) { request: Request[JsValue] =>
     request.body.validate[NewPlayer].asOpt match {
       case Some(action) =>
-        resultOrError(store ? PlayerAction(lobbyId, action))
+        resultOrError(store ? PlayerAction(gameCode, action))
 
       case None =>
         Future.successful(BadRequest(JsonError.of("badly-formed-name")))
     }
   }
 
-  def getPlayer(lobbyId: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
+  def getPlayer(gameCode: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
     (request.body \ "secret").validate[String].asOpt match {
       case Some(secret) =>
-        resultOrError(store ? PlayerAction(lobbyId, GetHand(Secret(Id(playerId), secret))))
+        resultOrError(store ? PlayerAction(gameCode, GetHand(Secret(Id(playerId), secret))))
 
       case None =>
         Future.successful(BadRequest(JsonError.of("badly-formed-secret")))
     }
   }
 
-  def newAi(lobbyId: String) = Action.async {
-    resultOrError(store ? PlayerAction(lobbyId, AddAi))
+  def newAi(gameCode: String) = Action.async {
+    resultOrError(store ? PlayerAction(gameCode, AddAi))
   }
 
-  def leave(lobbyId: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
+  def leave(gameCode: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
     (request.body \ "secret").validate[String].asOpt match {
       case Some(secret) =>
-        resultOrError(store ? PlayerAction(lobbyId, Leave(Secret(Id(playerId), secret))))
+        resultOrError(store ? PlayerAction(gameCode, Leave(Secret(Id(playerId), secret))))
 
       case None =>
         Future.successful(BadRequest(JsonError.of("badly-formed-secret")))

@@ -1,230 +1,158 @@
-module MassiveDecks.API.Request
+module MassiveDecks.API.Request exposing (send, send', request, Request, KnownError, Error(..))
 
-  ( Request
-  , toRequest
-  , toEffect
-  , toEffectsWithOnError
-  , jsonBody
+import Json.Encode exposing (encode)
+import Json.Decode as Json
+import Task
+import Dict exposing (Dict)
 
-  , Error(..)
-  , SpecificErrorDecoder
-  , specificErrorDecoder
-  , noArguments
-  , oneArgument
-  , twoArguments
-  
-  ) where
+import Http exposing (Value(..))
 
-import Http
-import Task exposing (Task)
-import Json.Decode exposing (Decoder, decodeValue, decodeString, keyValuePairs, value)
-import Json.Encode as Json
-import Effects exposing (Effects)
-
-import MassiveDecks.Actions.Action exposing (Action(..))
-import MassiveDecks.Util as Util
+import MassiveDecks.Components.Errors as Errors
 
 
-{-| A request to the game server.
-
-`specificErrors` is a type representing the possible errors (specific to this request) if it failes.
-`successfulResponse` is a type representing the result of the API request if it succeeds.
+{-| Send a request to the server.
 -}
-type alias Request specificErrors successfulResponse =
-  Task (Error specificErrors) successfulResponse
+send : Request specificError result -> (specificError -> message) -> (Errors.Message -> message) -> (result -> message) -> Cmd message
+send request knownHandler errorMessageWrapper resultToMessage =
+  let
+    errorToMessage = errorHandler knownHandler errorMessageWrapper
+    task = Http.send Http.defaultSettings
+      { verb = request.verb
+      , url = request.url
+      , headers = if request.body == Nothing then [] else jsonContentType
+      , body = case request.body of
+          Just json -> jsonBody json
+          Nothing -> Http.empty
+      } |> Task.map (handleResponse request.errors request.resultDecoder)
+    errorMapped = (Task.mapError Communication task) `Task.andThen` Task.fromResult
+  in
+    Task.perform errorToMessage resultToMessage errorMapped
 
 
-{-| Construct a `Request` for the given HTTP request, using the given success and error decoders.
-
-There should be a convinience method where this is done for every API call in `API`.
+{-| Same as 'send', but for requests with no known errors.
 -}
-toRequest : Decoder a -> SpecificErrorDecoder b -> Task Http.RawError Http.Response -> Request b a
-toRequest successDecoder specificErrorDecoder task
-  = (Task.mapError Communication task)
-      `Task.andThen`
-    (\response ->
-      if (200 <= response.status && response.status < 300) then
-        wrappedSuccessDecoder successDecoder response
-      else
-        Task.fail (specificErrorDecoder response |> Maybe.withDefault (genericErrorDecoder response))
-    )
+send' : Request Never result -> (Errors.Message -> message) -> (result -> message) -> Cmd message
+send' request errorMessageWrapper resultToMessage = send request noKnownErrors errorMessageWrapper resultToMessage
 
 
-{-| Take a request, a handler to turn errors into actions, and a handler to turn successes into actions.
+{-| It's impossible to get an instance of Never, this will never happen, so just crash.
 -}
-toEffect : (a -> Action) -> (b -> Action) -> Request a b -> Effects Action
-toEffect errorHandler successHandler task
-  = Task.map successHandler task
-  |> handleErrors errorHandler Nothing
-  |> Effects.task
+noKnownErrors : Never -> message
+noKnownErrors noPossibleValue = Debug.crash "Got an impossible response."
 
 
-{-| The same as `toEffect`, but with a handler that produces an action on *any* errors (not just errors specific to this
-request) in addition to the normal response.
-This is mostly useful where you did something when the request started (e.g: disabled a button) and want to revert it
-when the response completes, regardless of success.
+{-| A request to the API.
 -}
-toEffectsWithOnError : (a -> Action) -> (b -> Action) -> (Error a -> Action) -> Request a b -> Effects Action
-toEffectsWithOnError errorHandler successHandler onError task
-  = Task.map successHandler task
-  |> handleErrors errorHandler (Just onError)
-  |> Effects.task
+type alias Request specificError result =
+  { verb : String
+  , url : String
+  , body : Maybe Json.Value
+  , errors : KnownErrors specificError
+  , resultDecoder : Json.Decoder result
+  }
+
+
+{-| A convinience method to make the errors dictionary from a list.
+-}
+request : String -> String -> Maybe Json.Value -> List (KnownError specificError) -> Json.Decoder result -> Request specificError result
+request verb url body errors resultDecoder = Request verb url body (Dict.fromList errors) resultDecoder
+
+
+{-| Specifies an error the client understands and can present to the user nicely.
+-}
+type alias KnownError specificError = ((Int, String), Json.Decoder specificError)
+
+{-| The dictionary of KnownErrors.
+-}
+type alias KnownErrors specificError = Dict (Int, String) (Json.Decoder specificError)
+
+
+{-| The top level of potential errors from an API request.
+-}
+type Error specificError
+  = Communication Http.RawError
+  | Malformed String
+  | Known specificError
+  | Unknown Int String
+
+
+{-| Handle an error, turning it into a message.
+-}
+errorHandler : (specificErrors -> msg) -> (Errors.Message -> msg) -> Error specificErrors -> msg
+errorHandler knownHandler errorMessageWrapper error =
+  case error of
+    Known specificError -> knownHandler specificError
+    _ -> genericErrorHandler error |> errorMessageWrapper
+
+
+{-| Convert errors to generic error messages for display in the errors component. Generally you want to use this as a
+fallback after handling all known errors.
+-}
+genericErrorHandler : Error a -> Errors.Message
+genericErrorHandler error =
+  case error of
+    Known specificError -> Errors.New ("An error was not correctly handled: " ++ (toString specificError)) True
+    Communication Http.RawTimeout -> Errors.New "Timed out trying to connect to the server." False
+    Communication Http.RawNetworkError -> Errors.New "There was a network error trying to connect to the server." False
+    Malformed explanation -> Errors.New ("The response recieved from the server was incorrect: " ++ explanation) True
+    Unknown code response -> Errors.New ("Recieved an unexpected response (" ++ (toString code) ++ ") from the server: " ++ response) True
+
+
+handleResponse : KnownErrors specificError -> Json.Decoder message -> Http.Response -> Result (Error specificError) message
+handleResponse errors resultDecoder response =
+  if response.status >= 200 && response.status < 300 then
+    handleSuccess resultDecoder response
+  else
+    handleFailure errors response |> Err
+
+
+handleSuccess : Json.Decoder message -> Http.Response -> Result (Error specificError) message
+handleSuccess resultDecoder response =
+  case response.value of
+    Text value -> Result.formatError Malformed (Json.decodeString resultDecoder value)
+    Blob blob -> Err (Malformed "Recieved binary data instead of expected JSON.")
+
+
+handleFailure : KnownErrors specificError -> Http.Response -> Error specificError
+handleFailure errors response =
+    case response.value of
+      Text value ->
+        case Json.decodeString errorKeyDecoder value of
+          Ok errorName ->
+            let
+              decoder = Dict.get (response.status, errorName) errors
+            in
+              case decoder of
+                Just decoder ->
+                  case Json.decodeString decoder value of
+                    Ok error ->
+                      Known error
+
+                    Err error ->
+                      Malformed error
+
+                Nothing ->
+                  Unknown response.status value
+
+          Err error ->
+            Malformed error
+
+      Blob blob -> Malformed "Recieved binary data instead of expected JSON in error."
+
+
+{-| Specifies JSON encoded content.
+-}
+jsonContentType : List (String, String)
+jsonContentType = [ ("Content-Type", "application/json") ]
 
 
 {-| Turns JSON into an HTTP body for a request.
 -}
 jsonBody : Json.Value -> Http.Body
-jsonBody value = Json.encode 0 value |> Http.string
+jsonBody value = encode 0 value |> Http.string
 
 
-{-| An error from a request.
-* A `Communication` error is an error at the networking level.
-* A `Malformed` error means either the content wasn't JSON or it wasn't in the expected form.
-* A `Known` error means an error specific to the request being made (e.g: adding a deck can fail because the play code
-  doesn't exist).
-* An `Unknown` error is an error where the HTTP request succeeded, but the combination of error code and content didn't
-resolve to a known error. i.e: anything else.
+{-| Decode the error key from
 -}
-type Error specificErrors
-  = Communication Http.RawError
-  | Malformed String
-  | Known specificErrors
-  | Unknown Int String
-
-
-{-| A function that decodes an error that is specific to the request being made (i.e: an `Error.Known`)
-
-`specificErrors` is a type representing the possible errors for the API request.
-
-There is a helper function to generate these more easily - see `specificErrorDecoder`.
--}
-type alias SpecificErrorDecoder specificErrors =
-  Http.Response -> Maybe (Error specificErrors)
-
-
-{-| Creates a `SpecificErrorDecoder` for the given list of possible errors. The errors are taken in the format:
-
-  (Status code, Error name, [ Fields ], Error constructor)
-
-Where
-  * Status code is the status code of the HTTP response as an int (e.g: 400, 404, 500, etc...)
-  * Error name is the value of the 'error' field of the object taken from the content of the body of the response.
-  * Fields are a list of names of other fields in the error.
-  * Error constructor is a function that takes the values of the given fields and produces an error.
-
-The decoder will take the HTTP response, and will sequentially try to find an error which matches the request in both
-status code and error name. Then it will try to produce an error using the fields taken from the body. If this fails,
-it will fall back to producing no error.
-
-For example:
-
-  (400, "unexpected-value", [ "value" ], oneArgument Json.Decode.int UnexpectedValue)
-
-Would take a response with a status code of 400 and a body of:
-
-  {
-    "error": "unexpected-value",
-    "value": 1
-  }
-
-And produce an `UnexpectedValue 1`.
-
-Note there are convinience methods to map the JSON values into normal values. See `noArguments`, `oneArgument` and
-`twoArguments`.
--}
-specificErrorDecoder : List (Int, String, List String, (List Json.Value -> Maybe a)) -> SpecificErrorDecoder a
-specificErrorDecoder errorsFormats response =
-    case response.value of
-      Http.Text rawValues ->
-        case decodeString (keyValuePairs value) rawValues of
-          Ok values ->
-            let
-              error = Util.find (\(key, value) -> key == "error") values
-            in
-              error
-                `Maybe.andThen`
-              (\(_, raw) -> decodeValue Json.Decode.string raw |> Result.toMaybe)
-                `Maybe.andThen`
-              (\respErrorName ->
-                Util.find (\(status, errorName, _, _) -> response.status == status && respErrorName == errorName) errorsFormats
-                 `Maybe.andThen` (\(_, _, keys, errorConstructor) -> (errorConstructor (extractValues keys values)))
-                 |> Maybe.map Known)
-          Err _ ->
-            Nothing
-      Http.Blob _ ->
-        Nothing
-
-
-{-| Returns the given value.
--}
-noArguments : a -> List Json.Value -> Maybe a
-noArguments value _ = Just value
-
-
-{-| Takes the first value from the list if it exists, decodes it if possible, and feeds it into the given function.
--}
-oneArgument : Decoder a -> (a -> b) -> List Json.Value -> Maybe b
-oneArgument decoder f values = (List.head values) `Maybe.andThen` (toArgument decoder f)
-
-
-{-| Takes the two values from the list if they exists, decodes them with the respective decoders if possible, and feeds
-them into the given function.
--}
-twoArguments : (Decoder a, Decoder b) -> (a -> b -> c) -> List Json.Value -> Maybe c
-twoArguments (decoder1, decoder2) f values =
-  case values of
-    first :: second :: [] ->
-      let
-        v1 = Result.toMaybe (decodeValue decoder1 first)
-        v2 = Result.toMaybe (decodeValue decoder2 second)
-      in
-        Maybe.map2 f v1 v2
-    _ ->
-      Nothing
-
-
-{- Private -}
-
-
-extractValues : List String -> List (String, a) -> List a
-extractValues keys values =
-  List.filterMap (\key -> Util.find (\(potentialKey, value) -> potentialKey == key) values) keys
-    |> List.map snd
-
-
-toArgument : Decoder a -> (a -> b) -> Json.Value -> Maybe b
-toArgument decoder f value = Result.toMaybe (decodeValue decoder value) |> Maybe.map f
-
-
-wrappedSuccessDecoder : Decoder a -> Http.Response -> Request b a
-wrappedSuccessDecoder decoder response =
-  case response.value of
-    Http.Text rawValue ->
-      case decodeString decoder rawValue of
-        Ok value -> Task.succeed value
-        Err error -> Task.fail (Malformed error)
-    Http.Blob _ -> Task.fail (Malformed "Recieved binary data instead of expected JSON.")
-
-
-genericErrorDecoder : Http.Response -> Error a
-genericErrorDecoder response = Unknown response.status response.statusText
-
-
-handleErrors : (a -> Action) -> Maybe (Error a -> Action) -> Request a Action -> Task c Action
-handleErrors knownErrorHandler onError request =
-  let
-    errorToAction error = case error of
-      Communication (Http.RawTimeout) ->
-        DisplayError "The server couldn't be reached after a long time, it may be down."
-      Communication (Http.RawNetworkError) ->
-        DisplayError "There was a network error trying to each the server."
-      Malformed explanation ->
-        DisplayError ("There was an error decoding the response the server gave: " ++ explanation)
-      Unknown status statusText ->
-        DisplayError ("Recieved an unexpected bad response from the server: " ++ (toString status) ++ " - " ++ statusText )
-      Known knownError ->
-        knownErrorHandler knownError
-  in
-    request `Task.onError` (\error -> Task.succeed (case onError of
-      Just onError -> Batch [ errorToAction error, onError error ]
-      Nothing -> errorToAction error))
+errorKeyDecoder : Json.Decoder String
+errorKeyDecoder = Json.at [ "error" ] Json.string

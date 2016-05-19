@@ -1,17 +1,4 @@
-module MassiveDecks.Models.Player
-
-  ( Id
-  , Player
-  , PlayedByAndWinner
-  , Secret
-
-  , Status(..)
-  , statusName
-  , nameToStatus
-
-  , byId
-
-  ) where
+module MassiveDecks.Models.Player exposing (..)
 
 import MassiveDecks.Util as Util
 

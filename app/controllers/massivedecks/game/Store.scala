@@ -21,8 +21,8 @@ class Store @Inject() (gameFactory: Game.Factory) extends Actor with InjectedAct
   def receive = {
     case NewLobby =>
       val id: Long = games.size
-      val encodedId: String = hashIds.encode(id)
-      val lobby: ActorRef = injectedChild(gameFactory(encodedId), encodedId)
+      val gameCode: String = hashIds.encode(id)
+      val lobby: ActorRef = injectedChild(gameFactory(gameCode), gameCode)
       games += (id -> lobby)
       lobby.forward(GetLobby)
 
@@ -31,8 +31,8 @@ class Store @Inject() (gameFactory: Game.Factory) extends Actor with InjectedAct
     case PlayerAction(id, action) => sendActionToLobby(id, action)
   }
 
-  private def sendActionToLobby(id: String, action: Any): Unit = {
-    decodeId(id).flatMap(decodedId => games.get(decodedId)) match {
+  private def sendActionToLobby(gameCode: String, action: Any): Unit = {
+    decodeId(gameCode).flatMap(decodedId => games.get(decodedId)) match {
       case Some(game) => game.forward(action)
       case None => sender() ! Failure(NotFoundException.json("lobby-not-found"))
     }

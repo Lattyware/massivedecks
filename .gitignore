@@ -11,4 +11,4 @@ target
 /.sbtserver
 /project/.sbtserver
 /project/.sbtserver.lock
-/public/javascripts/Main.js
+/public/javascripts/MassiveDecks.js

@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 
 import models.massivedecks.Player.Formatters._
 
-class NotificationHandler(val lobbyId: String, val store: ActorRef, val out: ActorRef) extends Actor {
+class NotificationHandler(val gameCode: String, val store: ActorRef, val out: ActorRef) extends Actor {
   var secret: Option[Secret] = None
 
   override def receive = {
@@ -16,16 +16,16 @@ class NotificationHandler(val lobbyId: String, val store: ActorRef, val out: Act
       secret = Json.parse(message).validate[Secret].asOpt
       if (secret.isDefined)
       {
-        store ! LobbyAction(lobbyId, Register(secret.get, out))
+        store ! LobbyAction(gameCode, Register(secret.get, out))
       }
   }
 
   override def postStop(): Unit = {
     if (secret.isDefined) {
-      store ! LobbyAction(lobbyId, Unregister(secret.get, out))
+      store ! LobbyAction(gameCode, Unregister(secret.get, out))
     }
   }
 }
 object NotificationHandler {
-  def props(lobbyId: String, store: ActorRef, out: ActorRef) = Props(new NotificationHandler(lobbyId, store, out))
+  def props(gameCode: String, store: ActorRef, out: ActorRef) = Props(new NotificationHandler(gameCode, store, out))
 }

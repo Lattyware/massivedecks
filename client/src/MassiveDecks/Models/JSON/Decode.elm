@@ -1,27 +1,10 @@
-module MassiveDecks.Models.Json.Decode
-
-  ( lobbyAndHandDecoder
-  , lobbyDecoder
-  , deckInfoDecoder
-  , configDecoder
-  , handDecoder
-  , playerDecoder
-  , playerStatusDecoder
-  , roundDecoder
-  , responsesDecoder
-  , callDecoder
-  , responseDecoder
-  , revealedResponsesDecoder
-  , playerIdDecoder
-  , playerSecretDecoder
-
-  ) where
+module MassiveDecks.Models.JSON.Decode exposing (..)
 
 import Json.Decode exposing (..)
 
 import MassiveDecks.Models.Game exposing (..)
-import MassiveDecks.Models.Card exposing (..)
 import MassiveDecks.Models.Player exposing (..)
+import MassiveDecks.Models.Card exposing (..)
 
 
 lobbyAndHandDecoder : Decoder LobbyAndHand
@@ -32,7 +15,7 @@ lobbyAndHandDecoder = object2 LobbyAndHand
 
 lobbyDecoder : Decoder Lobby
 lobbyDecoder = object4 Lobby
-  ("id" := string)
+  ("gameCode" := string)
   ("config" := configDecoder)
   ("players" := (list playerDecoder))
   (maybe ("round" := roundDecoder))
@@ -119,9 +102,6 @@ playerSecretDecoder : Decoder Secret
 playerSecretDecoder = object2 Secret
     ("id" := playerIdDecoder)
     ("secret" := string)
-
-
-{- Private -}
 
 
 responsesTransportDecoder : Decoder ResponsesTransport

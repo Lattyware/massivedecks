@@ -1,7 +1,21 @@
-module MassiveDecks.Models.Game where
+module MassiveDecks.Models.Game exposing (..)
 
-import MassiveDecks.Models.Player exposing (..)
-import MassiveDecks.Models.Card exposing (..)
+import MassiveDecks.Models.Card as Card
+import MassiveDecks.Models.Player as Player exposing (Player)
+
+
+{-| The required information to rejoin a lobby - the ID and the secret.
+-}
+type alias GameCodeAndSecret =
+  { gameCode : GameCode
+  , secret : Player.Secret
+  }
+
+
+{-| A lobby ID is a string used to identify a given lobby.
+-}
+type alias GameCode = String
+
 
 
 {-| Configuration for a game.
@@ -24,26 +38,26 @@ type alias DeckInfo =
 {-| A round in the game.
 -}
 type alias Round =
-  { czar : Id
-  , call : Call
-  , responses : Responses
+  { czar : Player.Id
+  , call : Card.Call
+  , responses : Card.Responses
   }
 
 
 {-| A round that has been completed.
 -}
 type alias FinishedRound =
-  { call : Call
-  , czar : Id
-  , responses : (List PlayedCards)
-  , playedByAndWinner : PlayedByAndWinner
+  { call : Card.Call
+  , czar : Player.Id
+  , responses : (List Card.PlayedCards)
+  , playedByAndWinner : Player.PlayedByAndWinner
   }
 
 
 {-| A lobby.
 -}
 type alias Lobby =
-  { id : String
+  { gameCode : String
   , config : Config
   , players : List Player
   , round : Maybe Round
@@ -54,5 +68,5 @@ type alias Lobby =
 -}
 type alias LobbyAndHand =
   { lobby: Lobby
-  , hand: Hand
+  , hand: Card.Hand
   }
