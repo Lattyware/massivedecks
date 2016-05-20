@@ -22,7 +22,7 @@ object Game {
 
   case class DeckInfo(id: String, name: String, calls: Int, responses: Int)
 
-  case class Config(decks: List[DeckInfo])
+  case class Config(decks: List[DeckInfo], houseRules: Set[String])
 
   case class Round(czar: Player.Id, call: Call, responses: Responses) {
     require(responses.revealed.isEmpty ||

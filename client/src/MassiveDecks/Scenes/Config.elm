@@ -78,6 +78,12 @@ update message lobbyModel =
       GameStarted lobbyAndHand ->
         (model, Util.cmd (LobbyUpdate lobbyAndHand))
 
+      EnableRule rule ->
+        (model, Request.send' (API.enableRule rule gameCode secret) ErrorMessage LobbyUpdate)
+
+      DisableRule rule ->
+        (model, Request.send' (API.disableRule rule gameCode secret) ErrorMessage LobbyUpdate)
+
       NoOp ->
         (model, Cmd.none)
 

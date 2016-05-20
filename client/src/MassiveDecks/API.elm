@@ -4,6 +4,7 @@ import Json.Decode as Decode exposing ((:=))
 import Json.Encode as Encode
 
 import MassiveDecks.API.Request exposing (..)
+import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.JSON.Decode exposing (..)
@@ -22,7 +23,7 @@ createLobby = request "POST" "/lobbies" Nothing [] lobbyDecoder
 -}
 type NewPlayerError
   = NameInUse
-  | LobbyNotFound
+  | NewPlayerLobbyNotFound
 
 {-| Makes a request to add a new player to the given lobby. On success, returns a `Secret` for that player.
 -}
@@ -33,15 +34,22 @@ newPlayer gameCode name =
     ("/lobbies/" ++ gameCode ++ "/players")
     (Just (encodeName name))
     [ ((400, "name-in-use"), Decode.succeed NameInUse)
-    , ((404, "lobby-not-found"), Decode.succeed LobbyNotFound)
+    , ((404, "lobby-not-found"), Decode.succeed NewPlayerLobbyNotFound)
     ]
     playerSecretDecoder
 
 
+{-| Errors specific to getting the lobby and hand.
+* `LobbyNotFound` - The given lobby does not exist.
+-}
+type GetLobbyAndHandError
+  = LobbyNotFound
+
+
 {-| Get the lobby and the hand for the player with the given secret (using it to authenticate).
 -}
-getLobbyAndHand : String -> Player.Secret -> Request Never Game.LobbyAndHand
-getLobbyAndHand = commandRequest "getLobbyAndHand" [] []
+getLobbyAndHand : String -> Player.Secret -> Request GetLobbyAndHandError Game.LobbyAndHand
+getLobbyAndHand = commandRequest "getLobbyAndHand" [] [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound) ]
 
 
 {-| Errors specific to add deck requests.
@@ -196,6 +204,18 @@ redraw =
     []
     [ ((400, "not-enough-points-to-redraw"), Decode.succeed NotEnoughPoints)
     ]
+
+
+{-| Make a request to enable a house rule.
+-}
+enableRule : HouseRule.Id -> String -> Player.Secret -> Request Never Game.LobbyAndHand
+enableRule rule gameCode secret = commandRequest "enableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] gameCode secret
+
+
+{-| Make a request to disable a house rule.
+-}
+disableRule : HouseRule.Id -> String -> Player.Secret -> Request Never Game.LobbyAndHand
+disableRule rule gameCode secret = commandRequest "disableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] gameCode secret
 
 
 {- Private -}

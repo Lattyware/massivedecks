@@ -118,6 +118,24 @@ class Game @Inject()(private val state: State, @Assisted private val id: String)
           Json.toJson(state.lobbyAndHand(secret))
         }
 
+      case Redraw(secret) =>
+        sender() ! Try {
+          state.redraw(secret)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
+
+      case EnableRule(secret, rule) =>
+        sender() ! Try {
+          state.enableRule(secret, rule)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
+
+      case DisableRule(secret, rule) =>
+        sender() ! Try {
+          state.disableRule(secret, rule)
+          Json.toJson(state.lobbyAndHand(secret))
+        }
+
       case _ =>
         sender() ! Try {
           throw new Exception("Unknown message: " + message)

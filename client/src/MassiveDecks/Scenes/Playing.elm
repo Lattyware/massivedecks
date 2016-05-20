@@ -19,6 +19,9 @@ import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.Playing.UI as UI
 import MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards)
 import MassiveDecks.Scenes.Playing.Messages exposing (ConsumerMessage(..), Message(..))
+import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
+import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
+import MassiveDecks.Scenes.Playing.HouseRule.Reboot as Reboot
 import MassiveDecks.Util as Util exposing ((:>))
 
 
@@ -32,6 +35,12 @@ init init =
   , shownPlayed = { animated = [], toAnimate = [] }
   , seed = Random.initialSeed (hack init.seed)
   }
+
+
+houseRule : HouseRule.Id -> HouseRule
+houseRule id =
+  case id of
+    HouseRule.Reboot -> Reboot.rule
 
 
 {-| We shouldn't need to do this!
@@ -129,13 +138,16 @@ update message lobbyModel =
         (model, Request.send' (API.back gameCode secret) ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
 
       UpdateLobbyAndHand lobbyAndHand ->
-        lobbyModel |> updateLobbyAndHand lobbyAndHand
+        updateLobbyAndHand lobbyAndHand lobbyModel
+
+      Redraw ->
+        (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+
+      NoOp ->
+        (model, Cmd.none)
 
 
-type alias Update = Lobby.Model -> (Model, Cmd ConsumerMessage)
-
-
-updateLobbyAndHand : Game.LobbyAndHand -> Update
+updateLobbyAndHand : Game.LobbyAndHand -> Lobby.Model -> (Model, Cmd ConsumerMessage)
 updateLobbyAndHand lobbyAndHand lobbyModel =
   let
     lobby = lobbyAndHand.lobby
@@ -160,6 +172,12 @@ updateLobbyAndHand lobbyAndHand lobbyModel =
                        , seed = seed}
   in
     (newModel, Util.cmd (LobbyUpdate lobbyAndHand))
+
+
+redrawErrorHandler : API.RedrawError -> ConsumerMessage
+redrawErrorHandler error =
+  case error of
+    API.NotEnoughPoints -> ErrorMessage <| Errors.New "You do not have enough points to redraw your hand." False
 
 
 chooseErrorHandler : API.ChooseError -> ConsumerMessage

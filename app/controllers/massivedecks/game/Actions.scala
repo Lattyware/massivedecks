@@ -30,6 +30,9 @@ object Actions {
     case class GetLobbyAndHand(secret: Secret) extends Command
     case class Skip(secret: Secret, players: List[Id]) extends Command
     case class Back(secret: Secret) extends Command
+    case class EnableRule(secret: Secret, rule: String) extends Command
+    case class DisableRule(secret: Secret, rule: String) extends Command
+    case class Redraw(secret: Secret) extends Command
 
     object Action {
       def apply(json: JsValue): Option[Command] =
@@ -44,6 +47,9 @@ object Actions {
               case "getLobbyAndHand" => Json.fromJson[GetLobbyAndHand](command).asOpt
               case "skip" => Json.fromJson[Skip](command).asOpt
               case "back" => Json.fromJson[Back](command).asOpt
+              case "enableRule" => Json.fromJson[EnableRule](command).asOpt
+              case "disableRule" => Json.fromJson[DisableRule](command).asOpt
+              case "redraw" => Json.fromJson[Redraw](command).asOpt
               case _ => None
             }
           })
@@ -60,6 +66,9 @@ object Actions {
       implicit val getLobbyAndHandFormat: Format[GetLobbyAndHand] = Json.format[GetLobbyAndHand]
       implicit val skipFormat: Format[Skip] = Json.format[Skip]
       implicit val backFormat: Format[Back] = Json.format[Back]
+      implicit val redrawFormat: Format[Redraw] = Json.format[Redraw]
+      implicit val enableRuleFormat: Format[EnableRule] = Json.format[EnableRule]
+      implicit val disableRuleFormat: Format[DisableRule] = Json.format[DisableRule]
     }
   }
 

@@ -5,6 +5,7 @@ import Json.Decode exposing (..)
 import MassiveDecks.Models.Game exposing (..)
 import MassiveDecks.Models.Player exposing (..)
 import MassiveDecks.Models.Card exposing (..)
+import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 
 
 lobbyAndHandDecoder : Decoder LobbyAndHand
@@ -30,8 +31,9 @@ deckInfoDecoder = object4 DeckInfo
 
 
 configDecoder : Decoder Config
-configDecoder = object1 Config
+configDecoder = object2 Config
   ("decks" := (list deckInfoDecoder))
+  ("houseRules" := (list houseRuleDecoder))
 
 
 handDecoder : Decoder Hand
@@ -50,7 +52,7 @@ playerDecoder = object6 Player
 
 
 playerStatusDecoder : Decoder Status
-playerStatusDecoder = customDecoder (string) (\name -> Result.Ok (Maybe.withDefault NotPlayed (nameToStatus name)))
+playerStatusDecoder = customDecoder (string) (\name -> nameToStatus name |> Result.fromMaybe ("Unknown player status '" ++ name ++ "'."))
 
 
 roundDecoder : Decoder Round
@@ -102,6 +104,16 @@ playerSecretDecoder : Decoder Secret
 playerSecretDecoder = object2 Secret
     ("id" := playerIdDecoder)
     ("secret" := string)
+
+
+houseRuleDecoder : Decoder HouseRule.Id
+houseRuleDecoder = customDecoder (string) (\name -> ruleNameToId name |> Result.fromMaybe ("Unknown house rule '" ++ name ++ "'."))
+
+ruleNameToId : String -> Maybe HouseRule.Id
+ruleNameToId name =
+  case name of
+    "reboot" -> Just HouseRule.Reboot
+    _ -> Nothing
 
 
 responsesTransportDecoder : Decoder ResponsesTransport

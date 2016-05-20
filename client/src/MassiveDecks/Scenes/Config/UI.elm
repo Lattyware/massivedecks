@@ -10,6 +10,9 @@ import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Scenes.Lobby.Models as Lobby
+import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
+import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
+import MassiveDecks.Scenes.Playing.HouseRule.Available exposing (houseRules)
 import MassiveDecks.Scenes.Config.Messages exposing (Message(..), InputId(..), Deck(..))
 import MassiveDecks.Util as Util
 
@@ -38,13 +41,14 @@ view lobbyModel =
                                ]
               , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
                     [ deckList decks model.loadingDecks model.deckIdInput ]
-              , div [ id "house-rules", class "mui-tabs__pane" ] [ rando ]
+              , div [ id "house-rules", class "mui-tabs__pane" ]
+                    ([ rando ] ++ (List.map (\rule -> houseRule (List.member rule.id lobbyModel.lobby.config.houseRules) rule) houseRules))
               , div [ class "mui-divider" ] []
               , startGameButton enoughPlayers enoughCards
               ]
         ]
 
-invite : String -> String -> Html Message
+invite : String -> String -> Html msg
 invite appUrl lobbyId =
   let
     url = Util.lobbyUrl appUrl lobbyId
@@ -99,7 +103,7 @@ deckList decks loadingDecks deckId =
     ]
 
 
-deckLink : String -> Html Message
+deckLink : String -> Html msg
 deckLink id = a [ href ("https://www.cardcastgame.com/browse/deck/" ++ id), target "_blank" ] [ text id ]
 
 
@@ -125,8 +129,20 @@ emptyDeckListInfo display =
     []
 
 
-houseRule : String -> String -> String -> String -> String -> Message -> Html Message
-houseRule id' title icon description buttonText message =
+houseRule : Bool -> HouseRule -> Html Message
+houseRule enabled rule =
+  let
+    (buttonText, command) =
+      if enabled then
+        ("Disable", DisableRule rule.id)
+      else
+        ("Enable", EnableRule rule.id)
+  in
+    houseRuleTemplate (HouseRule.toString rule.id) rule.name rule.icon rule.description buttonText command
+
+
+houseRuleTemplate : String -> String -> String -> String -> String -> msg -> Html msg
+houseRuleTemplate id' title icon description buttonText message =
   div [ id id', class "house-rule" ]
       [ div [] [ h3 [] [ Icon.icon icon, text " ", text title ]
              , button [ class "mui-btn mui-btn--small mui-btn--primary", onClick message ]
@@ -137,12 +153,12 @@ houseRule id' title icon description buttonText message =
 
 
 rando : Html Message
-rando = houseRule "rando" "Rando Cardrissian" "cogs"
+rando = houseRuleTemplate "rando" "Rando Cardrissian" "cogs"
   "Every round, one random card will be played for an imaginary player named Rando Cardrissian, if he wins, all players go home in a state of everlasting shame."
   "Add an AI player" AddAi
 
 
-startGameWarning : Bool -> Html Message
+startGameWarning : Bool -> Html msg
 startGameWarning canStart = if canStart then text "" else
   span [] [ Icon.icon "info-circle", text " You will need at least two players to start the game." ]
 

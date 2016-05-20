@@ -2,6 +2,7 @@ module MassiveDecks.Models.Game exposing (..)
 
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
+import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 
 
 {-| The required information to rejoin a lobby - the ID and the secret.
@@ -22,6 +23,7 @@ type alias GameCode = String
 -}
 type alias Config =
   { decks : List DeckInfo
+  , houseRules : List HouseRule.Id
   }
 
 

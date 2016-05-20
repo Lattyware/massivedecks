@@ -4,6 +4,13 @@ import Task
 import String
 
 
+{-| Since a value of `Never` can never exist, this can't ever actually happen. Used to fill gaps where the type system
+requires a method, but it'll never get called.
+-}
+impossible : Never -> a
+impossible n = impossible n
+
+
 {-| Add an item to a list if the value is not nothing.
 -}
 andMaybe : List a -> Maybe a -> List a

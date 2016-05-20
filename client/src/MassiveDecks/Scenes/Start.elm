@@ -34,6 +34,7 @@ init init =
       , init = init
       , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" InputMessage
       , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (init.gameCode |> Maybe.withDefault "") "" InputMessage
+      , info = Nothing
       , errors = Errors.init
       }
     , command)
@@ -80,6 +81,9 @@ update message model =
       in
         ({ model | errors = newErrors }, Cmd.map ErrorMessage cmd)
 
+    ShowInfoMessage message ->
+      ({ model | info = Just message }, Cmd.none)
+
     CreateLobby ->
       (model, Request.send' API.createLobby ErrorMessage (\lobby -> JoinLobbyAsNewPlayer lobby.gameCode))
 
@@ -90,7 +94,7 @@ update message model =
       {- TODO: We send the secret to the websocket here for crazy reasons - remove - Bug workaround! -}
       model !
         [ Lobby.sendSecretToWebSocket model.init.url gameCode secret
-        , Request.send' (API.getLobbyAndHand gameCode secret) ErrorMessage (JoinLobby secret)
+        , Request.send (API.getLobbyAndHand gameCode secret) getLobbyAndHandErrorHandler ErrorMessage (JoinLobby secret)
         , Storage.storeInGame (Game.GameCodeAndSecret gameCode secret)
         ]
 
@@ -133,4 +137,10 @@ newPlayerErrorHandler : API.NewPlayerError -> Message
 newPlayerErrorHandler error =
   case error of
     API.NameInUse -> (Name, Just "This name is already in use in this game, try something else." |> Input.Error) |> InputMessage
-    API.LobbyNotFound -> (GameCode, Just "This game doesn't exist - check you have the right code." |> Input.Error) |> InputMessage
+    API.NewPlayerLobbyNotFound -> (GameCode, Just "This game doesn't exist - check you have the right code." |> Input.Error) |> InputMessage
+
+
+getLobbyAndHandErrorHandler : API.GetLobbyAndHandError -> Message
+getLobbyAndHandErrorHandler error =
+  case error of
+    API.LobbyNotFound -> "The game you were in has ended." |> ShowInfoMessage

@@ -8,6 +8,7 @@ import Dict exposing (Dict)
 import Http exposing (Value(..))
 
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Util as Util
 
 
 {-| Send a request to the server.
@@ -32,13 +33,7 @@ send request knownHandler errorMessageWrapper resultToMessage =
 {-| Same as 'send', but for requests with no known errors.
 -}
 send' : Request Never result -> (Errors.Message -> message) -> (result -> message) -> Cmd message
-send' request errorMessageWrapper resultToMessage = send request noKnownErrors errorMessageWrapper resultToMessage
-
-
-{-| It's impossible to get an instance of Never, this will never happen, so just crash.
--}
-noKnownErrors : Never -> message
-noKnownErrors noPossibleValue = Debug.crash "Got an impossible response."
+send' request errorMessageWrapper resultToMessage = send request Util.impossible errorMessageWrapper resultToMessage
 
 
 {-| A request to the API.

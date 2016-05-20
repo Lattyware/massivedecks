@@ -22,6 +22,7 @@ import play.api.Play.current
 
 class State @Inject()(private val cardCast: CardcastAPI, @Assisted val gameCode: String)(implicit ec: ExecutionContext) {
   private var decks: Set[CardcastDeck] = Set()
+  private var rules: Set[String] = Set()
   private var players: List[Player] = List()
   private var lastPlayerId: Int = -1
   private var secrets: Map[Id, Secret] = Map()
@@ -34,7 +35,7 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val gameCode:
   private var ais: Set[Secret] = Set()
   private var connected: Set[Id] = Set()
 
-  def config = Config(decks.map(deck => deck.info).toList)
+  def config = Config(decks.map(deck => deck.info).toList, rules)
   def lobby = Lobby(gameCode, config, players, game.map(game => game.round))
 
   def newAi(): Unit = {
@@ -249,6 +250,31 @@ class State @Inject()(private val cardCast: CardcastAPI, @Assisted val gameCode:
     verify(player.status == Skipping, "not-being-skipped")
     setPlayerStatus(id, Neutral, force=true)
     sendNotifications()
+  }
+
+  def redraw(secret: Secret): Unit = {
+    val id = validateSecretAndGetId(secret)
+    val state = validateInGameAndGetState()
+    verify(rules.contains("reboot"), "rule-not-enabled")
+    players = players.map(player => if (player.id == id) {
+      verify(player.score > 0, "not-enough-points-to-redraw")
+      player.copy(score = player.score - 1)
+    } else {
+      player
+    })
+    var hands = state.hands
+    hands += (id -> Hand(state.deck.drawResponses(Hand.size)))
+    game = Some(state.copy(hands = hands))
+  }
+
+  def enableRule(secret: Secret, rule: String): Unit = {
+    val id = validateSecretAndGetId(secret)
+    rules += rule
+  }
+
+  def disableRule(secret: Secret, rule: String): Unit = {
+    val id = validateSecretAndGetId(secret)
+    rules -= rule
   }
 
   def register(secret: Secret, socket: ActorRef): Unit = {

@@ -10,6 +10,8 @@ import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.Playing.Messages exposing (Message(..))
+import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
+import MassiveDecks.Scenes.Playing.HouseRule.Available exposing (houseRules)
 import MassiveDecks.Util as Util
 
 
@@ -30,6 +32,45 @@ view lobbyModel =
 
           Nothing ->
             ([], [])
+
+
+houseRuleMenu : Lobby.Model -> List (Html Message)
+houseRuleMenu lobbyModel =
+  let
+    enabled = List.filter (\rule -> List.member rule.id lobbyModel.lobby.config.houseRules) houseRules
+  in
+    if List.isEmpty enabled then
+      []
+    else
+      [ div [ class "action-menu mui-dropdown"]
+            [ button [ class "mui-btn mui-btn--small mui-btn--fab"
+                     , title "Game actions."
+                     , attribute "data-mui-toggle" "dropdown"
+                     ]
+                     [ Icon.icon "bars" ]
+            , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
+                 (List.concatMap (houseRuleMenuItems lobbyModel) enabled)
+            ]
+      ]
+
+houseRuleMenuItems : Lobby.Model -> HouseRule -> List (Html Message)
+houseRuleMenuItems lobbyModel rule = List.map (houseRuleMenuItem lobbyModel rule) rule.actions
+
+
+houseRuleMenuItem : Lobby.Model -> HouseRule -> HouseRule.Action -> Html Message
+houseRuleMenuItem lobbyModel rule action =
+  let
+    enabled = action.enabled lobbyModel
+    message = if enabled then action.onClick else NoOp
+  in
+    li [] [ a [ classList [ ("link", True), ("disabled", not enabled) ]
+              , title action.description
+              , attribute "tabindex" "0"
+              , attribute "role" "button"
+              , onClick message
+              ]
+              [ Icon.fwIcon action.icon, text " ", text action.text ]
+          ]
 
 
 roundContents : Lobby.Model -> Game.Round -> List (Html Message)
@@ -63,9 +104,9 @@ roundContents lobbyModel round =
       Card.Hidden _ -> handView model.picked (not canPlay) hand
   in
     [ playArea
-      [ div [ class "round-area" ] (List.concat [ [ call round.call callFill ], pickedOrChosen ])
-      , playedOrHand
-      ]
+      ([ div [ class "round-area" ] (List.concat [ [ call round.call callFill ], pickedOrChosen ])
+       , playedOrHand
+       ] ++ houseRuleMenu lobbyModel)
     ]
 
 

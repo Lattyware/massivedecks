@@ -26,4 +26,6 @@ type Message
   | CheckForPlayedCardsToAnimate
   | Skip (List Player.Id)
   | Back
+  | Redraw
   | UpdateLobbyAndHand Game.LobbyAndHand
+  | NoOp

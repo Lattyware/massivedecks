@@ -14,5 +14,6 @@ type alias Model =
   , init : Init
   , nameInput : Input.Model InputId Message
   , gameCodeInput : Input.Model InputId Message
+  , info : Maybe String
   , errors : Errors.Model
   }
