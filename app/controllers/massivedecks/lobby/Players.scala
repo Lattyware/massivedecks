@@ -27,6 +27,9 @@ class Players {
   def addPlayer(name: String): Player.Secret = {
     verify(players.forall(player => player.name != name), "name-in-use")
     val id = newId()
+    if (owner.isEmpty) {
+      owner = Some(id)
+    }
     players = players :+ Player(id, name)
     val secret = Player.Secret(id)
     secrets = secrets + (id -> secret)
