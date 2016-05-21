@@ -70,7 +70,7 @@ update message lobbyModel =
           ({ model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg)
 
       AddAi ->
-        (model, Request.send' (API.newAi gameCode) ErrorMessage (\_ -> LocalMessage NoOp))
+        (model, Request.send' (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp))
 
       StartGame ->
         (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage (GameStarted >> LocalMessage))

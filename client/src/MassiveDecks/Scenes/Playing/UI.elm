@@ -20,18 +20,24 @@ view lobbyModel =
   let
     model = lobbyModel.playing
     lobby = lobbyModel.lobby
-  in
-    case model.finishedRound of
-      Just round ->
-        winnerHeaderAndContents round lobby.players
-
-      Nothing ->
-        case lobby.round of
+    (header, content) = case model.finishedRound of
           Just round ->
-            ([ Icon.icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ], roundContents lobbyModel round)
+            winnerHeaderAndContents round lobby.players
 
           Nothing ->
-            ([], [])
+            case lobby.round of
+              Just round ->
+                ([ Icon.icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ], roundContents lobbyModel round)
+
+              Nothing ->
+                ([], [])
+  in
+    (header, List.concat [ infoBar lobby lobbyModel.secret
+                         , content
+                         , [ warningDrawer (List.concat [ skippingNotice lobby.players lobbyModel.secret.id
+                                                        , disconnectedNotice lobby.players
+                                                        ]) ]
+                         ])
 
 
 houseRuleMenu : Lobby.Model -> List (Html Message)
@@ -79,8 +85,7 @@ roundContents lobbyModel round =
     lobby = lobbyModel.lobby
     hand = lobbyModel.hand.hand
     model = lobbyModel.playing
-    pickedWithIndex = Util.getAllWithIndex hand model.picked
-    picked = List.map snd pickedWithIndex
+    picked = getAllById model.picked hand
     id = lobbyModel.secret.id
     isCzar = round.czar == id
     canPlay = List.filter (\player -> player.id == id) lobby.players
@@ -98,7 +103,7 @@ roundContents lobbyModel round =
               Just consideringCards -> [ consideringView considering consideringCards isCzar ]
               Nothing -> []
           Nothing -> []
-      Card.Hidden _ -> pickedView pickedWithIndex (Card.slots round.call) (model.shownPlayed.animated ++ model.shownPlayed.toAnimate)
+      Card.Hidden _ -> pickedView picked (Card.slots round.call) (model.shownPlayed.animated ++ model.shownPlayed.toAnimate)
     playedOrHand = case round.responses of
       Card.Revealed responses -> playedView isCzar responses
       Card.Hidden _ -> handView model.picked (not canPlay) hand
@@ -108,6 +113,15 @@ roundContents lobbyModel round =
        , playedOrHand
        ] ++ houseRuleMenu lobbyModel)
     ]
+
+
+getAllById : List String -> List Card.Response -> List Card.Response
+getAllById ids cards =
+  List.filterMap (getById cards) ids
+
+
+getById : List Card.Response -> String -> Maybe Card.Response
+getById cards id = List.filter (\card -> card.id == id) cards |> List.head
 
 
 consideringView : Int -> List Card.Response -> Bool -> Html Message
@@ -175,13 +189,13 @@ slots count placeholder picked =
     List.concat [picked, List.repeat extra placeholder] |> List.map slot
 
 
-response : List Int -> Bool -> Int -> Card.Response -> Html Message
-response picked disabled responseId response =
+response : List String -> Bool -> Card.Response -> Html Message
+response picked disabled response =
   let
-    isPicked = List.member responseId picked
+    isPicked = List.member response.id picked
     pickedClass = if isPicked then " picked" else ""
     classes = [ class ("card response mui-panel" ++ pickedClass) ]
-    clickHandler = if isPicked || disabled then [] else [ onClick (Pick responseId) ]
+    clickHandler = if isPicked || disabled then [] else [ onClick (Pick response.id) ]
   in
     div (List.concat [ classes, clickHandler ])
       [ div [ class "response-text" ] [ text (Util.firstLetterToUpper response.text), text "." ] ]
@@ -199,23 +213,23 @@ handRender disabled contents =
     ul [ class classes ] (List.map (\item -> li [] [ item ]) contents)
 
 
-handView : List Int -> Bool -> List Card.Response -> Html Message
+handView : List String -> Bool -> List Card.Response -> Html Message
 handView picked disabled responses =
-  handRender disabled (List.indexedMap (response picked disabled) responses)
+  handRender disabled (List.map (response picked disabled) responses)
 
 
-pickedResponse : (Int, Card.Response) -> Html Message
-pickedResponse (index, response) =
+pickedResponse : Card.Response -> Html Message
+pickedResponse response =
   li []
      [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
                                                      [ text (Util.firstLetterToUpper response.text)
                                                      , text "."
                                                      ]
-                                               , withdrawButton index
+                                               , withdrawButton response.id
                                                ] ]
 
 
-pickedView : List (Int, Card.Response) -> Int -> List (Attribute Message) -> List (Html Message)
+pickedView : List Card.Response -> Int -> List (Attribute Message) -> List (Html Message)
 pickedView picked slots shownPlayed =
   let
     numberPicked = List.length picked
@@ -227,11 +241,11 @@ pickedView picked slots shownPlayed =
     ]
 
 
-withdrawButton : Int -> Html Message
-withdrawButton index = button
+withdrawButton : String -> Html Message
+withdrawButton id = button
   [ class "withdraw-button mui-btn mui-btn--small mui-btn--danger mui-btn--fab"
   , title "Take back this response."
-  , onClick (Withdraw index) ]
+  , onClick (Withdraw id) ]
   [ Icon.icon "times" ]
 
 

@@ -8,16 +8,15 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 import akka.pattern.after
-import controllers.massivedecks.game.{BadRequestException, RequestFailedException}
-import controllers.massivedecks.game.BadRequestException._
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
-
 import models.massivedecks.Game.{Call, Response}
+import controllers.massivedecks.exceptions.BadRequestException._
+import controllers.massivedecks.exceptions.{BadRequestException, RequestFailedException}
 
-class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
+class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
 
   private def deckUrl(id: String): String = {
@@ -28,6 +27,7 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
 
   /**
     * Get a future that either returns the deck or blows up after 10 seconds of waiting on Cardcast.
+    *
     * @param id The id of the deck to get.
     * @param timeout How long to wait on Cardcast.
     * @return See above.
@@ -75,7 +75,6 @@ class CardcastAPI @Inject()(ws: WSClient)(implicit ec: ExecutionContext)  {
   }
 
   private def parseError[T](error: JsValue): T = {
-    println(error)
     (error \ "id").validate[String].asOpt match {
       case Some("not_found") => throw BadRequestException.json("deck-not-found")
       case Some(errorName) => throw new Exception(s"Cardcast gave an unknown error ('$errorName') when trying to retrieve the deck.")

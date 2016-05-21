@@ -11,7 +11,7 @@ import MassiveDecks.Models.Game as Game
 {-| The state of the lobby.
 -}
 type alias Model =
-  { picked : List Int
+  { picked : List String
   , considering : Maybe Int
   , finishedRound : Maybe Game.FinishedRound
   , shownPlayed : ShownPlayedCards

@@ -1,7 +1,12 @@
 package models.massivedecks
 
+import java.util.UUID
+
 import play.api.libs.json._
 
+case class Player(id: Player.Id, name: String, status: Player.Status = Player.Neutral, score: Int = 0, disconnected: Boolean = false, left: Boolean = false) {
+  require(!name.isEmpty, "Name can't be empty!")
+}
 object Player {
 
   case class Id(id: Int) extends AnyVal
@@ -12,6 +17,8 @@ object Player {
   object Status {
     private val types = List(NotPlayed, Played, Czar, Ai, Neutral, Skipping)
     val fromName: Map[String, Status] = (for (status <- types) yield status.name -> status).toMap
+    val notInRound: Set[Status] = Set(Skipping, Czar)
+    val sticky: Set[Status] = Set(Ai, Skipping)
   }
   case object NotPlayed extends Status {
     val name = "not-played"
@@ -32,11 +39,7 @@ object Player {
     val name = "skipping"
   }
 
-  case class Player(id: Id, name: String, status: Status, score: Int, disconnected: Boolean, left: Boolean) {
-    require(!name.isEmpty, "Name can't be empty!")
-  }
-
-  case class Secret(id: Id, secret: String)
+  case class Secret(id: Player.Id, secret: String = UUID.randomUUID().toString)
 
   object Formatters {
     implicit val idFormat: Format[Id] = Format(
@@ -47,5 +50,4 @@ object Player {
     implicit val secretFormat: Format[Secret] = Json.format[Secret]
     implicit val playerFormat: Format[Player] = Json.format[Player]
   }
-
 }

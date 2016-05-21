@@ -37,7 +37,7 @@ function toggleWarningDrawer() {
 
 function start(url) {
   var gameCode = window.location.hash.substr(1);
-  var existingGame = localStorage.getItem("existingGame");
+  var existingGame = localStorage.getItem("existing-game");
   if (existingGame != null) {
     try {
       existingGame = JSON.parse(existingGame);
@@ -56,11 +56,11 @@ function start(url) {
 
   game.ports.existingGame.subscribe(function (gameCodeAndSecret) {
     if (gameCodeAndSecret != null) {
-      localStorage.setItem("existingGame", JSON.stringify(gameCodeAndSecret))
+      localStorage.setItem("existing-game", JSON.stringify(gameCodeAndSecret))
       window.location = "#" + gameCodeAndSecret.gameCode;
     } else {
       window.location = "#";
-      localStorage.removeItem("existingGame");
+      localStorage.removeItem("existing-game");
     }
   });
 }

@@ -1,107 +1,110 @@
 package controllers.massivedecks
 
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 
-import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-import play.api.Play.current
-import play.api.libs.json.JsValue
+import controllers.massivedecks.exceptions.{BadRequestException, ForbiddenException, NotFoundException, RequestFailedException}
+import models.massivedecks.Player
+import models.massivedecks.Lobby.Formatters._
+import models.massivedecks.Player.Formatters._
+import models.massivedecks.Game.Formatters._
+import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc._
 
-import akka.actor.ActorRef
-import akka.pattern.ask
-import akka.util.Timeout
 
-import controllers.massivedecks.game.JsonError
-import controllers.massivedecks.game.Actions.Lobby
-import controllers.massivedecks.game.Actions.Lobby.GetLobby
-import controllers.massivedecks.game.Actions.Player.Formatters._
-import controllers.massivedecks.game.Actions.Player.{Leave, AddAi, GetHand, NewPlayer}
-import controllers.massivedecks.game.Actions.Store.{LobbyAction, NewLobby, PlayerAction}
-import controllers.massivedecks.game.{BadRequestException, RequestFailedException, NotFoundException}
-import models.massivedecks.Player.{Id, Secret}
-
-class Application @Inject() (@Named("store") store: ActorRef)(implicit ec: ExecutionContext) extends Controller {
-  implicit val timeout: Timeout = 15.seconds // Should be more than the Cardcast API timeout.
+class Application @Inject() (store: LobbyStore) extends Controller {
 
   def index() = Action { implicit request =>
     Ok(views.html.massivedecks.index(routes.Application.index().absoluteURL()))
   }
 
-  def createLobby() = Action.async {
-    resultOrError(store ? NewLobby)
+  def createLobby() = Action {
+    wrap(Json.toJson(store.newLobby().lobby))
   }
 
-  def notifications(lobbyId: String) = WebSocket.acceptWithActor[String, String] {
-    request => out => NotificationHandler.props(lobbyId, store, out)
+  def notifications(gameCode: String) = WebSocket.using[String] { requestHeader =>
+    store.getLobby(gameCode).register()
   }
 
-  def getLobby(gameCode: String) = Action.async {
-    resultOrError(store ? LobbyAction(gameCode, GetLobby))
+  def getLobby(gameCode: String) = Action {
+    wrap(Json.toJson(store.getLobby(gameCode).lobby))
   }
 
-  def command(gameCode: String) = Action.async(parse.json) { request: Request[JsValue] =>
-    Lobby.Action(request.body) match {
-      case Some(action) =>
-        resultOrError(store ? LobbyAction(gameCode, action))
-
-      case None =>
-        Future.successful(BadRequest(JsonError.of("invalid-command")))
+  def command(gameCode: String) = Action(parse.json) { request: Request[JsValue] =>
+    wrap {
+      val secret = (request.body \ "secret").validate[Player.Secret].getOrElse(throw ForbiddenException.json("badly-formed-secret"))
+      val lobby = store.getLobby(gameCode)
+      extractCommandArgument((request.body \ "command").validate[String]) match {
+        case "addDeck" => lobby.addDeck(secret, extractCommandArgument((request.body \ "playCode").validate[String]))
+        case "newGame" => lobby.newGame(secret)
+        case "play" => lobby.play(secret, extractCommandArgument((request.body \ "ids").validate[List[String]]))
+        case "choose" => lobby.choose(secret, extractCommandArgument((request.body \ "winner").validate[Int]))
+        case "getLobbyAndHand" => lobby.getLobbyAndHand(secret)
+        case "skip" => lobby.skip(secret, extractCommandArgument((request.body \ "players").validate[Set[Player.Id]]))
+        case "back" => lobby.back(secret)
+        case "enableRule" => lobby.enableRule(secret, extractCommandArgument((request.body \ "rule").validate[String]))
+        case "disableRule" => lobby.disableRule(secret, extractCommandArgument((request.body \ "rule").validate[String]))
+        case "redraw" => lobby.redraw(secret)
+        case _ => throw BadRequestException.json("invalid-command")
+      }
+      Json.toJson(lobby.getLobbyAndHand(secret))
     }
   }
 
-  def newPlayer(gameCode: String) = Action.async(parse.json) { request: Request[JsValue] =>
-    request.body.validate[NewPlayer].asOpt match {
-      case Some(action) =>
-        resultOrError(store ? PlayerAction(gameCode, action))
+  def newPlayer(gameCode: String) = Action(parse.json) { request: Request[JsValue] =>
+    val name = (request.body \ "name").validate[String].getOrElse(throw BadRequestException.json("invalid-name"))
+    wrap(Json.toJson(store.getLobby(gameCode).newPlayer(name)))
+  }
 
-      case None =>
-        Future.successful(BadRequest(JsonError.of("badly-formed-name")))
+  def getPlayer(gameCode: String, playerId: Int) = Action(parse.json) { request: Request[JsValue] =>
+    wrap {
+      val secret = extractSecret(request)
+      Json.toJson(store.getLobby(gameCode).getHand(secret))
     }
   }
 
-  def getPlayer(gameCode: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
-    (request.body \ "secret").validate[String].asOpt match {
-      case Some(secret) =>
-        resultOrError(store ? PlayerAction(gameCode, GetHand(Secret(Id(playerId), secret))))
-
-      case None =>
-        Future.successful(BadRequest(JsonError.of("badly-formed-secret")))
-    }
+  def newAi(gameCode: String) = Action(parse.json) { request: Request[JsValue] =>
+    wrap({
+      val secret = extractSecret(request)
+      store.getLobby(gameCode).newAi(secret)
+      Json.toJson("")
+    })
   }
 
-  def newAi(gameCode: String) = Action.async {
-    resultOrError(store ? PlayerAction(gameCode, AddAi))
+  def leave(gameCode: String, playerId: Int) = Action(parse.json) { request: Request[JsValue] =>
+    wrap({
+      val secret = extractSecret(request)
+      store.getLobby(gameCode).leave(secret)
+      Json.toJson("")
+    })
   }
 
-  def leave(gameCode: String, playerId: Int) = Action.async(parse.json) { request: Request[JsValue] =>
-    (request.body \ "secret").validate[String].asOpt match {
-      case Some(secret) =>
-        resultOrError(store ? PlayerAction(gameCode, Leave(Secret(Id(playerId), secret))))
+  private def extractSecret(request: Request[JsValue]) =
+    request.body.validate[Player.Secret].getOrElse(throw ForbiddenException.json("badly-formed-secret"))
 
-      case None =>
-        Future.successful(BadRequest(JsonError.of("badly-formed-secret")))
-    }
-  }
+  private def extractCommandArgument[T](value: JsResult[T]) =
+    value.getOrElse(throw BadRequestException.json("invalid-command"))
 
-  private def resultOrError(response: Future[Any]): Future[Result] = {
-    val result: Future[Try[JsValue]] = response.mapTo[Try[JsValue]]
-    result.map({
-      case Success(json) =>
-        Ok(json).as(JSON)
+  private def wrap(attempt: => JsValue) = {
+    (Try(attempt) match {
+      case Success(result) =>
+        Ok(result)
 
-      case Failure(error) => error match {
+      case Failure(error) =>
+        error match {
           case BadRequestException(msg) =>
             BadRequest(msg)
           case NotFoundException(msg) =>
-            NotFound(msg).as(JSON)
+            NotFound(msg)
           case RequestFailedException(msg) =>
-            BadGateway(msg).as(JSON)
+            BadGateway(msg)
+          case ForbiddenException(msg) =>
+            Forbidden(msg)
           case _ =>
             throw error
         }
-    })
+    }).as(JSON)
   }
+
 }

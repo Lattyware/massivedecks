@@ -64,10 +64,10 @@ type AddDeckError
 authenticate.
 -}
 addDeck : String -> Player.Secret -> String -> Request AddDeckError Game.LobbyAndHand
-addDeck gameCode secret deckId =
+addDeck gameCode secret playCode =
   commandRequest
     "addDeck"
-    [ ("deckId", Encode.string deckId) ]
+    [ ("playCode", Encode.string playCode) ]
     [ ((502, "cardcast-timeout"), Decode.succeed CardcastTimeout)
     , ((400, "deck-not-found"), Decode.succeed DeckNotFound)
     ]
@@ -77,12 +77,12 @@ addDeck gameCode secret deckId =
 
 {-| Makes a request to the server to add a new AI player to the game.
 -}
-newAi : String -> Request Never ()
-newAi gameCode =
+newAi : String -> Player.Secret -> Request Never ()
+newAi gameCode secret =
   request
     "POST"
     ("/lobbies/" ++ gameCode ++ "/players/newAi")
-    Nothing
+    (Just (encodePlayerSecret secret))
     []
     (Decode.succeed ())
 
@@ -145,11 +145,11 @@ type PlayError
 {-| Make a request to play the given (by index) cards from the player's hand into the round for the given lobby, using
 the given secret to authenticate.
 -}
-play : String -> Player.Secret -> List Int -> Request PlayError Game.LobbyAndHand
+play : String -> Player.Secret -> List String -> Request PlayError Game.LobbyAndHand
 play gameCode secret ids =
   commandRequest
     "play"
-    [ ("ids", Encode.list (List.map Encode.int ids)) ]
+    [ ("ids", Encode.list (List.map Encode.string ids)) ]
     [ ((400, "not-in-round"), Decode.succeed NotInRound)
     , ((400, "already-played"), Decode.succeed AlreadyPlayed)
     , ((400, "already-judging"), Decode.succeed AlreadyJudging)
@@ -187,6 +187,18 @@ skip gameCode secret players =
 -}
 back : String -> Player.Secret -> Request Never Game.LobbyAndHand
 back = commandRequest "back" [] []
+
+
+{-| Make a request to leave the game.
+-}
+leave : String -> Player.Secret -> Request Never ()
+leave gameCode secret =
+  request
+    "POST"
+    ("/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id) ++ "/leave")
+    (Just (encodePlayerSecret secret))
+    []
+    (Decode.succeed ())
 
 
 {-| Errors specific to redrawing.

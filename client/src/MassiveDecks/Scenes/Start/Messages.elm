@@ -15,9 +15,11 @@ type Message
   | JoinLobbyAsNewPlayer String
   | JoinLobbyAsExistingPlayer Player.Secret String
   | JoinLobby Player.Secret Game.LobbyAndHand
+  | ClearExistingGame
   | InputMessage (Input.Message InputId)
   | LobbyMessage Lobby.ConsumerMessage
   | ErrorMessage Errors.Message
+  | NoOp
 
 
 {-| IDs for the inputs to differentiate between them in messages.

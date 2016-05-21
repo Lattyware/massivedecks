@@ -16,8 +16,8 @@ type ConsumerMessage
 {-| The messages used in the start screen.
 -}
 type Message
-  = Pick Int
-  | Withdraw Int
+  = Pick String
+  | Withdraw String
   | Play
   | Consider Int
   | Choose Int

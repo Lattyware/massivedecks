@@ -84,6 +84,9 @@ update message model =
     ShowInfoMessage message ->
       ({ model | info = Just message }, Cmd.none)
 
+    ClearExistingGame ->
+      model ! [ "The game you were in has ended." |> ShowInfoMessage |> Util.cmd, Storage.storeLeftGame ]
+
     CreateLobby ->
       (model, Request.send' API.createLobby ErrorMessage (\lobby -> JoinLobbyAsNewPlayer lobby.gameCode))
 
@@ -119,7 +122,12 @@ update message model =
           (model, Util.cmd (ErrorMessage message))
 
         Lobby.Leave ->
-          ({ model | lobby = Nothing }, Storage.storeLeftGame)
+          let
+            leave = case model.lobby of
+              Nothing -> []
+              Just lobby -> [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp) ]
+          in
+            { model | lobby = Nothing } ! ([ Storage.storeLeftGame ] ++ leave)
 
         Lobby.LocalMessage message ->
           case model.lobby of
@@ -132,6 +140,9 @@ update message model =
               in
                 ({ model | lobby = Just newLobby }, Cmd.map LobbyMessage cmd)
 
+    NoOp ->
+      (model, Cmd.none)
+
 
 newPlayerErrorHandler : API.NewPlayerError -> Message
 newPlayerErrorHandler error =
@@ -143,4 +154,4 @@ newPlayerErrorHandler error =
 getLobbyAndHandErrorHandler : API.GetLobbyAndHandError -> Message
 getLobbyAndHandErrorHandler error =
   case error of
-    API.LobbyNotFound -> "The game you were in has ended." |> ShowInfoMessage
+    API.LobbyNotFound -> ClearExistingGame

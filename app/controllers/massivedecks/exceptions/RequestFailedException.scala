@@ -1,4 +1,4 @@
-package controllers.massivedecks.game
+package controllers.massivedecks.exceptions
 
 import play.api.libs.json.Json.JsValueWrapper
 

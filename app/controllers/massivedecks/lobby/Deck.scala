@@ -1,22 +1,29 @@
-package controllers.massivedecks.game
+package controllers.massivedecks.lobby
+
+import java.util.UUID
 
 import scala.util.Random
 
+import models.massivedecks.Game.{Call, Response}
 import controllers.massivedecks.cardcast.CardcastDeck
-import models.massivedecks.Game.{Response, Call}
 
 /**
-  * A live deck of cards in a game, constructed from a collection of decks.
-  * @param decks The decks.
+  * A live deck of cards in a game, constructed from a collection of cardcast decks.
+  *
+  * @param decks The cardcast decks.
   */
-case class Deck(decks: Set[CardcastDeck]) {
+case class Deck(decks: List[CardcastDeck]) {
   var calls: List[Call] = List()
   var responses: List[Response] = List()
   resetCalls()
   resetResponses()
 
   if (calls.length < 1) {
-    throw new IllegalStateException("The deck must have at least one call in it.")
+    throw new IllegalStateException("The lobby must have at least one call in it.")
+  }
+
+  if (responses.length < 1) {
+    throw new IllegalStateException("The lobby must have at least one response in it.")
   }
 
   def drawCall(): Call = {
@@ -41,11 +48,11 @@ case class Deck(decks: Set[CardcastDeck]) {
   }
 
   def resetCalls(): Unit = {
-    calls = (for (deck <- decks) yield deck.calls).flatten.toList
+    calls = (for (deck <- decks) yield deck.calls).flatten.map(call => call.copy(id = UUID.randomUUID().toString))
     shuffleCalls()
   }
   def resetResponses(): Unit = {
-    responses = (for (deck <- decks) yield deck.responses).flatten.toList
+    responses = (for (deck <- decks) yield deck.responses).flatten.map(call => call.copy(id = UUID.randomUUID().toString))
     shuffleResponses()
   }
 
