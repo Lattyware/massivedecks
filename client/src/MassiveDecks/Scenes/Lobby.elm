@@ -11,6 +11,7 @@ import WebSocket
 
 import Html exposing (Html)
 
+import MassiveDecks.Components.QR as QR
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.JSON.Decode exposing (lobbyDecoder)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
@@ -32,16 +33,16 @@ import MassiveDecks.Util as Util
 -}
 init : Init -> Game.LobbyAndHand -> Player.Secret -> (Model, Cmd ConsumerMessage)
 init init lobbyAndHand secret =
-  ( { lobby = lobbyAndHand.lobby
-    , hand = lobbyAndHand.hand
-    , config = Config.init
-    , playing = Playing.init init
-    , secret = secret
-    , init = init
-    , notification = Nothing
-    }
-  , Cmd.map LocalMessage (sendSecretToWebSocket init.url lobbyAndHand.lobby.gameCode secret)
-  )
+  { lobby = lobbyAndHand.lobby
+  , hand = lobbyAndHand.hand
+  , config = Config.init
+  , playing = Playing.init init
+  , secret = secret
+  , init = init
+  , notification = Nothing
+  } ! [ Cmd.map LocalMessage (sendSecretToWebSocket init.url lobbyAndHand.lobby.gameCode secret)
+      , QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl init.url lobbyAndHand.lobby.gameCode)
+      ]
 
 
 {-| Exposed to work around bug! Shouldn't be!

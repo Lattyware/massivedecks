@@ -5,8 +5,9 @@ import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import MassiveDecks.Components.Icon exposing (..)
-import MassiveDecks.Components.About exposing (..)
+import MassiveDecks.Components.QR as QR
+import MassiveDecks.Components.Icon as Icon
+import MassiveDecks.Components.About as About
 import MassiveDecks.Scenes.Config as Config
 import MassiveDecks.Scenes.Playing as Playing
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
@@ -37,7 +38,7 @@ view model =
          , scores players
          , contentWrapper contents
          , inviteOverlay url gameCode
-         , aboutOverlay
+         , About.aboutOverlay
          ]
 
 
@@ -58,9 +59,9 @@ scores players = div [ id "scores" ]
            [ div [ id "scores-title", class "mui--appbar-line-height mui--text-title" ] [ text "Players" ]
            , div [ class "mui-divider" ] []
            , table [ class "mui-table" ]
-             (List.concat [ [ thead [] [ tr [] [ th [ class "state", title "State" ] [ icon "tasks" ]
+             (List.concat [ [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
                                 , th [ class "name" ] [ text "Player" ]
-                                , th [ class "score", title "Score" ] [ icon "star" ]
+                                , th [ class "score", title "Score" ] [ Icon.icon "star" ]
                                 ] ]
                             ], List.map score players])
            ]
@@ -73,7 +74,7 @@ score player =
       , ("disconnected", player.disconnected)
       , ("left", player.left)
       ]
-    prename = if player.disconnected then [ icon "minus-circle", text " " ] else []
+    prename = if player.disconnected then [ Icon.icon "minus-circle", text " " ] else []
   in
     tr [ classes ]
       [ td [ class "state", title (statusDescription player) ] [ (playerIcon player) ]
@@ -97,7 +98,7 @@ scoresButton shown =
   in
     button [ class ("scores-toggle mui-btn mui-btn--small mui-btn--primary badged" ++ showHideClasses)
            , title "Players."
-           ] [ fwIcon "users" ]
+           ] [ Icon.fwIcon "users" ]
 
 
 notificationPopup : Maybe Notification -> List (Html ConsumerMessage)
@@ -111,7 +112,7 @@ notificationPopup notification =
               , title notification.description
               , onClick (LocalMessage (DismissNotification (Just notification)))
               ]
-              [ icon notification.icon, text (" " ++ notification.name) ]
+              [ Icon.icon notification.icon, text (" " ++ notification.name) ]
         ]
     Nothing ->
       [ div [ class ("badge mui--z2 hide") ] [] ]
@@ -128,7 +129,7 @@ statusDescription player = (case player.status of
 
 
 statusIcon : Status -> Html msg
-statusIcon status = Maybe.map fwIcon (statusIconName status) |> Maybe.withDefault (text "")
+statusIcon status = Maybe.map Icon.fwIcon (statusIconName status) |> Maybe.withDefault (text "")
 
 
 statusIconName : Status -> Maybe String
@@ -144,7 +145,7 @@ statusIconName status = case status of
 playerIcon : Player -> Html msg
 playerIcon player =
   if player.left then
-    icon "sign-out"
+    Icon.icon "sign-out"
   else
     statusIcon player.status
 
@@ -158,9 +159,11 @@ inviteOverlay appUrl lobbyId =
   in
     div [ id "invite" ]
       [ div [ class "mui-panel" ]
-        [ h1 [] [ icon "bullhorn", text " Invite Players" ]
+        [ h1 [] [ Icon.icon "bullhorn", text " Invite Players" ]
         , p [] [ text "To invite other players, simply send them this link: " ]
         , p [] [ a [ href url ] [ text url ] ]
+        , p [] [ text "Have them scan this QR code: " ]
+        , QR.view "invite-qr-code"
         , p [] [ text "Or give them this game code to enter on the start page: " ]
         , p [] [ input [ readonly True, value lobbyId ] [] ]
         , p [ class "close-link" ]
@@ -168,7 +171,7 @@ inviteOverlay appUrl lobbyId =
                 , attribute "tabindex" "0"
                 , attribute "role" "button"
                 , attribute "onClick" "closeOverlay()"
-                ] [ icon "times", text " Close" ] ]
+                ] [ Icon.icon "times", text " Close" ] ]
         ]
       ]
 
@@ -180,25 +183,25 @@ gameMenu = div [ class "menu mui-dropdown" ]
   [ button [ class "mui-btn mui-btn--small mui-btn--primary"
            , attribute "data-mui-toggle" "dropdown"
            , title "Game menu."
-           ] [ fwIcon "ellipsis-h" ]
+           ] [ Icon.fwIcon "ellipsis-h" ]
   , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
      [ li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , attribute "onClick" "inviteOverlay()"
-                 ] [ fwIcon "bullhorn", text " Invite Players" ] ]
+                 ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
      , li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , onClick Leave
-                 ] [ fwIcon "sign-out", text " Leave Game" ] ]
+                 ] [ Icon.fwIcon "sign-out", text " Leave Game" ] ]
      , li [ class "mui-divider" ] []
      , li [] [ a [ class "link"
                  , attribute "tabindex" "0"
                  , attribute "role" "button"
                  , attribute "onClick" "aboutOverlay()"
-                 ] [ fwIcon "info-circle", text " About" ] ]
+                 ] [ Icon.fwIcon "info-circle", text " About" ] ]
      , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
-                 [ fwIcon "bug", text " Report a bug" ] ]
+                 [ Icon.fwIcon "bug", text " Report a bug" ] ]
      ]
   ]

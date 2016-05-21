@@ -63,4 +63,14 @@ function start(url) {
       localStorage.removeItem("existing-game");
     }
   });
+
+  game.ports.qr.subscribe(function (idAndValue) {
+    setTimeout(function() {
+      new QRCode($('#' + idAndValue.id)[0], {
+        text: idAndValue.value,
+        width: 200,
+        height: 200
+      })
+    }, 200);
+  });
 }
