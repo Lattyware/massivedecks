@@ -94,10 +94,8 @@ update message model =
       (model, Request.send (API.newPlayer gameCode model.nameInput.value) newPlayerErrorHandler ErrorMessage (\secret -> JoinLobbyAsExistingPlayer secret gameCode))
 
     JoinLobbyAsExistingPlayer secret gameCode ->
-      {- TODO: We send the secret to the websocket here for crazy reasons - remove - Bug workaround! -}
       model !
-        [ Lobby.sendSecretToWebSocket model.init.url gameCode secret
-        , Request.send (API.getLobbyAndHand gameCode secret) getLobbyAndHandErrorHandler ErrorMessage (JoinLobby secret)
+        [ Request.send (API.getLobbyAndHand gameCode secret) getLobbyAndHandErrorHandler ErrorMessage (JoinLobby secret)
         , Storage.storeInGame (Game.GameCodeAndSecret gameCode secret)
         ]
 

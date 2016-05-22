@@ -1,4 +1,4 @@
-module MassiveDecks.Scenes.Lobby exposing (update, view, init, subscriptions, sendSecretToWebSocket)
+module MassiveDecks.Scenes.Lobby exposing (update, view, init, subscriptions)
 
 import String
 import Json.Decode as Json
@@ -40,15 +40,9 @@ init init lobbyAndHand secret =
   , secret = secret
   , init = init
   , notification = Nothing
-  } ! [ Cmd.map LocalMessage (sendSecretToWebSocket init.url lobbyAndHand.lobby.gameCode secret)
+  } ! [ Cmd.map LocalMessage (WebSocket.send (webSocketUrl init.url lobbyAndHand.lobby.gameCode) (encodePlayerSecret secret |> encode 0))
       , QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl init.url lobbyAndHand.lobby.gameCode)
       ]
-
-
-{-| Exposed to work around bug! Shouldn't be!
--}
-sendSecretToWebSocket : String -> String -> Player.Secret -> Cmd msg
-sendSecretToWebSocket url gameCode secret = WebSocket.send (webSocketUrl url gameCode) (encodePlayerSecret secret |> encode 0)
 
 
 {-| Subscriptions for the lobby.
