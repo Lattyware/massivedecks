@@ -30,7 +30,5 @@ rebootAction =
 checkEnabled : Lobby.Model -> Bool
 checkEnabled lobbyModel =
   Player.byId lobbyModel.secret.id lobbyModel.lobby.players
-    |> Debug.log "player"
     |> Maybe.map (\player -> player.score > 0)
-    |> Debug.log "enabled"
     |> Maybe.withDefault False
