@@ -16,7 +16,11 @@ import play.api.mvc._
 class Application @Inject() (store: LobbyStore) extends Controller {
 
   def index() = Action { request =>
-    Ok(views.html.massivedecks.index(if (request.secure) { "https" } else { "http" } + "://" + request.host))
+    val protocol = request.headers.get("X-Forwarded-Proto") match {
+      case Some(protocol) => protocol
+      case None => if (request.secure) { "https" } else { "http" }
+    }
+    Ok(views.html.massivedecks.index(protocol + "://" + request.host))
   }
 
   def createLobby() = Action {
