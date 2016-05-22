@@ -2,7 +2,8 @@
     "name": "Massive Decks",
     "repository": "https://github.com/Lattyware/massivedecks",
     "env": {
-        "ELM_COMPILE": "elm make client/src/MassiveDecks/Main.elm --output public/javascripts/Main.js"
+        "ELM_VERSION": "0.17",
+        "ELM_COMPILE": "elm make client/src/MassiveDecks.elm --output public/javascripts/MassiveDecks.js"
     },
     "buildpacks": [
         {
