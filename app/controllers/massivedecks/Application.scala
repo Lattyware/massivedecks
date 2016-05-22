@@ -15,8 +15,8 @@ import play.api.mvc._
 
 class Application @Inject() (store: LobbyStore) extends Controller {
 
-  def index() = Action { implicit request =>
-    Ok(views.html.massivedecks.index(routes.Application.index().absoluteURL()))
+  def index() = Action { request =>
+    Ok(views.html.massivedecks.index(if (request.secure) { "https" } else { "http" } + "://" + request.host))
   }
 
   def createLobby() = Action {
