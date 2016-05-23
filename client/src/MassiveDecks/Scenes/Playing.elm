@@ -5,7 +5,6 @@ import String
 
 import Html exposing (..)
 import Html.App as Html
-import Html.Attributes as Html
 
 import AnimationFrame
 
@@ -21,7 +20,6 @@ import MassiveDecks.Scenes.Playing.Messages exposing (ConsumerMessage(..), Messa
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 import MassiveDecks.Scenes.Playing.HouseRule.Reboot as Reboot
-import MassiveDecks.Util as Util exposing ((:>))
 
 
 {-| Create the initial model for the playing scene.
@@ -51,8 +49,12 @@ hack seed = String.toInt seed |> Result.withDefault 0
 
 {-| Subscriptions for the playing scene.
 -}
-subscriptions : Sub ConsumerMessage
-subscriptions = AnimationFrame.diffs (\_ -> LocalMessage CheckForPlayedCardsToAnimate)
+subscriptions : Model -> Sub ConsumerMessage
+subscriptions model =
+  if List.isEmpty model.shownPlayed.toAnimate then
+    Sub.none
+  else
+    AnimationFrame.diffs (\_ -> LocalMessage AnimatePlayedCards)
 
 
 {-| Render the playing scene.
@@ -114,11 +116,6 @@ update message lobbyModel =
           }
         , Cmd.none
         )
-
-      CheckForPlayedCardsToAnimate ->
-          ( model
-          , if List.isEmpty model.shownPlayed.toAnimate then Cmd.none else Util.cmd (LocalMessage AnimatePlayedCards)
-          )
 
       AnimatePlayedCards ->
         let

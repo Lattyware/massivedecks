@@ -52,7 +52,7 @@ subscriptions model =
   let
     delegated = case model.lobby.round of
       Nothing -> Config.subscriptions model.config |> Sub.map ConfigMessage
-      Just round -> Playing.subscriptions |> Sub.map PlayingMessage
+      Just round -> Playing.subscriptions model.playing |> Sub.map PlayingMessage
 
     websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
   in

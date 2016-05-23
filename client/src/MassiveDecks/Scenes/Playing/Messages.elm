@@ -24,7 +24,6 @@ type Message
   | Choose Int
   | NextRound
   | AnimatePlayedCards
-  | CheckForPlayedCardsToAnimate
   | Skip (List Player.Id)
   | Back
   | Redraw
