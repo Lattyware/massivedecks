@@ -52,7 +52,7 @@ subscriptions model =
   let
     delegated = case model.lobby.round of
       Nothing -> Config.subscriptions model.config |> Sub.map ConfigMessage
-      Just round -> Sub.none
+      Just round -> Playing.subscriptions |> Sub.map PlayingMessage
 
     websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
   in
@@ -90,7 +90,7 @@ webSocketResponseDecoder response =
   else
     case Json.decodeString lobbyDecoder response of
       Ok lobby ->
-        LobbyUpdated lobby |> LocalMessage
+        UpdateLobby lobby |> LocalMessage
 
       Err message ->
         let
@@ -138,11 +138,11 @@ update message model =
           in
             ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
 
-    LobbyUpdated lobby ->
+    UpdateLobby lobby ->
       model |> updateLobbyAndHand { lobby = lobby, hand = model.hand }
             :> updateHandIfRoundStarted
 
-    HandUpdated hand ->
+    UpdateHand hand ->
       model |> updateLobbyAndHand { lobby = model.lobby, hand = hand }
 
     Identify ->
@@ -195,19 +195,25 @@ type alias Update = Model -> (Model, Cmd ConsumerMessage)
 updateLobbyAndHand : Game.LobbyAndHand -> Update
 updateLobbyAndHand lobbyAndHand model =
   let
-    events = Event.events model.lobby lobbyAndHand.lobby |> List.map (GameEvent >> LocalMessage >> Util.cmd)
+    events
+      = Event.events model.lobby lobbyAndHand.lobby
+      |> List.map (GameEvent >> LocalMessage >> Util.cmd)
+    commands = [ Util.cmd (Playing.LobbyAndHandUpdated |> Playing.LocalMessage |> PlayingMessage |> LocalMessage) ] ++ events
   in
     { model | lobby = lobbyAndHand.lobby
-            , hand = lobbyAndHand.hand} ! events
+            , hand = lobbyAndHand.hand} ! commands
 
 
+{-| If the player didn't make the call the start the game, they will only recieve a notification about it, which won't
+give them their hand. We check if we have started a new round, and don't have a hand - if so we go get it.
+-}
 updateHandIfRoundStarted : Update
 updateHandIfRoundStarted model =
   let
     cmd = case model.lobby.round of
       Just value ->
         if (List.isEmpty model.hand.hand) then
-          Request.send' (API.getHand model.lobby.gameCode model.secret) ErrorMessage (LocalMessage << HandUpdated)
+          Request.send' (API.getHand model.lobby.gameCode model.secret) ErrorMessage (LocalMessage << UpdateHand)
         else
           Cmd.none
 

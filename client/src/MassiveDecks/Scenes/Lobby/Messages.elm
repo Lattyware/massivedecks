@@ -21,8 +21,8 @@ type ConsumerMessage
 -}
 type Message
   = DismissNotification Notification
-  | LobbyUpdated Game.Lobby
-  | HandUpdated Card.Hand
+  | UpdateLobby Game.Lobby
+  | UpdateHand Card.Hand
   | Identify
   | NoOp
   | GameEvent Event

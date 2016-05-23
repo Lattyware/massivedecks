@@ -9,6 +9,7 @@ import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Lobby.Models as Lobby
+import MassiveDecks.Scenes.Playing.Models exposing (ShownCard)
 import MassiveDecks.Scenes.Playing.Messages exposing (Message(..))
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
 import MassiveDecks.Scenes.Playing.HouseRule.Available exposing (houseRules)
@@ -201,8 +202,20 @@ response picked disabled response =
       [ div [ class "response-text" ] [ text (Util.firstLetterToUpper response.text), text "." ] ]
 
 
-blankResponse : Attribute Message -> Html Message
-blankResponse positioning = div [ class "card mui-panel", positioning ] []
+blankResponse : ShownCard -> Html Message
+blankResponse shownCard = div [ class "card mui-panel", positioning shownCard ] []
+
+
+positioning : ShownCard -> Html.Attribute msg
+positioning shownCard =
+  let
+    horizontalDirection = if shownCard.isLeft then "left" else "right"
+  in
+    style
+      [ ("transform", "rotate(" ++ (toString shownCard.rotation) ++ "deg)")
+      , (horizontalDirection, (toString shownCard.horizontalPos) ++ "%")
+      , ("top", (toString shownCard.verticalPos) ++ "%")
+      ]
 
 
 handRender : Bool -> List (Html Message) -> Html Message
@@ -229,7 +242,7 @@ pickedResponse response =
                                                ] ]
 
 
-pickedView : List Card.Response -> Int -> List (Attribute Message) -> List (Html Message)
+pickedView : List Card.Response -> Int -> List (ShownCard) -> List (Html Message)
 pickedView picked slots shownPlayed =
   let
     numberPicked = List.length picked

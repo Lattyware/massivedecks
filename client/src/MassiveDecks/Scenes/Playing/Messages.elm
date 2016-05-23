@@ -16,7 +16,8 @@ type ConsumerMessage
 {-| The messages used in the start screen.
 -}
 type Message
-  = Pick String
+  = LobbyAndHandUpdated
+  | Pick String
   | Withdraw String
   | Play
   | Consider Int
@@ -27,5 +28,4 @@ type Message
   | Skip (List Player.Id)
   | Back
   | Redraw
-  | UpdateLobbyAndHand Game.LobbyAndHand
   | NoOp

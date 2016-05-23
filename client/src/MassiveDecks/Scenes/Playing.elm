@@ -14,10 +14,9 @@ import MassiveDecks.API.Request as Request
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Models.Card as Card
-import MassiveDecks.Models.Game as Game
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.Playing.UI as UI
-import MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards)
+import MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, ShownCard)
 import MassiveDecks.Scenes.Playing.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
@@ -52,8 +51,8 @@ hack seed = String.toInt seed |> Result.withDefault 0
 
 {-| Subscriptions for the playing scene.
 -}
-subscriptions : Model -> Sub ConsumerMessage
-subscriptions model = AnimationFrame.diffs (\_ -> LocalMessage CheckForPlayedCardsToAnimate)
+subscriptions : Sub ConsumerMessage
+subscriptions = AnimationFrame.diffs (\_ -> LocalMessage CheckForPlayedCardsToAnimate)
 
 
 {-| Render the playing scene.
@@ -96,7 +95,7 @@ update message lobbyModel =
 
       Play ->
         ( { model | picked = [] }
-        , Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage)
+        , Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage LobbyUpdate
         )
 
       Consider potentialWinnerIndex ->
@@ -106,7 +105,7 @@ update message lobbyModel =
 
       Choose winnerIndex ->
         ( { model | considering = Nothing }
-        , Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage)
+        , Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage LobbyUpdate
         )
 
       NextRound ->
@@ -117,9 +116,9 @@ update message lobbyModel =
         )
 
       CheckForPlayedCardsToAnimate ->
-        ( model
-        , if List.isEmpty model.shownPlayed.toAnimate then Cmd.none else Util.cmd (LocalMessage AnimatePlayedCards)
-        )
+          ( model
+          , if List.isEmpty model.shownPlayed.toAnimate then Cmd.none else Util.cmd (LocalMessage AnimatePlayedCards)
+          )
 
       AnimatePlayedCards ->
         let
@@ -132,25 +131,25 @@ update message lobbyModel =
           )
 
       Skip playerIds ->
-        (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage LobbyUpdate)
 
       Back ->
-        (model, Request.send' (API.back gameCode secret) ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        (model, Request.send' (API.back gameCode secret) ErrorMessage LobbyUpdate)
 
-      UpdateLobbyAndHand lobbyAndHand ->
-        updateLobbyAndHand lobbyAndHand lobbyModel
+      LobbyAndHandUpdated ->
+        lobbyAndHandUpdated lobbyModel
 
       Redraw ->
-        (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage (UpdateLobbyAndHand >> LocalMessage))
+        (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage LobbyUpdate)
 
       NoOp ->
         (model, Cmd.none)
 
 
-updateLobbyAndHand : Game.LobbyAndHand -> Lobby.Model -> (Model, Cmd ConsumerMessage)
-updateLobbyAndHand lobbyAndHand lobbyModel =
+lobbyAndHandUpdated : Lobby.Model -> (Model, Cmd ConsumerMessage)
+lobbyAndHandUpdated lobbyModel =
   let
-    lobby = lobbyAndHand.lobby
+    lobby = lobbyModel.lobby
     model = lobbyModel.playing
     shownPlayed = model.shownPlayed
     playedCards = lobby.round `Maybe.andThen` (\round ->
@@ -171,7 +170,7 @@ updateLobbyAndHand lobbyAndHand lobbyModel =
     newModel = { model | shownPlayed = newShownPlayed
                        , seed = seed}
   in
-    (newModel, Util.cmd (LobbyUpdate lobbyAndHand))
+    (newModel, Cmd.none)
 
 
 redrawErrorHandler : API.RedrawError -> ConsumerMessage
@@ -212,7 +211,7 @@ skipErrorHandler error =
       ErrorMessage <| Errors.New "The players can't be skipped as they are not inactive." False
 
 
-addShownPlayed : Int -> Random.Seed -> (List (Html.Attribute msg), Random.Seed)
+addShownPlayed : Int -> Random.Seed -> (List ShownCard, Random.Seed)
 addShownPlayed new seed = Random.step (Random.list new initialRandomPositioning) seed
 
 
@@ -224,21 +223,9 @@ updatePositioning shownPlayed seed =
     (ShownPlayedCards (shownPlayed.animated ++ newAnimated) [], newSeed)
 
 
-randomPositioning : Random.Generator (Html.Attribute msg)
-randomPositioning = Random.map4 positioning (Random.int -75 75) (Random.int 0 50) Random.bool (Random.int -5 1)
+randomPositioning : Random.Generator ShownCard
+randomPositioning = Random.map4 ShownCard (Random.int -90 90) (Random.int 0 50) Random.bool (Random.int -5 1)
 
 
-initialRandomPositioning : Random.Generator (Html.Attribute msg)
-initialRandomPositioning = Random.map3 (\r h l -> positioning r h l -100) (Random.int -75 75) (Random.int 0 50) Random.bool
-
-
-positioning : Int -> Int -> Bool -> Int -> Html.Attribute msg
-positioning rotation horizontalPos left verticalPos =
-  let
-    horizontalDirection = if left then "left" else "right"
-  in
-    Html.style
-      [ ("transform", "rotate(" ++ (toString rotation) ++ "deg)")
-      , (horizontalDirection, (toString horizontalPos) ++ "%")
-      , ("top", (toString verticalPos) ++ "%")
-      ]
+initialRandomPositioning : Random.Generator ShownCard
+initialRandomPositioning = Random.map3 (\r h l -> ShownCard r h l -100) (Random.int -75 75) (Random.int 0 50) Random.bool

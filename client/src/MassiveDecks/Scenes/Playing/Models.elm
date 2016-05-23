@@ -1,10 +1,7 @@
-module MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards)
+module MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, ShownCard)
 
 import Random
 
-import Html exposing (Attribute)
-
-import MassiveDecks.Scenes.Playing.Messages exposing (Message)
 import MassiveDecks.Models.Game as Game
 
 
@@ -20,6 +17,14 @@ type alias Model =
 
 
 type alias ShownPlayedCards =
-  { animated : List (Attribute Message)
-  , toAnimate : List (Attribute Message)
+  { animated : List (ShownCard)
+  , toAnimate : List (ShownCard)
+  }
+
+
+type alias ShownCard =
+  { rotation : Int
+  , horizontalPos : Int
+  , isLeft : Bool
+  , verticalPos : Int
   }

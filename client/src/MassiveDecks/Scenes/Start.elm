@@ -103,7 +103,7 @@ update message model =
       let
         (lobby, cmd) = Lobby.init model.init lobbyAndHand secret
       in
-        ({ model | lobby = Just lobby}, cmd |> Cmd.map LobbyMessage)
+        ({ model | lobby = Just lobby }, cmd |> Cmd.map LobbyMessage)
 
     InputMessage message ->
       let
