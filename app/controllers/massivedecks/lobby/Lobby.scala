@@ -104,13 +104,13 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
 
   def leave(secret: Player.Secret): Unit = {
     players.validateSecret(secret)
-    players.updatePlayer(secret.id, player => player.copy(left = true))
+    players.updatePlayer(secret.id, player => player.copy(status = Player.Neutral, left = true))
+    if (players.amount < Players.minimum) {
+      game = None
+    }
     game match {
       case Some(current) => current.playerLeft(secret.id)
       case None =>
-    }
-    if (players.amount < Players.minimum) {
-      game = None
     }
     sendNotifications()
   }
@@ -133,6 +133,7 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
     players.validateSecret(secret)
     verify(config.houseRules.contains("reboot"), "rule-not-enabled")
     validateInGame().redraw(secret.id)
+    sendNotifications()
   }
 
   def enableRule(secret: Player.Secret, rule: String): Unit = {
@@ -148,7 +149,7 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
   }
 
   def register(): (Iteratee[String, Unit], Enumerator[String]) = {
-    (ExtraIteratee.onFirstGivingWhenDone(registerInternal), notificationsEnumerator)
+    (ExtraIteratee.onFirstGivingWhenDone(registerInternal), Enumerator("identify").andThen(notificationsEnumerator))
   }
 
   private def registerInternal(rawSecret: String): () => Unit = {
@@ -170,7 +171,7 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
     Future {
       Lobby.wait(Lobby.disconnectGracePeriod)
       if (!players.connected.contains(playerId)) {
-        players.updatePlayer(playerId, player => player.copy(disconnected = true))
+        players.updatePlayer(playerId, Players.setDisconnected())
         sendNotifications()
       }
     }

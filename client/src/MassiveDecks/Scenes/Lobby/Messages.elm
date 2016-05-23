@@ -1,6 +1,7 @@
 module MassiveDecks.Scenes.Lobby.Messages exposing (..)
 
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
 import MassiveDecks.Scenes.Lobby.Event as Event exposing (Event)
 import MassiveDecks.Scenes.Config.Messages as Config
@@ -19,8 +20,10 @@ type ConsumerMessage
 {-| The messages used in the start screen.
 -}
 type Message
-  = DismissNotification (Maybe Notification)
+  = DismissNotification Notification
   | LobbyUpdated Game.Lobby
+  | HandUpdated Card.Hand
+  | Identify
   | NoOp
   | GameEvent Event
   | ConfigMessage Config.ConsumerMessage

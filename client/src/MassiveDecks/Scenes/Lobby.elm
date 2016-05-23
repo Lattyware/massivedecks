@@ -3,7 +3,6 @@ module MassiveDecks.Scenes.Lobby exposing (update, view, init, subscriptions)
 import String
 import Json.Decode as Json
 import Json.Encode exposing (encode)
-import Process
 import Task
 import Time
 
@@ -11,6 +10,8 @@ import WebSocket
 
 import Html exposing (Html)
 
+import MassiveDecks.API as API
+import MassiveDecks.API.Request as Request
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.JSON.Decode exposing (lobbyDecoder)
@@ -26,7 +27,7 @@ import MassiveDecks.Scenes.Lobby.Event as Event
 import MassiveDecks.Scenes.Lobby.UI as UI
 import MassiveDecks.Scenes.Lobby.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
-import MassiveDecks.Util as Util
+import MassiveDecks.Util as Util exposing ((:>))
 
 
 {-| Create the initial model for the lobby.
@@ -40,8 +41,7 @@ init init lobbyAndHand secret =
   , secret = secret
   , init = init
   , notification = Nothing
-  } ! [ Cmd.map LocalMessage (WebSocket.send (webSocketUrl init.url lobbyAndHand.lobby.gameCode) (encodePlayerSecret secret |> encode 0))
-      , QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl init.url lobbyAndHand.lobby.gameCode)
+  } ! [ QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl init.url lobbyAndHand.lobby.gameCode)
       ]
 
 
@@ -57,7 +57,7 @@ subscriptions model =
     websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
   in
     Sub.batch [ delegated |> Sub.map LocalMessage
-              , websocket |> Sub.map LocalMessage
+              , websocket
               ]
 
 
@@ -83,17 +83,20 @@ webSocketUrl url gameCode =
     baseUrl ++ "lobbies/" ++ gameCode ++ "/notifications"
 
 
-webSocketResponseDecoder : String -> Message
+webSocketResponseDecoder : String -> ConsumerMessage
 webSocketResponseDecoder response =
-  case Json.decodeString lobbyDecoder response of
-    Ok lobby ->
-      LobbyUpdated lobby
+  if (response == "identify") then
+    Identify |> LocalMessage
+  else
+    case Json.decodeString lobbyDecoder response of
+      Ok lobby ->
+        LobbyUpdated lobby |> LocalMessage
 
-    Err message ->
-      let
-        _ = Debug.log "Error from websocket" message
-      in
-        NoOp
+      Err message ->
+        let
+          _ = Debug.log "Error from websocket" message
+        in
+          NoOp |> LocalMessage
 
 
 {-| Render the lobby.
@@ -137,11 +140,18 @@ update message model =
 
     LobbyUpdated lobby ->
       model |> updateLobbyAndHand { lobby = lobby, hand = model.hand }
+            :> updateHandIfRoundStarted
+
+    HandUpdated hand ->
+      model |> updateLobbyAndHand { lobby = model.lobby, hand = hand }
+
+    Identify ->
+      (model, Cmd.map LocalMessage (WebSocket.send (webSocketUrl model.init.url model.lobby.gameCode) (encodePlayerSecret model.secret |> encode 0)))
 
     DismissNotification notification ->
       let
         newModel =
-          if model.notification == notification then
+          if model.notification == Just notification then
             { model | notification = Maybe.map Notification.hide model.notification }
           else
             model
@@ -191,6 +201,22 @@ updateLobbyAndHand lobbyAndHand model =
             , hand = lobbyAndHand.hand} ! events
 
 
+updateHandIfRoundStarted : Update
+updateHandIfRoundStarted model =
+  let
+    cmd = case model.lobby.round of
+      Just value ->
+        if (List.isEmpty model.hand.hand) then
+          Request.send' (API.getHand model.lobby.gameCode model.secret) ErrorMessage (LocalMessage << HandUpdated)
+        else
+          Cmd.none
+
+      Nothing ->
+        Cmd.none
+  in
+    (model, cmd)
+
+
 {-| Handles a change to the displayed notification.
 -}
 notificationChange : Model -> Maybe Notification -> (Model, Cmd ConsumerMessage)
@@ -200,8 +226,14 @@ notificationChange model notification =
       [ notification
       , model.notification
       ]
-    dismiss = Process.sleep (Time.second * 5) `Task.andThen` (\_ -> Task.succeed (LocalMessage (DismissNotification newNotification)))
+    cmd = case newNotification of
+      Just nn ->
+        let
+          dismiss = Util.after (Time.second * 5) (Task.succeed nn)
+        in
+          Task.perform Util.impossible (LocalMessage << DismissNotification) dismiss
+
+      Nothing ->
+        Cmd.none
   in
-    ( { model | notification = newNotification}
-    , Task.perform identity (\_ -> LocalMessage NoOp) dismiss
-    )
+    ({ model | notification = newNotification }, cmd)

@@ -6,6 +6,7 @@ import Json.Encode as Encode
 import MassiveDecks.API.Request exposing (..)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.JSON.Decode exposing (..)
 import MassiveDecks.Models.JSON.Encode exposing (..)
@@ -50,6 +51,18 @@ type GetLobbyAndHandError
 -}
 getLobbyAndHand : String -> Player.Secret -> Request GetLobbyAndHandError Game.LobbyAndHand
 getLobbyAndHand = commandRequest "getLobbyAndHand" [] [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound) ]
+
+
+{-| Get the hand of the player with the given secret (using it to authenticate).
+-}
+getHand : String -> Player.Secret -> Request Never Card.Hand
+getHand gameCode secret =
+  request
+    "POST"
+    ("/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id))
+    (Just (encodePlayerSecret secret))
+    []
+    handDecoder
 
 
 {-| Errors specific to add deck requests.

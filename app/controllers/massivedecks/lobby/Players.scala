@@ -109,7 +109,15 @@ class Players {
 }
 object Players {
   def setPlayerStatus(newStatus: Player.Status, ignoring: Set[Player.Status] = Player.Status.sticky): (Player => Player) = {
-    player => if (!ignoring.contains(player.status)) player.copy(status = newStatus) else player
+    player => if (!ignoring.contains(player.status) && !player.left) player.copy(status = newStatus) else player
+  }
+
+  def setDisconnected(): (Player => Player) = player => {
+    if (!player.left || player.status == Player.Ai) {
+      player.copy(disconnected = true)
+    } else {
+      player
+    }
   }
 
   val minimum = 2

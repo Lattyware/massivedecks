@@ -1,7 +1,9 @@
 module MassiveDecks.Util exposing (..)
 
-import Task
+import Task exposing (Task)
 import String
+import Process
+import Time exposing (Time)
 
 
 {-| Since a value of `Never` can never exist, this can't ever actually happen. Used to fill gaps where the type system
@@ -122,3 +124,10 @@ joinWithAnd items = case items of
 -}
 apply : List (a -> b) -> a -> List b
 apply fs value = List.map (\f -> f value) fs
+
+
+{-| Perform a task after a given period of time.
+-}
+after : Time -> Task x a -> Task x a
+after waitFor task =
+  Process.sleep waitFor `Task.andThen` (\_ -> task)

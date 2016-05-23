@@ -90,7 +90,8 @@ class Game(players: Players, config: Config) {
     verify(roundProgress == Playing, "already-judging")
     verify(cardIds.length == call.slots, "wrong-number-of-cards-played", "got" -> cardIds.length, "expected" -> call.slots)
     val hand = hands(playerId).hand
-    val toPlay: List[Response] = hand.filter(card => cardIds.contains(card.id))
+    val toPlay: List[Response] = cardIds.flatMap(id => hand.find(response => response.id == id))
+    verify(toPlay.length == cardIds.length, "invalid-card-id-given")
     val toDraw = Hand.size - (hand.length - toPlay.length)
     val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ deck.drawResponses(toDraw))
     hands += (playerId -> newHand)

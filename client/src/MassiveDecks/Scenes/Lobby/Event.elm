@@ -66,17 +66,20 @@ diffRound : Maybe Game.Round -> Maybe Game.Round -> List Event
 diffRound oldRound newRound =
   let
     differentRound = Maybe.map .call oldRound /= Maybe.map .call newRound
-  in
-    if differentRound then
+    differentOrChangedRoundEvents = if differentRound then
       List.filterMap identity
-        [ oldRound `Maybe.andThen` roundEnd
-        , Maybe.map roundStart newRound
+        [ Maybe.map roundStart newRound
         , newRound `Maybe.andThen` (\newRound -> case newRound.responses of
             Card.Hidden count -> Just (roundPlayed count)
             Card.Revealed _ -> Nothing)
         ]
     else
       Maybe.map2 changedRound oldRound newRound |> Maybe.withDefault []
+    roundEvent = newRound `Maybe.andThen` (\newRound -> case newRound.responses of
+        Card.Hidden count -> Nothing
+        Card.Revealed revealed -> roundEnd newRound.call newRound.czar revealed)
+  in
+    differentOrChangedRoundEvents `Util.andMaybe` roundEvent
 
 changedRound : Game.Round -> Game.Round -> List Event
 changedRound oldRound newRound =
@@ -85,9 +88,8 @@ changedRound oldRound newRound =
       case newRound.responses of
         Card.Hidden newCount -> if (oldCount < newCount) then [ roundPlayed (newCount - oldCount) ] else []
         Card.Revealed _ -> [ roundJudging newRound ]
-    Card.Revealed _ ->
+    Card.Revealed responses ->
       []
-
 
 {- Event Constructors -}
 
@@ -125,13 +127,6 @@ roundJudging round =
   in
     RoundJudging played
 
-roundEnd : Game.Round -> Maybe Event
-roundEnd round =
-  let
-    responses = case round.responses of
-      Card.Hidden _ -> Nothing
-      Card.Revealed responses -> Just responses
-    played = Maybe.map .cards responses
-    playedByAndWinner = responses `Maybe.andThen` .playedByAndWinner
-  in
-    Maybe.map2 (RoundEnd round.call round.czar) played playedByAndWinner
+roundEnd : Card.Call -> Player.Id -> Card.RevealedResponses -> Maybe Event
+roundEnd call czar responses =
+    Maybe.map (RoundEnd call czar responses.cards) responses.playedByAndWinner
