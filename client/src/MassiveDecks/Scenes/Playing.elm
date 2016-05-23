@@ -123,7 +123,6 @@ update message lobbyModel =
 
       AnimatePlayedCards ->
         let
-          _ = Debug.log "Animating played cards!" model.shownPlayed
           (shownPlayed, seed) = updatePositioning model.shownPlayed model.seed
         in
           ( { model | seed = seed

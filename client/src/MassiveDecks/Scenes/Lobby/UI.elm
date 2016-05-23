@@ -110,7 +110,7 @@ notificationPopup notification =
       in
         [ div [ class ("badge mui--z2 " ++ hidden)
               , title notification.description
-              , onClick (LocalMessage (DismissNotification (Just notification)))
+              , onClick (LocalMessage (DismissNotification notification))
               ]
               [ Icon.icon notification.icon, text (" " ++ notification.name) ]
         ]
