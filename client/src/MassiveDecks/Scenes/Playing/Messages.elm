@@ -1,6 +1,7 @@
 module MassiveDecks.Scenes.Playing.Messages exposing (..)
 
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Scenes.History.Messages as History
 import MassiveDecks.Models.Player as Player
 import MassiveDecks.Models.Game as Game
 
@@ -27,4 +28,6 @@ type Message
   | Skip (List Player.Id)
   | Back
   | Redraw
+  | ViewHistory
+  | HistoryMessage History.ConsumerMessage
   | NoOp

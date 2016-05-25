@@ -48,6 +48,8 @@ object Game {
     }
   }
 
+  case class FinishedRound(czar: Player.Id, call: Call, cards: List[List[Response]], playedByAndWinner: PlayedByAndWinner)
+
   case class Responses(hidden: Option[Int], revealed: Option[Revealed]) {
     require(hidden.isDefined ^ revealed.isDefined, "Only one of the count or cards should be provided.")
   }
@@ -73,6 +75,7 @@ object Game {
     implicit val revealedFormat: Format[Revealed] = Json.format[Revealed]
     implicit val responsesFormat: Format[Responses] = Json.format[Responses]
     implicit val roundFormat: Format[Round] = Json.format[Round]
+    implicit val finishedRound: Format[FinishedRound] = Json.format[FinishedRound]
     implicit val deckInfoFormat: Format[DeckInfo] = Json.format[DeckInfo]
     implicit val configFormat: Format[Config] = Json.format[Config]
     implicit val handFormat: Format[Hand] = Json.format[Hand]

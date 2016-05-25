@@ -1,6 +1,7 @@
 module MassiveDecks.Scenes.Playing.UI exposing (view)
 
 import Html exposing (..)
+import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
@@ -8,7 +9,9 @@ import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Card as Card
+import MassiveDecks.Scenes.History as History
 import MassiveDecks.Scenes.Lobby.Models as Lobby
+import MassiveDecks.Scenes.Playing.UI.Cards as CardsUI
 import MassiveDecks.Scenes.Playing.Models exposing (ShownCard)
 import MassiveDecks.Scenes.Playing.Messages exposing (Message(..))
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
@@ -33,39 +36,49 @@ view lobbyModel =
               Nothing ->
                 ([], [])
   in
-    (header, List.concat [ infoBar lobby lobbyModel.secret
-                         , content
-                         , [ warningDrawer (List.concat [ skippingNotice lobby.players lobbyModel.secret.id
-                                                        , disconnectedNotice lobby.players
-                                                        ]) ]
-                         ])
+    case model.history of
+      Nothing ->
+        (header, List.concat [ infoBar lobby lobbyModel.secret
+                             , content
+                             , [ warningDrawer (List.concat [ skippingNotice lobby.players lobbyModel.secret.id
+                                                            , disconnectedNotice lobby.players
+                                                            ]) ]
+                             ])
+      Just history ->
+        ([], [ History.view history lobbyModel.lobby.players |> Html.map HistoryMessage ])
 
 
-houseRuleMenu : Lobby.Model -> List (Html Message)
-houseRuleMenu lobbyModel =
+gameMenu : Lobby.Model -> Html Message
+gameMenu lobbyModel =
   let
     enabled = List.filter (\rule -> List.member rule.id lobbyModel.lobby.config.houseRules) houseRules
   in
-    if List.isEmpty enabled then
-      []
-    else
-      [ div [ class "action-menu mui-dropdown"]
-            [ button [ class "mui-btn mui-btn--small mui-btn--fab"
-                     , title "Game actions."
-                     , attribute "data-mui-toggle" "dropdown"
-                     ]
-                     [ Icon.icon "bars" ]
-            , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
-                 (List.concatMap (houseRuleMenuItems lobbyModel) enabled)
-            ]
-      ]
+    div [ class "action-menu mui-dropdown"]
+        [ button [ class "mui-btn mui-btn--small mui-btn--fab"
+                 , title "Game actions."
+                 , attribute "data-mui-toggle" "dropdown"
+                 ]
+                 [ Icon.icon "bars" ]
+        , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
+             ( [ li [] [ a [ classList [ ("link", True) ]
+                           , title "View previous rounds from the game."
+                           , attribute "tabindex" "0"
+                           , attribute "role" "button"
+                           , onClick ViewHistory
+                           ]
+                           [ Icon.fwIcon "history", text " ", text "Game History" ]
+                       ]
+               ] ++
+               (List.concatMap (gameMenuItems lobbyModel) enabled))
+        ]
 
-houseRuleMenuItems : Lobby.Model -> HouseRule -> List (Html Message)
-houseRuleMenuItems lobbyModel rule = List.map (houseRuleMenuItem lobbyModel rule) rule.actions
+
+gameMenuItems : Lobby.Model -> HouseRule -> List (Html Message)
+gameMenuItems lobbyModel rule = List.map (gameMenuItem lobbyModel rule) rule.actions
 
 
-houseRuleMenuItem : Lobby.Model -> HouseRule -> HouseRule.Action -> Html Message
-houseRuleMenuItem lobbyModel rule action =
+gameMenuItem : Lobby.Model -> HouseRule -> HouseRule.Action -> Html Message
+gameMenuItem lobbyModel rule action =
   let
     enabled = action.enabled lobbyModel
     message = if enabled then action.onClick else NoOp
@@ -110,9 +123,10 @@ roundContents lobbyModel round =
       Card.Hidden _ -> handView model.picked (not canPlay) hand
   in
     [ playArea
-      ([ div [ class "round-area" ] (List.concat [ [ call round.call callFill ], pickedOrChosen ])
+      ([ div [ class "round-area" ] (List.concat [ [ CardsUI.call round.call callFill ], pickedOrChosen ])
        , playedOrHand
-       ] ++ houseRuleMenu lobbyModel)
+       , gameMenu lobbyModel
+       ])
     ]
 
 
@@ -162,44 +176,13 @@ playArea : List (Html Message) -> Html Message
 playArea contents = div [ class "play-area" ] contents
 
 
-call : Card.Call -> List Card.Response -> Html Message
-call call picked =
-  let
-    responseFirst = call.parts |> List.head |> Maybe.map ((==) "") |> Maybe.withDefault False
-    pickedText = List.map .text picked
-    (parts, responses) = if responseFirst then
-        (call.parts, Util.mapFirst Util.firstLetterToUpper pickedText)
-      else
-        (Util.mapFirst Util.firstLetterToUpper call.parts, pickedText)
-    spanned = List.map (\part -> span [] [ text part ]) call.parts
-    withSlots = Util.interleave (slots (Card.slots call) "" responses) spanned
-    callContents = if responseFirst then List.tail withSlots |> Maybe.withDefault withSlots else withSlots
-  in
-    div [ class "card call mui-panel" ] [ div [ class "call-text" ] callContents ]
-
-
-slot : String -> Html Message
-slot value = (span [ class "slot" ] [ text value ])
-
-
-slots : Int -> String -> List String -> List (Html Message)
-slots count placeholder picked =
-  let
-    extra = count - List.length picked
-  in
-    List.concat [picked, List.repeat extra placeholder] |> List.map slot
-
-
 response : List String -> Bool -> Card.Response -> Html Message
 response picked disabled response =
   let
     isPicked = List.member response.id picked
-    pickedClass = if isPicked then " picked" else ""
-    classes = [ class ("card response mui-panel" ++ pickedClass) ]
     clickHandler = if isPicked || disabled then [] else [ onClick (Pick response.id) ]
   in
-    div (List.concat [ classes, clickHandler ])
-      [ div [ class "response-text" ] [ text (Util.firstLetterToUpper response.text), text "." ] ]
+    CardsUI.response isPicked clickHandler response
 
 
 blankResponse : ShownCard -> Html Message

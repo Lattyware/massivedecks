@@ -65,6 +65,18 @@ getHand gameCode secret =
     handDecoder
 
 
+{-| Get the history of the given game.
+-}
+getHistory : String -> Request Never (List Game.FinishedRound)
+getHistory gameCode =
+  request
+    "GET"
+    ("/lobbies/" ++ gameCode ++ "/history")
+    Nothing
+    []
+    (Decode.list finishedRoundDecoder)
+
+
 {-| Errors specific to add deck requests.
 * `CardcastTimeout` - The server timed out trying to retrieve the deck from Cardcast.
 * `DeckNotFound` - The given play code does not resolve to a Cardcast deck.

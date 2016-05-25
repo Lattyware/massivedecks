@@ -62,6 +62,14 @@ roundDecoder = object3 Round
   ("responses" := responsesDecoder)
 
 
+finishedRoundDecoder : Decoder FinishedRound
+finishedRoundDecoder = object4 FinishedRound
+  ("czar" := playerIdDecoder)
+  ("call" := callDecoder)
+  ("cards" := list (list responseDecoder))
+  ("playedByAndWinner" := playedByAndWinnerDecoder)
+
+
 responsesDecoder : Decoder Responses
 responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case transport.hidden of
     Just val -> case transport.revealed of
@@ -71,6 +79,7 @@ responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case t
       Just val -> Result.Ok (Revealed val)
       Nothing -> Result.Err "Got neither count nor cards."
   )
+
 
 revealedResponsesDecoder : Decoder RevealedResponses
 revealedResponsesDecoder = object2 RevealedResponses

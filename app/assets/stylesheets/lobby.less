@@ -454,3 +454,70 @@ body.hide-scores {
     }
   }
 }
+
+#history {
+  position: relative;
+  margin: 0px;
+  padding: 0px;
+
+  h1 {
+    margin: 10px;
+  }
+
+  ul {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+  }
+
+  li {
+    display: block;
+  }
+
+  button {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+  }
+
+  .round {
+    margin: 0px 0px 20px 10px;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      margin: 0px 10px 0px 0px;
+    }
+
+    .card {
+      margin: 0px 5px 5px 5px;
+    }
+
+    .who {
+      display: block;
+      width: @card-width;
+      text-align: center;
+      margin: 0px 5px 0px 5px;
+      height: 25px;
+      line-height: 25px;
+
+      @media (min-width: @enhance-width) {
+        width: @card-width-enhanced;
+      }
+    }
+
+    .who.won {
+      font-weight: bold;
+    }
+  }
+
+  .responses {
+    background-color: #dddddd;
+    margin: 0px 10px 0px 0px;
+    border-radius: 10px;
+  }
+
+  .round, .plays, .responses {
+    display: flex;
+  }
+}

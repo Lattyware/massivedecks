@@ -68,6 +68,12 @@ class Application @Inject() (store: LobbyStore) extends Controller {
     }
   }
 
+  def getHistory(gameCode: String) = Action { request =>
+    wrap {
+      Json.toJson(store.getLobby(gameCode).getHistory())
+    }
+  }
+
   def newAi(gameCode: String) = Action(parse.json) { request: Request[JsValue] =>
     wrap({
       val secret = extractSecret(request)

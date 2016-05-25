@@ -3,6 +3,7 @@ module MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, Sho
 import Random
 
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Scenes.History.Models as History
 
 
 {-| The state of the lobby.
@@ -13,6 +14,7 @@ type alias Model =
   , finishedRound : Maybe Game.FinishedRound
   , shownPlayed : ShownPlayedCards
   , seed : Random.Seed
+  , history : Maybe History.Model
   }
 
 

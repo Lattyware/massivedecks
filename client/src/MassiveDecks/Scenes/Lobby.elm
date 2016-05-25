@@ -166,7 +166,7 @@ update message model =
           Event.RoundEnd call czar responses playedByAndWinner ->
             let
               playingModel = model.playing
-              newPlayingModel = { playingModel | finishedRound = Just (Game.FinishedRound call czar responses playedByAndWinner) }
+              newPlayingModel = { playingModel | finishedRound = Just (Game.FinishedRound czar call responses playedByAndWinner) }
             in
               ({ model | playing = newPlayingModel }, Cmd.none)
 

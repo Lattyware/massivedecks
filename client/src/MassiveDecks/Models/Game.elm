@@ -49,8 +49,8 @@ type alias Round =
 {-| A round that has been completed.
 -}
 type alias FinishedRound =
-  { call : Card.Call
-  , czar : Player.Id
+  { czar : Player.Id
+  , call : Card.Call
   , responses : (List Card.PlayedCards)
   , playedByAndWinner : Player.PlayedByAndWinner
   }

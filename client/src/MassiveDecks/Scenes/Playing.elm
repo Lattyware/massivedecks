@@ -14,12 +14,15 @@ import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Lobby.Models as Lobby
+import MassiveDecks.Scenes.History as History
+import MassiveDecks.Scenes.History.Messages as History
 import MassiveDecks.Scenes.Playing.UI as UI
 import MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, ShownCard)
 import MassiveDecks.Scenes.Playing.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 import MassiveDecks.Scenes.Playing.HouseRule.Reboot as Reboot
+import MassiveDecks.Util as Util
 
 
 {-| Create the initial model for the playing scene.
@@ -31,6 +34,7 @@ init init =
   , finishedRound = Nothing
   , shownPlayed = { animated = [], toAnimate = [] }
   , seed = Random.initialSeed (hack init.seed)
+  , history = Nothing
   }
 
 
@@ -138,6 +142,31 @@ update message lobbyModel =
 
       Redraw ->
         (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage LobbyUpdate)
+
+      HistoryMessage historyMessage ->
+        case model.history of
+          Just history ->
+            case historyMessage of
+              History.ErrorMessage errorMessage ->
+                (model, ErrorMessage errorMessage |> Util.cmd)
+
+              History.Close ->
+                ({ model | history = Nothing }, Cmd.none)
+
+              History.LocalMessage localMessage ->
+                let
+                  (newHistory, cmd) = History.update localMessage history
+                in
+                  ({ model | history = Just newHistory }, Cmd.map (LocalMessage << HistoryMessage) cmd)
+
+          Nothing ->
+            (model, Cmd.none)
+
+      ViewHistory ->
+        let
+          (historyModel, command) = History.init lobbyModel.lobby.gameCode
+        in
+          ({ model | history = Just historyModel }, Cmd.map (LocalMessage << HistoryMessage) command)
 
       NoOp ->
         (model, Cmd.none)

@@ -10,7 +10,7 @@ import controllers.massivedecks.cardcast.{CardcastAPI, CardcastDeck}
 import controllers.massivedecks.exceptions.BadRequestException
 import controllers.massivedecks.exceptions.BadRequestException._
 import controllers.massivedecks.util.ExtraIteratee
-import models.massivedecks.Game.Hand
+import models.massivedecks.Game.{FinishedRound, Hand}
 import models.massivedecks.Lobby.Formatters._
 import models.massivedecks.Lobby.{LobbyAndHand, Lobby => LobbyModel}
 import models.massivedecks.Player
@@ -89,6 +89,10 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
   def getHand(secret: Player.Secret): Hand = {
     players.validateSecret(secret)
     validateInGame().getHand(secret.id)
+  }
+
+  def getHistory() : List[FinishedRound] = {
+    validateInGame().history
   }
 
   def getLobbyAndHand(secret: Player.Secret): LobbyAndHand = {

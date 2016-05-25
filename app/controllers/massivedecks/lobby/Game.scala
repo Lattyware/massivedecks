@@ -15,7 +15,7 @@ class Game(players: Players, config: Config) {
   private var czarIndex = 0
   private var hands: Map[Player.Id, Hand] = players.ids.map(id => id -> new Hand(deck.drawResponses(Hand.size))).toMap
   private var roundProgress: RoundProgress = Playing
-  private var history: List[Round] = List()
+  var history: List[FinishedRound] = List()
 
   // Initial values overwritten by beginRound() call below, just keeping the compiler happy.
   private var czar: Player.Id = Player.Id(0)
@@ -110,7 +110,7 @@ class Game(players: Players, config: Config) {
           case Some(winnerId) =>
             players.updatePlayer(winnerId, player => player.copy(score = player.score + 1))
             roundProgress = Finished(responses, playedOrder, winnerId)
-            history = round :: history
+            history = FinishedRound(round.czar, round.call, responses, PlayedByAndWinner(playedOrder, winnerId)) :: history
 
           case None =>
             throw BadRequestException.json("no-such-played-cards")
