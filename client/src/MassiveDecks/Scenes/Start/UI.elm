@@ -37,7 +37,7 @@ view model =
                , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ createLobbyButton nameEntered ]
                , div [ class ("mui-tabs__pane" ++ joinDivClass), id "pane-existing" ]
                      [ Input.view model.gameCodeInput
-                     , joinLobbyButton model.gameCodeInput.value (nameEntered && gameCodeEntered)
+                     , joinLobbyButton (nameEntered && gameCodeEntered)
                      ]
                , a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"
@@ -53,10 +53,10 @@ view model =
 
 {-| A button to join an existing lobby.
 -}
-joinLobbyButton : String -> Bool -> Html Message
-joinLobbyButton lobbyId enabled =
+joinLobbyButton : Bool -> Html Message
+joinLobbyButton enabled =
   button [ class "mui-btn mui-btn--large mui-btn--primary"
-         , onClick (JoinLobbyAsNewPlayer lobbyId)
+         , onClick JoinLobbyAsNewPlayer
          , disabled (not enabled)
          ]
          [ text "Join Game" ]

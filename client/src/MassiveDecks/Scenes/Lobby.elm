@@ -16,7 +16,7 @@ import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
-import MassiveDecks.Components.Overlay as Overlay
+import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.JSON.Decode exposing (lobbyDecoder)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
@@ -249,8 +249,8 @@ overlayAlert message =
     BrowserNotifications.PermissionChanged permission ->
       case permission of
         BrowserNotifications.Denied ->
-          (Overlay.Show "times-circle" "Can't enable desktop notifications."
-            [ Html.text "You did not give Massive Decks permission to give you desktop notifications." ]
+          (Overlay.Show (Overlay "times-circle" "Can't enable desktop notifications."
+            [ Html.text "You did not give Massive Decks permission to give you desktop notifications." ])
           ) |> OverlayMessage
 
         _ ->

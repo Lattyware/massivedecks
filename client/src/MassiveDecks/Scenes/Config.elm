@@ -21,7 +21,7 @@ import MassiveDecks.Util as Util exposing ((:>))
 init : Model
 init =
   { decks = []
-  , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton InputMessage
+  , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
   , loadingDecks = []
   }
 
@@ -56,6 +56,9 @@ update message lobbyModel =
             [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage ((Add deckId) >> ConfigureDecks >> LocalMessage)
             , inputClearErrorCmd DeckId
             ]
+
+      AddDeck ->
+        (model, Util.cmd (LocalMessage (ConfigureDecks (Request model.deckIdInput.value))))
 
       ConfigureDecks (Add deckId lobbyAndHand) ->
         (removeDeckLoadingSpinner deckId model, Util.cmd (LobbyUpdate lobbyAndHand))

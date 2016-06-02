@@ -8,6 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import MassiveDecks.Components.Icon as Icon
+import MassiveDecks.Util as Util
 
 
 type alias Model a =
@@ -66,7 +67,11 @@ view : Model a -> List (Html a)
 view model =
   case model.overlay of
     Just overlay ->
-      [ div [ id "mui-overlay", onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp) ]
+      [ div [ id "mui-overlay"
+            , onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp)
+            , Util.onKeyDown "Escape" (model.wrap Hide) (model.wrap NoOp)
+            , tabindex 0
+            ]
             [ div [ class "overlay mui-panel" ]
                   ([ h1 [] [ Icon.icon overlay.icon, text " ", text overlay.title ] ] ++
                    overlay.contents ++
@@ -86,8 +91,8 @@ view model =
 
 onClickIfId : String -> msg -> msg -> Attribute msg
 onClickIfId targetId message noOp =
-  on "click" (ifIdDecoder targetId |> Json.map (\match -> if match then message else noOp))
+  on "click" (ifIdDecoder |> Json.map (\clickedId -> if clickedId == targetId then message else noOp))
 
 
-ifIdDecoder : String -> Json.Decoder Bool
-ifIdDecoder targetId = Json.at [ "target", "id" ] Json.string |> Json.map ((==) targetId)
+ifIdDecoder : Json.Decoder String
+ifIdDecoder = Json.at [ "target", "id" ] Json.string

@@ -13,7 +13,8 @@ import MassiveDecks.Models.Player as Player
 type Message
   = CreateLobby
   | ShowInfoMessage String
-  | JoinLobbyAsNewPlayer String
+  | JoinLobbyAsNewPlayer
+  | JoinGivenLobbyAsNewPlayer String
   | JoinLobbyAsExistingPlayer Player.Secret String
   | JoinLobby Player.Secret Game.LobbyAndHand
   | ClearExistingGame

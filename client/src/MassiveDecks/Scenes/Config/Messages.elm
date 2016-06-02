@@ -17,7 +17,8 @@ type ConsumerMessage
 {-| The messages used in the start screen.
 -}
 type Message
-  = ConfigureDecks Deck
+  = AddDeck
+  | ConfigureDecks Deck
   | InputMessage (Input.Message InputId)
   | AddAi
   | StartGame

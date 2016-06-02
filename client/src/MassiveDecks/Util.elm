@@ -1,9 +1,13 @@
 module MassiveDecks.Util exposing (..)
 
+import Json.Decode as Json
 import Task exposing (Task)
 import String
 import Process
 import Time exposing (Time)
+
+import Html exposing (..)
+import Html.Events exposing (..)
 
 
 {-| Since a value of `Never` can never exist, this can't ever actually happen. Used to fill gaps where the type system
@@ -139,3 +143,10 @@ isNothing m =
   case m of
     Just _ -> False
     Nothing -> True
+
+
+{-| Add an event handler for keyboard key presses.
+-}
+onKeyDown : String -> msg -> msg -> Attribute msg
+onKeyDown key message noOp =
+  on "keydown" (Json.at [ "key" ] Json.string |> Json.map (\pressed -> if pressed == key then message else noOp))

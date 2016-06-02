@@ -33,8 +33,8 @@ init init =
   in
     ( { lobby = Nothing
       , init = init
-      , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" InputMessage
-      , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (init.gameCode |> Maybe.withDefault "") "" InputMessage
+      , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" (Util.cmd CreateLobby) InputMessage
+      , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (init.gameCode |> Maybe.withDefault "") "" (Util.cmd JoinLobbyAsNewPlayer) InputMessage
       , info = Nothing
       , errors = Errors.init
       , overlay = Overlay.init OverlayMessage
@@ -90,9 +90,12 @@ update message model =
       model ! [ "The game you were in has ended." |> ShowInfoMessage |> Util.cmd, Storage.storeLeftGame ]
 
     CreateLobby ->
-      (model, Request.send' API.createLobby ErrorMessage (\lobby -> JoinLobbyAsNewPlayer lobby.gameCode))
+      (model, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
 
-    JoinLobbyAsNewPlayer gameCode ->
+    JoinLobbyAsNewPlayer ->
+      (model, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value))
+
+    JoinGivenLobbyAsNewPlayer gameCode ->
       (model, Request.send (API.newPlayer gameCode model.nameInput.value) newPlayerErrorHandler ErrorMessage (\secret -> JoinLobbyAsExistingPlayer secret gameCode))
 
     JoinLobbyAsExistingPlayer secret gameCode ->
