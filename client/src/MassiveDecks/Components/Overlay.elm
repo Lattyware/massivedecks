@@ -1,4 +1,4 @@
-port module MassiveDecks.Components.Overlay exposing (Model, Message(..), init, view, update, map)
+port module MassiveDecks.Components.Overlay exposing (Overlay, Model, Message(..), init, view, update, map)
 
 import Json.Decode as Json
 
@@ -11,35 +11,36 @@ import MassiveDecks.Components.Icon as Icon
 
 
 type alias Model a =
+  { overlay : Maybe (Overlay a)
+  , wrap : (Message a) -> a
+  }
+
+
+type alias Overlay a =
   { icon : String
   , title : String
   , contents : List (Html a)
-  , wrap : (Message a) -> a
-  , shown : Bool
   }
 
 
 type Message a
-  = Show String String (List (Html a))
+  = Show (Overlay a)
   | Hide
   | NoOp
 
 
 init : ((Message a) -> a) -> Model a
 init wrap =
-  { icon = ""
-  , title = ""
-  , contents = []
+  { overlay = Nothing
   , wrap = wrap
-  , shown = False
   }
 
 
 map : (a -> b) -> Message a -> Message b
 map mapper message =
   case message of
-    Show icon title contents ->
-      Show icon title (List.map (Html.map mapper) contents)
+    Show overlay ->
+      Show (Overlay overlay.icon overlay.title (List.map (Html.map mapper) overlay.contents))
 
     Hide ->
       Hide
@@ -51,15 +52,11 @@ map mapper message =
 update : Message a -> Model a -> Model a
 update message model =
   case message of
-    Show icon title contents ->
-      { model | icon = icon
-              , title = title
-              , contents = contents
-              , shown = True
-              }
+    Show overlay ->
+      { model | overlay = Just overlay }
 
     Hide ->
-      { model | shown = False }
+      { model | overlay = Nothing }
 
     NoOp ->
       model
@@ -67,23 +64,24 @@ update message model =
 
 view : Model a -> List (Html a)
 view model =
-  if model.shown then
-    [ div [ id "mui-overlay", onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp) ]
-          [ div [ class "overlay mui-panel" ]
-                ([ h1 [] [ Icon.icon model.icon, text " ", text model.title ] ] ++
-                 model.contents ++
-                 [ p [ class "close-link"]
-                     [ a [ class "link"
-                         , attribute "tabindex" "0"
-                         , attribute "role" "button"
-                         , onClick (model.wrap Hide)
-                         ] [ Icon.icon "times", text " Close" ]
-                     ]
-                 ])
-          ]
-    ]
-  else
-    []
+  case model.overlay of
+    Just overlay ->
+      [ div [ id "mui-overlay", onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp) ]
+            [ div [ class "overlay mui-panel" ]
+                  ([ h1 [] [ Icon.icon overlay.icon, text " ", text overlay.title ] ] ++
+                   overlay.contents ++
+                   [ p [ class "close-link"]
+                       [ a [ class "link"
+                           , attribute "tabindex" "0"
+                           , attribute "role" "button"
+                           , onClick (model.wrap Hide)
+                           ] [ Icon.icon "times", text " Close" ]
+                       ]
+                   ])
+            ]
+      ]
+    Nothing ->
+      []
 
 
 onClickIfId : String -> msg -> msg -> Attribute msg

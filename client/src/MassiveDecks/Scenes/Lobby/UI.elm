@@ -155,8 +155,7 @@ inviteOverlay : String -> String -> Overlay.Message msg
 inviteOverlay appUrl gameCode =
   let
     url = Util.lobbyUrl appUrl gameCode
-  in
-    Overlay.Show "bullhorn" "Invite Players"
+    contents =
       [ p [] [ text "To invite other players, simply send them this link: " ]
       , p [] [ a [ href url ] [ text url ] ]
       , p [] [ text "Have them scan this QR code: " ]
@@ -164,6 +163,12 @@ inviteOverlay appUrl gameCode =
       , p [] [ text "Or give them this game code to enter on the start page: " ]
       , p [] [ input [ readonly True, value gameCode ] [] ]
       ]
+  in
+    Overlay.Show
+      { icon = "bullhorn"
+      , title = "Invite Players"
+      , contents = contents
+      }
 
 
 notificationsMenuItem : BrowserNotifications.Model -> List (Html ConsumerMessage)

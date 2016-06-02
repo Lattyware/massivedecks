@@ -3,11 +3,11 @@ module MassiveDecks.Components.About exposing (show)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-import MassiveDecks.Components.Overlay as Overlay
+import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
 
 
 show : Overlay.Message a
-show = Overlay.Show icon title contents
+show = Overlay.Show (Overlay icon title contents)
 
 
 icon : String
