@@ -2,6 +2,7 @@ module MassiveDecks.Scenes.Start.Messages exposing (..)
 
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Scenes.Lobby.Messages as Lobby
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Player as Player
@@ -19,6 +20,7 @@ type Message
   | InputMessage (Input.Message InputId)
   | LobbyMessage Lobby.ConsumerMessage
   | ErrorMessage Errors.Message
+  | OverlayMessage (Overlay.Message Message)
   | NoOp
 
 

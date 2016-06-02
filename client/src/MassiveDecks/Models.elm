@@ -10,4 +10,5 @@ type alias Init =
   , gameCode : Maybe String
   , existingGame : Maybe GameCodeAndSecret
   , seed : String
+  , browserNotificationsSupported : Bool
   }

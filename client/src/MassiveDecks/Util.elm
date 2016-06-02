@@ -131,3 +131,11 @@ apply fs value = List.map (\f -> f value) fs
 after : Time -> Task x a -> Task x a
 after waitFor task =
   Process.sleep waitFor `Task.andThen` (\_ -> task)
+
+{-| Check if a Maybe is Nothing.
+-}
+isNothing : Maybe a -> Bool
+isNothing m =
+  case m of
+    Just _ -> False
+    Nothing -> True

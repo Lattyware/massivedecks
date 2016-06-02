@@ -28,6 +28,10 @@ body {
   cursor: pointer;
 }
 
+.link.disabled {
+  opacity: 0.5;
+}
+
 header {
   position: fixed;
   top: 0;
@@ -146,7 +150,7 @@ body.hide-scores {
   align-content: flex-start;
   align-items: flex-start;
 
-  #invite, #about {
+  .overlay {
     display: block;
   }
 
@@ -155,13 +159,11 @@ body.hide-scores {
   }
 }
 
-#invite, #about {
+.overlay {
   display: none;
 
-  & > div {
-    max-width: 500px;
-    margin: 20px;
-  }
+  max-width: 500px;
+  margin: 20px;
 
   & input {
     width: 100%;

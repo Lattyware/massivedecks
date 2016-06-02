@@ -4,6 +4,7 @@ import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId(..))
 
 
@@ -16,4 +17,5 @@ type alias Model =
   , gameCodeInput : Input.Model InputId Message
   , info : Maybe String
   , errors : Errors.Model
+  , overlay : Overlay.Model Message
   }

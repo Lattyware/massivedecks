@@ -7,6 +7,7 @@ import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
 import MassiveDecks.Scenes.Config.Models as Config
 import MassiveDecks.Scenes.Playing.Models as Playing
+import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
 
 
 {-| The state of the lobby.
@@ -16,7 +17,9 @@ type alias Model =
   , hand : Card.Hand
   , config : Config.Model
   , playing : Playing.Model
+  , browserNotifications : BrowserNotifications.Model
   , secret : Player.Secret
   , init : Init
   , notification : Maybe Notification
+  , qrNeedsRendering : Bool
   }

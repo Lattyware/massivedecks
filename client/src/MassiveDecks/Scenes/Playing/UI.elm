@@ -357,7 +357,12 @@ renderSkippingNotice : List (Html Message)
 renderSkippingNotice =
   [ div [ class "notice" ]
     [ h3 [] [ Icon.icon "fast-forward" ]
-    , span [] [ text "You are currently being skipped because you took too long to play."
+    , span [] [ text "You are currently being skipped because you took too long to play. "
+              , a [ class "link"
+                  , attribute "tabindex" "0"
+                  , attribute "role" "button"
+                  ]
+                  [ Icon.fwIcon "bell", text "Enable Notifications?" ]
               ]
     , div [ class "actions" ]
           [ button [ class "mui-btn mui-btn--small"

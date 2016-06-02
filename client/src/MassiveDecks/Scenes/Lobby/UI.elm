@@ -1,13 +1,15 @@
-module MassiveDecks.Scenes.Lobby.UI exposing (view)
+module MassiveDecks.Scenes.Lobby.UI exposing (view, inviteOverlay)
 
 import Html exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import MassiveDecks.Components.About as About
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.Icon as Icon
-import MassiveDecks.Components.About as About
+import MassiveDecks.Components.Overlay as Overlay
+import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
 import MassiveDecks.Scenes.Config as Config
 import MassiveDecks.Scenes.Playing as Playing
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
@@ -24,7 +26,6 @@ view model =
     url = model.init.url
     gameCode = lobby.gameCode
     players = lobby.players
-    notification = model.notification
     (header, contents) = case lobby.round of
       Nothing -> ([], [ Config.view model |> Html.map (ConfigMessage >> LocalMessage) ])
       Just round ->
@@ -33,12 +34,10 @@ view model =
         in
           (h |> List.map (Html.map (PlayingMessage >> LocalMessage)), c |> List.map (Html.map (PlayingMessage >> LocalMessage)))
   in
-    root [ appHeader header notification
+    root [ appHeader header model
          , spacer
          , scores players
          , contentWrapper contents
-         , inviteOverlay url gameCode
-         , About.aboutOverlay
          ]
 
 
@@ -83,12 +82,12 @@ score player =
       ]
 
 
-appHeader : List (Html ConsumerMessage) -> Maybe Notification -> Html ConsumerMessage
-appHeader contents notification = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
+appHeader : List (Html ConsumerMessage) -> Model -> Html ConsumerMessage
+appHeader contents model = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
   [ div [ class "mui--appbar-line-height" ]
-    [ span [ class "score-buttons" ] (List.append [ scoresButton True, scoresButton False ] (notificationPopup notification))
+    [ span [ class "score-buttons" ] (List.append [ scoresButton True, scoresButton False ] (notificationPopup model.notification))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
-    , gameMenu ] ] ])
+    , gameMenu model ] ] ])
 
 
 scoresButton : Bool -> Html msg
@@ -152,56 +151,79 @@ playerIcon player =
 
 {-| The overlay for inviting players to a lobby.
 -}
-inviteOverlay : String -> String -> Html msg
-inviteOverlay appUrl lobbyId =
+inviteOverlay : String -> String -> Overlay.Message msg
+inviteOverlay appUrl gameCode =
   let
-    url = Util.lobbyUrl appUrl lobbyId
+    url = Util.lobbyUrl appUrl gameCode
   in
-    div [ id "invite" ]
-      [ div [ class "mui-panel" ]
-        [ h1 [] [ Icon.icon "bullhorn", text " Invite Players" ]
-        , p [] [ text "To invite other players, simply send them this link: " ]
-        , p [] [ a [ href url ] [ text url ] ]
-        , p [] [ text "Have them scan this QR code: " ]
-        , QR.view "invite-qr-code"
-        , p [] [ text "Or give them this game code to enter on the start page: " ]
-        , p [] [ input [ readonly True, value lobbyId ] [] ]
-        , p [ class "close-link" ]
-            [ a [ class "link"
-                , attribute "tabindex" "0"
-                , attribute "role" "button"
-                , attribute "onClick" "closeOverlay()"
-                ] [ Icon.icon "times", text " Close" ] ]
-        ]
+    Overlay.Show "bullhorn" "Invite Players"
+      [ p [] [ text "To invite other players, simply send them this link: " ]
+      , p [] [ a [ href url ] [ text url ] ]
+      , p [] [ text "Have them scan this QR code: " ]
+      , QR.view "invite-qr-code"
+      , p [] [ text "Or give them this game code to enter on the start page: " ]
+      , p [] [ input [ readonly True, value gameCode ] [] ]
       ]
+
+
+notificationsMenuItem : BrowserNotifications.Model -> List (Html ConsumerMessage)
+notificationsMenuItem model =
+  let
+    (notClickable, enabled) =
+      if not model.supported then
+        (Just "Your browser does not support desktop notifications.", False)
+      else if model.permission == Just BrowserNotifications.Denied then
+        (Just "You have denied Massive Decks permission to display desktop notifications.", False)
+      else
+        (Nothing, model.enabled)
+
+    classes = classList
+      [ ("link", True)
+      , ("disabled", not (Util.isNothing notClickable))
+      ]
+
+    extraAttrs =
+      case notClickable of
+        Nothing ->
+          [ onClick (LocalMessage <| BrowserNotificationsMessage <| (if enabled then BrowserNotifications.disable else BrowserNotifications.enable)) ]
+        Just msg ->
+          [ title msg ]
+
+    attributes = [ classes, attribute "tabindex" "0", attribute "role" "button" ] ++ extraAttrs
+
+    description = " " ++ (if enabled then "Disable" else "Enable") ++ " Notifications"
+  in
+    [ li [] [ a attributes [ Icon.fwIcon (if enabled then "bell-slash" else "bell"), text description ] ]
+    ]
 
 
 {-| The menu for the game.
 -}
-gameMenu : Html ConsumerMessage
-gameMenu = div [ class "menu mui-dropdown" ]
+gameMenu : Model -> Html ConsumerMessage
+gameMenu model = div [ class "menu mui-dropdown" ]
   [ button [ class "mui-btn mui-btn--small mui-btn--primary"
            , attribute "data-mui-toggle" "dropdown"
            , title "Game menu."
            ] [ Icon.fwIcon "ellipsis-h" ]
   , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
-     [ li [] [ a [ class "link"
-                 , attribute "tabindex" "0"
-                 , attribute "role" "button"
-                 , attribute "onClick" "inviteOverlay()"
-                 ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
-     , li [] [ a [ class "link"
-                 , attribute "tabindex" "0"
-                 , attribute "role" "button"
-                 , onClick Leave
-                 ] [ Icon.fwIcon "sign-out", text " Leave Game" ] ]
-     , li [ class "mui-divider" ] []
-     , li [] [ a [ class "link"
-                 , attribute "tabindex" "0"
-                 , attribute "role" "button"
-                 , attribute "onClick" "aboutOverlay()"
-                 ] [ Icon.fwIcon "info-circle", text " About" ] ]
-     , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
-                 [ Icon.fwIcon "bug", text " Report a bug" ] ]
-     ]
+       ([ li [] [ a [ class "link"
+                    , attribute "tabindex" "0"
+                    , attribute "role" "button"
+                    , onClick (DisplayInviteOverlay |> LocalMessage)
+                    ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
+        ] ++ (notificationsMenuItem model.browserNotifications) ++
+        [ li [] [ a [ class "link"
+                    , attribute "tabindex" "0"
+                    , attribute "role" "button"
+                    , onClick Leave
+                    ] [ Icon.fwIcon "sign-out", text " Leave Game" ] ]
+        , li [ class "mui-divider" ] []
+        , li [] [ a [ class "link"
+                    , attribute "tabindex" "0"
+                    , attribute "role" "button"
+                    , onClick (About.show |> OverlayMessage)
+                    ] [ Icon.fwIcon "info-circle", text " About" ] ]
+        , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
+                    [ Icon.fwIcon "bug", text " Report a bug" ] ]
+        ])
   ]

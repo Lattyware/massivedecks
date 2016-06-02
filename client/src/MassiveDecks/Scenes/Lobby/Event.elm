@@ -65,31 +65,80 @@ diffPlayer oldPlayers newPlayer =
 diffRound : Maybe Game.Round -> Maybe Game.Round -> List Event
 diffRound oldRound newRound =
   let
-    differentRound = Maybe.map .call oldRound /= Maybe.map .call newRound
-    differentOrChangedRoundEvents = if differentRound then
-      List.filterMap identity
-        [ Maybe.map roundStart newRound
-        , newRound `Maybe.andThen` (\newRound -> case newRound.responses of
-            Card.Hidden count -> Just (roundPlayed count)
-            Card.Revealed _ -> Nothing)
-        ]
-    else
-      Maybe.map2 changedRound oldRound newRound |> Maybe.withDefault []
-    roundEvent = newRound `Maybe.andThen` (\newRound -> case newRound.responses of
-        Card.Hidden count -> Nothing
-        Card.Revealed revealed -> roundEnd newRound.call newRound.czar revealed)
-  in
-    differentOrChangedRoundEvents `Util.andMaybe` roundEvent
+    differentRounds = (Maybe.map .call oldRound) /= (Maybe.map .call newRound)
 
-changedRound : Game.Round -> Game.Round -> List Event
-changedRound oldRound newRound =
-  case oldRound.responses of
-    Card.Hidden oldCount ->
-      case newRound.responses of
-        Card.Hidden newCount -> if (oldCount < newCount) then [ roundPlayed (newCount - oldCount) ] else []
-        Card.Revealed _ -> [ roundJudging newRound ]
-    Card.Revealed responses ->
-      []
+    start = case newRound of
+      Just round -> if differentRounds then [ roundStart round ] else []
+      Nothing ->
+        []
+
+    played = if differentRounds then [] else case newRound of
+      Just round ->
+        let
+          oldCount = playedInRound oldRound |> Maybe.withDefault 0
+          newCount = playedInRound newRound |> Maybe.withDefault 0
+        in
+          if oldCount < newCount then [ RoundPlayed (newCount - oldCount) ] else []
+      Nothing ->
+        []
+
+    judging = case newRound of
+      Just round ->
+        case round.responses of
+          Card.Hidden _ ->
+            []
+          Card.Revealed responses ->
+            let
+              oldJudging = Maybe.map (\or -> case or.responses of
+                Card.Hidden _ -> False
+                Card.Revealed oldResponses -> Util.isNothing oldResponses.playedByAndWinner) oldRound |> Maybe.withDefault False
+              newJudging = Util.isNothing responses.playedByAndWinner
+            in
+              if newJudging && ((not oldJudging) || (oldJudging && differentRounds)) then
+                [ RoundJudging responses.cards ]
+              else
+                []
+      Nothing ->
+        []
+
+    ended = case newRound of
+      Just round ->
+        case round.responses of
+          Card.Hidden _ ->
+            []
+          Card.Revealed responses ->
+            case responses.playedByAndWinner of
+              Nothing ->
+                []
+              Just playedByAndWinner ->
+                let
+                  oldEnded = Maybe.map (\or -> case or.responses of
+                    Card.Hidden _ -> False
+                    Card.Revealed oldResponses -> not (Util.isNothing oldResponses.playedByAndWinner)) oldRound |> Maybe.withDefault False
+                in
+                  if (not oldEnded) || (oldEnded && differentRounds) then
+                    [ RoundEnd round.call round.czar responses.cards playedByAndWinner ]
+                  else
+                    []
+      Nothing ->
+        []
+  in
+    List.concat
+      [ start
+      , played
+      , judging
+      , ended
+      ]
+
+
+playedInRound : Maybe Game.Round -> Maybe Int
+playedInRound maybeRound =
+  let
+    calc = (\round -> case round.responses of
+      Card.Hidden count -> Just count
+      Card.Revealed _ -> Nothing)
+  in
+    maybeRound `Maybe.andThen` calc
 
 {- Event Constructors -}
 
@@ -113,20 +162,3 @@ playerDisconnect player = PlayerDisconnect player.id
 
 roundStart : Game.Round -> Event
 roundStart round = RoundStart round.call round.czar
-
-roundPlayed : Int -> Event
-roundPlayed amount = RoundPlayed amount
-
-roundJudging : Game.Round -> Event
-roundJudging round =
-  let
-    responses = case round.responses of
-      Card.Hidden _ -> Nothing
-      Card.Revealed responses -> Just responses
-    played = Maybe.map .cards responses |> Maybe.withDefault []
-  in
-    RoundJudging played
-
-roundEnd : Card.Call -> Player.Id -> Card.RevealedResponses -> Maybe Event
-roundEnd call czar responses =
-    Maybe.map (RoundEnd call czar responses.cards) responses.playedByAndWinner

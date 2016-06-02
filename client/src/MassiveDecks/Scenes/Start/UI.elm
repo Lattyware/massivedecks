@@ -42,10 +42,9 @@ view model =
                , a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"
                    , attribute "role" "button"
-                   , attribute "onClick" "aboutOverlay()"
+                   , onClick (About.show |> OverlayMessage)
                    ]
                    [ Icon.icon "question-circle" , text " About" ]
-               , About.aboutOverlay
                , div [ id "forkongithub" ] [ div [] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
                                                         [ Icon.icon "github", text " Fork me on GitHub" ] ] ]
                ])

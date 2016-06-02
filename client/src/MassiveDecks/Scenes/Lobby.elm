@@ -8,11 +8,15 @@ import Time
 
 import WebSocket
 
+import AnimationFrame
+
 import Html exposing (Html)
 
 import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
 import MassiveDecks.Components.QR as QR
+import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
+import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.JSON.Decode exposing (lobbyDecoder)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
@@ -38,11 +42,12 @@ init init lobbyAndHand secret =
   , hand = lobbyAndHand.hand
   , config = Config.init
   , playing = Playing.init init
+  , browserNotifications = BrowserNotifications.init init.browserNotificationsSupported False
   , secret = secret
   , init = init
   , notification = Nothing
-  } ! [ QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl init.url lobbyAndHand.lobby.gameCode)
-      ]
+  , qrNeedsRendering = False
+  } ! []
 
 
 {-| Subscriptions for the lobby.
@@ -55,10 +60,15 @@ subscriptions model =
       Just round -> Playing.subscriptions model.playing |> Sub.map PlayingMessage
 
     websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
+
+    browserNotifications = BrowserNotifications.subscriptions model.browserNotifications |> Sub.map BrowserNotificationsMessage
+
+    render = if model.qrNeedsRendering then [ AnimationFrame.diffs (\_ -> LocalMessage RenderQr) ] else []
   in
-    Sub.batch [ delegated |> Sub.map LocalMessage
-              , websocket
-              ]
+    Sub.batch ([ delegated |> Sub.map LocalMessage
+               , websocket
+               , browserNotifications |> Sub.map LocalMessage
+               ] ++ render)
 
 
 webSocketUrl : String -> String -> String
@@ -138,6 +148,15 @@ update message model =
           in
             ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
 
+    BrowserNotificationsMessage notificationMessage ->
+      let
+        (browserNotifications, localCmd, cmd) = BrowserNotifications.update notificationMessage model.browserNotifications
+      in
+        { model | browserNotifications = browserNotifications } !
+          [ Cmd.map (LocalMessage << BrowserNotificationsMessage) localCmd
+          , Cmd.map overlayAlert cmd
+          ]
+
     UpdateLobby lobby ->
       model |> updateLobbyAndHand { lobby = lobby, hand = model.hand }
             :> updateHandIfRoundStarted
@@ -147,6 +166,12 @@ update message model =
 
     Identify ->
       (model, Cmd.map LocalMessage (WebSocket.send (webSocketUrl model.init.url model.lobby.gameCode) (encodePlayerSecret model.secret |> encode 0)))
+
+    DisplayInviteOverlay ->
+      { model | qrNeedsRendering = True } ! [ Util.cmd (UI.inviteOverlay model.init.url model.lobby.gameCode |> OverlayMessage) ]
+
+    RenderQr ->
+      { model | qrNeedsRendering = False } ! [ QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl model.init.url model.lobby.gameCode) ]
 
     DismissNotification notification ->
       let
@@ -182,11 +207,58 @@ update message model =
           Event.PlayerLeft id ->
             notificationChange model (Notification.playerLeft id players)
 
+          Event.RoundJudging _ ->
+            case model.lobby.round of
+              Nothing ->
+                (model, Cmd.none)
+
+              Just round ->
+                let
+                  cmd = if (round.czar == model.secret.id) then
+                    Util.cmd (BrowserNotifications.notify { title = "You need to pick a winner for the round.", icon = icon model "gavel" } |> BrowserNotificationsMessage |> LocalMessage)
+                  else
+                    Cmd.none
+                in
+                  (model, cmd)
+
+          Event.PlayerStatus id status ->
+            let
+              cmd = if (id == model.secret.id) then
+                case status of
+                  Player.NotPlayed ->
+                    Util.cmd (BrowserNotifications.notify { title = "You need to play a card for the round.", icon = icon model "hourglass" } |> BrowserNotificationsMessage |> LocalMessage)
+                  Player.Skipping ->
+                    Util.cmd (BrowserNotifications.notify { title = "You are being skipped due to inactivity.", icon = icon model "fast-forward"} |> BrowserNotificationsMessage |> LocalMessage)
+                  _ ->
+                    Cmd.none
+              else
+                Cmd.none
+            in
+              (model, cmd)
+
           _ ->
             (model, Cmd.none)
 
     NoOp ->
       (model, Cmd.none)
+
+
+overlayAlert : BrowserNotifications.ConsumerMessage -> ConsumerMessage
+overlayAlert message =
+  case message of
+    BrowserNotifications.PermissionChanged permission ->
+      case permission of
+        BrowserNotifications.Denied ->
+          (Overlay.Show "times-circle" "Can't enable desktop notifications."
+            [ Html.text "You did not give Massive Decks permission to give you desktop notifications." ]
+          ) |> OverlayMessage
+
+        _ ->
+          NoOp |> LocalMessage
+
+
+icon : Model -> String -> Maybe String
+icon model name = Just (model.init.url ++ "assets/images/icons/" ++ name ++ ".png")
 
 
 type alias Update = Model -> (Model, Cmd ConsumerMessage)

@@ -8,6 +8,7 @@ import MassiveDecks.Models.Game as Game
 import MassiveDecks.Components.Storage as Storage
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Scenes.Start.Messages exposing (InputId(..), Message(..))
 import MassiveDecks.Scenes.Start.Models exposing (Model)
 import MassiveDecks.Scenes.Start.UI as UI
@@ -36,6 +37,7 @@ init init =
       , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (init.gameCode |> Maybe.withDefault "") "" InputMessage
       , info = Nothing
       , errors = Errors.init
+      , overlay = Overlay.init OverlayMessage
       }
     , command)
 
@@ -65,9 +67,9 @@ view model =
         Html.map LobbyMessage (Lobby.view lobby)
   in
     div []
-        [ contents
-        , Errors.view model.errors |> Html.map ErrorMessage
-        ]
+        ([ contents
+         , Errors.view model.errors |> Html.map ErrorMessage
+         ] ++ Overlay.view model.overlay)
 
 
 {-| Handles messages and alters the model as appropriate.
@@ -114,10 +116,16 @@ update message model =
                  , gameCodeInput = gameCodeInput
          }, Cmd.batch [ nameCmd, gameCodeCmd ])
 
+    OverlayMessage overlayMessage ->
+      ({ model | overlay = Overlay.update overlayMessage model.overlay }, Cmd.none)
+
     LobbyMessage message ->
       case message of
         Lobby.ErrorMessage message ->
           (model, Util.cmd (ErrorMessage message))
+
+        Lobby.OverlayMessage message ->
+          (model, Util.cmd (OverlayMessage (Overlay.map (Lobby.LocalMessage >> LobbyMessage) message)))
 
         Lobby.Leave ->
           let
