@@ -18,4 +18,5 @@ type alias Model =
   , info : Maybe String
   , errors : Errors.Model
   , overlay : Overlay.Model Message
+  , buttonsEnabled : Bool
   }

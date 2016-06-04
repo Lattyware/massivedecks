@@ -12,6 +12,7 @@ import MassiveDecks.Models.Player as Player
 -}
 type Message
   = CreateLobby
+  | SetButtonsEnabled Bool
   | ShowInfoMessage String
   | JoinLobbyAsNewPlayer
   | JoinGivenLobbyAsNewPlayer String
@@ -22,6 +23,7 @@ type Message
   | LobbyMessage Lobby.ConsumerMessage
   | ErrorMessage Errors.Message
   | OverlayMessage (Overlay.Message Message)
+  | Batch (List Message)
   | NoOp
 
 

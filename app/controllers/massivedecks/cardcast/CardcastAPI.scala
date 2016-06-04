@@ -4,17 +4,14 @@ import javax.inject.Inject
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.Try
 
-import akka.pattern.after
-import play.api.libs.concurrent.Akka
-import play.api.Play.current
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import models.massivedecks.Game.{Call, Response}
 import controllers.massivedecks.exceptions.BadRequestException._
-import controllers.massivedecks.exceptions.{BadRequestException, RequestFailedException}
+import controllers.massivedecks.exceptions.{BadRequestException}
 
 class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
@@ -32,19 +29,14 @@ class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
     * @param timeout How long to wait on Cardcast.
     * @return See above.
     */
-  def deck(id: String, timeout: FiniteDuration = 10.seconds): Future[CardcastDeck] = {
+  def deck(id: String): Future[CardcastDeck] = {
     val deckInfo = requestJson(deckUrl(id)).map(parseInfo)
     val cards = requestJson(cardsUrl(id)).map(parseCards)
 
-    val deck = for {
+    for {
       name <- deckInfo
       (calls, responses) <- cards
     } yield CardcastDeck(id, name, calls, responses)
-
-    val timeoutError = after(timeout, using=Akka.system.scheduler)(
-      Future.failed(RequestFailedException.json("cardcast-timeout")))
-
-    Future firstCompletedOf Seq(deck, timeoutError)
   }
 
   private def requestJson(url: String): Future[JsValue] =
@@ -81,4 +73,7 @@ class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
       case None => throw new Exception(s"Cardcast gave an error that couldn't be parsed when trying to retrieve the deck.")
     }
   }
+}
+object CardCastAPI {
+  def wait(duration: FiniteDuration): Try[Future[Nothing]] = Try(Await.ready(Promise().future, duration))
 }

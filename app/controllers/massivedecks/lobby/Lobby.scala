@@ -4,10 +4,10 @@ import javax.inject.Inject
 
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 import controllers.massivedecks.cardcast.{CardcastAPI, CardcastDeck}
-import controllers.massivedecks.exceptions.BadRequestException
+import controllers.massivedecks.exceptions.{BadRequestException, RequestFailedException}
 import controllers.massivedecks.exceptions.BadRequestException._
 import controllers.massivedecks.util.ExtraIteratee
 import models.massivedecks.Game.{FinishedRound, Hand}
@@ -25,6 +25,7 @@ object Lobby {
   }
 
   val disconnectGracePeriod: FiniteDuration = 5.seconds
+  val cardCastWaitPeriod: FiniteDuration = 10.seconds
 
   def wait(duration: FiniteDuration): Try[Future[Nothing]] = Try(Await.ready(Promise().future, duration))
 }
@@ -49,10 +50,17 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
 
   def addDeck(secret: Player.Secret, playCode: String): Unit = {
     players.validateSecret(secret)
-    Try(Await.ready(cardcast.deck(playCode).andThen { case deck =>
-      config.addDeck(deck.get)
-      sendNotifications()
-    }, Duration.Inf))
+    Try(Await.ready({
+      cardcast.deck(playCode).map { deck =>
+        config.addDeck(deck)
+        sendNotifications()
+      }
+    }, Lobby.cardCastWaitPeriod)) match {
+      case Success(result) =>
+        result.value.get.get
+      case Failure(exception) =>
+        throw RequestFailedException.json("cardcast-timeout")
+    }
   }
 
   def newAi(secret: Player.Secret): Unit = {

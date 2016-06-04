@@ -12,11 +12,18 @@ import MassiveDecks.Util as Util
 
 
 {-| Send a request to the server.
+
+request - The request to the server. See MassiveDecks.API.
+onSpecificError - How to handle any errors specific to the request.
+onGeneralError - How to handle any general errors.
+onSuccess - How to handle success.
+
+If the request has no specific errors, use `send'` instead.
 -}
 send : Request specificError result -> (specificError -> message) -> (Errors.Message -> message) -> (result -> message) -> Cmd message
-send request knownHandler errorMessageWrapper resultToMessage =
+send request onSpecificError onGeneralError onSuccess =
   let
-    errorToMessage = errorHandler knownHandler errorMessageWrapper
+    errorToMessage = errorHandler onSpecificError onGeneralError
     task = Http.send Http.defaultSettings
       { verb = request.verb
       , url = request.url
@@ -27,13 +34,13 @@ send request knownHandler errorMessageWrapper resultToMessage =
       } |> Task.map (handleResponse request.errors request.resultDecoder)
     errorMapped = (Task.mapError Communication task) `Task.andThen` Task.fromResult
   in
-    Task.perform errorToMessage resultToMessage errorMapped
+    Task.perform errorToMessage onSuccess errorMapped
 
 
 {-| Same as 'send', but for requests with no known errors.
 -}
 send' : Request Never result -> (Errors.Message -> message) -> (result -> message) -> Cmd message
-send' request errorMessageWrapper resultToMessage = send request Util.impossible errorMessageWrapper resultToMessage
+send' request onGeneralError onSuccess = send request Util.impossible onGeneralError onSuccess
 
 
 {-| A request to the API.

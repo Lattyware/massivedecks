@@ -38,6 +38,7 @@ init init =
       , info = Nothing
       , errors = Errors.init
       , overlay = Overlay.init OverlayMessage
+      , buttonsEnabled = True
       }
     , command)
 
@@ -90,10 +91,13 @@ update message model =
       model ! [ "The game you were in has ended." |> ShowInfoMessage |> Util.cmd, Storage.storeLeftGame ]
 
     CreateLobby ->
-      (model, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
+      ({ model | buttonsEnabled = False }, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
+
+    SetButtonsEnabled enabled ->
+      ({ model | buttonsEnabled = enabled }, Cmd.none)
 
     JoinLobbyAsNewPlayer ->
-      (model, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value))
+      ({ model | buttonsEnabled = False }, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value))
 
     JoinGivenLobbyAsNewPlayer gameCode ->
       (model, Request.send (API.newPlayer gameCode model.nameInput.value) newPlayerErrorHandler ErrorMessage (\secret -> JoinLobbyAsExistingPlayer secret gameCode))
@@ -136,7 +140,8 @@ update message model =
               Nothing -> []
               Just lobby -> [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp) ]
           in
-            { model | lobby = Nothing } ! ([ Storage.storeLeftGame ] ++ leave)
+            { model | lobby = Nothing
+                    , buttonsEnabled = True } ! ([ Storage.storeLeftGame ] ++ leave)
 
         Lobby.LocalMessage message ->
           case model.lobby of
@@ -149,18 +154,27 @@ update message model =
               in
                 ({ model | lobby = Just newLobby }, Cmd.map LobbyMessage cmd)
 
+    Batch messages ->
+      (model, messages |> List.map Util.cmd |> Cmd.batch)
+
     NoOp ->
       (model, Cmd.none)
 
 
 newPlayerErrorHandler : API.NewPlayerError -> Message
 newPlayerErrorHandler error =
-  case error of
-    API.NameInUse -> (Name, Just "This name is already in use in this game, try something else." |> Input.Error) |> InputMessage
-    API.NewPlayerLobbyNotFound -> (GameCode, Just "This game doesn't exist - check you have the right code." |> Input.Error) |> InputMessage
+  let
+    errorMessage = case error of
+      API.NameInUse -> (Name, Just "This name is already in use in this game, try something else." |> Input.Error) |> InputMessage
+      API.NewPlayerLobbyNotFound -> (GameCode, Just "This game doesn't exist - check you have the right code." |> Input.Error) |> InputMessage
+  in
+    Batch [ SetButtonsEnabled True, errorMessage ]
 
 
 getLobbyAndHandErrorHandler : API.GetLobbyAndHandError -> Message
 getLobbyAndHandErrorHandler error =
-  case error of
-    API.LobbyNotFound -> ClearExistingGame
+  let
+    errorMessage = case error of
+      API.LobbyNotFound -> ClearExistingGame
+  in
+    Batch [ SetButtonsEnabled True, errorMessage ]

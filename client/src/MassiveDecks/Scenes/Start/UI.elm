@@ -34,10 +34,10 @@ view model =
                     [ li createLiClass [ a [ attribute "data-mui-toggle" "tab", attribute "data-mui-controls" "pane-new" ] [ text "Create" ] ]
                     , li joinLiClass [ a [ attribute "data-mui-toggle" "tab", attribute "data-mui-controls" "pane-existing" ] [ text "Join" ] ]
                    ]
-               , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ createLobbyButton nameEntered ]
+               , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ createLobbyButton (nameEntered && model.buttonsEnabled) ]
                , div [ class ("mui-tabs__pane" ++ joinDivClass), id "pane-existing" ]
                      [ Input.view model.gameCodeInput
-                     , joinLobbyButton (nameEntered && gameCodeEntered)
+                     , joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
                      ]
                , a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"

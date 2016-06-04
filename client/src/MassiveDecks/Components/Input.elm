@@ -21,6 +21,7 @@ type Change
   = Changed String
   | Error (Maybe String)
   | Submit
+  | SetEnabled Bool
   | NoOp
 
 
@@ -36,6 +37,7 @@ type alias Model id msg =
   , extra : (String -> List (Html msg))
   , embedMethod : Message id -> msg
   , submit : Cmd msg
+  , enabled : Bool
   }
 
 
@@ -73,6 +75,7 @@ initWithExtra identity class label value placeholder extra submit embedMethod =
   , extra = extra
   , embedMethod = embedMethod
   , submit = submit
+  , enabled = True
   }
 
 
@@ -91,6 +94,7 @@ view model =
         ([ input [ type' "text"
                  , defaultValue model.value
                  , placeholder model.placeholder
+                 , disabled (not model.enabled)
                  , on "input" (Json.map (\value -> (model.embedMethod (model.identity, Changed value))) targetValue)
                  , Util.onKeyDown "Enter" (model.embedMethod (model.identity, Submit)) (model.embedMethod (model.identity, NoOp))
                  ] []
@@ -117,6 +121,7 @@ update message model =
         Changed value ->  ({ model | value = value }, Cmd.none)
         Error error -> ({ model | error = error }, Cmd.none)
         Submit -> (model, model.submit)
+        SetEnabled enabled -> ({ model | enabled = enabled}, Cmd.none)
         NoOp -> (model, Cmd.none)
     else
       (model, Cmd.none)
