@@ -1,5 +1,6 @@
 package controllers.massivedecks.cardcast
 
+import java.time.Instant
 import javax.inject.Inject
 
 import scala.collection.mutable.ListBuffer
@@ -11,7 +12,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import models.massivedecks.Game.{Call, Response}
 import controllers.massivedecks.exceptions.BadRequestException._
-import controllers.massivedecks.exceptions.{BadRequestException}
+import controllers.massivedecks.exceptions.BadRequestException
 
 class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
@@ -22,21 +23,42 @@ class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   }
   private def cardsUrl(id: String): String = s"${deckUrl(id)}/cards"
 
+  private val cacheFor = java.time.Duration.ofMinutes(15)
+  private var cache = Map[String, (CardcastDeck, Instant)]()
+
   /**
     * Get a future that either returns the deck or blows up after 10 seconds of waiting on Cardcast.
     *
     * @param id The id of the deck to get.
-    * @param timeout How long to wait on Cardcast.
     * @return See above.
     */
   def deck(id: String): Future[CardcastDeck] = {
+    cache.get(id) match {
+      case Some((deck, expiresAt)) =>
+        if (Instant.now.isBefore(expiresAt)) {
+          Future.successful(deck)
+        } else {
+          requestDeck(id)
+        }
+      case None =>
+        requestDeck(id)
+    }
+  }
+
+  private def requestDeck(id: String): Future[CardcastDeck] = {
     val deckInfo = requestJson(deckUrl(id)).map(parseInfo)
     val cards = requestJson(cardsUrl(id)).map(parseCards)
 
-    for {
+    val futureDeck = for {
       name <- deckInfo
       (calls, responses) <- cards
     } yield CardcastDeck(id, name, calls, responses)
+
+    futureDeck.onSuccess { case deck =>
+      cache += id -> (deck, Instant.now.plus(cacheFor))
+    }
+
+    futureDeck
   }
 
   private def requestJson(url: String): Future[JsValue] =
