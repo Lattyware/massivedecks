@@ -1,14 +1,35 @@
-RUNNING_PID
+# Elm
 /elm-stuff/
+
+# NodeJS
 /node_modules/
-logs
-target
-/.idea
-/.idea_modules
+
+# Activator
+/logs/
+/target/
+/project/project/target
+/project/target/
+/RUNNING_PID
+
+# IntelliJ
+/.idea/workspace.xml
+/.idea/tasks.xml
+/.idea/dictionaries
+/.idea/vcs.xml
+/.idea/jsLibraryMappings.xml
+/.idea/libraries/
+/.idea_modules/
+/.idea/uiDesigner.xml
+
+# Eclipse
 /.classpath
 /.project
 /.settings
+
+# SBT
 /.sbtserver
 /project/.sbtserver
 /project/.sbtserver.lock
+
+# Compiled from elm.
 /public/javascripts/MassiveDecks.js
