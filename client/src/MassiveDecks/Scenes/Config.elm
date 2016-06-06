@@ -43,6 +43,7 @@ view lobbyModel = UI.view lobbyModel |> Html.map LocalMessage
 update : Message -> Lobby.Model -> (Model, Cmd ConsumerMessage)
 update message lobbyModel =
   let
+    lobby = lobbyModel.lobby
     gameCode = lobbyModel.lobby.gameCode
     secret = lobbyModel.secret
     model = lobbyModel.config
@@ -53,15 +54,15 @@ update message lobbyModel =
           deckId = String.toUpper rawDeckId
         in
           { model | loadingDecks = model.loadingDecks ++ [ deckId ] } !
-            [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage ((Add deckId) >> ConfigureDecks >> LocalMessage)
+            [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage (\_ -> (Add deckId) |> ConfigureDecks |> LocalMessage)
             , inputClearErrorCmd DeckId
             ]
 
       AddDeck ->
         (model, Util.cmd (LocalMessage (ConfigureDecks (Request model.deckIdInput.value))))
 
-      ConfigureDecks (Add deckId lobbyAndHand) ->
-        (removeDeckLoadingSpinner deckId model, Util.cmd (LobbyUpdate lobbyAndHand))
+      ConfigureDecks (Add deckId) ->
+        (removeDeckLoadingSpinner deckId model, Cmd.none)
 
       ConfigureDecks (Fail deckId errorMessage) ->
         (removeDeckLoadingSpinner deckId model, inputSetErrorCmd DeckId errorMessage)
@@ -76,19 +77,20 @@ update message lobbyModel =
         (model, Request.send' (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp))
 
       StartGame ->
-        (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage (GameStarted >> LocalMessage))
-
-      GameStarted lobbyAndHand ->
-        (model, Util.cmd (LobbyUpdate lobbyAndHand))
+        (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage HandUpdate)
 
       EnableRule rule ->
-        (model, Request.send' (API.enableRule rule gameCode secret) ErrorMessage LobbyUpdate)
+        (model, Request.send' (API.enableRule rule gameCode secret) ErrorMessage ignore)
 
       DisableRule rule ->
-        (model, Request.send' (API.disableRule rule gameCode secret) ErrorMessage LobbyUpdate)
+        (model, Request.send' (API.disableRule rule gameCode secret) ErrorMessage ignore)
 
       NoOp ->
         (model, Cmd.none)
+
+
+ignore : () -> ConsumerMessage
+ignore = (\_ -> LocalMessage NoOp)
 
 
 inputClearErrorCmd : InputId -> Cmd ConsumerMessage

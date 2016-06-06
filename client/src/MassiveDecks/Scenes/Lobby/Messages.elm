@@ -2,8 +2,8 @@ module MassiveDecks.Scenes.Lobby.Messages exposing (..)
 
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Card as Card
+import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
-import MassiveDecks.Scenes.Lobby.Event as Event exposing (Event)
 import MassiveDecks.Scenes.Config.Messages as Config
 import MassiveDecks.Scenes.Playing.Messages as Playing
 import MassiveDecks.Components.Errors as Errors
@@ -24,13 +24,16 @@ type ConsumerMessage
 -}
 type Message
   = DismissNotification Notification
-  | UpdateLobby Game.Lobby
+  | SetNotification (List Player -> Maybe Notification)
+  | UpdateLobbyAndHand Game.LobbyAndHand
+  | UpdateLobby (Game.Lobby -> Game.Lobby)
   | UpdateHand Card.Hand
   | Identify
   | DisplayInviteOverlay
+  | BrowserNotificationForUser (Game.Lobby -> Maybe Player.Id) String String
   | RenderQr
+  | Batch (List Message)
   | NoOp
-  | GameEvent Event
   | BrowserNotificationsMessage BrowserNotifications.Message
   | ConfigMessage Config.ConsumerMessage
   | PlayingMessage Playing.ConsumerMessage

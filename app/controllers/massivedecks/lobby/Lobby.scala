@@ -6,18 +6,17 @@ import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-import controllers.massivedecks.cardcast.{CardcastAPI, CardcastDeck}
+import controllers.massivedecks.cardcast.CardcastAPI
 import controllers.massivedecks.exceptions.{BadRequestException, RequestFailedException}
-import controllers.massivedecks.exceptions.BadRequestException._
-import controllers.massivedecks.util.ExtraIteratee
-import models.massivedecks.Game.{FinishedRound, Hand}
+import controllers.massivedecks.notifications.Notifiers
+import models.massivedecks.{Game => GameModel}
+import models.massivedecks.Game.Formatters._
+import models.massivedecks.{Lobby => LobbyModel}
 import models.massivedecks.Lobby.Formatters._
-import models.massivedecks.Lobby.{LobbyAndHand, Lobby => LobbyModel}
 import models.massivedecks.Player
-import models.massivedecks.Player.Formatters._
 import models.massivedecks.Player.Id
-import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
-import play.api.libs.json.Json
+import play.api.libs.iteratee.{Enumerator, Iteratee}
+import play.api.libs.json.{JsValue, Json}
 
 object Lobby {
   class LobbyFactory @Inject() (cardcast: CardcastAPI) (implicit context: ExecutionContext) {
@@ -31,29 +30,27 @@ object Lobby {
 }
 class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: ExecutionContext) {
 
-  var config = new Config()
   var game: Option[Game] = None
-  val players: Players = new Players()
-  val (notificationsEnumerator, notificationsChannel) = Concurrent.broadcast[String]
+  val notifiers: Notifiers = new Notifiers()
+  var config = new Config(notifiers)
+  val players: Players = new Players(notifiers)
 
-  def lobby = LobbyModel(gameCode, config.config, players.players, game.map(game => game.round))
+  def lobby = LobbyModel.Lobby(gameCode, config.config, players.players, game.map(game => game.round))
 
   def newPlayer(name: String): Player.Secret = {
     val secret = players.addPlayer(name)
     if (game.isDefined) {
       game.get.addPlayer(secret.id)
     }
-    sendNotifications()
     setPlayerDisconnectedAfterGracePeriod(secret.id)
     secret
   }
 
-  def addDeck(secret: Player.Secret, playCode: String): Unit = {
+  def addDeck(secret: Player.Secret, playCode: String): JsValue = {
     players.validateSecret(secret)
     Try(Await.ready({
       cardcast.deck(playCode).map { deck =>
         config.addDeck(deck)
-        sendNotifications()
       }
     }, Lobby.cardCastWaitPeriod)) match {
       case Success(result) =>
@@ -61,146 +58,167 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
       case Failure(exception) =>
         throw RequestFailedException.json("cardcast-timeout")
     }
+    Json.toJson("")
   }
 
   def newAi(secret: Player.Secret): Unit = {
     players.validateSecret(secret)
-    players.addAi()
-    sendNotifications()
+    val aiSecret = players.addAi()
   }
 
-  def newGame(secret: Player.Secret): Unit = {
+  def newGame(secret: Player.Secret): JsValue = {
     if (game.isDefined) {
       throw BadRequestException.json("game-in-progress")
     }
-    val current = new Game(players, config)
+    notifiers.gameStart()
+    val current = new Game(players, config, notifiers)
     game = Some(current)
-    beginRound()
-    sendNotifications()
+    Json.toJson(getHand(secret))
   }
 
-  def play(secret: Player.Secret, cardIds: List[String]): Unit = {
+  def play(secret: Player.Secret, cardIds: List[String]): JsValue = {
     players.validateSecret(secret)
     validateInGame().play(secret.id, cardIds)
-    sendNotifications()
+    checkIfFinishedPlaying()
+    Json.toJson(getHand(secret))
   }
 
-  def choose(secret: Player.Secret, winner: Int): Unit = {
+  def choose(secret: Player.Secret, winner: Int): JsValue = {
     players.validateSecret(secret)
     val game = validateInGame()
     game.choose(secret.id, winner)
-    sendNotifications()
-    game.beginRound()
-    sendNotifications()
+    beginRound()
+    Json.toJson("")
   }
 
-  def getHand(secret: Player.Secret): Hand = {
+  def getHand(secret: Player.Secret): GameModel.Hand = {
     players.validateSecret(secret)
     validateInGame().getHand(secret.id)
   }
 
-  def getHistory() : List[FinishedRound] = {
+  def gameHistory() : List[GameModel.FinishedRound] = {
     validateInGame().history
   }
 
-  def getLobbyAndHand(secret: Player.Secret): LobbyAndHand = {
+  def getLobbyAndHand(secret: Player.Secret): JsValue = {
     players.validateSecret(secret)
+    Json.toJson(lobbyAndHand(secret))
+  }
+
+  private def lobbyAndHand(secret: Player.Secret): LobbyModel.LobbyAndHand = {
     val hand = game match {
       case Some(_) =>
         getHand(secret)
       case None =>
-        Hand(List())
+        GameModel.Hand(List())
     }
-    LobbyAndHand(lobby, hand)
+    LobbyModel.LobbyAndHand(lobby, hand)
   }
 
   def leave(secret: Player.Secret): Unit = {
     players.validateSecret(secret)
-    players.updatePlayer(secret.id, player => player.copy(status = Player.Neutral, left = true))
-    if (players.amount < Players.minimum) {
-      game = None
-    }
-    game match {
-      case Some(current) => current.playerLeft(secret.id)
-      case None =>
-    }
-    sendNotifications()
-  }
-
-  def skip(secret: Player.Secret, playerIds: Set[Player.Id]): Unit = {
-    players.validateSecret(secret)
-    verify((players.activePlayers.length - playerIds.size) > Players.minimum, "not-enough-players-to-skip")
-    verify(players.players.filter(player => playerIds.contains(player.id)).forall(player => player.disconnected), "players-must-be-skippable")
-    validateInGame().skip(secret.id, playerIds)
-    sendNotifications()
-  }
-
-  def back(secret: Player.Secret): Unit = {
-    players.validateSecret(secret)
-    players.back(secret.id)
-    sendNotifications()
-  }
-
-  def redraw(secret: Player.Secret): Unit = {
-    players.validateSecret(secret)
-    verify(config.houseRules.contains("reboot"), "rule-not-enabled")
-    validateInGame().redraw(secret.id)
-    sendNotifications()
-  }
-
-  def enableRule(secret: Player.Secret, rule: String): Unit = {
-    players.validateSecret(secret)
-    config.addHouseRule(rule)
-    sendNotifications()
-  }
-
-  def disableRule(secret: Player.Secret, rule: String): Unit = {
-    players.validateSecret(secret)
-    config.removeHouseRule(rule)
-    sendNotifications()
-  }
-
-  def register(): (Iteratee[String, Unit], Enumerator[String]) = {
-    (ExtraIteratee.onFirstGivingWhenDone(registerInternal), Enumerator("identify").andThen(notificationsEnumerator))
-  }
-
-  private def registerInternal(rawSecret: String): () => Unit = {
-    val secret = Json.parse(rawSecret).validate[Player.Secret].get
-    players.validateSecret(secret)
-    players.register(secret.id)
-    sendNotifications()
-    unregister(secret)
-  }
-
-  private def unregister(secret: Player.Secret)(): Unit = {
-    players.validateSecret(secret)
-    players.unregister(secret.id)
-    setPlayerDisconnectedAfterGracePeriod(secret.id)
-    sendNotifications()
-  }
-
-  private def setPlayerDisconnectedAfterGracePeriod(playerId: Id) = {
-    Future {
-      Lobby.wait(Lobby.disconnectGracePeriod)
-      if (!players.connected.contains(playerId)) {
-        players.updatePlayer(playerId, Players.setDisconnected())
-        sendNotifications()
+    players.leave(secret.id)
+    if (game.isDefined) {
+      if (players.activePlayers.length < Players.minimum) {
+        endGame()
+      }
+      game.foreach { current =>
+        current.playerLeft(secret.id)
+        if (secret.id == current.round.czar) {
+          invalidateRound()
+        } else {
+          checkIfFinishedPlaying()
+        }
       }
     }
   }
 
-  private def beginRound() = {
+  def endGame(): Unit = {
+    game = None
+    players.updatePlayers(players.setPlayerStatus(Player.Neutral))
+    notifiers.gameEnd()
+  }
+
+  def skip(secret: Player.Secret, playerIds: Set[Player.Id]): JsValue = {
+    players.validateSecret(secret)
+    BadRequestException.verify((players.activePlayers.length - playerIds.size) >= Players.minimum, "not-enough-players-to-skip")
+    BadRequestException.verify(players.players.filter(player => playerIds.contains(player.id)).forall(player => player.disconnected), "players-must-be-skippable")
+    val game = validateInGame()
+    game.skip(secret.id, playerIds)
+    if (playerIds.contains(game.round.czar)) {
+      invalidateRound()
+    } else {
+      checkIfFinishedPlaying()
+    }
+    Json.toJson("")
+  }
+
+  def back(secret: Player.Secret): JsValue = {
+    players.validateSecret(secret)
+    players.back(secret.id)
+    Json.toJson("")
+  }
+
+  def redraw(secret: Player.Secret): JsValue = {
+    players.validateSecret(secret)
+    BadRequestException.verify(config.houseRules.contains("reboot"), "rule-not-enabled")
+    validateInGame().redraw(secret.id)
+    Json.toJson(getHand(secret))
+  }
+
+  def enableRule(secret: Player.Secret, rule: String): JsValue = {
+    players.validateSecret(secret)
+    config.addHouseRule(rule)
+    Json.toJson("")
+  }
+
+  def disableRule(secret: Player.Secret, rule: String): JsValue = {
+    players.validateSecret(secret)
+    config.removeHouseRule(rule)
+    Json.toJson("")
+  }
+
+  def register(): (Iteratee[String, Unit], Enumerator[String]) = {
+    notifiers.openedSocket(register, unregister)
+  }
+
+  private def register(secret: Player.Secret): LobbyModel.LobbyAndHand = {
+    players.validateSecret(secret)
+    players.register(secret.id)
+    lobbyAndHand(secret)
+  }
+
+  private def unregister(playerId: Player.Id): Unit = {
+    players.unregister(playerId)
+    setPlayerDisconnectedAfterGracePeriod(playerId)
+  }
+
+  private def invalidateRound(): Unit = {
+    beginRound()
+  }
+
+  private def checkIfFinishedPlaying(): Unit = {
+    validateInGame().checkIfFinishedPlaying()
+  }
+
+  private def setPlayerDisconnectedAfterGracePeriod(playerId: Id): Unit = {
+    Future {
+      Lobby.wait(Lobby.disconnectGracePeriod)
+      if (!players.connected.contains(playerId)) {
+        players.updatePlayer(playerId, players.setPlayerDisconnected(true))
+      }
+    }
+  }
+
+  private def beginRound(): Unit = {
     val game = validateInGame()
     game.beginRound()
+    checkIfFinishedPlaying()
   }
 
   private def validateInGame(): Game = game match {
     case Some(state) => state
     case None => throw BadRequestException.json("no-game-in-progress")
   }
-
-  private def sendNotifications(): Unit = notificationsChannel.push(notification())
-
-  private def notification(): String = Json.toJson(lobby).toString()
 
 }

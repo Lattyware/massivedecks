@@ -1,7 +1,6 @@
 module MassiveDecks.Scenes.Lobby exposing (update, view, init, subscriptions)
 
 import String
-import Json.Decode as Json
 import Json.Encode exposing (encode)
 import Task
 import Time
@@ -12,22 +11,21 @@ import AnimationFrame
 
 import Html exposing (Html)
 
-import MassiveDecks.API as API
-import MassiveDecks.API.Request as Request
+import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
 import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
 import MassiveDecks.Models exposing (Init)
-import MassiveDecks.Models.JSON.Decode exposing (lobbyDecoder)
+import MassiveDecks.Models.Event as Event exposing (Event)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
-import MassiveDecks.Models.Player as Player
+import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Scenes.Playing as Playing
 import MassiveDecks.Scenes.Playing.Messages as Playing
 import MassiveDecks.Scenes.Config as Config
 import MassiveDecks.Scenes.Config.Messages as Config
-import MassiveDecks.Scenes.Lobby.Event as Event
 import MassiveDecks.Scenes.Lobby.UI as UI
 import MassiveDecks.Scenes.Lobby.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
@@ -98,15 +96,12 @@ webSocketResponseDecoder response =
   if (response == "identify") then
     Identify |> LocalMessage
   else
-    case Json.decodeString lobbyDecoder response of
-      Ok lobby ->
-        UpdateLobby lobby |> LocalMessage
+    case Event.fromJson response of
+      Ok event ->
+        LocalMessage <| Batch <| handleEvent event
 
       Err message ->
-        let
-          _ = Debug.log "Error from websocket" message
-        in
-          NoOp |> LocalMessage
+        ErrorMessage <| Errors.New ("Error handling notification: " ++ message) True
 
 
 {-| Render the lobby.
@@ -119,128 +114,170 @@ view model = UI.view model
 -}
 update : Message -> Model -> (Model, Cmd ConsumerMessage)
 update message model =
-  case message of
-    ConfigMessage configMessage ->
-      case configMessage of
-        Config.ErrorMessage errorMessage ->
-          (model, ErrorMessage errorMessage |> Util.cmd)
+  let
+    lobby = model.lobby
+  in
+    case message of
+      ConfigMessage configMessage ->
+        case configMessage of
+          Config.ErrorMessage errorMessage ->
+            (model, ErrorMessage errorMessage |> Util.cmd)
 
-        Config.LobbyUpdate lobbyAndHand ->
-          model |> updateLobbyAndHand lobbyAndHand
+          Config.HandUpdate hand ->
+            model |> updateLobbyAndHand (Game.LobbyAndHand model.lobby hand)
 
-        Config.LocalMessage localMessage ->
-          let
-            (config, cmd) = Config.update localMessage model
-          in
-            ({ model | config = config }, Cmd.map (LocalMessage << ConfigMessage) cmd)
-
-    PlayingMessage playingMessage ->
-      case playingMessage of
-        Playing.ErrorMessage errorMessage ->
-          (model, ErrorMessage errorMessage |> Util.cmd)
-
-        Playing.LobbyUpdate lobbyAndHand ->
-          model |> updateLobbyAndHand lobbyAndHand
-
-        Playing.LocalMessage localMessage ->
-          let
-            (playing, cmd) = Playing.update localMessage model
-          in
-            ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
-
-    BrowserNotificationsMessage notificationMessage ->
-      let
-        (browserNotifications, localCmd, cmd) = BrowserNotifications.update notificationMessage model.browserNotifications
-      in
-        { model | browserNotifications = browserNotifications } !
-          [ Cmd.map (LocalMessage << BrowserNotificationsMessage) localCmd
-          , Cmd.map overlayAlert cmd
-          ]
-
-    UpdateLobby lobby ->
-      model |> updateLobbyAndHand { lobby = lobby, hand = model.hand }
-            :> updateHandIfRoundStarted
-
-    UpdateHand hand ->
-      model |> updateLobbyAndHand { lobby = model.lobby, hand = hand }
-
-    Identify ->
-      (model, Cmd.map LocalMessage (WebSocket.send (webSocketUrl model.init.url model.lobby.gameCode) (encodePlayerSecret model.secret |> encode 0)))
-
-    DisplayInviteOverlay ->
-      { model | qrNeedsRendering = True } ! [ Util.cmd (UI.inviteOverlay model.init.url model.lobby.gameCode |> OverlayMessage) ]
-
-    RenderQr ->
-      { model | qrNeedsRendering = False } ! [ QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl model.init.url model.lobby.gameCode) ]
-
-    DismissNotification notification ->
-      let
-        newModel =
-          if model.notification == Just notification then
-            { model | notification = Maybe.map Notification.hide model.notification }
-          else
-            model
-      in
-        (newModel, Cmd.none)
-
-    GameEvent event ->
-      let
-        players = model.lobby.players
-      in
-        case event of
-          Event.RoundEnd call czar responses playedByAndWinner ->
+          Config.LocalMessage localMessage ->
             let
-              playingModel = model.playing
-              newPlayingModel = { playingModel | finishedRound = Just (Game.FinishedRound czar call responses playedByAndWinner) }
+              (config, cmd) = Config.update localMessage model
             in
-              ({ model | playing = newPlayingModel }, Cmd.none)
+              ({ model | config = config }, Cmd.map (LocalMessage << ConfigMessage) cmd)
 
-          Event.PlayerJoin id ->
-            notificationChange model (Notification.playerJoin id players)
+      PlayingMessage playingMessage ->
+        case playingMessage of
+          Playing.ErrorMessage errorMessage ->
+            (model, ErrorMessage errorMessage |> Util.cmd)
 
-          Event.PlayerReconnect id ->
-            notificationChange model (Notification.playerReconnect id players)
+          Playing.HandUpdate hand ->
+            model |> updateLobbyAndHand (Game.LobbyAndHand model.lobby hand)
 
-          Event.PlayerDisconnect id ->
-            notificationChange model (Notification.playerDisconnect id players)
-
-          Event.PlayerLeft id ->
-            notificationChange model (Notification.playerLeft id players)
-
-          Event.RoundJudging _ ->
-            case model.lobby.round of
-              Nothing ->
-                (model, Cmd.none)
-
-              Just round ->
-                let
-                  cmd = if (round.czar == model.secret.id) then
-                    Util.cmd (BrowserNotifications.notify { title = "You need to pick a winner for the round.", icon = icon model "gavel" } |> BrowserNotificationsMessage |> LocalMessage)
-                  else
-                    Cmd.none
-                in
-                  (model, cmd)
-
-          Event.PlayerStatus id status ->
+          Playing.LocalMessage localMessage ->
             let
-              cmd = if (id == model.secret.id) then
-                case status of
-                  Player.NotPlayed ->
-                    Util.cmd (BrowserNotifications.notify { title = "You need to play a card for the round.", icon = icon model "hourglass" } |> BrowserNotificationsMessage |> LocalMessage)
-                  Player.Skipping ->
-                    Util.cmd (BrowserNotifications.notify { title = "You are being skipped due to inactivity.", icon = icon model "fast-forward"} |> BrowserNotificationsMessage |> LocalMessage)
-                  _ ->
-                    Cmd.none
+              (playing, cmd) = Playing.update localMessage model
+            in
+              ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
+
+      BrowserNotificationsMessage notificationMessage ->
+        let
+          (browserNotifications, localCmd, cmd) = BrowserNotifications.update notificationMessage model.browserNotifications
+        in
+          { model | browserNotifications = browserNotifications } !
+            [ Cmd.map (LocalMessage << BrowserNotificationsMessage) localCmd
+            , Cmd.map overlayAlert cmd
+            ]
+
+      BrowserNotificationForUser getUserId title iconName ->
+        let
+          cmd = case (getUserId lobby) of
+            Just(id) ->
+              if (id == model.secret.id) then
+                Util.cmd (BrowserNotifications.notify { title = title, icon = icon model iconName } |> BrowserNotificationsMessage |> LocalMessage)
               else
                 Cmd.none
-            in
-              (model, cmd)
+            Nothing ->
+              Cmd.none
+        in
+          (model, cmd)
 
+      UpdateLobbyAndHand lobbyAndHand ->
+        model |> updateLobbyAndHand lobbyAndHand
+
+      UpdateLobby update ->
+        model |> updateLobbyAndHand (Game.LobbyAndHand (update lobby) model.hand)
+
+      UpdateHand hand ->
+        model |> updateLobbyAndHand (Game.LobbyAndHand model.lobby hand)
+
+      SetNotification notification ->
+        notificationChange model (notification lobby.players)
+
+      Identify ->
+        (model, Cmd.map LocalMessage (WebSocket.send (webSocketUrl model.init.url model.lobby.gameCode) (encodePlayerSecret model.secret |> encode 0)))
+
+      DisplayInviteOverlay ->
+        { model | qrNeedsRendering = True } ! [ Util.cmd (UI.inviteOverlay model.init.url model.lobby.gameCode |> OverlayMessage) ]
+
+      RenderQr ->
+        { model | qrNeedsRendering = False } ! [ QR.encodeAndRender "invite-qr-code" (Util.lobbyUrl model.init.url model.lobby.gameCode) ]
+
+      DismissNotification notification ->
+        let
+          newModel =
+            if model.notification == Just notification then
+              { model | notification = Maybe.map Notification.hide model.notification }
+            else
+              model
+        in
+          (newModel, Cmd.none)
+
+      Batch messages ->
+        model ! (List.map (Util.cmd << LocalMessage) messages)
+
+      NoOp ->
+        (model, Cmd.none)
+
+
+handleEvent : Event -> List Message
+handleEvent event =
+  case event of
+    Event.Sync lobbyAndHand ->
+      [ UpdateLobbyAndHand lobbyAndHand ]
+
+    Event.PlayerJoin player ->
+      [ SetNotification (Notification.playerJoin player.id)
+      , UpdateLobby (\lobby -> { lobby | players = lobby.players ++ [ player ] })
+      ]
+    Event.PlayerStatus player status ->
+      let
+        browserNotification = case status of
+          Player.NotPlayed ->
+            [ BrowserNotificationForUser (\_ -> Just player) "You need to play a card for the round." "hourglass" ]
+          Player.Skipping ->
+            [ BrowserNotificationForUser (\_ -> Just player) "You are being skipped due to inactivity." "fast-forward" ]
           _ ->
-            (model, Cmd.none)
+            []
+      in
+        [ updatePlayer player (\player -> { player | status = status })
+        ] ++ browserNotification
+    Event.PlayerLeft player ->
+      [ SetNotification (Notification.playerLeft player)
+      , updatePlayer player (\player -> { player | left = True })
+      ]
+    Event.PlayerDisconnect player ->
+      [ SetNotification (Notification.playerDisconnect player)
+      , updatePlayer player (\player -> { player | disconnected = True })
+      ]
+    Event.PlayerReconnect player ->
+      [ SetNotification (Notification.playerReconnect player)
+      , updatePlayer player (\player -> { player | disconnected = False })
+      ]
+    Event.PlayerScoreChange player score ->
+      [ updatePlayer player (\player -> { player | score = score }) ]
 
-    NoOp ->
-      (model, Cmd.none)
+    Event.HandChange hand ->
+      [ UpdateHand hand ]
+
+    Event.RoundStart czar call ->
+      [ UpdateLobby (\lobby -> { lobby | round = Just (Game.Round czar call (Card.Hidden 0)) }) ]
+    Event.RoundPlayed playedCards ->
+      [ updateRound (\round -> { round | responses = Card.Hidden playedCards }) ]
+    Event.RoundJudging playedCards ->
+        [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses playedCards Nothing) })
+        , BrowserNotificationForUser (\lobby -> lobby.round |> Maybe.map .czar) "You need to pick a winner for the round." "gavel"
+        ]
+    Event.RoundEnd finishedRound ->
+      [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses finishedRound.responses (Just finishedRound.playedByAndWinner)) })
+      , PlayingMessage <| Playing.LocalMessage <| Playing.FinishRound finishedRound
+      ]
+
+    Event.GameStart ->
+      []
+    Event.GameEnd ->
+      [ UpdateLobby (\lobby -> { lobby | round = Nothing })
+      , UpdateHand { hand = [] }
+      ]
+
+    Event.ConfigChange config ->
+      [ UpdateLobby (\lobby -> { lobby | config = config }) ]
+
+
+updatePlayer : Player.Id -> (Player -> Player) -> Message
+updatePlayer playerId playerUpdate =
+  UpdateLobby (\lobby -> { lobby | players = List.map (\player -> if player.id == playerId then playerUpdate player else player) lobby.players })
+
+
+updateRound : (Game.Round -> Game.Round) -> Message
+updateRound roundUpdate =
+  UpdateLobby (\lobby -> { lobby | round = Maybe.map roundUpdate lobby.round })
 
 
 overlayAlert : BrowserNotifications.ConsumerMessage -> ConsumerMessage
@@ -266,33 +303,9 @@ type alias Update = Model -> (Model, Cmd ConsumerMessage)
 
 updateLobbyAndHand : Game.LobbyAndHand -> Update
 updateLobbyAndHand lobbyAndHand model =
-  let
-    events
-      = Event.events model.lobby lobbyAndHand.lobby
-      |> List.map (GameEvent >> LocalMessage >> Util.cmd)
-    commands = [ Util.cmd (Playing.LobbyAndHandUpdated |> Playing.LocalMessage |> PlayingMessage |> LocalMessage) ] ++ events
-  in
-    { model | lobby = lobbyAndHand.lobby
-            , hand = lobbyAndHand.hand} ! commands
-
-
-{-| If the player didn't make the call the start the game, they will only recieve a notification about it, which won't
-give them their hand. We check if we have started a new round, and don't have a hand - if so we go get it.
--}
-updateHandIfRoundStarted : Update
-updateHandIfRoundStarted model =
-  let
-    cmd = case model.lobby.round of
-      Just value ->
-        if (List.isEmpty model.hand.hand) then
-          Request.send' (API.getHand model.lobby.gameCode model.secret) ErrorMessage (LocalMessage << UpdateHand)
-        else
-          Cmd.none
-
-      Nothing ->
-        Cmd.none
-  in
-    (model, cmd)
+  { model | lobby = lobbyAndHand.lobby
+          , hand = lobbyAndHand.hand} !
+    [ Util.cmd (Playing.LobbyAndHandUpdated |> Playing.LocalMessage |> PlayingMessage |> LocalMessage) ]
 
 
 {-| Handles a change to the displayed notification.

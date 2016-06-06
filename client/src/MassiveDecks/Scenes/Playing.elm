@@ -101,7 +101,7 @@ update message lobbyModel =
 
       Play ->
         ( { model | picked = [] }
-        , Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage LobbyUpdate
+        , Request.send (API.play gameCode secret model.picked) playErrorHandler ErrorMessage HandUpdate
         )
 
       Consider potentialWinnerIndex ->
@@ -111,7 +111,7 @@ update message lobbyModel =
 
       Choose winnerIndex ->
         ( { model | considering = Nothing }
-        , Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage LobbyUpdate
+        , Request.send (API.choose gameCode secret winnerIndex) chooseErrorHandler ErrorMessage ignore
         )
 
       NextRound ->
@@ -132,16 +132,19 @@ update message lobbyModel =
           )
 
       Skip playerIds ->
-        (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage LobbyUpdate)
+        (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage ignore)
 
       Back ->
-        (model, Request.send' (API.back gameCode secret) ErrorMessage LobbyUpdate)
+        (model, Request.send' (API.back gameCode secret) ErrorMessage ignore)
 
       LobbyAndHandUpdated ->
         lobbyAndHandUpdated lobbyModel
 
       Redraw ->
-        (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage LobbyUpdate)
+        (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage HandUpdate)
+
+      FinishRound finishedRound ->
+          ({ model | finishedRound = Just finishedRound}, Cmd.none)
 
       HistoryMessage historyMessage ->
         case model.history of
@@ -170,6 +173,10 @@ update message lobbyModel =
 
       NoOp ->
         (model, Cmd.none)
+
+
+ignore : () -> ConsumerMessage
+ignore = (\_ -> LocalMessage NoOp)
 
 
 lobbyAndHandUpdated : Lobby.Model -> (Model, Cmd ConsumerMessage)

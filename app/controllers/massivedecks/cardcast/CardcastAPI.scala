@@ -11,14 +11,13 @@ import scala.util.Try
 import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import models.massivedecks.Game.{Call, Response}
-import controllers.massivedecks.exceptions.BadRequestException._
 import controllers.massivedecks.exceptions.BadRequestException
 
 class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"
 
   private def deckUrl(id: String): String = {
-    verify(id.length > 0, "deck-not-found")
+    BadRequestException.verify(id.length > 0, "deck-not-found")
     s"$apiUrl/decks/$id"
   }
   private def cardsUrl(id: String): String = s"${deckUrl(id)}/cards"

@@ -2,14 +2,14 @@ package controllers.massivedecks.lobby
 
 import scala.util.Random
 
-import controllers.massivedecks.exceptions.BadRequestException
-import controllers.massivedecks.exceptions.BadRequestException._
+import controllers.massivedecks.exceptions.{BadRequestException, ForbiddenException}
+import controllers.massivedecks.notifications.Notifiers
 import models.massivedecks.Player
 
 /**
   * Players in the game.
   */
-class Players {
+class Players(notifiers: Notifiers) {
 
   var players: List[Player] = List()
   var ais: Set[Player.Secret] = Set()
@@ -21,26 +21,29 @@ class Players {
   private var nameIteration = 0
 
   def validateSecret(secret: Player.Secret): Unit = {
-    verify(secrets.values.exists(s => s == secret), "secret-wrong-or-not-a-player")
+    ForbiddenException.verify(secrets.values.exists(s => s == secret), "secret-wrong-or-not-a-player")
   }
 
   def addPlayer(name: String): Player.Secret = {
-    verify(players.forall(player => player.name != name), "name-in-use")
+    BadRequestException.verify(players.forall(player => player.name != name), "name-in-use")
     val id = newId()
     if (owner.isEmpty) {
       owner = Some(id)
     }
-    players = players :+ Player(id, name)
+    val player = Player(id, name)
+    players = players :+ player
     val secret = Player.Secret(id)
     secrets = secrets + (id -> secret)
+    notifiers.playerJoined(player)
     secret
   }
 
-  def addAi(): Unit = {
+  def addAi(): Player.Secret = {
     val secret = addPlayer(generateAiName())
-    updatePlayer(secret.id, Players.setPlayerStatus(Player.Ai, Set()))
+    updatePlayer(secret.id, setPlayerStatus(Player.Ai, Set()))
     connected += secret.id
     ais += secret
+    secret
   }
 
   private def generateAiName(): String = {
@@ -72,15 +75,19 @@ class Players {
 
   def back(playerId: Player.Id): Unit = {
     val player = getPlayer(playerId)
-    verify(player.status == Player.Skipping, "not-being-skipped")
-    updatePlayer(playerId, Players.setPlayerStatus(Player.Neutral, Player.Status.sticky - Player.Skipping))
+    BadRequestException.verify(player.status == Player.Skipping, "not-being-skipped")
+    updatePlayer(playerId, setPlayerStatus(Player.Neutral, Player.Status.sticky - Player.Skipping))
+  }
+
+  def leave(playerId: Player.Id): Unit = {
+    updatePlayer(playerId, setPlayerLeft())
   }
 
   def register(playerId: Player.Id): Unit = {
     val player = getPlayer(playerId)
-    verify(!player.left, "already-left-game")
-    updatePlayer(playerId, player => player.copy(disconnected = false))
+    BadRequestException.verify(!player.left, "already-left-game")
     connected += playerId
+    updatePlayer(playerId, setPlayerDisconnected(false))
     if (player.status == Player.Skipping) {
       back(playerId)
     }
@@ -106,20 +113,47 @@ class Players {
 
   def activePlayers = players.filter(player => !player.left && player.status != Player.Skipping)
 
+  def setPlayerStatus(newStatus: Player.Status, ignoring: Set[Player.Status] = Player.Status.sticky): (Player => Player) = {
+    player =>
+      if (!player.left && !ignoring.contains(player.status) && player.status != newStatus) {
+        notifiers.playerStatus(player.id, newStatus)
+        player.copy(status = newStatus)
+      } else {
+        player
+      }
+  }
+
+  def modifyPlayerScore(by: Int): (Player => Player) = {
+    player =>
+      val newScore = player.score + by
+      notifiers.playerScoreChange(player.id, newScore)
+      player.copy(score = newScore)
+  }
+
+  def setPlayerLeft(): (Player => Player) = {
+    player =>
+      notifiers.playerLeft(player.id)
+      if (player.status != Player.Neutral) {
+        notifiers.playerStatus(player.id, Player.Neutral)
+      }
+      player.copy(status = Player.Neutral, left = true)
+  }
+
+  def setPlayerDisconnected(disconnected: Boolean): (Player => Player) = {
+    player =>
+      if (!player.left && player.status != Player.Ai) {
+        if (disconnected) {
+          notifiers.playerDisconnect(player.id)
+        } else {
+          notifiers.playerReconnect(player.id)
+        }
+        player.copy(disconnected = disconnected)
+      } else {
+        player
+      }
+  }
 }
 object Players {
-  def setPlayerStatus(newStatus: Player.Status, ignoring: Set[Player.Status] = Player.Status.sticky): (Player => Player) = {
-    player => if (!ignoring.contains(player.status) && !player.left) player.copy(status = newStatus) else player
-  }
-
-  def setDisconnected(): (Player => Player) = player => {
-    if (!player.left || player.status == Player.Ai) {
-      player.copy(disconnected = true)
-    } else {
-      player
-    }
-  }
-
   val minimum = 2
 
   val aiName = "Rando Cardrissian"

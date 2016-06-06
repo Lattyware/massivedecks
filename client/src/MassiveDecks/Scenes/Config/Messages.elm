@@ -2,14 +2,14 @@ module MassiveDecks.Scenes.Config.Messages exposing (..)
 
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
-import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 
 
 {-| This type is used for all sending of messages, allowing us to send messages handled outside this scene.
 -}
 type ConsumerMessage
-  = LobbyUpdate Game.LobbyAndHand
+  = HandUpdate Card.Hand
   | ErrorMessage Errors.Message
   | LocalMessage Message
 
@@ -22,7 +22,6 @@ type Message
   | InputMessage (Input.Message InputId)
   | AddAi
   | StartGame
-  | GameStarted Game.LobbyAndHand
   | EnableRule HouseRule.Id
   | DisableRule HouseRule.Id
   | NoOp
@@ -30,7 +29,7 @@ type Message
 
 type Deck
   = Request DeckId
-  | Add DeckId Game.LobbyAndHand
+  | Add DeckId
   | Fail DeckId FailureMessage
 
 

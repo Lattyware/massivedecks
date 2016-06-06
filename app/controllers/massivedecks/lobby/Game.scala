@@ -5,15 +5,19 @@ import scala.util.Random
 import models.massivedecks.Game._
 import models.massivedecks.Player
 import controllers.massivedecks.exceptions.BadRequestException
-import controllers.massivedecks.exceptions.BadRequestException._
+import controllers.massivedecks.notifications.Notifiers
 
-class Game(players: Players, config: Config) {
+class Game(players: Players, config: Config, notifiers: Notifiers) {
 
   import Game._
 
   private val deck: Deck = new Deck(config.decks)
   private var czarIndex = 0
-  private var hands: Map[Player.Id, Hand] = players.ids.map(id => id -> new Hand(deck.drawResponses(Hand.size))).toMap
+  private var hands: Map[Player.Id, Hand] = players.ids.map(id => {
+    val hand = new Hand(deck.drawResponses(Hand.size))
+    notifiers.handChange(id, hand)
+    id -> hand
+  }).toMap
   private var roundProgress: RoundProgress = Playing
   var history: List[FinishedRound] = List()
 
@@ -43,24 +47,25 @@ class Game(players: Players, config: Config) {
   def playerLeft(playerId: Player.Id): Unit = {
     hands = hands.filterKeys(id => id != playerId)
     playedCards = playedCards.filterKeys(id => id != playerId)
-    if (playerId == czar) {
-      invalidateRound()
-    } else {
-      checkIfFinishedPlaying()
-    }
   }
 
-  def beginRound(): Unit = {
+  /**
+    * Begin the round.
+    * @return The list of players who played instantly (AI).
+    */
+  def beginRound() = {
     if (players.amount < Players.minimum) {
       throw BadRequestException.json("not-enough-players", "required" -> Players.minimum)
     }
 
-    players.updatePlayers(Players.setPlayerStatus(Player.NotPlayed))
-
     czar = nextCzar()
-    players.updatePlayer(round.czar, Players.setPlayerStatus(Player.Czar))
-
     call = deck.drawCall()
+
+    notifiers.roundStart(czar, call)
+
+    players.updatePlayers(players.setPlayerStatus(Player.NotPlayed))
+    players.updatePlayer(czar, players.setPlayerStatus(Player.Czar))
+
     playedCards = (for (player <- players.players if !Player.Status.notInRound.contains(player.status) && !player.left) yield player.id -> None).toMap
     roundProgress = Playing
 
@@ -71,6 +76,7 @@ class Game(players: Players, config: Config) {
         val hand = hands(player).hand
         val newHand = Hand(hand ++ deck.drawResponses(toDraw))
         hands += (player -> newHand)
+        notifiers.handChange(player, newHand)
       }
     }
 
@@ -85,32 +91,34 @@ class Game(players: Players, config: Config) {
   }
 
   def play(playerId: Player.Id, cardIds: List[String]): Unit = {
-    verify(playersInRound.contains(playerId), "not-in-round")
-    verify(playedCards(playerId).isEmpty, "already-played")
-    verify(roundProgress == Playing, "already-judging")
-    verify(cardIds.length == call.slots, "wrong-number-of-cards-played", "got" -> cardIds.length, "expected" -> call.slots)
+    BadRequestException.verify(playersInRound.contains(playerId), "not-in-round")
+    BadRequestException.verify(playedCards(playerId).isEmpty, "already-played")
+    BadRequestException.verify(roundProgress == Playing, "already-judging")
+    BadRequestException.verify(cardIds.length == call.slots, "wrong-number-of-cards-played", "got" -> cardIds.length, "expected" -> call.slots)
     val hand = hands(playerId).hand
     val toPlay: List[Response] = cardIds.flatMap(id => hand.find(response => response.id == id))
-    verify(toPlay.length == cardIds.length, "invalid-card-id-given")
+    BadRequestException.verify(toPlay.length == cardIds.length, "invalid-card-id-given")
     val toDraw = Hand.size - (hand.length - toPlay.length)
     val newHand = Hand(hand.filter(response => !toPlay.contains(response)) ++ deck.drawResponses(toDraw))
     hands += (playerId -> newHand)
     playedCards += (playerId -> Some(toPlay))
-    players.updatePlayer(playerId, Players.setPlayerStatus(Player.Played))
-    checkIfFinishedPlaying()
+    players.updatePlayer(playerId, players.setPlayerStatus(Player.Played))
+    notifiers.roundPlayed(playedCards.size)
   }
 
   def choose(playerId: Player.Id, winner: Int): Unit = {
-    verify(playerId == czar, "not-czar")
+    BadRequestException.verify(playerId == czar, "not-czar")
     roundProgress match {
       case Playing =>
         throw BadRequestException.json("not-judging")
       case Judging(responses, playedOrder) =>
         playedOrder.lift(winner) match {
           case Some(winnerId) =>
-            players.updatePlayer(winnerId, player => player.copy(score = player.score + 1))
+            players.updatePlayer(winnerId, players.modifyPlayerScore(1))
             roundProgress = Finished(responses, playedOrder, winnerId)
-            history = FinishedRound(round.czar, round.call, responses, PlayedByAndWinner(playedOrder, winnerId)) :: history
+            val finishedRound = FinishedRound(round.czar, round.call, responses, PlayedByAndWinner(playedOrder, winnerId))
+            history = finishedRound :: history
+            notifiers.roundEnd(finishedRound)
 
           case None =>
             throw BadRequestException.json("no-such-played-cards")
@@ -124,31 +132,24 @@ class Game(players: Players, config: Config) {
 
   def redraw(playerId: Player.Id): Unit = {
     val player = players.getPlayer(playerId)
-    verify(player.score > 0, "not-enough-points-to-redraw")
-    players.updatePlayer(playerId, player => player.copy(score = player.score - 1))
+    BadRequestException.verify(player.score > 0, "not-enough-points-to-redraw")
+    players.updatePlayer(playerId, players.modifyPlayerScore(-1))
     hands += (playerId -> Hand(deck.drawResponses(Hand.size)))
   }
 
   def skip(playerId: Player.Id, playerIds: Set[Player.Id]): Unit = {
     for (id <- playerIds) {
-      players.updatePlayer(id, Players.setPlayerStatus(Player.Skipping))
+      players.updatePlayer(id, players.setPlayerStatus(Player.Skipping))
       playedCards = playedCards.filterKeys(pId => pId != id)
     }
-    if (playerIds.contains(czar)) {
-      invalidateRound()
-    } else {
-      checkIfFinishedPlaying()
-    }
   }
 
-  private def invalidateRound(): Unit = {
-    beginRound()
-  }
-
-  private def checkIfFinishedPlaying() = {
+  def checkIfFinishedPlaying(): Unit = {
     if (roundProgress == Playing && playedCards.forall(item => item._2.isDefined)) {
       val shuffled = Random.shuffle(playedCards)
-      roundProgress = Judging(shuffled.map(item => item._2.get).toList, shuffled.map(item => item._1).toList)
+      val shuffledPlayedCards = shuffled.map(item => item._2.get).toList
+      roundProgress = Judging(shuffledPlayedCards, shuffled.map(item => item._1).toList)
+      notifiers.roundJudging(shuffledPlayedCards)
     }
   }
 

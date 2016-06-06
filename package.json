@@ -1,0 +1,9 @@
+{
+  "name": "massivedecks",
+  "version": "1.0.0",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-elm": "^0.4.4",
+    "gulp-util": "^3.0.7"
+  }
+}

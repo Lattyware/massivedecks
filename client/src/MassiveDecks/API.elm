@@ -50,7 +50,7 @@ type GetLobbyAndHandError
 {-| Get the lobby and the hand for the player with the given secret (using it to authenticate).
 -}
 getLobbyAndHand : String -> Player.Secret -> Request GetLobbyAndHandError Game.LobbyAndHand
-getLobbyAndHand = commandRequest "getLobbyAndHand" [] [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound) ]
+getLobbyAndHand = commandRequest "getLobbyAndHand" [] [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound) ] lobbyAndHandDecoder
 
 
 {-| Get the hand of the player with the given secret (using it to authenticate).
@@ -88,7 +88,7 @@ type AddDeckError
 {-| Makes a request to add the deck for the given play code to the game configuration, using the given secret to
 authenticate.
 -}
-addDeck : String -> Player.Secret -> String -> Request AddDeckError Game.LobbyAndHand
+addDeck : String -> Player.Secret -> String -> Request AddDeckError ()
 addDeck gameCode secret playCode =
   commandRequest
     "addDeck"
@@ -96,6 +96,7 @@ addDeck gameCode secret playCode =
     [ ((502, "cardcast-timeout"), Decode.succeed CardcastTimeout)
     , ((400, "deck-not-found"), Decode.succeed DeckNotFound)
     ]
+    (Decode.succeed ())
     gameCode
     secret
 
@@ -123,7 +124,7 @@ type NewGameError
 
 {-| Makes a request to the server to start a new game in the given lobby, using the given secret to authenticate.
 -}
-newGame : String -> Player.Secret -> Request NewGameError Game.LobbyAndHand
+newGame : String -> Player.Secret -> Request NewGameError Card.Hand
 newGame gameCode secret =
   commandRequest
     "newGame"
@@ -131,6 +132,7 @@ newGame gameCode secret =
     [ ((400, "game-in-progress"), Decode.succeed GameInProgress)
     , ((400, "not-enough-players"), Decode.object1 NotEnoughPlayers ("required" := Decode.int))
     ]
+    handDecoder
     gameCode
     secret
 
@@ -144,12 +146,13 @@ type ChooseError
 {-| Make a request to choose the given (by index) winning response for round for the given lobby, using the given secret
 to authenticate.
 -}
-choose : String -> Player.Secret -> Int -> Request ChooseError Game.LobbyAndHand
+choose : String -> Player.Secret -> Int -> Request ChooseError ()
 choose gameCode secret winner =
   commandRequest
     "choose"
     [ ("winner", Encode.int winner) ]
     [ ((400, "not-czar"), Decode.succeed NotCzar) ]
+    (Decode.succeed ())
     gameCode
     secret
 
@@ -170,7 +173,7 @@ type PlayError
 {-| Make a request to play the given (by index) cards from the player's hand into the round for the given lobby, using
 the given secret to authenticate.
 -}
-play : String -> Player.Secret -> List String -> Request PlayError Game.LobbyAndHand
+play : String -> Player.Secret -> List String -> Request PlayError Card.Hand
 play gameCode secret ids =
   commandRequest
     "play"
@@ -180,6 +183,7 @@ play gameCode secret ids =
     , ((400, "already-judging"), Decode.succeed AlreadyJudging)
     , ((400, "wrong-number-of-cards-played"), Decode.object2 WrongNumberOfCards ("got" := Decode.int) ("expected" := Decode.int))
     ]
+    handDecoder
     gameCode
     secret
 
@@ -196,7 +200,7 @@ type SkipError
 
 {-| Make a request to skip the given players in the given lobby using the given secret to authenticate.
 -}
-skip : String -> Player.Secret -> List Player.Id -> Request SkipError Game.LobbyAndHand
+skip : String -> Player.Secret -> List Player.Id -> Request SkipError ()
 skip gameCode secret players =
   commandRequest
     "skip"
@@ -204,14 +208,15 @@ skip gameCode secret players =
     [ ((400, "not-enough-players-to-skip"), Decode.succeed NotEnoughPlayersToSkip)
     , ((400, "players-must-be-skippable"), Decode.succeed PlayersNotSkippable)
     ]
+    (Decode.succeed ())
     gameCode
     secret
 
 
 {-| Make a request to stop being skipped.
 -}
-back : String -> Player.Secret -> Request Never Game.LobbyAndHand
-back = commandRequest "back" [] []
+back : String -> Player.Secret -> Request Never ()
+back = commandRequest "back" [] [] (Decode.succeed ())
 
 
 {-| Make a request to leave the game.
@@ -234,25 +239,28 @@ type RedrawError
 
 {-| Make a request to redraw the players hand, losing a point.
 -}
-redraw : String -> Player.Secret -> Request RedrawError Game.LobbyAndHand
+redraw : String -> Player.Secret -> Request RedrawError Card.Hand
 redraw =
   commandRequest
     "redraw"
     []
     [ ((400, "not-enough-points-to-redraw"), Decode.succeed NotEnoughPoints)
     ]
+    handDecoder
 
 
 {-| Make a request to enable a house rule.
 -}
-enableRule : HouseRule.Id -> String -> Player.Secret -> Request Never Game.LobbyAndHand
-enableRule rule gameCode secret = commandRequest "enableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] gameCode secret
+enableRule : HouseRule.Id -> String -> Player.Secret -> Request Never ()
+enableRule rule gameCode secret =
+  commandRequest "enableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] (Decode.succeed ()) gameCode secret
 
 
 {-| Make a request to disable a house rule.
 -}
-disableRule : HouseRule.Id -> String -> Player.Secret -> Request Never Game.LobbyAndHand
-disableRule rule gameCode secret = commandRequest "disableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] gameCode secret
+disableRule : HouseRule.Id -> String -> Player.Secret -> Request Never ()
+disableRule rule gameCode secret =
+  commandRequest "disableRule" [ ("rule", rule |> HouseRule.toString |> Encode.string) ] [] (Decode.succeed ()) gameCode secret
 
 
 {- Private -}
@@ -260,6 +268,6 @@ disableRule rule gameCode secret = commandRequest "disableRule" [ ("rule", rule 
 
 {-| Construct a request for a command.
 -}
-commandRequest : String -> List ( String, Encode.Value ) -> List (KnownError a) -> String -> Player.Secret -> Request a Game.LobbyAndHand
-commandRequest name args errors gameCode secret =
-  request "POST" ("/lobbies/" ++ gameCode) (Just (encodeCommand name secret args)) errors lobbyAndHandDecoder
+commandRequest : String -> List ( String, Encode.Value ) -> List (KnownError a) -> Decode.Decoder b -> String -> Player.Secret -> Request a b
+commandRequest name args errors decoder gameCode secret =
+  request "POST" ("/lobbies/" ++ gameCode) (Just (encodeCommand name secret args)) errors decoder

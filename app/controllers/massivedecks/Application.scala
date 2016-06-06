@@ -52,7 +52,6 @@ class Application @Inject() (store: LobbyStore) extends Controller {
         case "redraw" => lobby.redraw(secret)
         case _ => throw BadRequestException.json("invalid-command")
       }
-      Json.toJson(lobby.getLobbyAndHand(secret))
     }
   }
 
@@ -70,7 +69,7 @@ class Application @Inject() (store: LobbyStore) extends Controller {
 
   def getHistory(gameCode: String) = Action { request =>
     wrap {
-      Json.toJson(store.getLobby(gameCode).getHistory())
+      Json.toJson(store.getLobby(gameCode).gameHistory())
     }
   }
 
