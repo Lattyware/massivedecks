@@ -34,7 +34,7 @@ class Notifiers (implicit context: ExecutionContext) {
       (secret) => {
         val lobbyAndHand = onIdentify(secret)
         identified += (secret.id -> notifier)
-        sync(lobbyAndHand)
+        sync(secret.id, lobbyAndHand)
       },
       () => {
         identified.find(item => notifier == item._2).foreach { item =>
@@ -48,8 +48,8 @@ class Notifiers (implicit context: ExecutionContext) {
   }
 
 
-  def sync(lobbyAndHand: Lobby.LobbyAndHand): Unit =
-    notifyAll(Json.obj(
+  def sync(playerId: Player.Id, lobbyAndHand: Lobby.LobbyAndHand): Unit =
+    notify(playerId, Json.obj(
       "event" -> "Sync",
       "lobbyAndHand" -> Json.toJson(lobbyAndHand)
     ))
