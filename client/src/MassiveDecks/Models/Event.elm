@@ -52,7 +52,7 @@ specificEventDecoder name =
     "PlayerLeft" -> Json.object1 PlayerLeft ("player" := playerIdDecoder)
     "PlayerDisconnect" -> Json.object1 PlayerDisconnect ("player" := playerIdDecoder)
     "PlayerReconnect" -> Json.object1 PlayerReconnect ("player" := playerIdDecoder)
-    "PlayerScoreChange" -> Json.object2 PlayerScoreChange ("player" := playerIdDecoder) ("newScore" := Json.int)
+    "PlayerScoreChange" -> Json.object2 PlayerScoreChange ("player" := playerIdDecoder) ("score" := Json.int)
 
     "HandChange" -> Json.object1 HandChange ("hand" := handDecoder)
 

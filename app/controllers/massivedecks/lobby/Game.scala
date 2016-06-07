@@ -47,6 +47,11 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
   def playerLeft(playerId: Player.Id): Unit = {
     hands = hands.filterKeys(id => id != playerId)
     playedCards = playedCards.filterKeys(id => id != playerId)
+    if (playerId == round.czar) {
+      invalidateRound()
+    } else {
+      checkIfFinishedPlaying()
+    }
   }
 
   /**
@@ -83,6 +88,8 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     for (ai <- players.ais) {
       play(ai.id, getIdsForFirstXCardsInHand(ai.id, call.slots))
     }
+
+    checkIfFinishedPlaying()
   }
 
   private def getIdsForFirstXCardsInHand(playerId: Player.Id, amount: Int): List[String] = {
@@ -103,7 +110,8 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     hands += (playerId -> newHand)
     playedCards += (playerId -> Some(toPlay))
     players.updatePlayer(playerId, players.setPlayerStatus(Player.Played))
-    notifiers.roundPlayed(playedCards.size)
+    notifiers.roundPlayed(numberOfPlayersWhoHavePlayed)
+    checkIfFinishedPlaying()
   }
 
   def choose(playerId: Player.Id, winner: Int): Unit = {
@@ -142,10 +150,19 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
       players.updatePlayer(id, players.setPlayerStatus(Player.Skipping))
       playedCards = playedCards.filterKeys(pId => pId != id)
     }
+    if (playerIds.contains(round.czar)) {
+      invalidateRound()
+    } else {
+      checkIfFinishedPlaying()
+    }
   }
 
-  def checkIfFinishedPlaying(): Unit = {
-    if (roundProgress == Playing && playedCards.forall(item => item._2.isDefined)) {
+  private def invalidateRound(): Unit = {
+    beginRound()
+  }
+
+  private def checkIfFinishedPlaying(): Unit = {
+    if (roundProgress == Playing && playedCards.values.forall(item => item.isDefined)) {
       val shuffled = Random.shuffle(playedCards)
       val shuffledPlayedCards = shuffled.map(item => item._2.get).toList
       roundProgress = Judging(shuffledPlayedCards, shuffled.map(item => item._1).toList)

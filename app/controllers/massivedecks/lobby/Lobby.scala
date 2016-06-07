@@ -79,7 +79,6 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
   def play(secret: Player.Secret, cardIds: List[String]): JsValue = {
     players.validateSecret(secret)
     validateInGame().play(secret.id, cardIds)
-    checkIfFinishedPlaying()
     Json.toJson(getHand(secret))
   }
 
@@ -118,18 +117,11 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
   def leave(secret: Player.Secret): Unit = {
     players.validateSecret(secret)
     players.leave(secret.id)
-    if (game.isDefined) {
+    game.foreach { current =>
       if (players.activePlayers.length < Players.minimum) {
         endGame()
       }
-      game.foreach { current =>
-        current.playerLeft(secret.id)
-        if (secret.id == current.round.czar) {
-          invalidateRound()
-        } else {
-          checkIfFinishedPlaying()
-        }
-      }
+      current.playerLeft(secret.id)
     }
   }
 
@@ -145,11 +137,6 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
     BadRequestException.verify(players.players.filter(player => playerIds.contains(player.id)).forall(player => player.disconnected), "players-must-be-skippable")
     val game = validateInGame()
     game.skip(secret.id, playerIds)
-    if (playerIds.contains(game.round.czar)) {
-      invalidateRound()
-    } else {
-      checkIfFinishedPlaying()
-    }
     Json.toJson("")
   }
 
@@ -193,14 +180,6 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
     setPlayerDisconnectedAfterGracePeriod(playerId)
   }
 
-  private def invalidateRound(): Unit = {
-    beginRound()
-  }
-
-  private def checkIfFinishedPlaying(): Unit = {
-    validateInGame().checkIfFinishedPlaying()
-  }
-
   private def setPlayerDisconnectedAfterGracePeriod(playerId: Id): Unit = {
     Future {
       Lobby.wait(Lobby.disconnectGracePeriod)
@@ -213,7 +192,6 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
   private def beginRound(): Unit = {
     val game = validateInGame()
     game.beginRound()
-    checkIfFinishedPlaying()
   }
 
   private def validateInGame(): Game = game match {

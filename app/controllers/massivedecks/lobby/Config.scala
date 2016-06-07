@@ -13,17 +13,17 @@ class Config(notifiers: Notifiers) {
 
   def addDeck(deck: CardcastDeck): Unit = {
     decks = decks :+ deck
-    notifiers.configChanged(config)
+    notifiers.configChange(config)
   }
 
   def addHouseRule(rule: String): Unit = {
     houseRules = houseRules + rule
-    notifiers.configChanged(config)
+    notifiers.configChange(config)
   }
 
   def removeHouseRule(rule: String): Unit = {
     houseRules = houseRules - rule
-    notifiers.configChanged(config)
+    notifiers.configChange(config)
   }
 
 }

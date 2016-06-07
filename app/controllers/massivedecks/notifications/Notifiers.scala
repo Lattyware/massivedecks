@@ -1,15 +1,15 @@
 package controllers.massivedecks.notifications
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.ClassTag
 
-import models.massivedecks.Event
-import models.massivedecks.Event.Formatters._
 import models.massivedecks.Game
+import models.massivedecks.Game.Formatters._
 import models.massivedecks.Player
+import models.massivedecks.Player.Formatters._
 import models.massivedecks.Lobby
+import models.massivedecks.Lobby.Formatters._
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 
 /**
   * Manages open sockets.
@@ -34,7 +34,7 @@ class Notifiers (implicit context: ExecutionContext) {
       (secret) => {
         val lobbyAndHand = onIdentify(secret)
         identified += (secret.id -> notifier)
-        notifier.notify(eventToString[Event.Sync](Json.toJson(Event.Sync(lobbyAndHand))))
+        sync(lobbyAndHand)
       },
       () => {
         identified.find(item => notifier == item._2).foreach { item =>
@@ -47,59 +47,108 @@ class Notifiers (implicit context: ExecutionContext) {
     (unicastIteratee, unicastEnumerator.interleave(broadcastEnumerator))
   }
 
-  def playerJoined(player: Player): Unit =
-    notifyAll[Event.PlayerJoin](Json.toJson(Event.PlayerJoin(player)))
 
-  def configChanged(config: Game.Config): Unit =
-    notifyAll[Event.ConfigChange](Json.toJson(Event.ConfigChange(config)))
+  def sync(lobbyAndHand: Lobby.LobbyAndHand): Unit =
+    notifyAll(Json.obj(
+      "event" -> "Sync",
+      "lobbyAndHand" -> Json.toJson(lobbyAndHand)
+    ))
 
-  def gameStart(): Unit =
-    notifyAll[Event.GameStart](Json.toJson(Event.GameStart()))
 
-  def roundPlayed(playedCards: Int): Unit =
-    notifyAll[Event.RoundPlayed](Json.toJson(Event.RoundPlayed(playedCards)))
+  def playerJoin(player: Player): Unit =
+    notifyAll(Json.obj(
+      "event" -> "PlayerJoin",
+      "player" -> Json.toJson(player)
+    ))
 
   def playerStatus(playerId: Player.Id, status: Player.Status): Unit =
-    notifyAll[Event.PlayerStatus](Json.toJson(Event.PlayerStatus(playerId, status)))
-
-  def roundEnd(finishedRound: Game.FinishedRound): Unit =
-    notifyAll[Event.RoundEnd](Json.toJson(Event.RoundEnd(finishedRound)))
-
-  def playerScoreChange(playerId: Player.Id, score: Int): Unit =
-    notifyAll[Event.PlayerScoreChange](Json.toJson(Event.PlayerScoreChange(playerId, score)))
+    notifyAll(Json.obj(
+      "event" -> "PlayerStatus",
+      "player" -> Json.toJson(playerId),
+      "status" -> Json.toJson(status)
+    ))
 
   def playerLeft(playerId: Player.Id): Unit =
-    notifyAll[Event.PlayerLeft](Json.toJson(Event.PlayerLeft(playerId)))
-
-  def gameEnd(): Unit =
-    notifyAll[Event.GameEnd](Json.toJson(Event.GameEnd()))
-
-  def playerReconnect(playerId: Player.Id): Unit =
-    notifyAll[Event.PlayerReconnect](Json.toJson(Event.PlayerReconnect(playerId)))
+    notifyAll(Json.obj(
+      "event" -> "PlayerLeft",
+      "player" -> Json.toJson(playerId)
+    ))
 
   def playerDisconnect(playerId: Player.Id): Unit =
-    notifyAll[Event.PlayerDisconnect](Json.toJson(Event.PlayerDisconnect(playerId)))
+    notifyAll(Json.obj(
+      "event" -> "PlayerDisconnect",
+      "player" -> Json.toJson(playerId)
+    ))
 
-  def roundJudging(playedCards: List[List[Game.Response]]): Unit =
-    notifyAll[Event.RoundJudging](Json.toJson(Event.RoundJudging(playedCards)))
+  def playerReconnect(playerId: Player.Id): Unit =
+    notifyAll(Json.obj(
+      "event" -> "PlayerReconnect",
+      "player" -> Json.toJson(playerId)
+    ))
 
-  def roundStart(czar: Player.Id, call: Game.Call): Unit =
-    notifyAll[Event.RoundStart](Json.toJson(Event.RoundStart(czar, call)))
+  def playerScoreChange(playerId: Player.Id, score: Int): Unit =
+    notifyAll(Json.obj(
+      "event" -> "PlayerScoreChange",
+      "player" -> Json.toJson(playerId),
+      "score" -> Json.toJson(score)
+    ))
+
 
   def handChange(playerId: Player.Id, hand: Game.Hand): Unit =
-    notify[Event.HandChange](playerId, Json.toJson(Event.HandChange(hand)))
+    notify(playerId, Json.obj(
+      "event" -> "HandChange",
+      "hand" -> Json.toJson(hand)
+    ))
 
-  private def notify[E: ClassTag](player: Player.Id, event: JsValue) =
-    identified.get(player).foreach { notifier => notifier.notify(eventToString[E](event)) }
 
-  private def notifyAll[E: ClassTag](event: JsValue) =
-    broadcastChannel.push(eventToString(event))
+  def roundStart(czar: Player.Id, call: Game.Call): Unit =
+    notifyAll(Json.obj(
+      "event" -> "RoundStart",
+      "czar" -> Json.toJson(czar),
+      "call" -> Json.toJson(call)
+    ))
 
-  def eventToString[E: ClassTag](event: JsValue): String = {
-    val name = Json.toJson(implicitly[ClassTag[E]].runtimeClass.getSimpleName)
-    val eventObject = event.as[JsObject]
-    val namedEvent = eventObject + ("event", name)
-    namedEvent.toString()
-  }
+  def roundPlayed(playedCards: Int): Unit =
+    notifyAll(Json.obj(
+      "event" -> "RoundPlayed",
+      "playedCards" -> Json.toJson(playedCards)
+    ))
+
+  def roundJudging(playedCards: List[List[Game.Response]]): Unit =
+    notifyAll(Json.obj(
+      "event" -> "RoundJudging",
+      "playedCards" -> Json.toJson(playedCards)
+    ))
+
+  def roundEnd(finishedRound: Game.FinishedRound): Unit =
+    notifyAll(Json.obj(
+      "event" -> "RoundEnd",
+      "finishedRound" -> Json.toJson(finishedRound)
+    ))
+
+
+  def gameStart(): Unit =
+    notifyAll(Json.obj(
+      "event" -> "GameStart"
+    ))
+
+  def gameEnd(): Unit =
+    notifyAll(Json.obj(
+      "event" -> "GameEnd"
+    ))
+
+
+  def configChange(config: Game.Config): Unit =
+    notifyAll(Json.obj(
+      "event" -> "ConfigChange",
+      "config" -> Json.toJson(config)
+    ))
+
+
+  private def notify(player: Player.Id, event: JsValue) =
+    identified.get(player).foreach { notifier => notifier.notify(event.toString) }
+
+  private def notifyAll(event: JsValue) =
+    broadcastChannel.push(event.toString)
 
 }

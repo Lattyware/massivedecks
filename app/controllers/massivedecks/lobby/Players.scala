@@ -34,7 +34,7 @@ class Players(notifiers: Notifiers) {
     players = players :+ player
     val secret = Player.Secret(id)
     secrets = secrets + (id -> secret)
-    notifiers.playerJoined(player)
+    notifiers.playerJoin(player)
     secret
   }
 
