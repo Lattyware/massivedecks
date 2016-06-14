@@ -5,11 +5,12 @@ import Html.App as Html
 
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Storage as Storage
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.Overlay as Overlay
-import MassiveDecks.Scenes.Start.Messages exposing (InputId(..), Message(..))
+import MassiveDecks.Scenes.Start.Messages exposing (InputId(..), Message(..), Tab(..))
 import MassiveDecks.Scenes.Start.Models exposing (Model)
 import MassiveDecks.Scenes.Start.UI as UI
 import MassiveDecks.Scenes.Lobby as Lobby
@@ -33,12 +34,13 @@ init init =
   in
     ( { lobby = Nothing
       , init = init
-      , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" (Util.cmd CreateLobby) InputMessage
+      , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" (Util.cmd SubmitCurrentTab) InputMessage
       , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (init.gameCode |> Maybe.withDefault "") "" (Util.cmd JoinLobbyAsNewPlayer) InputMessage
       , info = Nothing
       , errors = Errors.init
       , overlay = Overlay.init OverlayMessage
       , buttonsEnabled = True
+      , tabs = Tabs.init [ Tabs.Tab Create [ text "Create" ], Tabs.Tab Join [ text "Join" ] ] Create TabsMessage
       }
     , command)
 
@@ -84,6 +86,9 @@ update message model =
       in
         ({ model | errors = newErrors }, Cmd.map ErrorMessage cmd)
 
+    TabsMessage tabsMessage ->
+      ({ model | tabs = (Tabs.update tabsMessage model.tabs) }, Cmd.none)
+
     ShowInfoMessage message ->
       ({ model | info = Just message }, Cmd.none)
 
@@ -92,6 +97,14 @@ update message model =
 
     CreateLobby ->
       ({ model | buttonsEnabled = False }, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
+
+    SubmitCurrentTab ->
+      case model.tabs.current of
+        Create ->
+          (model, Util.cmd CreateLobby)
+
+        Join ->
+          (model, Util.cmd JoinLobbyAsNewPlayer)
 
     SetButtonsEnabled enabled ->
       ({ model | buttonsEnabled = enabled }, Cmd.none)

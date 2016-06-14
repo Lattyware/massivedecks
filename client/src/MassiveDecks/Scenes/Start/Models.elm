@@ -2,10 +2,11 @@ module MassiveDecks.Scenes.Start.Models exposing (..)
 
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Scenes.Lobby.Models as Lobby
+import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.Overlay as Overlay
-import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId(..))
+import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId, Tab)
 
 
 {-| The state of the start screen.
@@ -19,4 +20,5 @@ type alias Model =
   , errors : Errors.Model
   , overlay : Overlay.Model Message
   , buttonsEnabled : Bool
+  , tabs : Tabs.Model Tab Message
   }

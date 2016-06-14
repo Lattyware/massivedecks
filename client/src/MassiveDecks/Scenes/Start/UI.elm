@@ -6,11 +6,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Components.About as About
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Scenes.Start.Models exposing (Model)
-import MassiveDecks.Scenes.Start.Messages exposing (Message(..))
+import MassiveDecks.Scenes.Start.Messages exposing (Message(..), Tab(..))
 
 
 {-| Render the start screen.
@@ -30,16 +31,8 @@ view model =
               ([ h1 [ class "mui--divider-bottom" ] [ text "Massive Decks" ]
                ] ++ (model.info |> Maybe.map (\message -> [ div [ class "info-message mui--divider-bottom" ] [ Icon.icon "info-circle", text " ", text message ] ]) |> Maybe.withDefault []) ++
                [ Input.view model.nameInput
-               , ul [ class "mui-tabs__bar mui-tabs__bar--justified" ]
-                    [ li createLiClass [ a [ attribute "data-mui-toggle" "tab", attribute "data-mui-controls" "pane-new" ] [ text "Create" ] ]
-                    , li joinLiClass [ a [ attribute "data-mui-toggle" "tab", attribute "data-mui-controls" "pane-existing" ] [ text "Join" ] ]
-                   ]
-               , div [ class ("mui-tabs__pane" ++ createDivClass), id "pane-new" ] [ createLobbyButton (nameEntered && model.buttonsEnabled) ]
-               , div [ class ("mui-tabs__pane" ++ joinDivClass), id "pane-existing" ]
-                     [ Input.view model.gameCodeInput
-                     , joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
-                     ]
-               , a [ class "about-link mui--divider-top link"
+               ] ++ (Tabs.view (renderTab nameEntered gameCodeEntered model) model.tabs) ++
+               [ a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"
                    , attribute "role" "button"
                    , onClick (About.show |> OverlayMessage)
@@ -50,6 +43,16 @@ view model =
                ])
         ]
 
+renderTab : Bool -> Bool -> Model -> Tab -> List (Html Message)
+renderTab nameEntered gameCodeEntered model tab =
+  case tab of
+    Create ->
+      [ createLobbyButton (nameEntered && model.buttonsEnabled) ]
+
+    Join ->
+      [ Input.view model.gameCodeInput
+      , joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
+      ]
 
 {-| A button to join an existing lobby.
 -}
