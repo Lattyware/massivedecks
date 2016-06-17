@@ -23,7 +23,7 @@ class Notifiers (implicit context: ExecutionContext) {
     * Sets up notifications for a new websocket.
     *
     * @param onIdentify When we get an identification message from the client, this will be run. This should validate
-    *                   the secret and throw if it isn't correct.
+    *                   the secret and throw a ForbiddenException if it isn't correct.
     * @param onClose When a client that has previously identified disconnects, this will be run.
     * @return The websocket iteratee and enumerator.
     */
