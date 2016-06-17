@@ -6,7 +6,9 @@ card. The game can be played on phone or computer and uses [Cardcast decks][card
 
 You can play the game here:
 
-**[http://massivedecks.herokuapp.com/](http://massivedecks.herokuapp.com/)**
+**[https://massivedecks.herokuapp.com/](https://massivedecks.herokuapp.com/)**
+
+![A screenshot of the game.](https://cloud.githubusercontent.com/assets/1239492/16138236/8299ee32-3433-11e6-8ca2-36993bb83d58.png)
 
 (This is hosted on a service that will automatically sleep if it's unused for a while - it may take a little time to
 load in those cases, but should be fine after the initial load.)
