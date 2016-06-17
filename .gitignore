@@ -9,6 +9,8 @@
 /target/
 /project/project/target
 /project/target/
+/project/sbt-ui.sbt
+/project/play-fork-run.sbt
 /RUNNING_PID
 
 # IntelliJ
