@@ -16,8 +16,8 @@ import play.api.libs.json.{JsValue, Json}
   */
 class Notifiers (implicit context: ExecutionContext) {
 
-  val (broadcastEnumerator, broadcastChannel) = Concurrent.broadcast[String]
-  var identified: Map[Player.Id, Notifier] = Map()
+  private val (broadcastEnumerator, broadcastChannel) = Concurrent.broadcast[String]
+  private var identified: Map[Player.Id, Notifier] = Map()
 
   /**
     * Sets up notifications for a new websocket.

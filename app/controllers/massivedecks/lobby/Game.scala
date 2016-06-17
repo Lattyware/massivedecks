@@ -7,9 +7,21 @@ import models.massivedecks.Player
 import controllers.massivedecks.exceptions.BadRequestException
 import controllers.massivedecks.notifications.Notifiers
 
+/**
+  * The state of the game.
+  *
+  * @param players The players in the lobby the game is in.
+  * @param config The configuration for the lobby the game is in.
+  * @param notifiers The notifiers for the lobby the game is in.
+  */
 class Game(players: Players, config: Config, notifiers: Notifiers) {
 
   import Game._
+
+  /**
+    * The history of the game.
+    */
+  var history: List[FinishedRound] = List()
 
   private val deck: Deck = new Deck(config.decks)
   private var czarIndex = 0
@@ -19,7 +31,6 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     id -> hand
   }).toMap
   private var roundProgress: RoundProgress = Playing
-  var history: List[FinishedRound] = List()
 
   // Initial values overwritten by beginRound() call below, just keeping the compiler happy.
   private var czar: Player.Id = Player.Id(0)
@@ -27,7 +38,14 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
   private var playedCards: Map[Player.Id, Option[List[Response]]] = Map()
   beginRound()
 
+  /**
+    * @return The ids of the players that are taking part in the current round.
+    */
   def playersInRound = playedCards.keySet
+
+  /**
+    * @return The model representing the current round.
+    */
   def round: Round = {
     val responses = roundProgress match {
       case Playing =>
@@ -40,10 +58,19 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     Round(czar, call, responses)
   }
 
+  /**
+    * Add a player to the game, giving them a hand.
+    * @param playerId The id of the player to add.
+    */
   def addPlayer(playerId: Player.Id): Unit = {
     hands += (playerId -> Hand(deck.drawResponses(Hand.size)))
   }
 
+  /**
+    * Remove a player from the game, removing their hand and any played cards for the round.
+    * Note this may invalidate the round (if the player is the czar) or finish the round.
+    * @param playerId The id of the player to remove.
+    */
   def playerLeft(playerId: Player.Id): Unit = {
     hands = hands.filterKeys(id => id != playerId)
     playedCards = playedCards.filterKeys(id => id != playerId)
@@ -56,7 +83,9 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
 
   /**
     * Begin the round.
-    * @return The list of players who played instantly (AI).
+    * @throws BadRequestException with key "not-enough-players" if there are not enough players in the game to begin a
+    *                             round. The value "required" gives the minimum number of players needed for the request
+    *                             to succeed.
     */
   def beginRound() = {
     if (players.amount < Players.minimum) {
@@ -97,6 +126,19 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     (0 until amount).map(i => hand(i).id).toList
   }
 
+  /**
+    * Play the given cards into the round.
+    * @param playerId The player the play is for.
+    * @param cardIds The ids of the responses to play.
+    * @throws BadRequestException with key "not-in-round" if the player is not in the round.
+    * @throws BadRequestException with key "already-played" if the player has already played into the round.
+    * @throws BadRequestException with key "already-judging" if the round is already in it's judging state.
+    * @throws BadRequestException with key "wrong-number-of-cards-played" if the wrong number of responses were played.
+    *                             The value "got" is the number of cards played, the value "expected" is the number
+    *                             required for the request to succeed
+    * @throws BadRequestException with key "invalid-card-id-given" if any of the card ids are not in the given player's
+    *                             hand.
+    */
   def play(playerId: Player.Id, cardIds: List[String]): Unit = {
     BadRequestException.verify(playersInRound.contains(playerId), "not-in-round")
     BadRequestException.verify(playedCards(playerId).isEmpty, "already-played")
@@ -114,6 +156,15 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     checkIfFinishedPlaying()
   }
 
+  /**
+    * Choose the winning play for the round.
+    * @param playerId The player who is choosing the winner.
+    * @param winner The index of the played responses being chosen.
+    * @throws BadRequestException with key "not-czar" if the current player is not the czar.
+    * @throws BadRequestException with key "not-judging" if the round is not yet in the judging phase.
+    * @throws BadRequestException with key "no-such-played-cards" if the index does not exist.
+    * @throws BadRequestException with key "already-judged" if the round is already finished.
+    */
   def choose(playerId: Player.Id, winner: Int): Unit = {
     BadRequestException.verify(playerId == czar, "not-czar")
     roundProgress match {
@@ -136,8 +187,18 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     }
   }
 
+  /**
+    * Get the hand of the given player.
+    * @param playerId The id of the player.
+    * @return The hand for the player.
+    */
   def getHand(playerId: Player.Id): Hand = hands(playerId)
 
+  /**
+    * Redraw the hand of the given player.
+    * @param playerId The id of the player.
+    * @throws BadRequestException with the key "not-enough-points-to-redraw" if the player doesn't have enough points.
+    */
   def redraw(playerId: Player.Id): Unit = {
     val player = players.getPlayer(playerId)
     BadRequestException.verify(player.score > 0, "not-enough-points-to-redraw")
@@ -145,6 +206,11 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     hands += (playerId -> Hand(deck.drawResponses(Hand.size)))
   }
 
+  /**
+    * Start skipping the given players.
+    * @param playerId The player requesting the skipping.
+    * @param playerIds The players to start skipping.
+    */
   def skip(playerId: Player.Id, playerIds: Set[Player.Id]): Unit = {
     for (id <- playerIds) {
       players.updatePlayer(id, players.setPlayerStatus(Player.Skipping))
@@ -189,8 +255,28 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
 
 }
 object Game {
+  /**
+    * Represents the progress through a round.
+    */
   sealed trait RoundProgress
+
+  /**
+    * Indicates the game is being played.
+    */
   case object Playing extends RoundProgress
+
+  /**
+    * Indicates the round is being judged.
+    * @param shuffled The shuffled list of played responses.
+    * @param playedOrder A list of player ids for the players who played the responses matching the order shuffled.
+    */
   case class Judging(shuffled: List[List[Response]], playedOrder: List[Player.Id]) extends RoundProgress
+
+  /**
+    * Indicates the round is done.
+    * @param shuffled The shuffled list of played responses.
+    * @param playedOrder A list of player ids for the players who played the responses matching the order shuffled.
+    * @param winner The id of the winner of the round.
+    */
   case class Finished(shuffled: List[List[Response]], playedOrder: List[Player.Id], winner: Player.Id) extends RoundProgress
 }

@@ -10,12 +10,11 @@ libraryDependencies ++= Seq(
   cache,
   ws
 )
+libraryDependencies += "io.john-ky" %% "hashids-scala" % "1.1.1-7d841a8"
+libraryDependencies += specs2 % Test
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
-
 resolvers += "dl-john-ky" at "http://dl.john-ky.io/maven/releases"
-
-libraryDependencies += "io.john-ky" %% "hashids-scala" % "1.1.1-7d841a8"
 
 includeFilter in (Assets, LessKeys.less) := "massivedecks.less"
 

@@ -1,4 +1,4 @@
-package controllers.massivedecks.cardcast
+package models.massivedecks.cardcast
 
 import models.massivedecks.Game.{Call, DeckInfo, Response}
 

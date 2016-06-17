@@ -4,28 +4,37 @@ import java.util.UUID
 
 import scala.util.Random
 
+import controllers.massivedecks.exceptions.BadRequestException
 import models.massivedecks.Game.{Call, Response}
-import controllers.massivedecks.cardcast.CardcastDeck
+import models.massivedecks.cardcast.CardcastDeck
 
 /**
   * A live deck of cards in a game, constructed from a collection of cardcast decks.
   *
   * @param decks The cardcast decks.
+  * @throws BadRequestException with key "invalid-deck-configuration" if there are no calls or responses. Has value
+  *                             "reason" explaining the issue.
   */
 case class Deck(decks: List[CardcastDeck]) {
+  /**
+    * The current calls in the deck.
+    */
   var calls: List[Call] = List()
+
+  /**
+    * The current responses in the deck.
+    */
   var responses: List[Response] = List()
+
   resetCalls()
   resetResponses()
+  BadRequestException.verify(calls.nonEmpty, "invalid-deck-configuration", "reason" -> "The decks for the game have no calls.")
+  BadRequestException.verify(responses.nonEmpty, "invalid-deck-configuration", "reason" -> "The decks for the game have no responses.")
 
-  if (calls.length < 1) {
-    throw new IllegalStateException("The lobby must have at least one call in it.")
-  }
-
-  if (responses.length < 1) {
-    throw new IllegalStateException("The lobby must have at least one response in it.")
-  }
-
+  /**
+    * Draw a call from the deck, reshuffling if the deck runs out.
+    * @return The drawn call.
+    */
   def drawCall(): Call = {
     if (calls.isEmpty) {
       resetCalls()
@@ -35,6 +44,11 @@ case class Deck(decks: List[CardcastDeck]) {
     drawn
   }
 
+  /**
+    * Draw the given number of responses, reshuffling if the deck runs out.
+    * @param count The number of responses to draw.
+    * @return The drawn responses.
+    */
   def drawResponses(count: Int): List[Response] = {
     if (responses.length < count) {
       val partial = responses.take(count)
@@ -47,19 +61,37 @@ case class Deck(decks: List[CardcastDeck]) {
     }
   }
 
+  /**
+    * Populate the active deck with all calls, shuffling them into a random order.
+    */
   def resetCalls(): Unit = {
-    calls = (for (deck <- decks) yield deck.calls).flatten.map(call => call.copy(id = UUID.randomUUID().toString))
+    calls = decks.flatMap(deck => deck.calls).map(call => call.copy(id = UUID.randomUUID().toString))
     shuffleCalls()
   }
+
+  /**
+    * Populate the active deck with all responses, shuffling them into a random order.
+    */
   def resetResponses(): Unit = {
-    responses = (for (deck <- decks) yield deck.responses).flatten.map(call => call.copy(id = UUID.randomUUID().toString))
+    responses = decks.flatMap(deck => deck.responses).map(response => response.copy(id = UUID.randomUUID().toString))
     shuffleResponses()
   }
 
+  /**
+    * Shuffle the active deck of calls and responses.
+    */
   def shuffle(): Unit = {
     shuffleCalls()
     shuffleResponses()
   }
+
+  /**
+    * Shuffle the active deck of calls.
+    */
   def shuffleCalls(): Unit = calls = Random.shuffle(calls)
+
+  /**
+    * Shuffle the active deck of responses.
+    */
   def shuffleResponses(): Unit = responses = Random.shuffle(responses)
 }

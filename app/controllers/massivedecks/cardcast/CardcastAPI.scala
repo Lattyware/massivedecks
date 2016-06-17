@@ -12,6 +12,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.ws.WSClient
 import models.massivedecks.Game.{Call, Response}
 import controllers.massivedecks.exceptions.BadRequestException
+import models.massivedecks.cardcast.CardcastDeck
 
 class CardcastAPI @Inject() (ws: WSClient) (implicit ec: ExecutionContext)  {
   private val apiUrl: String = "https://api.cardcastgame.com/v1"

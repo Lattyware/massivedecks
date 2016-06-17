@@ -12,8 +12,15 @@ import play.api.libs.json.Json
   * Handles websocket notifications.
   */
 class Notifier (implicit context: ExecutionContext) {
-  var unicastChannel: Option[Channel[String]] = None
+  private var unicastChannel: Option[Channel[String]] = None
 
+  /**
+    * Call when a socket has been opened for the notifier.
+    * @param onConnect The callback when the socket connects.
+    * @param onIdentify The callback when the client identifies down the socket.
+    * @param onClose The callback when the socket closes.
+    * @return The iteratee and enumerator for the socket.
+    */
   def openedSocket(onConnect: () => Unit, onIdentify: (Player.Secret) => Unit, onClose: () => Unit): (Iteratee[String, Unit], Enumerator[String]) = {
     val iteratee = Notifier.forEachAndOnClose[String](
       message => onIdentify(Json.parse(message).validate[Player.Secret].get),
@@ -28,6 +35,10 @@ class Notifier (implicit context: ExecutionContext) {
     (iteratee, enumerator)
   }
 
+  /**
+    * Notify the client down the socket.
+    * @param message The message to send.
+    */
   def notify(message: String) =
     unicastChannel.foreach { channel =>
       channel.push(message)

@@ -1,8 +1,8 @@
 package controllers.massivedecks.lobby
 
 import models.massivedecks.Game.{Config => ConfigModel}
-import controllers.massivedecks.cardcast.CardcastDeck
 import controllers.massivedecks.notifications.Notifiers
+import models.massivedecks.cardcast.CardcastDeck
 
 class Config(notifiers: Notifiers) {
 

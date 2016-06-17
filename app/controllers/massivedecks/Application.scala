@@ -12,7 +12,6 @@ import models.massivedecks.Game.Formatters._
 import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc._
 
-
 class Application @Inject() (store: LobbyStore) extends Controller {
 
   def index() = Action { request =>
