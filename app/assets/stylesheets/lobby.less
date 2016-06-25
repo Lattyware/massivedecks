@@ -296,62 +296,63 @@ body.hide-scores {
   }
 }
 
-body {
-  #scores {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: @sidebar-width;
-    left: -@sidebar-width;
-    overflow: auto;
-    z-index: 2;
-    background-color: #fff;
-    transition: transform @sidebar-transition-time;
-    @media (min-width: @enhance-width) {
-      transform: translate(@sidebar-width);
+#scores {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: @sidebar-width;
+  left: -@sidebar-width;
+  overflow: auto;
+  z-index: 2;
+  background-color: #fff;
+  transition: transform @sidebar-transition-time;
+  @media (min-width: @enhance-width) {
+    transform: translate(@sidebar-width);
+  }
+
+  &-title {
+    padding-left: 20px;
+  }
+
+  &.active {
+    transform: translate(@sidebar-width) !important;
+  }
+
+  & > table {
+    table-layout: fixed;
+
+    & > thead > tr > th {
+      text-align: center;
+      padding: 5px;
+
+      &.state, &.score {
+        width: 30px;
+      }
     }
 
-    &-title {
-      padding-left: 20px;
-    }
+    & > tbody > tr {
+      padding: 0px;
 
-    &.active {
-      transform: translate(@sidebar-width) !important;
-    }
-
-    & > table {
-      table-layout: fixed;
-
-      & > thead > tr > th {
-        text-align: center;
-        padding: 5px;
-
-        &.state, &.score {
-          width: 30px;
-        }
+      &.left {
+        opacity: 0.3;
       }
 
-      & > tr {
-        &.left {
-          opacity: 0.3;
-        }
+      &.skipping {
+        opacity: 0.6;
+      }
 
-        &.skipping {
-          opacity: 0.6;
-        }
+      &.czar > td.name {
+        font-weight: bold;
+      }
 
-        &.czar > td.name {
-          font-weight: bold;
-        }
+      & > td {
+        padding: 0px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
-        & > td {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-
-          &.state, &.score {
-            text-align: center;
-          }
+        &.state, &.score {
+          text-align: center;
         }
       }
     }

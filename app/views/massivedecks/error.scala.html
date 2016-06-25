@@ -1,0 +1,56 @@
+@(url: String, statusCode: Int, errorMessage: String, errorDescription: String, bugReportBody: String)<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="theme-color" content="#2196F3">
+        <title>Page Not Found - Massive Decks</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css"
+              integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1"
+              crossorigin="anonymous">
+        <script src="@routes.Assets.versioned("javascripts/mui.min.js")"></script>
+        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/mui.min.css")">
+        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/error.css")">
+        <link rel="shortcut icon" sizes="192x192" type="image/x-icon" href="@routes.Assets.versioned("images/icon.png")">
+        <link rel="manifest" href="/manifest.json">
+    </head>
+    <body>
+        <div id="cards">
+            <div class="card call mui-panel">
+                <div class="call-text">
+                    <span>@url</span>
+                    <span class="slot"></span>
+                </div>
+            </div>
+            <ol>
+                <li>
+                   <div id="status-card" class="card response mui-panel">
+                        <div class="response-text">
+                            <span>@statusCode.</span>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                   <div id="message-card" class="card response mui-panel">
+                        <div class="response-text">
+                            <span>@errorMessage.</span>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+        <div id="advice" class="mui-panel">
+            <h1>@errorMessage</h1>
+            <p>
+                Unfortunately, @errorDescription. You probably want to go back to the <a href="@url">main page</a>.
+            </p>
+            <p>
+                If you think this is a bug in Massive Decks, please
+                <a href="https://github.com/Lattyware/massivedecks/issues/new?body=@bugReportBody">submit a bug report</a>.
+            </p>
+        </div>
+        <a id="logo" href="@url"><img src="@routes.Assets.versioned("images/icon.png")" alt="The Massive Decks logo." title="Massive Decks" "></a>
+    </body>
+</html>

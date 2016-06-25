@@ -1,0 +1,161 @@
+@import "variables.less";
+
+body {
+  background-image: url("/assets/images/bgnoise_lg.png");
+  background-color: @background-color;
+  width: 100%;
+  height: auto;
+
+  padding: 0px;
+  margin: 0px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: @card-width;
+  height: @card-height;
+
+  @media (min-width: @enhance-width) {
+    width: @card-width-enhanced;
+    height: @card-width-enhanced;
+  }
+
+  margin: 10px;
+  padding: 15px;
+  font-weight: bold;
+  word-wrap: break-word;
+  border-radius: 10px;
+
+  & > div {
+    margin: 0px;
+    padding: 0px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.play-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  .action-menu {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+  }
+
+  .round-area {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    .others-picked {
+      .card {
+        position: absolute;
+        z-index: -10;
+        transition: transform 1s, left 1s, right 1s, top 1s ease-out
+      }
+    }
+  }
+}
+
+#advice {
+  max-width: 500px;
+  margin: 0px 25px 0px 25px;
+  text-align: center;
+}
+
+#cards {
+  display: flex;
+  justify-content: center;
+  margin: 25px;
+  width: 100%;
+}
+
+#logo {
+  display: block;
+  margin: 25px auto 0px auto;
+  width: 150px;
+
+  img {
+    width: 150px;
+  }
+}
+
+.call {
+  background-color: #000000;
+  color: #ffffff;
+  flex-shrink: 0;
+
+  transform: rotate(4deg);
+
+  & > .call-text {
+    & > .slot {
+      text-decoration: underline;
+
+      &:empty {
+        display: inline-block;
+        height: 1.2em;
+        border-bottom: 1px solid #ffffff;
+        min-width: 40px;
+        max-width: 80px;
+      }
+    }
+  }
+}
+
+.response {
+  background-color: #ffffff;
+  color: #000000;
+
+  &.picked {
+    opacity: 0.5;
+  }
+}
+
+.empty-spot {
+  opacity: 0.25;
+}
+
+ol {
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  & > li {
+    display: inline-block;
+    white-space: normal;
+
+    .card {
+      margin: 10px 5px 10px 5px;
+    }
+
+    &:not(:first-child) {
+      margin-left: -(@card-width * @card-overlap);
+      @media (min-width: @enhance-width) {
+        margin-left: -(@card-width-enhanced * @card-overlap);
+      }
+    }
+  }
+}
+
+#status-card {
+  transform: rotate(-7deg);
+}
+
+#message-card {
+  transform: rotate(12deg);
+}

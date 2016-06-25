@@ -5,21 +5,41 @@ import javax.inject.Inject
 import scala.util.{Failure, Success, Try}
 
 import controllers.massivedecks.exceptions.{BadRequestException, ForbiddenException, NotFoundException, RequestFailedException}
-import models.massivedecks.Player
-import models.massivedecks.Lobby.Formatters._
-import models.massivedecks.Player.Formatters._
 import models.massivedecks.Game.Formatters._
+import models.massivedecks.Lobby.Formatters._
+import models.massivedecks.Player
+import models.massivedecks.Player.Formatters._
 import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc._
 
 class Application @Inject() (store: LobbyStore) extends Controller {
 
   def index() = Action { request =>
-    val protocol = request.headers.get("X-Forwarded-Proto") match {
-      case Some(proto) => proto
-      case None => if (request.secure) { "https" } else { "http" }
-    }
-    Ok(views.html.massivedecks.index(protocol + "://" + request.host + "/"))
+    val config = Config(request)
+    Ok(views.html.massivedecks.index(config.url)).as(HTML)
+  }
+
+  def manifest() = Action { request =>
+    val config = Config(request)
+    val json = Json.obj(
+      "name" -> "Massive Decks",
+      "description" -> "An online party game inspired by Cards Against Humanity.",
+      "icons" -> Json.arr(
+        Json.obj(
+          "src" -> controllers.routes.Assets.versioned("images/icon.png").url,
+          "sizes" -> "192x192",
+          "type" -> "image/png",
+          "density" -> 4.0
+        )
+      ),
+      "lang" -> "en",
+      "start_url" -> config.path,
+      "display" -> "standalone",
+      "orientation" -> "portrait-primary",
+      "background_color" -> "#e5e5e5",
+      "theme_color" -> "#2196F3"
+    )
+    Ok(json.toString).as(JSON)
   }
 
   def createLobby() = Action {

@@ -3,6 +3,7 @@
 # ~~~~
 
 GET     /                                            controllers.massivedecks.Application.index()
+GET     /manifest.json                               controllers.massivedecks.Application.manifest()
 
 POST    /lobbies                                     controllers.massivedecks.Application.createLobby()
 GET     /lobbies/:gameCode                           controllers.massivedecks.Application.getLobby(gameCode: String)

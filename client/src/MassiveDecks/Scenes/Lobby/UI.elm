@@ -58,11 +58,13 @@ scores players = div [ id "scores" ]
            [ div [ id "scores-title", class "mui--appbar-line-height mui--text-title" ] [ text "Players" ]
            , div [ class "mui-divider" ] []
            , table [ class "mui-table" ]
-             (List.concat [ [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
-                                , th [ class "name" ] [ text "Player" ]
-                                , th [ class "score", title "Score" ] [ Icon.icon "star" ]
-                                ] ]
-                            ], List.map score players])
+                   [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
+                                      , th [ class "name" ] [ text "Player" ]
+                                      , th [ class "score", title "Score" ] [ Icon.icon "star" ]
+                                      ]
+                              ]
+                   , tbody [] (List.map score players)
+                   ]
            ]
 
 score : Player -> Html msg

@@ -16,7 +16,7 @@ libraryDependencies += specs2 % Test
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 resolvers += "dl-john-ky" at "http://dl.john-ky.io/maven/releases"
 
-includeFilter in (Assets, LessKeys.less) := "massivedecks.less"
+includeFilter in (Assets, LessKeys.less) := "massivedecks.less" | "error.less"
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
