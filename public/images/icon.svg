@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200"
+   height="200"
+   viewBox="0 0 200 200"
+   id="massivedecks"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/home/gareth/Development/massivedecks/public/images/icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.5125"
+     inkscape:cx="152.68853"
+     inkscape:cy="37.263193"
+     inkscape:document-units="px"
+     inkscape:current-layer="logo"
+     showgrid="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:showpageshadow="true"
+     showborder="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0.3"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:window-width="1856"
+     inkscape:window-height="1171"
+     inkscape:window-x="64"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Logo"
+     inkscape:groupmode="layer"
+     id="logo"
+     transform="translate(-297.97496,-391.96561)">
+    <g
+       id="call"
+       transform="matrix(0.92222548,-0.22803544,0.22803544,0.92222548,32.129655,25.622493)">
+      <rect
+         ry="14.285714"
+         y="512.67682"
+         x="160.4583"
+         height="142.14285"
+         width="102.5"
+         id="call-card"
+         style="fill:#000000;fill-opacity:1;stroke:#7d7d7d;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         id="call-text"
+         y="616.18677"
+         x="212.35545"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';text-align:center;text-anchor:middle;fill:#2196f3;fill-opacity:1"
+           y="616.18677"
+           x="212.35545"
+           id="tspan4884-7"
+           sodipodi:role="line">M</tspan></text>
+    </g>
+    <g
+       id="response"
+       transform="matrix(0.94435303,0.10342801,-0.10342801,0.94435303,62.221088,7.1375732)">
+      <rect
+         ry="14.285714"
+         y="364.41458"
+         x="398.30878"
+         height="142.14285"
+         width="102.5"
+         id="response-card"
+         style="fill:#ffffff;fill-opacity:1;stroke:#7d7d7d;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         id="response-text"
+         y="467.51395"
+         x="448.71976"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';text-align:center;text-anchor:middle;fill:#2196f3;fill-opacity:1"
+           y="467.51395"
+           x="448.71976"
+           id="tspan4884"
+           sodipodi:role="line">D</tspan></text>
+    </g>
+  </g>
+</svg>

@@ -26,7 +26,7 @@ class Application @Inject() (store: LobbyStore) extends Controller {
       "description" -> "An online party game inspired by Cards Against Humanity.",
       "icons" -> Json.arr(
         Json.obj(
-          "src" -> controllers.routes.Assets.versioned("images/icon.png").url,
+          "src" -> controllers.routes.Assets.versioned("icon.png").url,
           "sizes" -> "192x192",
           "type" -> "image/png",
           "density" -> 4.0
@@ -39,7 +39,7 @@ class Application @Inject() (store: LobbyStore) extends Controller {
       "background_color" -> "#e5e5e5",
       "theme_color" -> "#2196F3"
     )
-    Ok(json.toString).as(JSON)
+    Ok(json.toString).as(withCharset("application/manifest+json"))
   }
 
   def createLobby() = Action {

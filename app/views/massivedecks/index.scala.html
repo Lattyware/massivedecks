@@ -1,26 +1,19 @@
 @(url: String)<!doctype html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="theme-color" content="#2196F3">
-        <title>Massive Decks</title>
+        @head("Massive Decks", url)
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"
                 integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY"
                 crossorigin="anonymous"></script>
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css"
               integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1"
               crossorigin="anonymous">
-        <script src="@routes.Assets.versioned("javascripts/mui.min.js")"></script>
-        <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/mui.min.css")">
+
+        <script src="@routes.Assets.versioned("javascripts/qrcode.min.js")"></script>
+
         <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/massivedecks.css")">
         <script src="@routes.Assets.versioned("javascripts/util.js")"></script>
-        <script src="@routes.Assets.versioned("javascripts/qrcode.min.js")"></script>
-        <link rel="shortcut icon" sizes="192x192" type="image/x-icon" href="@routes.Assets.versioned("images/icon.png")">
-        <link rel="canonical" href="@url">
-        <link rel="manifest" href="/manifest.json">
     </head>
     <body>
         <script src="@routes.Assets.versioned("javascripts/MassiveDecks.js")"></script>
