@@ -5,6 +5,7 @@ import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Player as Player
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
+import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Scenes.Config.Models as Config
 import MassiveDecks.Scenes.Playing.Models as Playing
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
@@ -22,4 +23,5 @@ type alias Model =
   , init : Init
   , notification : Maybe Notification
   , qrNeedsRendering : Bool
+  , sidebar : Sidebar.Model
   }

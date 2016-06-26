@@ -290,7 +290,17 @@ ol.played {
   }
 }
 
-body.hide-scores {
+.hide-scores {
+  #scores {
+    transform: translate(0px);
+  }
+
+  #warning-drawer {
+    @media (min-width: @enhance-width) {
+      left: 0px;
+    }
+  }
+
   .badge {
     display: inline-block !important;
   }
@@ -310,8 +320,18 @@ body.hide-scores {
     transform: translate(@sidebar-width);
   }
 
+  &.shownAsOverlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
   &-title {
-    padding-left: 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 5px 0px 5px;
   }
 
   &.active {
@@ -364,12 +384,6 @@ body.hide-scores {
   background-color: #cccccc;
   padding: 3px 10px 3px 10px;
   text-align: center;
-}
-
-body.hide-scores {
-  #scores {
-    transform: translate(0px);
-  }
 }
 
 #warning-drawer {
@@ -440,14 +454,6 @@ body.hide-scores {
       & > button {
         margin: 2px;
       }
-    }
-  }
-}
-
-body.hide-scores {
-  #warning-drawer {
-    @media (min-width: @enhance-width) {
-      left: 0px;
     }
   }
 }

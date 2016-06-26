@@ -14,6 +14,7 @@ import MassiveDecks.Scenes.Config as Config
 import MassiveDecks.Scenes.Playing as Playing
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
 import MassiveDecks.Scenes.Lobby.Messages exposing (ConsumerMessage(..), Message(..))
+import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Models.Player as Player exposing (Player, Status(..))
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
 import MassiveDecks.Util as Util
@@ -34,15 +35,16 @@ view model =
         in
           (h |> List.map (Html.map (PlayingMessage >> LocalMessage)), c |> List.map (Html.map (PlayingMessage >> LocalMessage)))
   in
-    root [ appHeader header model
-         , spacer
-         , scores players
-         , contentWrapper contents
-         ]
+    root model.sidebar.hidden
+      [ appHeader header model
+      , spacer
+      , scores model.sidebar.shownAsOverlay players
+      , contentWrapper contents
+      ]
 
 
-root : List (Html msg) -> Html msg
-root contents = div [ class "content" ] contents
+root : Bool -> List (Html msg) -> Html msg
+root hideScores contents = div [ classList [ ("content", True), ("hide-scores", hideScores) ] ] contents
 
 
 contentWrapper : List (Html msg) -> Html msg
@@ -53,19 +55,44 @@ spacer : Html msg
 spacer = div [ class "mui--appbar-height" ] []
 
 
-scores : List Player -> Html msg
-scores players = div [ id "scores" ]
-           [ div [ id "scores-title", class "mui--appbar-line-height mui--text-title" ] [ text "Players" ]
-           , div [ class "mui-divider" ] []
-           , table [ class "mui-table" ]
-                   [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
-                                      , th [ class "name" ] [ text "Player" ]
-                                      , th [ class "score", title "Score" ] [ Icon.icon "star" ]
-                                      ]
-                              ]
-                   , tbody [] (List.map score players)
-                   ]
-           ]
+scores : Bool -> List Player -> Html ConsumerMessage
+scores shownAsOverlay players =
+  let
+    hideMessage = LocalMessage (SidebarMessage Sidebar.Hide)
+    closeLink = if shownAsOverlay then
+      [ a [ class "link close-link"
+          , title "Hide."
+          , attribute "tabindex" "0"
+          , attribute "role" "button"
+          , onClick hideMessage
+          ] [ Icon.icon "times" ]
+      ]
+    else
+      []
+    sidebar =
+      div [ id "scores", classList [ ("shownAsOverlay", shownAsOverlay) ] ]
+          [ div [ id "scores-title", class "mui--appbar-line-height mui--text-headline" ] ([ text "Players" ] ++ closeLink)
+          , div [ class "mui-divider" ] []
+          , table [ class "mui-table" ]
+                  [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
+                                     , th [ class "name" ] [ text "Player" ]
+                                     , th [ class "score", title "Score" ] [ Icon.icon "star" ]
+                                     ]
+                             ]
+                  , tbody [] (List.map score players)
+                  ]
+          ]
+  in
+    if shownAsOverlay then
+      div [ id "mui-overlay"
+          , Util.onClickIfId "mui-overlay" hideMessage (LocalMessage NoOp)
+          , Util.onKeyDown "Escape" hideMessage (LocalMessage NoOp)
+          , tabindex 0
+          ]
+          [ sidebar ]
+    else
+      sidebar
+
 
 score : Player -> Html msg
 score player =
@@ -87,19 +114,18 @@ score player =
 appHeader : List (Html ConsumerMessage) -> Model -> Html ConsumerMessage
 appHeader contents model = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
   [ div [ class "mui--appbar-line-height" ]
-    [ span [ class "score-buttons" ] (List.append [ scoresButton True, scoresButton False ] (notificationPopup model.notification))
+    [ span [ class "score-buttons" ] ([ scoresButton ] ++ (notificationPopup model.notification))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
     , gameMenu model ] ] ])
 
 
-scoresButton : Bool -> Html msg
-scoresButton shown =
-  let
-    showHideClasses = if shown then " mui--hidden-xs js-hide-scores" else " mui--visible-xs-inline-block js-show-scores"
-  in
-    button [ class ("scores-toggle mui-btn mui-btn--small mui-btn--primary badged" ++ showHideClasses)
+scoresButton : Html ConsumerMessage
+scoresButton =
+    button [ class ("scores-toggle mui-btn mui-btn--small mui-btn--primary badged")
            , title "Players."
-           ] [ Icon.fwIcon "users" ]
+           , onClick (LocalMessage (SidebarMessage Sidebar.Toggle))
+           ]
+           [ Icon.fwIcon "users" ]
 
 
 notificationPopup : Maybe Notification -> List (Html ConsumerMessage)

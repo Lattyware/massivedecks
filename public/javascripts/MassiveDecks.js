@@ -7320,6 +7320,23 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _Lattyware$massivedecks$MassiveDecks_Util$ifIdDecoder = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['target', 'id']),
+	_elm_lang$core$Json_Decode$string);
+var _Lattyware$massivedecks$MassiveDecks_Util$onClickIfId = F3(
+	function (targetId, message, noOp) {
+		return A2(
+			_elm_lang$html$Html_Events$on,
+			'click',
+			A2(
+				_elm_lang$core$Json_Decode$map,
+				function (clickedId) {
+					return _elm_lang$core$Native_Utils.eq(clickedId, targetId) ? message : noOp;
+				},
+				_Lattyware$massivedecks$MassiveDecks_Util$ifIdDecoder));
+	});
 var _Lattyware$massivedecks$MassiveDecks_Util$onKeyDown = F3(
 	function (key, message, noOp) {
 		return A2(
@@ -8880,23 +8897,6 @@ var _Lattyware$massivedecks$MassiveDecks_Components_Errors$New = F2(
 		return {ctor: 'New', _0: a, _1: b};
 	});
 
-var _Lattyware$massivedecks$MassiveDecks_Components_Overlay$ifIdDecoder = A2(
-	_elm_lang$core$Json_Decode$at,
-	_elm_lang$core$Native_List.fromArray(
-		['target', 'id']),
-	_elm_lang$core$Json_Decode$string);
-var _Lattyware$massivedecks$MassiveDecks_Components_Overlay$onClickIfId = F3(
-	function (targetId, message, noOp) {
-		return A2(
-			_elm_lang$html$Html_Events$on,
-			'click',
-			A2(
-				_elm_lang$core$Json_Decode$map,
-				function (clickedId) {
-					return _elm_lang$core$Native_Utils.eq(clickedId, targetId) ? message : noOp;
-				},
-				_Lattyware$massivedecks$MassiveDecks_Components_Overlay$ifIdDecoder));
-	});
 var _Lattyware$massivedecks$MassiveDecks_Components_Overlay$update = F2(
 	function (message, model) {
 		var _p0 = message;
@@ -8940,7 +8940,7 @@ var _Lattyware$massivedecks$MassiveDecks_Components_Overlay$view = function (mod
 					[
 						_elm_lang$html$Html_Attributes$id('mui-overlay'),
 						A3(
-						_Lattyware$massivedecks$MassiveDecks_Components_Overlay$onClickIfId,
+						_Lattyware$massivedecks$MassiveDecks_Util$onClickIfId,
 						'mui-overlay',
 						model.wrap(_Lattyware$massivedecks$MassiveDecks_Components_Overlay$Hide),
 						model.wrap(_Lattyware$massivedecks$MassiveDecks_Components_Overlay$NoOp)),
@@ -9080,6 +9080,220 @@ var _Lattyware$massivedecks$MassiveDecks_Models_Notification$playerLeft = F2(
 	function (id, players) {
 		return A4(_Lattyware$massivedecks$MassiveDecks_Models_Notification$playerFromIdAndPlayers, id, players, 'sign-out', ' has left the game.');
 	});
+
+var _elm_lang$dom$Native_Dom = function() {
+
+function on(node)
+{
+	return function(eventName, decoder, toTask)
+	{
+		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+
+			function performTask(event)
+			{
+				var result = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, event);
+				if (result.ctor === 'Ok')
+				{
+					_elm_lang$core$Native_Scheduler.rawSpawn(toTask(result._0));
+				}
+			}
+
+			node.addEventListener(eventName, performTask);
+
+			return function()
+			{
+				node.removeEventListener(eventName, performTask);
+			};
+		});
+	};
+}
+
+return {
+	onDocument: F3(on(document)),
+	onWindow: F3(on(window))
+};
+
+}();
+
+var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
+var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
+
+var _elm_lang$window$Native_Window = function()
+{
+
+var size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
+	callback(_elm_lang$core$Native_Scheduler.succeed({
+		width: window.innerWidth,
+		height: window.innerHeight
+	}));
+});
+
+return {
+	size: size
+};
+
+}();
+var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
+_elm_lang$window$Window_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p0) {
+				return t2;
+			});
+	});
+var _elm_lang$window$Window$onSelfMsg = F3(
+	function (router, dimensions, state) {
+		var _p1 = state;
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (_p2) {
+				var _p3 = _p2;
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p3._0(dimensions));
+			};
+			return A2(
+				_elm_lang$window$Window_ops['&>'],
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p1._0.subs)),
+				_elm_lang$core$Task$succeed(state));
+		}
+	});
+var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
+var _elm_lang$window$Window$width = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.width;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$height = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.height;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
+		if (_p4._0.ctor === 'Nothing') {
+			if (_p4._1.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+			} else {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					_elm_lang$core$Process$spawn(
+						A3(
+							_elm_lang$dom$Dom_LowLevel$onWindow,
+							'resize',
+							_elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple0'}),
+							function (_p5) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									_elm_lang$window$Window$size,
+									_elm_lang$core$Platform$sendToSelf(router));
+							})),
+					function (pid) {
+						return _elm_lang$core$Task$succeed(
+							_elm_lang$core$Maybe$Just(
+								{subs: newSubs, pid: pid}));
+					});
+			}
+		} else {
+			if (_p4._1.ctor === '[]') {
+				return A2(
+					_elm_lang$window$Window_ops['&>'],
+					_elm_lang$core$Process$kill(_p4._0._0.pid),
+					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
+			} else {
+				return _elm_lang$core$Task$succeed(
+					_elm_lang$core$Maybe$Just(
+						{subs: newSubs, pid: _p4._0._0.pid}));
+			}
+		}
+	});
+var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
+var _elm_lang$window$Window$Size = F2(
+	function (a, b) {
+		return {width: a, height: b};
+	});
+var _elm_lang$window$Window$MySub = function (a) {
+	return {ctor: 'MySub', _0: a};
+};
+var _elm_lang$window$Window$resizes = function (tagger) {
+	return _elm_lang$window$Window$subscription(
+		_elm_lang$window$Window$MySub(tagger));
+};
+var _elm_lang$window$Window$subMap = F2(
+	function (func, _p6) {
+		var _p7 = _p6;
+		return _elm_lang$window$Window$MySub(
+			function (_p8) {
+				return func(
+					_p7._0(_p8));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
+
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$init = function (enhanceWidth) {
+	return {enhanceWidth: enhanceWidth, hidden: false, shownAsOverlay: false};
+};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Model = F3(
+	function (a, b, c) {
+		return {enhanceWidth: a, hidden: b, shownAsOverlay: c};
+	});
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Hide = {ctor: 'Hide'};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Show = function (a) {
+	return {ctor: 'Show', _0: a};
+};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$update = F2(
+	function (message, model) {
+		var _p0 = message;
+		switch (_p0.ctor) {
+			case 'Toggle':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A3(_elm_lang$core$Task$perform, _Lattyware$massivedecks$MassiveDecks_Util$impossible, _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Show, _elm_lang$window$Window$width)
+				};
+			case 'Show':
+				return model.shownAsOverlay ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{shownAsOverlay: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : ((_elm_lang$core$Native_Utils.cmp(_p0._0, model.enhanceWidth) > 0) ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							hidden: _elm_lang$core$Basics$not(model.hidden)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{shownAsOverlay: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				});
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{shownAsOverlay: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Toggle = {ctor: 'Toggle'};
 
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$LocalMessage = function (a) {
 	return {ctor: 'LocalMessage', _0: a};
@@ -9288,6 +9502,9 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$OverlayMessage = 
 };
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$ErrorMessage = function (a) {
 	return {ctor: 'ErrorMessage', _0: a};
+};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$SidebarMessage = function (a) {
+	return {ctor: 'SidebarMessage', _0: a};
 };
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$PlayingMessage = function (a) {
 	return {ctor: 'PlayingMessage', _0: a};
@@ -9772,10 +9989,27 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Playing_Models$ShownCard = F4(
 		return {rotation: a, horizontalPos: b, isLeft: c, verticalPos: d};
 	});
 
-var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Models$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {lobby: a, hand: b, config: c, playing: d, browserNotifications: e, secret: f, init: g, notification: h, qrNeedsRendering: i};
-	});
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Models$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {lobby: a, hand: b, config: c, playing: d, browserNotifications: e, secret: f, init: g, notification: h, qrNeedsRendering: i, sidebar: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_Models$Model = F9(
 	function (a, b, c, d, e, f, g, h, i) {
@@ -14948,21 +15182,20 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$notificationPopup = fun
 			]);
 	}
 };
-var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scoresButton = function (shown) {
-	var showHideClasses = shown ? ' mui--hidden-xs js-hide-scores' : ' mui--visible-xs-inline-block js-show-scores';
-	return A2(
-		_elm_lang$html$Html$button,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class(
-				A2(_elm_lang$core$Basics_ops['++'], 'scores-toggle mui-btn mui-btn--small mui-btn--primary badged', showHideClasses)),
-				_elm_lang$html$Html_Attributes$title('Players.')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_Lattyware$massivedecks$MassiveDecks_Components_Icon$fwIcon('users')
-			]));
-};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scoresButton = A2(
+	_elm_lang$html$Html$button,
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html_Attributes$class('scores-toggle mui-btn mui-btn--small mui-btn--primary badged'),
+			_elm_lang$html$Html_Attributes$title('Players.'),
+			_elm_lang$html$Html_Events$onClick(
+			_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(
+				_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$SidebarMessage(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Toggle)))
+		]),
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_Lattyware$massivedecks$MassiveDecks_Components_Icon$fwIcon('users')
+		]));
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$appHeader = F2(
 	function (contents, model) {
 		return A2(
@@ -14994,12 +15227,9 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$appHeader = F2(
 											_elm_lang$html$Html_Attributes$class('score-buttons')
 										]),
 									A2(
-										_elm_lang$core$List$append,
+										_elm_lang$core$Basics_ops['++'],
 										_elm_lang$core$Native_List.fromArray(
-											[
-												_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scoresButton(true),
-												_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scoresButton(false)
-											]),
+											[_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scoresButton]),
 										_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$notificationPopup(model.notification))),
 									A2(
 									_elm_lang$html$Html$span,
@@ -15077,96 +15307,144 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$score = function (playe
 					]))
 			]));
 };
-var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scores = function (players) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$id('scores')
-			]),
-		_elm_lang$core$Native_List.fromArray(
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scores = F2(
+	function (shownAsOverlay, players) {
+		var hideMessage = _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(
+			_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$SidebarMessage(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$Hide));
+		var closeLink = shownAsOverlay ? _elm_lang$core$Native_List.fromArray(
 			[
 				A2(
-				_elm_lang$html$Html$div,
+				_elm_lang$html$Html$a,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$id('scores-title'),
-						_elm_lang$html$Html_Attributes$class('mui--appbar-line-height mui--text-title')
+						_elm_lang$html$Html_Attributes$class('link close-link'),
+						_elm_lang$html$Html_Attributes$title('Hide.'),
+						A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
+						A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
+						_elm_lang$html$Html_Events$onClick(hideMessage)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Players')
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('mui-divider')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[])),
-				A2(
-				_elm_lang$html$Html$table,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('mui-table')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$thead,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
+						_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('times')
+					]))
+			]) : _elm_lang$core$Native_List.fromArray(
+			[]);
+		var sidebar = A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$id('scores'),
+					_elm_lang$html$Html_Attributes$classList(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{ctor: '_Tuple2', _0: 'shownAsOverlay', _1: shownAsOverlay}
+						]))
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$id('scores-title'),
+							_elm_lang$html$Html_Attributes$class('mui--appbar-line-height mui--text-headline')
+						]),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
 						_elm_lang$core$Native_List.fromArray(
 							[
-								A2(
-								_elm_lang$html$Html$tr,
-								_elm_lang$core$Native_List.fromArray(
-									[]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										A2(
-										_elm_lang$html$Html$th,
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html_Attributes$class('state'),
-												_elm_lang$html$Html_Attributes$title('State')
-											]),
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('tasks')
-											])),
-										A2(
-										_elm_lang$html$Html$th,
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html_Attributes$class('name')
-											]),
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html$text('Player')
-											])),
-										A2(
-										_elm_lang$html$Html$th,
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html_Attributes$class('score'),
-												_elm_lang$html$Html_Attributes$title('Score')
-											]),
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('star')
-											]))
-									]))
-							])),
-						A2(
-						_elm_lang$html$Html$tbody,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						A2(_elm_lang$core$List$map, _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$score, players))
-					]))
-			]));
-};
+								_elm_lang$html$Html$text('Players')
+							]),
+						closeLink)),
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('mui-divider')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[])),
+					A2(
+					_elm_lang$html$Html$table,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('mui-table')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$html$Html$thead,
+							_elm_lang$core$Native_List.fromArray(
+								[]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									A2(
+									_elm_lang$html$Html$tr,
+									_elm_lang$core$Native_List.fromArray(
+										[]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											A2(
+											_elm_lang$html$Html$th,
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_elm_lang$html$Html_Attributes$class('state'),
+													_elm_lang$html$Html_Attributes$title('State')
+												]),
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('tasks')
+												])),
+											A2(
+											_elm_lang$html$Html$th,
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_elm_lang$html$Html_Attributes$class('name')
+												]),
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_elm_lang$html$Html$text('Player')
+												])),
+											A2(
+											_elm_lang$html$Html$th,
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_elm_lang$html$Html_Attributes$class('score'),
+													_elm_lang$html$Html_Attributes$title('Score')
+												]),
+											_elm_lang$core$Native_List.fromArray(
+												[
+													_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('star')
+												]))
+										]))
+								])),
+							A2(
+							_elm_lang$html$Html$tbody,
+							_elm_lang$core$Native_List.fromArray(
+								[]),
+							A2(_elm_lang$core$List$map, _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$score, players))
+						]))
+				]));
+		return shownAsOverlay ? A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$id('mui-overlay'),
+					A3(
+					_Lattyware$massivedecks$MassiveDecks_Util$onClickIfId,
+					'mui-overlay',
+					hideMessage,
+					_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$NoOp)),
+					A3(
+					_Lattyware$massivedecks$MassiveDecks_Util$onKeyDown,
+					'Escape',
+					hideMessage,
+					_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$NoOp)),
+					_elm_lang$html$Html_Attributes$tabindex(0)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[sidebar])) : sidebar;
+	});
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$spacer = A2(
 	_elm_lang$html$Html$div,
 	_elm_lang$core$Native_List.fromArray(
@@ -15184,15 +15462,21 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$contentWrapper = functi
 			]),
 		contents);
 };
-var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$root = function (contents) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('content')
-			]),
-		contents);
-};
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$root = F2(
+	function (hideScores, contents) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$classList(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							{ctor: '_Tuple2', _0: 'content', _1: true},
+							{ctor: '_Tuple2', _0: 'hide-scores', _1: hideScores}
+						]))
+				]),
+			contents);
+	});
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$view = function (model) {
 	var url = model.init.url;
 	var lobby = model.lobby;
@@ -15243,12 +15527,14 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$view = function (model)
 	}();
 	var header = _p6._0;
 	var contents = _p6._1;
-	return _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$root(
+	return A2(
+		_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$root,
+		model.sidebar.hidden,
 		_elm_lang$core$Native_List.fromArray(
 			[
 				A2(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$appHeader, header, model),
 				_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$spacer,
-				_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scores(players),
+				A2(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$scores, model.sidebar.shownAsOverlay, players),
 				_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$contentWrapper(contents)
 			]));
 };
@@ -15725,11 +16011,28 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$update = F2(
 								cmd)
 						};
 				}
+			case 'SidebarMessage':
+				var _p27 = A2(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$update, _p20._0, model.sidebar);
+				var sidebarModel = _p27._0;
+				var cmd = _p27._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{sidebar: sidebarModel}),
+					_1: A2(
+						_elm_lang$core$Platform_Cmd$map,
+						function (_p28) {
+							return _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(
+								_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$SidebarMessage(_p28));
+						},
+						cmd)
+				};
 			case 'BrowserNotificationsMessage':
-				var _p27 = A2(_Lattyware$massivedecks$MassiveDecks_Components_BrowserNotifications$update, _p20._0, model.browserNotifications);
-				var browserNotifications = _p27._0;
-				var localCmd = _p27._1;
-				var cmd = _p27._2;
+				var _p29 = A2(_Lattyware$massivedecks$MassiveDecks_Components_BrowserNotifications$update, _p20._0, model.browserNotifications);
+				var browserNotifications = _p29._0;
+				var localCmd = _p29._1;
+				var cmd = _p29._2;
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
@@ -15739,18 +16042,18 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$update = F2(
 						[
 							A2(
 							_elm_lang$core$Platform_Cmd$map,
-							function (_p28) {
+							function (_p30) {
 								return _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(
-									_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$BrowserNotificationsMessage(_p28));
+									_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$BrowserNotificationsMessage(_p30));
 							},
 							localCmd),
 							A2(_elm_lang$core$Platform_Cmd$map, _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$overlayAlert, cmd)
 						]));
 			case 'BrowserNotificationForUser':
 				var cmd = function () {
-					var _p29 = _p20._0(lobby);
-					if (_p29.ctor === 'Just') {
-						return _elm_lang$core$Native_Utils.eq(_p29._0, model.secret.id) ? _Lattyware$massivedecks$MassiveDecks_Util$cmd(
+					var _p31 = _p20._0(lobby);
+					if (_p31.ctor === 'Just') {
+						return _elm_lang$core$Native_Utils.eq(_p31._0, model.secret.id) ? _Lattyware$massivedecks$MassiveDecks_Util$cmd(
 							_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(
 								_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$BrowserNotificationsMessage(
 									_Lattyware$massivedecks$MassiveDecks_Components_BrowserNotifications$notify(
@@ -15838,9 +16141,9 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$update = F2(
 					model,
 					A2(
 						_elm_lang$core$List$map,
-						function (_p30) {
+						function (_p32) {
 							return _Lattyware$massivedecks$MassiveDecks_Util$cmd(
-								_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(_p30));
+								_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(_p32));
 						},
 						_p20._0));
 			default:
@@ -15851,7 +16154,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$subscriptions = function (
 	var render = model.qrNeedsRendering ? _elm_lang$core$Native_List.fromArray(
 		[
 			_elm_lang$animation_frame$AnimationFrame$diffs(
-			function (_p31) {
+			function (_p33) {
 				return _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$LocalMessage(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$RenderQr);
 			})
 		]) : _elm_lang$core$Native_List.fromArray(
@@ -15865,8 +16168,8 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$subscriptions = function (
 		A2(_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$webSocketUrl, model.init.url, model.lobby.gameCode),
 		_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$webSocketResponseDecoder);
 	var delegated = function () {
-		var _p32 = model.lobby.round;
-		if (_p32.ctor === 'Nothing') {
+		var _p34 = model.lobby.round;
+		if (_p34.ctor === 'Nothing') {
 			return A2(
 				_elm_lang$core$Platform_Sub$map,
 				_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$ConfigMessage,
@@ -15902,7 +16205,8 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby$init = F3(
 				secret: secret,
 				init: init,
 				notification: _elm_lang$core$Maybe$Nothing,
-				qrNeedsRendering: false
+				qrNeedsRendering: false,
+				sidebar: _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Sidebar$init(768)
 			},
 			_elm_lang$core$Native_List.fromArray(
 				[]));

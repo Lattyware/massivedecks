@@ -29,6 +29,7 @@ import MassiveDecks.Scenes.Config.Messages as Config
 import MassiveDecks.Scenes.Lobby.UI as UI
 import MassiveDecks.Scenes.Lobby.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
+import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Util as Util exposing ((:>))
 
 
@@ -45,6 +46,7 @@ init init lobbyAndHand secret =
   , init = init
   , notification = Nothing
   , qrNeedsRendering = False
+  , sidebar = Sidebar.init 768 {- Should match the enhance-width in less. -}
   } ! []
 
 
@@ -145,6 +147,12 @@ update message model =
               (playing, cmd) = Playing.update localMessage model
             in
               ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
+
+      SidebarMessage sidebarMessage ->
+        let
+          (sidebarModel, cmd) = Sidebar.update sidebarMessage model.sidebar
+        in
+          ({ model | sidebar = sidebarModel }, Cmd.map (LocalMessage << SidebarMessage) cmd)
 
       BrowserNotificationsMessage notificationMessage ->
         let

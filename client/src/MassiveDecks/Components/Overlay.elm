@@ -68,7 +68,7 @@ view model =
   case model.overlay of
     Just overlay ->
       [ div [ id "mui-overlay"
-            , onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp)
+            , Util.onClickIfId "mui-overlay" (model.wrap Hide) (model.wrap NoOp)
             , Util.onKeyDown "Escape" (model.wrap Hide) (model.wrap NoOp)
             , tabindex 0
             ]
@@ -87,12 +87,3 @@ view model =
       ]
     Nothing ->
       []
-
-
-onClickIfId : String -> msg -> msg -> Attribute msg
-onClickIfId targetId message noOp =
-  on "click" (ifIdDecoder |> Json.map (\clickedId -> if clickedId == targetId then message else noOp))
-
-
-ifIdDecoder : Json.Decoder String
-ifIdDecoder = Json.at [ "target", "id" ] Json.string

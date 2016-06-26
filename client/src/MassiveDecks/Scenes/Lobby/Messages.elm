@@ -4,6 +4,7 @@ import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
+import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Scenes.Config.Messages as Config
 import MassiveDecks.Scenes.Playing.Messages as Playing
 import MassiveDecks.Components.Errors as Errors
@@ -37,3 +38,4 @@ type Message
   | BrowserNotificationsMessage BrowserNotifications.Message
   | ConfigMessage Config.ConsumerMessage
   | PlayingMessage Playing.ConsumerMessage
+  | SidebarMessage Sidebar.Message

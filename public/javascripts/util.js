@@ -1,26 +1,5 @@
-jQuery(function($) {
-  var $bodyEl = $('body');
-
-  function showScores() {
-    var scores = $('#scores')[0].cloneNode(true);
-
-    mui.overlay('on', scores);
-
-    setTimeout(function() {
-      $(scores).addClass('active');
-    }, 20);
-  }
-
-  function hideScores() {
-    $bodyEl.toggleClass('hide-scores');
-  }
-
-  $('body').on('click', '.js-show-scores', showScores);
-  $('body').on('click', '.js-hide-scores', hideScores);
-});
-
 function toggleWarningDrawer() {
-  $('#warning-drawer').toggleClass('shut');
+  document.getElementById('#warning-drawer').classList.toggle('shut');
 }
 
 function start(url) {
@@ -46,15 +25,15 @@ function start(url) {
   game.ports.existingGame.subscribe(function (gameCodeAndSecret) {
     if (gameCodeAndSecret != null) {
       localStorage.setItem("existing-game", JSON.stringify(gameCodeAndSecret))
-      window.location = "#" + gameCodeAndSecret.gameCode;
+      window.history.replaceState(null, "", "/#" + gameCodeAndSecret.gameCode);
     } else {
-      window.location = "#";
+      window.history.replaceState(null, "", "/");
       localStorage.removeItem("existing-game");
     }
   });
 
   game.ports.qr.subscribe(function (idAndValue) {
-    new QRCode($('#' + idAndValue.id)[0], {
+    new QRCode(document.getElementById('#' + idAndValue.id), {
       text: idAndValue.value,
       width: 200,
       height: 200
