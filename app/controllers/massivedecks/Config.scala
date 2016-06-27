@@ -23,4 +23,8 @@ class Config(request: RequestHeader) {
   def path = getString("md_path").getOrElse("/")
 
   def url = s"$protocol://$host$path"
+
+  def version = getString("md_release_version").getOrElse {
+    getString("md_git_version").map(v => s"${v.take(7)}-dev").getOrElse("")
+  }
 }

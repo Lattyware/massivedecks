@@ -1,4 +1,4 @@
-@(url: String, statusCode: Int, errorMessage: String, errorDescription: String, bugReportBody: String)<!doctype html>
+@(url: String, version: String, statusCode: Int, errorMessage: String, errorDescription: String, bugReportBody: String)<!doctype html>
 <html lang="en">
     <head>
         @head(s"$errorMessage - Massive Decks", url)
@@ -40,5 +40,8 @@
             </p>
         </div>
         <a id="logo" href="@url"><img src="@routes.Assets.versioned("images/icon.svg")" alt="The Massive Decks logo." title="Massive Decks" "></a>
+        @if(version.nonEmpty) {
+            <p id="version">Version @version</p>
+        }
     </body>
 </html>

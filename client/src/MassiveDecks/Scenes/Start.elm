@@ -71,7 +71,7 @@ view model =
   in
     div []
         ([ contents
-         , Errors.view model.errors |> Html.map ErrorMessage
+         , Errors.view { url = model.init.url, version = model.init.version } model.errors |> Html.map ErrorMessage
          ] ++ Overlay.view model.overlay)
 
 

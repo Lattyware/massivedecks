@@ -1,4 +1,6 @@
-module MassiveDecks.Components.Errors exposing (Message(..), Model, view, update, init)
+module MassiveDecks.Components.Errors exposing (Message(..), Model, ApplicationInfo, view, update, init, reportUrl)
+
+import String
 
 import Http exposing (url)
 import Html exposing (..)
@@ -20,6 +22,12 @@ type alias Model =
   }
 
 
+type alias ApplicationInfo =
+  { url : String
+  , version : String
+  }
+
+
 {-| A generic error message to be displayed when something goes wrong. Should only be used where there isn't a good way
 to avoid the error altogether or display the error closer to it's source.
 -}
@@ -37,8 +45,8 @@ init =
   }
 
 
-view : Model -> Html Message
-view model = ol [ id "error-panel"] (List.map errorMessage model.errors)
+view : ApplicationInfo -> Model -> Html Message
+view applicationInfo model = ol [ id "error-panel"] (List.map (errorMessage applicationInfo) model.errors)
 
 
 update : Message -> Model -> (Model, Cmd Message)
@@ -60,17 +68,25 @@ update message model =
 
 reportText : String -> String
 reportText message =
-  ("I was [a short explanation of what you were doing] when I got the following error: \n\n"
-    ++ message)
+  ("I was [a short explanation of what you were doing] when I got the following error: \n\n" ++ message)
 
 
-errorMessage : Error -> Html Message
-errorMessage error =
+reportUrl : ApplicationInfo -> String -> String
+reportUrl applicationInfo message =
   let
-    reportUrl = (url "https://github.com/Lattyware/massivedecks/issues/new" [( "body", reportText error.message ) ])
+    version = if String.isEmpty applicationInfo.version then "Not Specified" else ""
+    full = message ++ "\n\nApplication Info:\n\tVersion: " ++ version ++ "\n\tURL: " ++ applicationInfo.url
+  in
+    url "https://github.com/Lattyware/massivedecks/issues/new" [ ( "body", full ) ]
+
+
+errorMessage : ApplicationInfo -> Error -> Html Message
+errorMessage applicationInfo error =
+  let
+    url = reportUrl applicationInfo (reportText error.message)
     bugReportLink =
       if error.bugReport then
-        Just (p [] [ a [ href reportUrl, target "_blank" ] [ Icon.icon "bug", text " Report this as a bug." ] ])
+        Just (p [] [ a [ href url, target "_blank" ] [ Icon.icon "bug", text " Report this as a bug." ] ])
       else
         Nothing
   in

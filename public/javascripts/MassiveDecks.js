@@ -7700,9 +7700,9 @@ var _Lattyware$massivedecks$MassiveDecks_Models_Game$LobbyAndHand = F2(
 		return {lobby: a, hand: b};
 	});
 
-var _Lattyware$massivedecks$MassiveDecks_Models$Init = F5(
-	function (a, b, c, d, e) {
-		return {url: a, gameCode: b, existingGame: c, seed: d, browserNotificationsSupported: e};
+var _Lattyware$massivedecks$MassiveDecks_Models$Init = F6(
+	function (a, b, c, d, e, f) {
+		return {version: a, url: b, gameCode: c, existingGame: d, seed: e, browserNotificationsSupported: f};
 	});
 
 var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$attribute;
@@ -8737,6 +8737,27 @@ var _evancz$elm_http$Http$post = F3(
 			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 	});
 
+var _Lattyware$massivedecks$MassiveDecks_Components_Errors$reportUrl = F2(
+	function (applicationInfo, message) {
+		var version = _elm_lang$core$String$isEmpty(applicationInfo.version) ? 'Not Specified' : '';
+		var full = A2(
+			_elm_lang$core$Basics_ops['++'],
+			message,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\n\nApplication Info:\n\tVersion: ',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					version,
+					A2(_elm_lang$core$Basics_ops['++'], '\n\tURL: ', applicationInfo.url))));
+		return A2(
+			_evancz$elm_http$Http$url,
+			'https://github.com/Lattyware/massivedecks/issues/new',
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'body', _1: full}
+				]));
+	});
 var _Lattyware$massivedecks$MassiveDecks_Components_Errors$reportText = function (message) {
 	return A2(_elm_lang$core$Basics_ops['++'], 'I was [a short explanation of what you were doing] when I got the following error: \n\n', message);
 };
@@ -8785,6 +8806,10 @@ var _Lattyware$massivedecks$MassiveDecks_Components_Errors$Model = F2(
 	function (a, b) {
 		return {currentId: a, errors: b};
 	});
+var _Lattyware$massivedecks$MassiveDecks_Components_Errors$ApplicationInfo = F2(
+	function (a, b) {
+		return {url: a, version: b};
+	});
 var _Lattyware$massivedecks$MassiveDecks_Components_Errors$Error = F3(
 	function (a, b, c) {
 		return {id: a, message: b, bugReport: c};
@@ -8792,106 +8817,104 @@ var _Lattyware$massivedecks$MassiveDecks_Components_Errors$Error = F3(
 var _Lattyware$massivedecks$MassiveDecks_Components_Errors$Remove = function (a) {
 	return {ctor: 'Remove', _0: a};
 };
-var _Lattyware$massivedecks$MassiveDecks_Components_Errors$errorMessage = function (error) {
-	var reportUrl = A2(
-		_evancz$elm_http$Http$url,
-		'https://github.com/Lattyware/massivedecks/issues/new',
-		_elm_lang$core$Native_List.fromArray(
-			[
-				{
-				ctor: '_Tuple2',
-				_0: 'body',
-				_1: _Lattyware$massivedecks$MassiveDecks_Components_Errors$reportText(error.message)
-			}
-			]));
-	var bugReportLink = error.bugReport ? _elm_lang$core$Maybe$Just(
-		A2(
-			_elm_lang$html$Html$p,
+var _Lattyware$massivedecks$MassiveDecks_Components_Errors$errorMessage = F2(
+	function (applicationInfo, error) {
+		var url = A2(
+			_Lattyware$massivedecks$MassiveDecks_Components_Errors$reportUrl,
+			applicationInfo,
+			_Lattyware$massivedecks$MassiveDecks_Components_Errors$reportText(error.message));
+		var bugReportLink = error.bugReport ? _elm_lang$core$Maybe$Just(
+			A2(
+				_elm_lang$html$Html$p,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href(url),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('bug'),
+								_elm_lang$html$Html$text(' Report this as a bug.')
+							]))
+					]))) : _elm_lang$core$Maybe$Nothing;
+		return A2(
+			_elm_lang$html$Html$li,
 			_elm_lang$core$Native_List.fromArray(
-				[]),
+				[
+					_elm_lang$html$Html_Attributes$class('error')
+				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
 					A2(
-					_elm_lang$html$Html$a,
+					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$href(reportUrl),
-							_elm_lang$html$Html_Attributes$target('_blank')
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('bug'),
-							_elm_lang$html$Html$text(' Report this as a bug.')
-						]))
-				]))) : _elm_lang$core$Maybe$Nothing;
-	return A2(
-		_elm_lang$html$Html$li,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('error')
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				A2(
-					_Lattyware$massivedecks$MassiveDecks_Util$andMaybe,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							A2(
-							_elm_lang$html$Html$a,
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html_Attributes$class('link'),
-									A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
-									A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
-									_elm_lang$html$Html_Events$onClick(
-									_Lattyware$massivedecks$MassiveDecks_Components_Errors$Remove(error.id))
-								]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('times')
-								])),
-							A2(
-							_elm_lang$html$Html$h5,
-							_elm_lang$core$Native_List.fromArray(
-								[]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('exclamation-triangle'),
-									_elm_lang$html$Html$text(' Error')
-								])),
-							A2(
-							_elm_lang$html$Html$div,
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html_Attributes$class('mui-divider')
-								]),
-							_elm_lang$core$Native_List.fromArray(
-								[])),
-							A2(
-							_elm_lang$html$Html$p,
-							_elm_lang$core$Native_List.fromArray(
-								[]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html$text(error.message)
-								]))
-						]),
-					bugReportLink))
-			]));
-};
-var _Lattyware$massivedecks$MassiveDecks_Components_Errors$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$ol,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$id('error-panel')
-			]),
-		A2(_elm_lang$core$List$map, _Lattyware$massivedecks$MassiveDecks_Components_Errors$errorMessage, model.errors));
-};
+						[]),
+					A2(
+						_Lattyware$massivedecks$MassiveDecks_Util$andMaybe,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$a,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('link'),
+										A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
+										A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
+										_elm_lang$html$Html_Events$onClick(
+										_Lattyware$massivedecks$MassiveDecks_Components_Errors$Remove(error.id))
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('times')
+									])),
+								A2(
+								_elm_lang$html$Html$h5,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('exclamation-triangle'),
+										_elm_lang$html$Html$text(' Error')
+									])),
+								A2(
+								_elm_lang$html$Html$div,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$class('mui-divider')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[])),
+								A2(
+								_elm_lang$html$Html$p,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html$text(error.message)
+									]))
+							]),
+						bugReportLink))
+				]));
+	});
+var _Lattyware$massivedecks$MassiveDecks_Components_Errors$view = F2(
+	function (applicationInfo, model) {
+		return A2(
+			_elm_lang$html$Html$ol,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$id('error-panel')
+				]),
+			A2(
+				_elm_lang$core$List$map,
+				_Lattyware$massivedecks$MassiveDecks_Components_Errors$errorMessage(applicationInfo),
+				model.errors));
+	});
 var _Lattyware$massivedecks$MassiveDecks_Components_Errors$New = F2(
 	function (a, b) {
 		return {ctor: 'New', _0: a, _1: b};
@@ -10016,270 +10039,296 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_Models$Model = F9(
 		return {lobby: a, init: b, nameInput: c, gameCodeInput: d, info: e, errors: f, overlay: g, buttonsEnabled: h, tabs: i};
 	});
 
-var _Lattyware$massivedecks$MassiveDecks_Components_About$contents = _elm_lang$core$Native_List.fromArray(
-	[
-		A2(
-		_elm_lang$html$Html$p,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
+var _Lattyware$massivedecks$MassiveDecks_Components_About$contents = function (version) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text('Massive Decks is a web game based on the excellent '),
 				A2(
-				_elm_lang$html$Html$a,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$href('https://cardsagainsthumanity.com/'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Cards against Humanity')
-					])),
-				_elm_lang$html$Html$text(' - a party game where you play white cards to try and produce the most amusing outcome when '),
-				_elm_lang$html$Html$text('combined with the given black card.')
-			])),
-		A2(
-		_elm_lang$html$Html$p,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text('Massive Decks is also inspired by: '),
-				A2(
-				_elm_lang$html$Html$ul,
+				_elm_lang$html$Html$p,
 				_elm_lang$core$Native_List.fromArray(
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
+						_elm_lang$html$Html$text('Massive Decks is a web game based on the excellent '),
 						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
+						_elm_lang$html$Html$a,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								A2(
-								_elm_lang$html$Html$a,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Cardcast')
-									])),
-								_elm_lang$html$Html$text(' - an app that allows you to play on a ChromeCast.')
+								_elm_lang$html$Html_Attributes$href('https://cardsagainsthumanity.com/'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Cards against Humanity')
 							])),
-						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$a,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$href('http://pretendyoure.xyz/zy/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Pretend You\'re Xyzzy')
-									])),
-								_elm_lang$html$Html$text(' - a web game where you can jump in with people you don\'t know.')
-							]))
-					]))
-			])),
-		A2(
-		_elm_lang$html$Html$p,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text('This is an open source game developed in '),
-				A2(
-				_elm_lang$html$Html$a,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$href('http://elm-lang.org/'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Elm')
+						_elm_lang$html$Html$text(' - a party game where you play white cards to try and produce the most amusing outcome when '),
+						_elm_lang$html$Html$text('combined with the given black card.')
 					])),
-				_elm_lang$html$Html$text(' for the client and '),
 				A2(
-				_elm_lang$html$Html$a,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$href('http://www.scala-lang.org/'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Scala')
-					])),
-				_elm_lang$html$Html$text(' for the server.')
-			])),
-		A2(
-		_elm_lang$html$Html$p,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text('We also use: '),
-				A2(
-				_elm_lang$html$Html$ul,
+				_elm_lang$html$Html$p,
 				_elm_lang$core$Native_List.fromArray(
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
+						_elm_lang$html$Html$text('Massive Decks is also inspired by: '),
 						A2(
-						_elm_lang$html$Html$li,
+						_elm_lang$html$Html$ul,
 						_elm_lang$core$Native_List.fromArray(
 							[]),
 						_elm_lang$core$Native_List.fromArray(
 							[
 								A2(
-								_elm_lang$html$Html$a,
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Cardcast')
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Cardcast')
+											])),
+										_elm_lang$html$Html$text(' - an app that allows you to play on a ChromeCast.')
 									])),
-								_elm_lang$html$Html$text('\'s APIs for getting decks of cards (you can go there to make your own!).')
-							])),
-						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('The '),
 								A2(
-								_elm_lang$html$Html$a,
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
 								_elm_lang$core$Native_List.fromArray(
 									[
-										_elm_lang$html$Html_Attributes$href('https://www.playframework.com/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Play framework')
-									]))
-							])),
-						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$a,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$href('http://lesscss.org/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Less')
-									]))
-							])),
-						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$a,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$href('https://fortawesome.github.io/Font-Awesome/'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('Font Awesome')
-									]))
-							])),
-						A2(
-						_elm_lang$html$Html$li,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								A2(
-								_elm_lang$html$Html$a,
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html_Attributes$href('https://www.muicss.com'),
-										_elm_lang$html$Html_Attributes$target('_blank')
-									]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text('MUI')
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('http://pretendyoure.xyz/zy/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Pretend You\'re Xyzzy')
+											])),
+										_elm_lang$html$Html$text(' - a web game where you can jump in with people you don\'t know.')
 									]))
 							]))
+					])),
+				A2(
+				_elm_lang$html$Html$p,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('This is an open source game developed in '),
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('http://elm-lang.org/'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Elm')
+							])),
+						_elm_lang$html$Html$text(' for the client and '),
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('http://www.scala-lang.org/'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Scala')
+							])),
+						_elm_lang$html$Html$text(' for the server.')
+					])),
+				A2(
+				_elm_lang$html$Html$p,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('We also use: '),
+						A2(
+						_elm_lang$html$Html$ul,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Cardcast')
+											])),
+										_elm_lang$html$Html$text('\'s APIs for getting decks of cards (you can go there to make your own!).')
+									])),
+								A2(
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html$text('The '),
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('https://www.playframework.com/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Play framework')
+											]))
+									])),
+								A2(
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('http://lesscss.org/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Less')
+											]))
+									])),
+								A2(
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('https://fortawesome.github.io/Font-Awesome/'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('Font Awesome')
+											]))
+									])),
+								A2(
+								_elm_lang$html$Html$li,
+								_elm_lang$core$Native_List.fromArray(
+									[]),
+								_elm_lang$core$Native_List.fromArray(
+									[
+										A2(
+										_elm_lang$html$Html$a,
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html_Attributes$href('https://www.muicss.com'),
+												_elm_lang$html$Html_Attributes$target('_blank')
+											]),
+										_elm_lang$core$Native_List.fromArray(
+											[
+												_elm_lang$html$Html$text('MUI')
+											]))
+									]))
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$p,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Bug reports and contributions are welcome on the '),
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('https://github.com/Lattyware/massivedecks'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('GitHub repository')
+							])),
+						_elm_lang$html$Html$text(', where you can find the complete source to the game, under the GPLv3 license. The game concept '),
+						_elm_lang$html$Html$text('\'Cards against Humanity\' is used under a '),
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('https://creativecommons.org/licenses/by-nc-sa/2.0/'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Creative Commons BY-NC-SA 2.0 license')
+							])),
+						_elm_lang$html$Html$text(' granted by '),
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('https://cardsagainsthumanity.com/'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Cards against Humanity')
+							]))
 					]))
-			])),
-		A2(
-		_elm_lang$html$Html$p,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
+			]),
+		_elm_lang$core$String$isEmpty(version) ? _elm_lang$core$Native_List.fromArray(
+			[]) : _elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text('Bug reports and contributions are welcome on the '),
 				A2(
-				_elm_lang$html$Html$a,
+				_elm_lang$html$Html$p,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$href('https://github.com/Lattyware/massivedecks'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('GitHub repository')
-					])),
-				_elm_lang$html$Html$text(', where you can find the complete source to the game, under the GPLv3 license. The game concept '),
-				_elm_lang$html$Html$text('\'Cards against Humanity\' is used under a '),
-				A2(
-				_elm_lang$html$Html$a,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$href('https://creativecommons.org/licenses/by-nc-sa/2.0/'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Creative Commons BY-NC-SA 2.0 license')
-					])),
-				_elm_lang$html$Html$text(' granted by '),
-				A2(
-				_elm_lang$html$Html$a,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$href('https://cardsagainsthumanity.com/'),
-						_elm_lang$html$Html_Attributes$target('_blank')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Cards against Humanity')
+						_elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'This server is running version ',
+							A2(_elm_lang$core$Basics_ops['++'], version, '.')))
 					]))
-			]))
-	]);
+			]));
+};
 var _Lattyware$massivedecks$MassiveDecks_Components_About$title = 'About';
 var _Lattyware$massivedecks$MassiveDecks_Components_About$icon = 'info-circle';
-var _Lattyware$massivedecks$MassiveDecks_Components_About$show = _Lattyware$massivedecks$MassiveDecks_Components_Overlay$Show(
-	A3(_Lattyware$massivedecks$MassiveDecks_Components_Overlay$Overlay, _Lattyware$massivedecks$MassiveDecks_Components_About$icon, _Lattyware$massivedecks$MassiveDecks_Components_About$title, _Lattyware$massivedecks$MassiveDecks_Components_About$contents));
+var _Lattyware$massivedecks$MassiveDecks_Components_About$show = function (version) {
+	return _Lattyware$massivedecks$MassiveDecks_Components_Overlay$Show(
+		A3(
+			_Lattyware$massivedecks$MassiveDecks_Components_Overlay$Overlay,
+			_Lattyware$massivedecks$MassiveDecks_Components_About$icon,
+			_Lattyware$massivedecks$MassiveDecks_Components_About$title,
+			_Lattyware$massivedecks$MassiveDecks_Components_About$contents(version)));
+};
 
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$createLobbyButton = function (enabled) {
 	return A2(
@@ -10328,6 +10377,12 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$renderTab = F4(
 		}
 	});
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model) {
+	var versionInfo = _elm_lang$core$String$isEmpty(model.init.version) ? _elm_lang$core$Native_List.fromArray(
+		[]) : _elm_lang$core$Native_List.fromArray(
+		[
+			_elm_lang$html$Html$text(' Version '),
+			_elm_lang$html$Html$text(model.init.version)
+		]);
 	var inactive = {
 		ctor: '_Tuple2',
 		_0: _elm_lang$core$Native_List.fromArray(
@@ -10429,7 +10484,8 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model)
 												A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
 												A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
 												_elm_lang$html$Html_Events$onClick(
-												_Lattyware$massivedecks$MassiveDecks_Scenes_Start_Messages$OverlayMessage(_Lattyware$massivedecks$MassiveDecks_Components_About$show))
+												_Lattyware$massivedecks$MassiveDecks_Scenes_Start_Messages$OverlayMessage(
+													_Lattyware$massivedecks$MassiveDecks_Components_About$show(model.init.version)))
 											]),
 										_elm_lang$core$Native_List.fromArray(
 											[
@@ -10464,7 +10520,38 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model)
 															]))
 													]))
 											]))
-									]))))))
+									])))))),
+				A2(
+				_elm_lang$html$Html$footer,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('https://github.com/Lattyware/massivedecks')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$html$Html$img,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$src('images/icon.svg'),
+										_elm_lang$html$Html_Attributes$alt('The Massive Decks logo.'),
+										_elm_lang$html$Html_Attributes$title('Massive Decks')
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							])),
+						A2(
+						_elm_lang$html$Html$p,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						versionInfo)
+					]))
 			]));
 };
 
@@ -14894,6 +14981,10 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$notificationsMenuItem =
 		]);
 };
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$gameMenu = function (model) {
+	var url = A2(
+		_Lattyware$massivedecks$MassiveDecks_Components_Errors$reportUrl,
+		{url: model.init.url, version: model.init.version},
+		'I was [a short explanation of what you were doing] when [a short explanation of the bug].');
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -14995,7 +15086,8 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$gameMenu = function (mo
 												A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
 												A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
 												_elm_lang$html$Html_Events$onClick(
-												_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$OverlayMessage(_Lattyware$massivedecks$MassiveDecks_Components_About$show))
+												_Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_Messages$OverlayMessage(
+													_Lattyware$massivedecks$MassiveDecks_Components_About$show(model.init.version)))
 											]),
 										_elm_lang$core$Native_List.fromArray(
 											[
@@ -15013,7 +15105,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Lobby_UI$gameMenu = function (mo
 										_elm_lang$html$Html$a,
 										_elm_lang$core$Native_List.fromArray(
 											[
-												_elm_lang$html$Html_Attributes$href('https://github.com/Lattyware/massivedecks/issues/new'),
+												_elm_lang$html$Html_Attributes$href(url),
 												_elm_lang$html$Html_Attributes$target('_blank')
 											]),
 										_elm_lang$core$Native_List.fromArray(
@@ -16522,7 +16614,10 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start$view = function (model) {
 					A2(
 					_elm_lang$html$Html_App$map,
 					_Lattyware$massivedecks$MassiveDecks_Scenes_Start_Messages$ErrorMessage,
-					_Lattyware$massivedecks$MassiveDecks_Components_Errors$view(model.errors))
+					A2(
+						_Lattyware$massivedecks$MassiveDecks_Components_Errors$view,
+						{url: model.init.url, version: model.init.version},
+						model.errors))
 				]),
 			_Lattyware$massivedecks$MassiveDecks_Components_Overlay$view(model.overlay)));
 };
@@ -16674,8 +16769,13 @@ var _Lattyware$massivedecks$MassiveDecks$main = {
 										_elm_lang$core$Json_Decode$andThen,
 										A2(_elm_lang$core$Json_Decode_ops[':='], 'url', _elm_lang$core$Json_Decode$string),
 										function (url) {
-											return _elm_lang$core$Json_Decode$succeed(
-												{browserNotificationsSupported: browserNotificationsSupported, existingGame: existingGame, gameCode: gameCode, seed: seed, url: url});
+											return A2(
+												_elm_lang$core$Json_Decode$andThen,
+												A2(_elm_lang$core$Json_Decode_ops[':='], 'version', _elm_lang$core$Json_Decode$string),
+												function (version) {
+													return _elm_lang$core$Json_Decode$succeed(
+														{browserNotificationsSupported: browserNotificationsSupported, existingGame: existingGame, gameCode: gameCode, seed: seed, url: url, version: version});
+												});
 										});
 								});
 						});

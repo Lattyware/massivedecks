@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import MassiveDecks.Components.About as About
+import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Components.Overlay as Overlay
@@ -233,30 +234,35 @@ notificationsMenuItem model =
 {-| The menu for the game.
 -}
 gameMenu : Model -> Html ConsumerMessage
-gameMenu model = div [ class "menu mui-dropdown" ]
-  [ button [ class "mui-btn mui-btn--small mui-btn--primary"
-           , attribute "data-mui-toggle" "dropdown"
-           , title "Game menu."
-           ] [ Icon.fwIcon "ellipsis-h" ]
-  , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
-       ([ li [] [ a [ class "link"
-                    , attribute "tabindex" "0"
-                    , attribute "role" "button"
-                    , onClick (DisplayInviteOverlay |> LocalMessage)
-                    ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
-        ] ++ (notificationsMenuItem model.browserNotifications) ++
-        [ li [] [ a [ class "link"
-                    , attribute "tabindex" "0"
-                    , attribute "role" "button"
-                    , onClick Leave
-                    ] [ Icon.fwIcon "sign-out", text " Leave Game" ] ]
-        , li [ class "mui-divider" ] []
-        , li [] [ a [ class "link"
-                    , attribute "tabindex" "0"
-                    , attribute "role" "button"
-                    , onClick (About.show |> OverlayMessage)
-                    ] [ Icon.fwIcon "info-circle", text " About" ] ]
-        , li [] [ a [ href "https://github.com/Lattyware/massivedecks/issues/new", target "_blank" ]
-                    [ Icon.fwIcon "bug", text " Report a bug" ] ]
-        ])
-  ]
+gameMenu model =
+  let
+   url = (Errors.reportUrl { url = model.init.url, version = model.init.version }
+            "I was [a short explanation of what you were doing] when [a short explanation of the bug].")
+  in
+    div [ class "menu mui-dropdown" ]
+      [ button [ class "mui-btn mui-btn--small mui-btn--primary"
+               , attribute "data-mui-toggle" "dropdown"
+               , title "Game menu."
+               ] [ Icon.fwIcon "ellipsis-h" ]
+      , ul [ class "mui-dropdown__menu mui-dropdown__menu--right" ]
+           ([ li [] [ a [ class "link"
+                        , attribute "tabindex" "0"
+                        , attribute "role" "button"
+                        , onClick (DisplayInviteOverlay |> LocalMessage)
+                        ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
+            ] ++ (notificationsMenuItem model.browserNotifications) ++
+            [ li [] [ a [ class "link"
+                        , attribute "tabindex" "0"
+                        , attribute "role" "button"
+                        , onClick Leave
+                        ] [ Icon.fwIcon "sign-out", text " Leave Game" ] ]
+            , li [ class "mui-divider" ] []
+            , li [] [ a [ class "link"
+                        , attribute "tabindex" "0"
+                        , attribute "role" "button"
+                        , onClick (About.show model.init.version |> OverlayMessage)
+                        ] [ Icon.fwIcon "info-circle", text " About" ] ]
+            , li [] [ a [ href url, target "_blank" ]
+                        [ Icon.fwIcon "bug", text " Report a bug" ] ]
+            ])
+      ]

@@ -1,4 +1,4 @@
-@(url: String)<!doctype html>
+@(url: String, version: String)<!doctype html>
 <html lang="en">
     <head>
         @head("Massive Decks", url)
@@ -15,7 +15,7 @@
     <body>
         <script src="@routes.Assets.versioned("javascripts/MassiveDecks.js")"></script>
         <script>
-          start("@url");
+          start("@url", "@version");
         </script>
     </body>
 </html>

@@ -25,6 +25,7 @@ view model =
     inactive = ([], "")
     ((createLiClass, createDivClass), (joinLiClass, joinDivClass)) =
       if model.init.gameCode /= Nothing then (inactive, active) else (active, inactive)
+    versionInfo = if String.isEmpty model.init.version then [] else [ text " Version ", text model.init.version ]
   in
     div [ id "start-screen" ]
         [ div [ id "start-screen-content", class "mui-panel" ]
@@ -35,12 +36,17 @@ view model =
                [ a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"
                    , attribute "role" "button"
-                   , onClick (About.show |> OverlayMessage)
+                   , onClick (About.show model.init.version |> OverlayMessage)
                    ]
                    [ Icon.icon "question-circle" , text " About" ]
                , div [ id "forkongithub" ] [ div [] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
                                                         [ Icon.icon "github", text " Fork me on GitHub" ] ] ]
                ])
+        , footer []
+                 [ a [ href "https://github.com/Lattyware/massivedecks" ]
+                     [ img [ src "images/icon.svg", alt "The Massive Decks logo.", title "Massive Decks" ] [] ]
+                 , p [] versionInfo
+                 ]
         ]
 
 renderTab : Bool -> Bool -> Model -> Tab -> List (Html Message)

@@ -1,13 +1,15 @@
 module MassiveDecks.Components.About exposing (show)
 
+import String
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
 import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
 
 
-show : Overlay.Message a
-show = Overlay.Show (Overlay icon title contents)
+show : String -> Overlay.Message a
+show version = Overlay.Show (Overlay icon title (contents version))
 
 
 icon : String
@@ -18,9 +20,9 @@ title : String
 title = "About"
 
 
-contents : List (Html a)
-contents =
-  [ p [] [ text "Massive Decks is a web game based on the excellent "
+contents : String -> List (Html a)
+contents version =
+  ([ p [] [ text "Massive Decks is a web game based on the excellent "
          , a [ href "https://cardsagainsthumanity.com/", target "_blank" ] [ text "Cards against Humanity" ]
          , text " - a party game where you play white cards to try and produce the most amusing outcome when "
          , text "combined with the given black card."
@@ -60,4 +62,4 @@ contents =
          , text " granted by "
          , a [ href "https://cardsagainsthumanity.com/", target "_blank" ] [ text "Cards against Humanity" ]
          ]
-  ]
+  ]) ++ (if String.isEmpty version then [] else [ p [] [ text ("This server is running version " ++ version ++ ".") ] ])

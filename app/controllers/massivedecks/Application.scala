@@ -16,7 +16,7 @@ class Application @Inject() (store: LobbyStore) extends Controller {
 
   def index() = Action { request =>
     val config = Config(request)
-    Ok(views.html.massivedecks.index(config.url)).as(HTML)
+    Ok(views.html.massivedecks.index(config.url, config.version)).as(HTML)
   }
 
   def manifest() = Action { request =>

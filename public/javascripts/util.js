@@ -2,7 +2,7 @@ function toggleWarningDrawer() {
   document.getElementById('#warning-drawer').classList.toggle('shut');
 }
 
-function start(url) {
+function start(url, version) {
   var gameCode = window.location.hash.substr(1);
   var existingGame = localStorage.getItem("existing-game");
   if (existingGame != null) {
@@ -13,6 +13,7 @@ function start(url) {
     }
   }
   var initialState = {
+    version: version,
     url: url,
     gameCode: gameCode == "" ? null : gameCode,
     existingGame: existingGame,
