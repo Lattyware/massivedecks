@@ -74,7 +74,7 @@ reportText message =
 reportUrl : ApplicationInfo -> String -> String
 reportUrl applicationInfo message =
   let
-    version = if String.isEmpty applicationInfo.version then "Not Specified" else ""
+    version = if String.isEmpty applicationInfo.version then "Not Specified" else applicationInfo.version
     full = message ++ "\n\nApplication Info:\n\tVersion: " ++ version ++ "\n\tURL: " ++ applicationInfo.url
   in
     url "https://github.com/Lattyware/massivedecks/issues/new" [ ( "body", full ) ]
