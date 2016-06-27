@@ -24,7 +24,7 @@ object Game {
 
   case class Config(decks: List[DeckInfo], houseRules: Set[String])
 
-  case class Round(czar: Player.Id, call: Call, responses: Responses) {
+  case class Round(czar: Player.Id, call: Call, responses: Responses, afterTimeLimit: Boolean) {
     require(responses.revealed.isEmpty ||
       responses.revealed.get.cards.forall(playerResponses => playerResponses.length == call.slots),
         "Plays for a call must have a number of responses equal to the number of spots in the call.")

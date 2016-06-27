@@ -255,11 +255,12 @@ handleEvent event =
       [ UpdateHand hand ]
 
     Event.RoundStart czar call ->
-      [ UpdateLobby (\lobby -> { lobby | round = Just (Game.Round czar call (Card.Hidden 0)) }) ]
+      [ UpdateLobby (\lobby -> { lobby | round = Just (Game.Round czar call (Card.Hidden 0) False) }) ]
     Event.RoundPlayed playedCards ->
       [ updateRound (\round -> { round | responses = Card.Hidden playedCards }) ]
     Event.RoundJudging playedCards ->
-        [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses playedCards Nothing) })
+        [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses playedCards Nothing)
+                                         , afterTimeLimit = False })
         , BrowserNotificationForUser (\lobby -> lobby.round |> Maybe.map .czar) "You need to pick a winner for the round." "gavel"
         ]
     Event.RoundEnd finishedRound ->
@@ -276,6 +277,9 @@ handleEvent event =
 
     Event.ConfigChange config ->
       [ UpdateLobby (\lobby -> { lobby | config = config }) ]
+
+    Event.RoundTimeLimitHit ->
+      [ updateRound (\round -> { round | afterTimeLimit = True }) ]
 
 
 updatePlayer : Player.Id -> (Player -> Player) -> Message

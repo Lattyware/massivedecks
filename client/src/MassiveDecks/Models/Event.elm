@@ -32,6 +32,8 @@ type Event
 
   | ConfigChange Game.Config
 
+  | RoundTimeLimitHit
+
 
 fromJson : String -> Result String Event
 fromJson json = Json.decodeString eventDecoder json
@@ -65,5 +67,7 @@ specificEventDecoder name =
     "GameEnd" -> Json.succeed GameEnd
 
     "ConfigChange" -> Json.object1 ConfigChange ("config" := configDecoder)
+
+    "RoundTimeLimitHit" -> Json.succeed RoundTimeLimitHit
 
     unknown -> Json.fail (unknown ++ " is not a recognised event.")

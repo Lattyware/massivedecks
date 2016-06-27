@@ -1,11 +1,14 @@
 package controllers.massivedecks.lobby
 
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 import models.massivedecks.Game._
 import models.massivedecks.Player
 import controllers.massivedecks.exceptions.BadRequestException
 import controllers.massivedecks.notifications.Notifiers
+import controllers.massivedecks.Util
 
 /**
   * The state of the game.
@@ -14,7 +17,7 @@ import controllers.massivedecks.notifications.Notifiers
   * @param config The configuration for the lobby the game is in.
   * @param notifiers The notifiers for the lobby the game is in.
   */
-class Game(players: Players, config: Config, notifiers: Notifiers) {
+class Game(players: Players, config: Config, notifiers: Notifiers) (implicit context: ExecutionContext) {
 
   import Game._
 
@@ -31,6 +34,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
     id -> hand
   }).toMap
   private var roundProgress: RoundProgress = Playing
+  private var roundTimedOut: Boolean = false
 
   // Initial values overwritten by beginRound() call below, just keeping the compiler happy.
   private var czar: Player.Id = Player.Id(0)
@@ -55,7 +59,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
       case Finished(shuffled, playedOrder, winner) =>
         Responses.revealed(Revealed(shuffled, Some(PlayedByAndWinner(playedOrder, winner))))
     }
-    Round(czar, call, responses)
+    Round(czar, call, responses, roundTimedOut)
   }
 
   /**
@@ -118,12 +122,22 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
       play(ai.id, getIdsForFirstXCardsInHand(ai.id, call.slots))
     }
 
+    startRoundTimer(call)
     checkIfFinishedPlaying()
   }
 
   private def getIdsForFirstXCardsInHand(playerId: Player.Id, amount: Int): List[String] = {
     val hand = hands(playerId).hand
     (0 until amount).map(i => hand(i).id).toList
+  }
+
+  private def startRoundTimer(call: Call) = Future {
+    roundTimedOut = false
+    Util.wait(Game.roundTimeLimit)
+    if (round.call == call) {
+      roundTimedOut = true
+      notifiers.roundTimeLimitHit()
+    }
   }
 
   /**
@@ -229,6 +243,8 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
 
   private def checkIfFinishedPlaying(): Unit = {
     if (roundProgress == Playing && playedCards.values.forall(item => item.isDefined)) {
+      roundTimedOut = false
+      startRoundTimer(round.call)
       val shuffled = Random.shuffle(playedCards)
       val shuffledPlayedCards = shuffled.map(item => item._2.get).toList
       roundProgress = Judging(shuffledPlayedCards, shuffled.map(item => item._1).toList)
@@ -255,6 +271,8 @@ class Game(players: Players, config: Config, notifiers: Notifiers) {
 
 }
 object Game {
+  val roundTimeLimit = 60.seconds
+
   /**
     * Represents the progress through a round.
     */

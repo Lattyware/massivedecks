@@ -145,6 +145,12 @@ class Notifiers (implicit context: ExecutionContext) {
     ))
 
 
+  def roundTimeLimitHit(): Unit =
+    notifyAll(Json.obj(
+      "event" -> "RoundTimeLimitHit"
+    ))
+
+
   private def notify(player: Player.Id, event: JsValue) =
     identified.get(player).foreach { notifier => notifier.notify(event.toString) }
 

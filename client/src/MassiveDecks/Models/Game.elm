@@ -43,6 +43,7 @@ type alias Round =
   { czar : Player.Id
   , call : Card.Call
   , responses : Card.Responses
+  , afterTimeLimit : Bool
   }
 
 

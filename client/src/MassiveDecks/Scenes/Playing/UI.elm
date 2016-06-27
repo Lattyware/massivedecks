@@ -35,12 +35,17 @@ view lobbyModel =
 
               Nothing ->
                 ([], [])
+    timedOut = lobby.round |> Maybe.map .afterTimeLimit |> Maybe.withDefault False
+    judging = lobby.round |> Maybe.map (\round -> case round.responses of
+      Card.Hidden _ -> False
+      Card.Revealed _ -> True) |> Maybe.withDefault False
   in
     case model.history of
       Nothing ->
         (header, List.concat [ infoBar lobby lobbyModel.secret
                              , content
                              , [ warningDrawer (List.concat [ skippingNotice lobby.players lobbyModel.secret.id
+                                                            , timeoutNotice lobbyModel.secret.id lobby.players judging timedOut
                                                             , disconnectedNotice lobby.players
                                                             ]) ]
                              ])
@@ -68,8 +73,7 @@ gameMenu lobbyModel =
                            ]
                            [ Icon.fwIcon "history", text " ", text "Game History" ]
                        ]
-               ] ++
-               (List.concatMap (gameMenuItems lobbyModel) enabled))
+               ] ++ (List.concatMap (gameMenuItems lobbyModel) enabled))
         ]
 
 
@@ -357,13 +361,7 @@ renderSkippingNotice : List (Html Message)
 renderSkippingNotice =
   [ div [ class "notice" ]
     [ h3 [] [ Icon.icon "fast-forward" ]
-    , span [] [ text "You are currently being skipped because you took too long to play. "
-              , a [ class "link"
-                  , attribute "tabindex" "0"
-                  , attribute "role" "button"
-                  ]
-                  [ Icon.fwIcon "bell", text "Enable Notifications?" ]
-              ]
+    , span [] [ text "You are currently being skipped because you took too long to play." ]
     , div [ class "actions" ]
           [ button [ class "mui-btn mui-btn--small"
                    , onClick Back
@@ -375,38 +373,53 @@ renderSkippingNotice =
  ]
 
 
-timeoutNotice : List Player -> Bool -> List (Html Message)
-timeoutNotice players timeout =
+timeoutNotice : Player.Id -> List Player -> Bool -> Bool -> List (Html Message)
+timeoutNotice playerId players judging timeout =
   let
-    timedOutPlayers = List.filter (\player -> player.status == Player.NotPlayed) players
+    description = if judging then "picked a winnner for the round" else "played into the round"
+    requiredStatus = if judging then Player.Czar else Player.NotPlayed
+    timedOutPlayers = List.filter (\player -> player.status == requiredStatus) players
     timedOutNames = Util.joinWithAnd (List.map .name timedOutPlayers)
     timedOutIds = List.map .id timedOutPlayers
+    includesPlayer = List.member playerId timedOutIds
   in
     if timeout then
-      Maybe.map (renderTimeoutNotice timedOutIds (Util.pluralHas timedOutPlayers)) timedOutNames
-      |> Maybe.map (\item -> [ item ])
-      |> Maybe.withDefault []
+      Maybe.map (renderTimeoutNotice includesPlayer description timedOutIds (Util.pluralHas timedOutPlayers)) timedOutNames
+        |> Maybe.map (\item -> [ item ])
+        |> Maybe.withDefault []
     else
       []
 
 
-renderTimeoutNotice : List Player.Id -> String -> String -> Html Message
-renderTimeoutNotice ids has names =
-  div [ class "notice" ]
-      [ h3 [] [ Icon.icon "minus-circle" ]
-      , span [] [ text names
-                , text " "
-                , text has
-                , text " not played into the round before the round timer ran out."
-                ]
-      , div [ class "actions" ]
-            [ button [ class "mui-btn mui-btn--small"
-                     , onClick (Skip ids)
-                     , title "They will be removed from this round, and won't be in future rounds until they come back."
-                     ]
-                     [ Icon.icon "fast-forward", text " Skip" ]
-            ]
-      ]
+renderTimeoutNotice : Bool -> String -> List Player.Id -> String -> String -> Html Message
+renderTimeoutNotice includesPlayer description ids has names =
+  if includesPlayer then
+    div [ class "notice" ]
+        [ h3 [] [ Icon.icon "exclamation-circle" ]
+        , span [] [ text "The time has run out for you to have "
+                  , text description
+                  , text " and you can now be skipped."
+                  ]
+        ,  div [ class "actions" ] []
+        ]
+  else
+    div [ class "notice" ]
+        [ h3 [] [ Icon.icon "minus-circle" ]
+        , span [] [ text names
+                  , text " "
+                  , text has
+                  , text " not "
+                  , text description
+                  , text " before the round timer ran out."
+                  ]
+        , div [ class "actions" ]
+              [ button [ class "mui-btn mui-btn--small"
+                       , onClick (Skip ids)
+                       , title "They will be removed from this round, and won't be in future rounds until they come back."
+                       ]
+                       [ Icon.icon "fast-forward", text " Skip" ]
+              ]
+        ]
 
 
 disconnectedNotice : List Player -> List (Html Message)

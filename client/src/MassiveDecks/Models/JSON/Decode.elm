@@ -56,10 +56,11 @@ playerStatusDecoder = customDecoder (string) (\name -> nameToStatus name |> Resu
 
 
 roundDecoder : Decoder Round
-roundDecoder = object3 Round
+roundDecoder = object4 Round
   ("czar" := playerIdDecoder)
   ("call" := callDecoder)
   ("responses" := responsesDecoder)
+  ("afterTimeLimit" := bool)
 
 
 finishedRoundDecoder : Decoder FinishedRound

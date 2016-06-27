@@ -2,10 +2,11 @@ package controllers.massivedecks.lobby
 
 import javax.inject.Inject
 
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
+import controllers.massivedecks.Util
 import controllers.massivedecks.cardcast.CardcastAPI
 import controllers.massivedecks.exceptions.{BadRequestException, ForbiddenException, RequestFailedException}
 import controllers.massivedecks.notifications.Notifiers
@@ -35,13 +36,6 @@ object Lobby {
     * How long to wait for calls to Cardcast to complete.
     */
   val cardCastWaitPeriod: FiniteDuration = 10.seconds
-
-  /**
-    * Wait for the given amount of time.
-    * @param duration The time to wait for.
-    * @return A future to wait on.
-    */
-  def wait(duration: FiniteDuration): Try[Future[Nothing]] = Try(Await.ready(Promise().future, duration))
 }
 /**
   * Represents a game lobby.
@@ -259,9 +253,18 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
     */
   def skip(secret: Player.Secret, playerIds: Set[Player.Id]): JsValue = {
     players.validateSecret(secret)
-    BadRequestException.verify((players.activePlayers.length - playerIds.size) >= Players.minimum, "not-enough-players-to-skip")
-    BadRequestException.verify(players.players.filter(player => playerIds.contains(player.id)).forall(player => player.disconnected), "players-must-be-skippable")
     val game = validateInGame()
+    BadRequestException.verify((players.activePlayers.length - playerIds.size) >= Players.minimum, "not-enough-players-to-skip")
+    val requestedPlayers = players.players.filter(player => playerIds.contains(player.id))
+    if (!game.round.afterTimeLimit) {
+      BadRequestException.verify(requestedPlayers.forall(player => player.disconnected), "players-must-be-skippable")
+    } else {
+      if (game.round.responses.revealed.isDefined) {
+        BadRequestException.verify(requestedPlayers.forall(player => player.status == Player.Czar), "players-must-be-skippable")
+      } else {
+        BadRequestException.verify(requestedPlayers.forall(player => player.status == Player.NotPlayed), "players-must-be-skippable")
+      }
+    }
     game.skip(secret.id, playerIds)
     Json.toJson("")
   }
@@ -340,7 +343,7 @@ class Lobby(cardcast: CardcastAPI, gameCode: String)(implicit context: Execution
 
   private def setPlayerDisconnectedAfterGracePeriod(playerId: Id): Unit = {
     Future {
-      Lobby.wait(Lobby.disconnectGracePeriod)
+      Util.wait(Lobby.disconnectGracePeriod)
       if (!players.connected.contains(playerId)) {
         players.updatePlayer(playerId, players.setPlayerDisconnected(true))
       }

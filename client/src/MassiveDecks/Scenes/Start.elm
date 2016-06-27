@@ -1,5 +1,7 @@
 module MassiveDecks.Scenes.Start exposing (update, view, init, subscriptions)
 
+import String
+
 import Html exposing (..)
 import Html.App as Html
 
@@ -31,6 +33,7 @@ init init =
 
       Nothing ->
         Cmd.none
+    tab = if init.gameCode |> Maybe.withDefault "" |> String.isEmpty then Create else Join
   in
     ( { lobby = Nothing
       , init = init
@@ -40,7 +43,7 @@ init init =
       , errors = Errors.init
       , overlay = Overlay.init OverlayMessage
       , buttonsEnabled = True
-      , tabs = Tabs.init [ Tabs.Tab Create [ text "Create" ], Tabs.Tab Join [ text "Join" ] ] Create TabsMessage
+      , tabs = Tabs.init [ Tabs.Tab Create [ text "Create" ], Tabs.Tab Join [ text "Join" ] ] tab TabsMessage
       }
     , command)
 
