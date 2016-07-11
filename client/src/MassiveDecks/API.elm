@@ -15,7 +15,7 @@ import MassiveDecks.Models.JSON.Encode exposing (..)
 {-| Makes a request to create a new game lobby to the server. On success, returns that lobby.
 -}
 createLobby : Request Never Game.Lobby
-createLobby = request "POST" "/lobbies" Nothing [] lobbyDecoder
+createLobby = request "POST" "/api/lobbies" Nothing [] lobbyDecoder
 
 
 {-| Errors specific to new player requests.
@@ -32,7 +32,7 @@ newPlayer : String -> String -> Request NewPlayerError Player.Secret
 newPlayer gameCode name =
   request
     "POST"
-    ("/lobbies/" ++ gameCode ++ "/players")
+    ("/api/lobbies/" ++ gameCode ++ "/players")
     (Just (encodeName name))
     [ ((400, "name-in-use"), Decode.succeed NameInUse)
     , ((404, "lobby-not-found"), Decode.succeed NewPlayerLobbyNotFound)
@@ -59,7 +59,7 @@ getHand : String -> Player.Secret -> Request Never Card.Hand
 getHand gameCode secret =
   request
     "POST"
-    ("/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id))
+    ("/api/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id))
     (Just (encodePlayerSecret secret))
     []
     handDecoder
@@ -71,7 +71,7 @@ getHistory : String -> Request Never (List Game.FinishedRound)
 getHistory gameCode =
   request
     "GET"
-    ("/lobbies/" ++ gameCode ++ "/history")
+    ("/api/lobbies/" ++ gameCode ++ "/history")
     Nothing
     []
     (Decode.list finishedRoundDecoder)
@@ -107,7 +107,7 @@ newAi : String -> Player.Secret -> Request Never ()
 newAi gameCode secret =
   request
     "POST"
-    ("/lobbies/" ++ gameCode ++ "/players/newAi")
+    ("/api/lobbies/" ++ gameCode ++ "/players/newAi")
     (Just (encodePlayerSecret secret))
     []
     (Decode.succeed ())
@@ -189,13 +189,13 @@ play gameCode secret ids =
 
 
 {-| Errors specific to skipping a player in the lobby.
-* `NotEnoughPlayersToSkip` - The number of active players would drop below the minimum if the given players were
-*                            skipped.
+* `NotEnoughPlayers` - The number of active players would drop below the minimum if the given players were
+*                      skipped.
 * `PlayersNotSkippable` - One of the given players was not in a state where they could be skipped (i.e.: not
 *                         disconnected or timed out).
 -}
 type SkipError
-  = NotEnoughPlayersToSkip
+  = NotEnoughPlayersToSkip Int
   | PlayersNotSkippable
 
 {-| Make a request to skip the given players in the given lobby using the given secret to authenticate.
@@ -205,7 +205,7 @@ skip gameCode secret players =
   commandRequest
     "skip"
     [ ("players", Encode.list (List.map Encode.int players)) ]
-    [ ((400, "not-enough-players-to-skip"), Decode.succeed NotEnoughPlayersToSkip)
+    [ ((400, "not-enough-players"), Decode.object1 NotEnoughPlayersToSkip ("required" := Decode.int))
     , ((400, "players-must-be-skippable"), Decode.succeed PlayersNotSkippable)
     ]
     (Decode.succeed ())
@@ -225,7 +225,7 @@ leave : String -> Player.Secret -> Request Never ()
 leave gameCode secret =
   request
     "POST"
-    ("/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id) ++ "/leave")
+    ("/api/lobbies/" ++ gameCode ++ "/players/" ++ (toString secret.id) ++ "/leave")
     (Just (encodePlayerSecret secret))
     []
     (Decode.succeed ())
@@ -244,7 +244,7 @@ redraw =
   commandRequest
     "redraw"
     []
-    [ ((400, "not-enough-points-to-redraw"), Decode.succeed NotEnoughPoints)
+    [ ((400, "not-enough-points"), Decode.succeed NotEnoughPoints)
     ]
     handDecoder
 
@@ -270,4 +270,4 @@ disableRule rule gameCode secret =
 -}
 commandRequest : String -> List ( String, Encode.Value ) -> List (KnownError a) -> Decode.Decoder b -> String -> Player.Secret -> Request a b
 commandRequest name args errors decoder gameCode secret =
-  request "POST" ("/lobbies/" ++ gameCode) (Just (encodeCommand name secret args)) errors decoder
+  request "POST" ("/api/lobbies/" ++ gameCode) (Just (encodeCommand name secret args)) errors decoder

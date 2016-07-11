@@ -1,0 +1,11 @@
+# Lobby APIs
+
+POST    /                                    massivedecks.controllers.API.createLobby()
+GET     /:gameCode                           massivedecks.controllers.API.getLobby(gameCode: String)
+GET     /:gameCode/notifications             massivedecks.controllers.API.notifications(gameCode: String)
+GET     /:gameCode/history                   massivedecks.controllers.API.getHistory(gameCode: String)
+POST    /:gameCode                           massivedecks.controllers.API.command(gameCode: String)
+POST    /:gameCode/players                   massivedecks.controllers.API.newPlayer(gameCode: String)
+POST    /:gameCode/players/newAi             massivedecks.controllers.API.newAi(gameCode: String)
+POST    /:gameCode/players/:playerId         massivedecks.controllers.API.getPlayer(gameCode: String, playerId: Int)
+POST    /:gameCode/players/:playerId/leave   massivedecks.controllers.API.leave(gameCode: String, playerId: Int)

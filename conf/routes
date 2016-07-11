@@ -1,19 +1,14 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
+#Pages
+### NoDocs ###
+GET     /                   massivedecks.controllers.Pages.index()
+### NoDocs ###
+GET     /manifest.json      massivedecks.controllers.Pages.manifest()
 
-GET     /                                            controllers.massivedecks.Application.index()
-GET     /manifest.json                               controllers.massivedecks.Application.manifest()
 
-POST    /lobbies                                     controllers.massivedecks.Application.createLobby()
-GET     /lobbies/:gameCode                           controllers.massivedecks.Application.getLobby(gameCode: String)
-GET     /lobbies/:gameCode/notifications             controllers.massivedecks.Application.notifications(gameCode: String)
-GET     /lobbies/:gameCode/history                   controllers.massivedecks.Application.getHistory(gameCode: String)
-POST    /lobbies/:gameCode                           controllers.massivedecks.Application.command(gameCode: String)
-POST    /lobbies/:gameCode/players                   controllers.massivedecks.Application.newPlayer(gameCode: String)
-POST    /lobbies/:gameCode/players/newAi             controllers.massivedecks.Application.newAi(gameCode: String)
-POST    /lobbies/:gameCode/players/:playerId         controllers.massivedecks.Application.getPlayer(gameCode: String, playerId: Int)
-POST    /lobbies/:gameCode/players/:playerId/leave   controllers.massivedecks.Application.leave(gameCode: String, playerId: Int)
+# API
+->  /api/lobbies    lobbies.Routes
 
-# Map static resources from the /public folder to the /assets URL path
-GET     /*file                                       controllers.Assets.versioned(path="/public", file: Asset)
+
+# Static
+### NoDocs ###
+GET     /*file      controllers.Assets.versioned(path="/public", file: Asset)

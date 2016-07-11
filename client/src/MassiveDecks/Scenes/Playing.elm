@@ -237,8 +237,8 @@ playErrorHandler error =
 skipErrorHandler : API.SkipError -> ConsumerMessage
 skipErrorHandler error =
   case error of
-    API.NotEnoughPlayersToSkip ->
-      ErrorMessage <| Errors.New "There are not enough players in the game to skip." False
+    API.NotEnoughPlayersToSkip required ->
+      ErrorMessage <| Errors.New ("There are not enough players in the game to skip (must have at least " ++ (toString required) ++ ").") False
 
     API.PlayersNotSkippable ->
       ErrorMessage <| Errors.New "The players can't be skipped as they are not inactive." False

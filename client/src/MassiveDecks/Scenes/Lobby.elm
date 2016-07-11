@@ -90,7 +90,7 @@ webSocketUrl url gameCode =
         in
           "wss:" ++ host
   in
-    baseUrl ++ "lobbies/" ++ gameCode ++ "/notifications"
+    baseUrl ++ "api/lobbies/" ++ gameCode ++ "/notifications"
 
 
 webSocketResponseDecoder : String -> ConsumerMessage
