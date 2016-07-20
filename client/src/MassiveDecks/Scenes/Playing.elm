@@ -12,11 +12,13 @@ import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.History as History
 import MassiveDecks.Scenes.History.Messages as History
 import MassiveDecks.Scenes.Playing.UI as UI
+import MassiveDecks.Scenes.Playing.UI.Cards as CardsUI
 import MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, ShownCard)
 import MassiveDecks.Scenes.Playing.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Playing.HouseRule as HouseRule exposing (HouseRule)
@@ -105,9 +107,20 @@ update message lobbyModel =
         )
 
       Consider potentialWinnerIndex ->
-        ( { model | considering = Just potentialWinnerIndex }
-        , Cmd.none
-        )
+        let
+          speech =
+            lobby.round `Maybe.andThen` (\round ->
+              case round.responses of
+                Card.Revealed responses ->
+                  Util.get responses.cards potentialWinnerIndex |> Maybe.map (\fill -> (round, fill))
+                Card.Hidden _ ->
+                  Nothing)
+            |> Maybe.map (\(round, callFill) -> TTS.Say (CardsUI.callText round.call callFill) |> TTSMessage |> Util.cmd)
+            |> Maybe.withDefault Cmd.none
+        in
+          ( { model | considering = Just potentialWinnerIndex }
+          , speech
+          )
 
       Choose winnerIndex ->
         ( { model | considering = Nothing }
@@ -144,7 +157,12 @@ update message lobbyModel =
         (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage HandUpdate)
 
       FinishRound finishedRound ->
-          ({ model | finishedRound = Just finishedRound}, Cmd.none)
+        let
+          cards = finishedRound.responses
+          winning = Card.winningCards cards finishedRound.playedByAndWinner |> Maybe.withDefault []
+          speech = Card.filled finishedRound.call winning
+        in
+          ({ model | finishedRound = Just finishedRound}, TTS.Say speech |> TTSMessage |> Util.cmd)
 
       HistoryMessage historyMessage ->
         case model.history of

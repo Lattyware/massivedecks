@@ -10,6 +10,7 @@ import MassiveDecks.Scenes.Playing.Messages as Playing
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
+import MassiveDecks.Components.TTS as TTS
 
 
 {-| This type is used for all sending of messages, allowing us to send messages handled outside this scene.
@@ -39,3 +40,4 @@ type Message
   | ConfigMessage Config.ConsumerMessage
   | PlayingMessage Playing.ConsumerMessage
   | SidebarMessage Sidebar.Message
+  | TTSMessage TTS.Message

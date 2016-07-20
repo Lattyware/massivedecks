@@ -1,6 +1,7 @@
 module MassiveDecks.Scenes.Playing.Messages exposing (..)
 
 import MassiveDecks.Components.Errors as Errors
+import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Scenes.History.Messages as History
 import MassiveDecks.Models.Player as Player
 import MassiveDecks.Models.Game as Game
@@ -11,6 +12,7 @@ import MassiveDecks.Models.Card as Card
 -}
 type ConsumerMessage
   = HandUpdate Card.Hand
+  | TTSMessage TTS.Message
   | ErrorMessage Errors.Message
   | LocalMessage Message
 

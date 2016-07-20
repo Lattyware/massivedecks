@@ -9,6 +9,7 @@ import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Scenes.Config.Models as Config
 import MassiveDecks.Scenes.Playing.Models as Playing
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
+import MassiveDecks.Components.TTS as TTS
 
 
 {-| The state of the lobby.
@@ -24,4 +25,5 @@ type alias Model =
   , notification : Maybe Notification
   , qrNeedsRendering : Bool
   , sidebar : Sidebar.Model
+  , tts : TTS.Model
   }

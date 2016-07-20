@@ -15,6 +15,7 @@ import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
 import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
+import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.Event as Event exposing (Event)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
@@ -47,6 +48,7 @@ init init lobbyAndHand secret =
   , notification = Nothing
   , qrNeedsRendering = False
   , sidebar = Sidebar.init 768 {- Should match the enhance-width in less. -}
+  , tts = TTS.init
   } ! []
 
 
@@ -142,6 +144,9 @@ update message model =
           Playing.HandUpdate hand ->
             model |> updateLobbyAndHand (Game.LobbyAndHand model.lobby hand)
 
+          Playing.TTSMessage ttsMessage ->
+            (model, TTSMessage ttsMessage |> LocalMessage |> Util.cmd)
+
           Playing.LocalMessage localMessage ->
             let
               (playing, cmd) = Playing.update localMessage model
@@ -153,6 +158,12 @@ update message model =
           (sidebarModel, cmd) = Sidebar.update sidebarMessage model.sidebar
         in
           ({ model | sidebar = sidebarModel }, Cmd.map (LocalMessage << SidebarMessage) cmd)
+
+      TTSMessage ttsMessage ->
+        let
+          (ttsModel, cmd) = TTS.update ttsMessage model.tts
+        in
+          ({ model | tts = ttsModel }, Cmd.map (LocalMessage << TTSMessage) cmd)
 
       BrowserNotificationsMessage notificationMessage ->
         let

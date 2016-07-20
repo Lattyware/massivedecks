@@ -1,4 +1,6 @@
-module MassiveDecks.Scenes.Playing.UI.Cards exposing (call, response)
+module MassiveDecks.Scenes.Playing.UI.Cards exposing (call, callText, response)
+
+import String
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,6 +24,21 @@ call call picked =
     callContents = if responseFirst then List.tail withSlots |> Maybe.withDefault withSlots else withSlots
   in
     div [ class "card call mui-panel" ] [ div [ class "call-text" ] callContents ]
+
+
+callText : Card.Call -> List Card.Response -> String
+callText call picked =
+  let
+    responseFirst = call.parts |> List.head |> Maybe.map ((==) "") |> Maybe.withDefault False
+    pickedText = List.map .text picked
+    (parts, responses) = if responseFirst then
+        (call.parts, Util.mapFirst Util.firstLetterToUpper pickedText)
+      else
+        (Util.mapFirst Util.firstLetterToUpper call.parts, pickedText)
+    extra = (Card.slots call) - List.length picked
+    withSlots = Util.interleave (List.concat [pickedText, List.repeat extra "blank"]) call.parts
+  in
+    String.join " " withSlots
 
 
 slot : String -> Html msg

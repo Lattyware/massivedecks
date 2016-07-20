@@ -33,6 +33,15 @@ function start(url, version) {
     }
   });
 
+  if ('speechSynthesis' in window) {
+    game.ports.say.subscribe(function (text) {
+        window.speechSynthesis.cancel();
+        var utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-GB";
+        window.speechSynthesis.speak(utterance);
+    });
+  }
+
   game.ports.qr.subscribe(function (idAndValue) {
     new QRCode(document.getElementById(idAndValue.id), {
       text: idAndValue.value,

@@ -11,6 +11,7 @@ import MassiveDecks.Components.QR as QR
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Components.Overlay as Overlay
 import MassiveDecks.Components.BrowserNotifications as BrowserNotifications
+import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Scenes.Config as Config
 import MassiveDecks.Scenes.Playing as Playing
 import MassiveDecks.Scenes.Lobby.Models exposing (Model)
@@ -252,6 +253,14 @@ gameMenu model =
                         ] [ Icon.fwIcon "bullhorn", text " Invite Players" ] ]
             ] ++ (notificationsMenuItem model.browserNotifications) ++
             [ li [] [ a [ class "link"
+                        , attribute "tabindex" "0"
+                        , attribute "role" "button"
+                        , onClick (TTS.Enabled (not model.tts.enabled) |> TTSMessage |> LocalMessage)
+                        ]
+                        (if model.tts.enabled then [ Icon.fwIcon "volume-off", text " Disable Speech" ]
+                          else [ Icon.fwIcon "volume-up", text " Enable Speech" ])
+                    ]
+            , li [] [ a [ class "link"
                         , attribute "tabindex" "0"
                         , attribute "role" "button"
                         , onClick Leave
