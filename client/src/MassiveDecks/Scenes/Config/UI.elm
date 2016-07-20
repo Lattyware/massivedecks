@@ -64,7 +64,7 @@ invite appUrl lobbyId =
 deckIdInputLabel : List (Html msg)
 deckIdInputLabel =
   [ text " A "
-  , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "Cardcast" ]
+  , a [ href "https://www.cardcastgame.com/browse", target "_blank", rel "noopener" ] [ text "Cardcast" ]
   , text " Play Code"
   ]
 
@@ -89,31 +89,42 @@ deckList decks loadingDecks deckId =
         , th [ title "Responses" ] [ Icon.icon "square-o" ]
         ]
       ]
-    , tbody [] (List.concat
+    , Util.tbody [] (List.concat
       [ emptyDeckListInfo ((List.isEmpty decks) && List.isEmpty loadingDecks)
-      , List.map (\deck -> tr []
-        [ td [] [ deckLink deck.id ]
-        , td [ title deck.name ] [ text deck.name ]
-        , td [] [ text (toString deck.calls) ]
-        , td [] [ text (toString deck.responses) ]
-        ]) decks
-      , List.map (\deck -> tr [] [ td [] [ deckLink deck ], td [ colspan 3 ] [ Icon.spinner ] ]) loadingDecks
-      , [ tr [] [ td [ colspan 4 ] [ Input.view deckId ] ] ]
+      , List.map loadedDeckEntry decks
+      , List.map loadingDeckEntry loadingDecks
+      , [ ("!!input", tr [] [ td [ colspan 4 ] [ Input.view deckId ] ]) ]
       ])
     ]
 
+loadedDeckEntry : Game.DeckInfo -> (String, Html msg)
+loadedDeckEntry deck =
+  let
+    row = tr [] [ td [] [ deckLink deck.id ]
+                , td [ title deck.name ] [ text deck.name ]
+                , td [] [ text (toString deck.calls) ]
+                , td [] [ text (toString deck.responses) ]
+                ]
+  in
+    (deck.id, row)
+
+loadingDeckEntry : String -> (String, Html msg)
+loadingDeckEntry deckId =
+  let
+    row = tr [] [ td [] [ deckLink deckId ], td [ colspan 3 ] [ Icon.spinner ] ]
+  in
+    (deckId, row)
 
 deckLink : String -> Html msg
-deckLink id = a [ href ("https://www.cardcastgame.com/browse/deck/" ++ id), target "_blank" ] [ text id ]
+deckLink id = a [ href ("https://www.cardcastgame.com/browse/deck/" ++ id), target "_blank", rel "noopener" ] [ text id ]
 
-
-emptyDeckListInfo : Bool -> List (Html Message)
+emptyDeckListInfo : Bool -> List (String, Html Message)
 emptyDeckListInfo display =
   if display then
-    [ tr [] [ td [ colspan 4 ]
+    [ ("!!emptyInfo", tr [] [ td [ colspan 4 ]
         [ Icon.icon "info-circle"
         , text " You will need to add at least one "
-        , a [ href "https://www.cardcastgame.com/browse", target "_blank" ] [ text "Cardcast deck" ]
+        , a [ href "https://www.cardcastgame.com/browse", target "_blank", rel "noopener" ] [ text "Cardcast deck" ]
         , text " to the game."
         , text " Not sure? Try "
         , a [ class "link"
@@ -123,7 +134,7 @@ emptyDeckListInfo display =
             ] [ text "clicking here to add the Cards Against Humanity base set" ]
         , text "."
         ]
-      ]
+      ])
     ]
   else
     []

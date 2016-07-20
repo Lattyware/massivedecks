@@ -21,10 +21,6 @@ view model =
   let
     nameEntered = not (String.isEmpty model.nameInput.value)
     gameCodeEntered = not (String.isEmpty model.gameCodeInput.value)
-    active = ([ class "mui--is-active" ],  " mui--is-active")
-    inactive = ([], "")
-    ((createLiClass, createDivClass), (joinLiClass, joinDivClass)) =
-      if model.init.gameCode /= Nothing then (inactive, active) else (active, inactive)
     versionInfo = if String.isEmpty model.init.version then [] else [ text " Version ", text model.init.version ]
   in
     div [ id "start-screen" ]
@@ -39,7 +35,7 @@ view model =
                    , onClick (About.show model.init.version |> OverlayMessage)
                    ]
                    [ Icon.icon "question-circle" , text " About" ]
-               , div [ id "forkongithub" ] [ div [] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank" ]
+               , div [ id "forkongithub" ] [ div [] [ a [ href "https://github.com/lattyware/massivedecks", target "_blank", rel "noopener" ]
                                                         [ Icon.icon "github", text " Fork me on GitHub" ] ] ]
                ])
         , footer []

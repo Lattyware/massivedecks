@@ -1,5 +1,5 @@
 function toggleWarningDrawer() {
-  document.getElementById('#warning-drawer').classList.toggle('shut');
+  document.getElementById('warning-drawer').classList.toggle('shut');
 }
 
 function start(url, version) {
@@ -34,7 +34,7 @@ function start(url, version) {
   });
 
   game.ports.qr.subscribe(function (idAndValue) {
-    new QRCode(document.getElementById('#' + idAndValue.id), {
+    new QRCode(document.getElementById(idAndValue.id), {
       text: idAndValue.value,
       width: 200,
       height: 200

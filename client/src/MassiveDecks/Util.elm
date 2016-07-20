@@ -7,6 +7,7 @@ import Process
 import Time exposing (Time)
 
 import Html exposing (..)
+import Html.Keyed as Keyed
 import Html.Events exposing (..)
 
 
@@ -152,7 +153,7 @@ onKeyDown key message noOp =
   on "keydown" (Json.at [ "key" ] Json.string |> Json.map (\pressed -> if pressed == key then message else noOp))
 
 
-{-| Perform an action on click, only if the id of the clicked element matches (i.e: only on click for a given element 
+{-| Perform an action on click, only if the id of the clicked element matches (i.e: only on click for a given element
 in the tree).
 -}
 onClickIfId : String -> msg -> msg -> Attribute msg
@@ -161,3 +162,9 @@ onClickIfId targetId message noOp =
 
 ifIdDecoder : Json.Decoder String
 ifIdDecoder = Json.at [ "target", "id" ] Json.string
+
+
+{-| Create a tbody where each row is keyed.
+-}
+tbody : List (Attribute msg) -> List (String, Html msg) -> Html msg
+tbody = Keyed.node "tbody"

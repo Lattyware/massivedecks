@@ -256,9 +256,18 @@ updatePositioning shownPlayed seed =
     (ShownPlayedCards (shownPlayed.animated ++ newAnimated) [], newSeed)
 
 
-randomPositioning : Random.Generator ShownCard
-randomPositioning = Random.map4 ShownCard (Random.int -90 90) (Random.int 0 50) Random.bool (Random.int -5 1)
-
-
 initialRandomPositioning : Random.Generator ShownCard
-initialRandomPositioning = Random.map3 (\r h l -> ShownCard r h l -100) (Random.int -75 75) (Random.int 0 50) Random.bool
+initialRandomPositioning =
+  Random.map3 (\r h l -> ShownCard r h l -100)
+    (Random.int -75 75)
+    (Random.int 0 50)
+    Random.bool
+
+
+randomPositioning : Random.Generator ShownCard
+randomPositioning =
+  Random.map4 ShownCard
+    (Random.int -90 90)
+    (Random.int 25 50)
+    Random.bool
+    (Random.int -5 1)

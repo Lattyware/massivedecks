@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Models.Game as Game
@@ -146,10 +147,9 @@ getById cards id = List.filter (\card -> card.id == id) cards |> List.head
 consideringView : Int -> List Card.Response -> Bool -> Html Message
 consideringView considering consideringCards isCzar =
   let
-    extra = if isCzar then [ chooseButton considering ] else []
+    extra = if isCzar then [ ("!!button", chooseButton considering) ] else []
   in
-    ol [ class "considering" ]
-      (List.append (List.map (\card -> li [] [ (playedResponse card) ]) consideringCards) extra)
+    div [] ([ Keyed.ol [ class "considering" ] ((List.map (\card -> (card.id, li [] [ (playedResponse card) ])) consideringCards) ++ extra) ])
 
 
 winnerHeaderAndContents : Game.FinishedRound -> List Player -> (List (Html Message), List (Html Message))
@@ -180,13 +180,13 @@ playArea : List (Html Message) -> Html Message
 playArea contents = div [ class "play-area" ] contents
 
 
-response : List String -> Bool -> Card.Response -> Html Message
+response : List String -> Bool -> Card.Response -> (String, Html Message)
 response picked disabled response =
   let
     isPicked = List.member response.id picked
     clickHandler = if isPicked || disabled then [] else [ onClick (Pick response.id) ]
   in
-    CardsUI.response isPicked clickHandler response
+    (response.id, CardsUI.response isPicked clickHandler response)
 
 
 blankResponse : ShownCard -> Html Message
@@ -205,12 +205,12 @@ positioning shownCard =
       ]
 
 
-handRender : Bool -> List (Html Message) -> Html Message
+handRender : Bool -> List (String, Html Message) -> Html Message
 handRender disabled contents =
   let
     classes = "hand mui--divider-top" ++ if disabled then " disabled" else ""
   in
-    ul [ class classes ] (List.map (\item -> li [] [ item ]) contents)
+    Keyed.ul [ class classes ] (List.map (\(key, item) -> (key, li [] [ item ])) contents)
 
 
 handView : List String -> Bool -> List Card.Response -> Html Message
@@ -218,15 +218,19 @@ handView picked disabled responses =
   handRender disabled (List.map (response picked disabled) responses)
 
 
-pickedResponse : Card.Response -> Html Message
+pickedResponse : Card.Response -> (String, Html Message)
 pickedResponse response =
-  li []
-     [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
-                                                     [ text (Util.firstLetterToUpper response.text)
-                                                     , text "."
-                                                     ]
-                                               , withdrawButton response.id
-                                               ] ]
+  let
+    item = li []
+              [ div [ class "card response mui-panel" ] [ div [ class "response-text" ]
+                                                              [ text (Util.firstLetterToUpper response.text)
+                                                              , text "."
+                                                              ]
+                                                        , withdrawButton response.id
+                                                        ]
+              ]
+  in
+    (response.id, item)
 
 
 pickedView : List Card.Response -> Int -> List (ShownCard) -> List (Html Message)
@@ -234,9 +238,9 @@ pickedView picked slots shownPlayed =
   let
     numberPicked = List.length picked
     pb = if (numberPicked < slots) then [] else [ playButton ]
-    pickedResponses = List.map (pickedResponse) picked
   in
-    [ ol [ class "picked" ] (List.concat [ pickedResponses, pb ])
+    [ div [ class "picked" ]
+          ([ Keyed.ol [] (List.map pickedResponse picked) ] ++ pb)
     , div [ class "others-picked" ] (List.map blankResponse shownPlayed)
     ]
 
@@ -250,9 +254,9 @@ withdrawButton id = button
 
 
 playButton : Html Message
-playButton = li [ class "play-button" ] [ button
-  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", title "Play these responses.", onClick Play ]
-  [ Icon.icon "check" ] ]
+playButton = button
+  [ class "play-button mui-btn mui-btn--small mui-btn--accent mui-btn--fab", title "Play these responses.", onClick Play ]
+  [ Icon.icon "check" ]
 
 
 playedView : Bool -> Card.RevealedResponses -> Html Message
@@ -276,9 +280,9 @@ playedResponse response =
 
 
 chooseButton : Int -> Html Message
-chooseButton playedId = li [ class "choose-button" ] [ button
-  [ class "mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick (Choose playedId) ]
-  [ Icon.icon "trophy" ] ]
+chooseButton playedId =
+  button [ class "choose-button mui-btn mui-btn--small mui-btn--accent mui-btn--fab", onClick (Choose playedId) ]
+         [ Icon.icon "trophy" ]
 
 
 infoBar : Game.Lobby -> Player.Secret -> List (Html Message)
@@ -288,7 +292,7 @@ infoBar lobby secret =
   in
     case content of
       Just message ->
-        [ div [ id "info-bar" ]
+        [ div [ id "info-bar", class "mui--z1" ]
            [ Icon.icon "info-circle"
            , text " "
            , text message

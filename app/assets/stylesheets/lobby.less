@@ -124,43 +124,46 @@
   margin: 10px auto;
 }
 
-ol.picked {
-  margin: 0px;
-  padding: 0px;
-  list-style-type: none;
-  white-space: nowrap;
+.picked {
+  ol {
+    display: inline;
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
+    white-space: nowrap;
 
-  & > li {
-    display: inline-block;
-    position: relative;
-    white-space: normal;
-
-    .card {
-      margin: 10px 5px 10px 5px;
-    }
-
-    & > .response {
+    & > li {
       display: inline-block;
-      position: relative;
+      white-space: normal;
 
-      & > .withdraw-button {
-        position: absolute;
-        left: -4px;
-        bottom: -9px;
+      .card {
+        margin: 10px 5px 10px 5px;
       }
-    }
 
-    &:not(:first-child) {
-      margin-left: -(@card-width * @card-overlap);
-      @media (min-width: @enhance-width) {
-        margin-left: -(@card-width-enhanced * @card-overlap);
+      & > .response {
+        display: inline-block;
+        position: relative;
+
+        & > .withdraw-button {
+          position: absolute;
+          left: -4px;
+          bottom: -9px;
+        }
+      }
+
+      &:not(:first-child) {
+        margin-left: -(@card-width * @card-overlap);
+        @media (min-width: @enhance-width) {
+          margin-left: -(@card-width-enhanced * @card-overlap);
+        }
       }
     }
   }
-}
 
-.play-area > .round-area > ol.picked > li.play-button {
-  margin-left: -45px;
+  .play-button {
+    display: inline;
+    margin-left: -45px;
+  }
 }
 
 ol.considering {
@@ -187,7 +190,7 @@ ol.considering {
   }
 }
 
-.play-area > .round-area > ol.considering > li.choose-button {
+.choose-button {
   margin-left: -45px;
 }
 

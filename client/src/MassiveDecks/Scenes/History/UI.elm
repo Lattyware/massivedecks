@@ -5,6 +5,7 @@ import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 
 import MassiveDecks.Scenes.History.Models exposing (Model)
 import MassiveDecks.Scenes.History.Messages exposing (ConsumerMessage(..))
@@ -20,7 +21,7 @@ view model players =
   let
     content = case model.rounds of
       Just rounds ->
-        ul [] (List.map (finishedRound players) rounds)
+        Keyed.ul [] (List.map (\round -> (round.call.id, finishedRound players round)) rounds)
 
       Nothing ->
         Icon.spinner
@@ -45,14 +46,13 @@ finishedRound players round =
     li
       [ class "round" ]
       [ div [] [ div [ class "who" ] czar, CardsUI.call round.call [] ]
-      , ul [ class "plays" ] (List.map (responses players round.playedByAndWinner.winner) playedCardsByPlayer)
+      , Keyed.ul [ class "plays" ] (List.map (\(id, cards) -> (toString id, responses players round.playedByAndWinner.winner id cards)) playedCardsByPlayer)
       ]
 
 
-responses : List Player -> Player.Id -> (Player.Id, List Card.Response) -> Html msg
-responses players winnerId idAndResponses =
+responses : List Player -> Player.Id -> Player.Id -> List Card.Response -> Html msg
+responses players winnerId playerId responses =
   let
-    (playerId, responses) = idAndResponses
     winner = playerId == winnerId
     winnerPrefix = if (winner) then [ Icon.icon "trophy", text " " ] else []
     player =
@@ -63,7 +63,7 @@ responses players winnerId idAndResponses =
     li []
        [ div [ class "responses" ]
              [ div [ classList [ ("who", True), ("won", winner) ] ] player
-             , ul [] (List.map (\r -> li [] [ CardsUI.response False [] r ]) responses)
+             , Keyed.ul [] (List.map (\r -> (r.id, li [] [ CardsUI.response False [] r ])) responses)
              ]
        ]
 

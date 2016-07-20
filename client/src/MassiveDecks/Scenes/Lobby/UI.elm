@@ -71,7 +71,7 @@ scores shownAsOverlay players =
     else
       []
     sidebar =
-      div [ id "scores", classList [ ("shownAsOverlay", shownAsOverlay) ] ]
+      div [ id "scores", classList [ ("shownAsOverlay", shownAsOverlay), ("mui--z1", True) ] ]
           [ div [ id "scores-title", class "mui--appbar-line-height mui--text-headline" ] ([ text "Players" ] ++ closeLink)
           , div [ class "mui-divider" ] []
           , table [ class "mui-table" ]
@@ -113,7 +113,7 @@ score player =
 
 
 appHeader : List (Html ConsumerMessage) -> Model -> Html ConsumerMessage
-appHeader contents model = (header [] [ div [ class "mui-appbar mui--appbar-line-height" ]
+appHeader contents model = (header [] [ div [ class "mui-appbar mui--z1 mui--appbar-line-height" ]
   [ div [ class "mui--appbar-line-height" ]
     [ span [ class "score-buttons" ] ([ scoresButton ] ++ (notificationPopup model.notification))
     , span [ id "title", class "mui--text-title mui--visible-xs-inline-block" ] contents
@@ -262,7 +262,7 @@ gameMenu model =
                         , attribute "role" "button"
                         , onClick (About.show model.init.version |> OverlayMessage)
                         ] [ Icon.fwIcon "info-circle", text " About" ] ]
-            , li [] [ a [ href url, target "_blank" ]
+            , li [] [ a [ href url, target "_blank", rel "noopener" ]
                         [ Icon.fwIcon "bug", text " Report a bug" ] ]
             ])
       ]

@@ -86,7 +86,7 @@ errorMessage applicationInfo error =
     url = reportUrl applicationInfo (reportText error.message)
     bugReportLink =
       if error.bugReport then
-        Just (p [] [ a [ href url, target "_blank" ] [ Icon.icon "bug", text " Report this as a bug." ] ])
+        Just (p [] [ a [ href url, target "_blank", rel "noopener" ] [ Icon.icon "bug", text " Report this as a bug." ] ])
       else
         Nothing
   in
