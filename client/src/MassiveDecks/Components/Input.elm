@@ -22,6 +22,7 @@ type Change
   | Error (Maybe String)
   | Submit
   | SetEnabled Bool
+  | SetDefaultValue String
   | NoOp
 
 
@@ -122,6 +123,7 @@ update message model =
         Error error -> ({ model | error = error }, Cmd.none)
         Submit -> (model, model.submit)
         SetEnabled enabled -> ({ model | enabled = enabled}, Cmd.none)
+        SetDefaultValue value -> ({ model | value = value}, Cmd.none)
         NoOp -> (model, Cmd.none)
     else
       (model, Cmd.none)

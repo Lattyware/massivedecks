@@ -1,6 +1,6 @@
 module MassiveDecks.Scenes.Start.Models exposing (..)
 
-import MassiveDecks.Models exposing (Init)
+import MassiveDecks.Models exposing (Init, Path)
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Input as Input
@@ -14,6 +14,7 @@ import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId, Tab)
 type alias Model =
   { lobby : Maybe Lobby.Model
   , init : Init
+  , path : Path
   , nameInput : Input.Model InputId Message
   , gameCodeInput : Input.Model InputId Message
   , info : Maybe String

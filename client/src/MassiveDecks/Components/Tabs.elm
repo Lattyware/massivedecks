@@ -1,4 +1,4 @@
-port module MassiveDecks.Components.Tabs exposing (Message, Model, Tab, init, update, view)
+port module MassiveDecks.Components.Tabs exposing (Message(..), Model, Tab, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

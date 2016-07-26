@@ -8,8 +8,14 @@ import MassiveDecks.Models.Game exposing (GameCodeAndSecret)
 type alias Init =
   { version : String
   , url : String
-  , gameCode : Maybe String
   , existingGame : Maybe GameCodeAndSecret
   , seed : String
   , browserNotificationsSupported : Bool
+  }
+
+
+{-| A path to a part of the application.
+-}
+type alias Path =
+  { gameCode : Maybe String
   }

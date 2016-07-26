@@ -26,9 +26,7 @@ function start(url, version) {
   game.ports.existingGame.subscribe(function (gameCodeAndSecret) {
     if (gameCodeAndSecret != null) {
       localStorage.setItem("existing-game", JSON.stringify(gameCodeAndSecret))
-      window.history.replaceState(null, "", "/#" + gameCodeAndSecret.gameCode);
     } else {
-      window.history.replaceState(null, "", "/");
       localStorage.removeItem("existing-game");
     }
   });
