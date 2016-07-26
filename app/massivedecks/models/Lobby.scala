@@ -1,7 +1,6 @@
 package massivedecks.models
 
-import play.api.libs.json.{Format, Json}
-
+import play.api.libs.json.{Json, Writes}
 import massivedecks.models.Game.Formatters._
 import massivedecks.models.Player.Formatters._
 
@@ -10,13 +9,13 @@ import massivedecks.models.Player.Formatters._
   */
 object Lobby {
 
-  case class Lobby(gameCode: String, config: Game.Config, players: List[Player], round: Option[Game.Round])
+  case class Lobby(gameCode: String, config: Game.Config, players: List[Player], state: Game.State)
 
   case class LobbyAndHand(lobby: Lobby, hand: Game.Hand)
 
   object Formatters {
-    implicit val lobbyFormat: Format[Lobby] = Json.format[Lobby]
-    implicit val lobbyAndHandFormat: Format[LobbyAndHand] = Json.format[LobbyAndHand]
+    implicit val lobbyWrites: Writes[Lobby] = Json.writes[Lobby]
+    implicit val lobbyAndHandWrites: Writes[LobbyAndHand] = Json.writes[LobbyAndHand]
   }
 
 }

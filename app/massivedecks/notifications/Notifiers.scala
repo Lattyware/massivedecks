@@ -118,16 +118,18 @@ class Notifiers (implicit context: ExecutionContext) {
       "playedCards" -> Json.toJson(playedCards)
     ))
 
-  def roundEnd(finishedRound: Game.FinishedRound): Unit =
+  def roundEnd(finishedRound: Game.Round.Finished): Unit =
     notifyAll(Json.obj(
       "event" -> "RoundEnd",
       "finishedRound" -> Json.toJson(finishedRound)
     ))
 
 
-  def gameStart(): Unit =
+  def gameStart(czar: Player.Id, call: Game.Call): Unit =
     notifyAll(Json.obj(
-      "event" -> "GameStart"
+      "event" -> "GameStart",
+      "czar" -> Json.toJson(czar),
+      "call" -> Json.toJson(call)
     ))
 
   def gameEnd(): Unit =

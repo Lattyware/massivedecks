@@ -2,6 +2,7 @@
   "name": "massivedecks",
   "version": "1.0.0",
   "devDependencies": {
+    "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-elm": "^0.4.4",
     "gulp-help": "^1.6.1",

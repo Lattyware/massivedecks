@@ -24,9 +24,9 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
   /**
     * The history of the game.
     */
-  var history: List[FinishedRound] = List()
+  var history: List[Round.Finished] = List()
 
-  private val deck: Deck = new Deck(config.decks)
+  private val deck: Deck = Deck(config.decks)
   private var czarIndex = 0
   private var hands: Map[Player.Id, Hand] = players.ids.map(id => {
     val hand = new Hand(deck.drawResponses(Hand.size))
@@ -40,7 +40,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
   private var czar: Player.Id = Player.Id(0)
   private var call: Call = deck.drawCall()
   private var playedCards: Map[Player.Id, Option[List[Response]]] = Map()
-  beginRound()
+  beginRound(true)
 
   /**
     * @return The ids of the players that are taking part in the current round.
@@ -50,16 +50,13 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
   /**
     * @return The model representing the current round.
     */
-  def round: Round = {
-    val responses = roundProgress match {
-      case Playing =>
-        Responses.hidden(numberOfPlayersWhoHavePlayed)
-      case Judging(shuffled, _) =>
-        Responses.revealed(Revealed(shuffled, None))
-      case Finished(shuffled, playedOrder, winner) =>
-        Responses.revealed(Revealed(shuffled, Some(PlayedByAndWinner(playedOrder, winner))))
-    }
-    Round(czar, call, responses, roundTimedOut)
+  def round: Round = roundProgress match {
+    case Playing =>
+      Round(czar, call, Round.State.Playing(roundTimedOut, numberOfPlayersWhoHavePlayed))
+    case Judging(shuffled, _) =>
+      Round(czar, call, Round.State.Judging(roundTimedOut, shuffled))
+    case Finished(shuffled, playedOrder, winner) =>
+      Round(czar, call, Round.State.Finished(shuffled, PlayedByAndWinner(playedOrder, winner)))
   }
 
   /**
@@ -94,7 +91,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
     *                             round. The value "required" gives the minimum number of players needed for the request
     *                             to succeed.
     */
-  def beginRound() = {
+  def beginRound(firstRound: Boolean = false) = {
     if (players.amount < Players.minimum) {
       throw BadRequestException(Errors.NotEnoughPlayers(Players.minimum))
     }
@@ -102,7 +99,11 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
     czar = nextCzar()
     call = deck.drawCall()
 
-    notifiers.roundStart(czar, call)
+    if (firstRound) {
+      notifiers.gameStart(czar, call)
+    } else {
+      notifiers.roundStart(czar, call)
+    }
 
     players.updatePlayers(players.setPlayerStatus(Player.NotPlayed))
     players.updatePlayer(czar, players.setPlayerStatus(Player.Czar))
@@ -125,7 +126,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
       play(ai.id, getIdsForFirstXCardsInHand(ai.id, call.slots))
     }
 
-    startRoundTimer(call)
+    startRoundTimer(round.state.getClass, call)
     checkIfFinishedPlaying()
   }
 
@@ -134,10 +135,10 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
     (0 until amount).map(i => hand(i).id).toList
   }
 
-  private def startRoundTimer(call: Call) = Future {
+  private def startRoundTimer(state: Class[_ <: Round.State], call: Call) = Future {
     roundTimedOut = false
     Util.wait(Game.roundTimeLimit)
-    if (round.call == call) {
+    if (state.isInstance(round.state) && round.call == call) {
       roundTimedOut = true
       notifiers.roundTimeLimitHit()
     }
@@ -194,7 +195,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
           case Some(winnerId) =>
             players.updatePlayer(winnerId, players.modifyPlayerScore(1))
             roundProgress = Finished(responses, playedOrder, winnerId)
-            val finishedRound = FinishedRound(round.czar, round.call, responses, PlayedByAndWinner(playedOrder, winnerId))
+            val finishedRound = Round.Finished(round.czar, round.call, Round.State.Finished(responses, PlayedByAndWinner(playedOrder, winnerId)))
             history = finishedRound :: history
             notifiers.roundEnd(finishedRound)
 
@@ -252,7 +253,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
   private def checkIfFinishedPlaying(): Unit = {
     if (roundProgress == Playing && playedCards.values.forall(item => item.isDefined)) {
       roundTimedOut = false
-      startRoundTimer(round.call)
+      startRoundTimer(round.state.getClass, round.call)
       val shuffled = Random.shuffle(playedCards)
       val shuffledPlayedCards = shuffled.map(item => item._2.get).toList
       roundProgress = Judging(shuffledPlayedCards, shuffled.map(item => item._1).toList)
@@ -279,7 +280,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
 
 }
 object Game {
-  val roundTimeLimit = 60.seconds
+  val roundTimeLimit = 120.seconds
 
   /**
     * Represents the progress through a round.

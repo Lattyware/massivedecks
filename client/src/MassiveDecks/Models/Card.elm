@@ -24,23 +24,6 @@ type alias Response =
   }
 
 
-{-| Responses as they exist in a round. Either those responses are:
-* Hidden - The round is still being played into, so the only information is the number of cards played in so far.
-* Revealed - Every player has played in, and the responses are revealed.
--}
-type Responses
-  = Hidden Int
-  | Revealed RevealedResponses
-
-
-{-| The responses that have been played into a round. If the round has ended, also who played what and who won.
--}
-type alias RevealedResponses =
-  { cards : List PlayedCards
-  , playedByAndWinner : Maybe Player.PlayedByAndWinner
-  }
-
-
 {-| A hand of a player.
 -}
 type alias Hand =

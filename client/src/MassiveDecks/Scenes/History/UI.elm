@@ -10,7 +10,7 @@ import Html.Keyed as Keyed
 import MassiveDecks.Scenes.History.Models exposing (Model)
 import MassiveDecks.Scenes.History.Messages exposing (ConsumerMessage(..))
 import MassiveDecks.Scenes.Playing.UI.Cards as CardsUI
-import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Components.Icon as Icon
@@ -34,19 +34,22 @@ view model players =
       ]
 
 
-finishedRound : List Player -> Game.FinishedRound -> Html msg
+finishedRound : List Player -> Round.FinishedRound -> Html msg
 finishedRound players round =
   let
+    state = round.state
+    playedBy = state.playedByAndWinner.playedBy
+    winner = state.playedByAndWinner.winner
     czar =
       Maybe.map
         (\player -> [ Icon.icon "gavel", text " ", text player.name ])
         (Player.byId round.czar players) |> Maybe.withDefault []
-    playedCardsByPlayer = Card.playedCardsByPlayer round.playedByAndWinner.playedBy round.responses |> Dict.toList
+    playedCardsByPlayer = Card.playedCardsByPlayer playedBy state.responses |> Dict.toList
   in
     li
       [ class "round" ]
       [ div [] [ div [ class "who" ] czar, CardsUI.call round.call [] ]
-      , Keyed.ul [ class "plays" ] (List.map (\(id, cards) -> (toString id, responses players round.playedByAndWinner.winner id cards)) playedCardsByPlayer)
+      , Keyed.ul [ class "plays" ] (List.map (\(id, cards) -> (toString id, responses players winner id cards)) playedCardsByPlayer)
       ]
 
 

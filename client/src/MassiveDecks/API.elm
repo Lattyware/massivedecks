@@ -6,6 +6,7 @@ import Json.Encode as Encode
 import MassiveDecks.API.Request exposing (..)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.JSON.Decode exposing (..)
@@ -67,7 +68,7 @@ getHand gameCode secret =
 
 {-| Get the history of the given game.
 -}
-getHistory : String -> Request Never (List Game.FinishedRound)
+getHistory : String -> Request Never (List Round.FinishedRound)
 getHistory gameCode =
   request
     "GET"

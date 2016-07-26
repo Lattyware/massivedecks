@@ -4,6 +4,7 @@ import Json.Decode as Json exposing ((:=))
 
 import MassiveDecks.Models.JSON.Decode exposing (..)
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Card as Card
 
@@ -25,9 +26,9 @@ type Event
   | RoundStart Player.Id Card.Call
   | RoundPlayed Int
   | RoundJudging (List Card.PlayedCards)
-  | RoundEnd Game.FinishedRound
+  | RoundEnd Round.FinishedRound
 
-  | GameStart
+  | GameStart Player.Id Card.Call
   | GameEnd
 
   | ConfigChange Game.Config
@@ -63,7 +64,7 @@ specificEventDecoder name =
     "RoundJudging" -> Json.object1 RoundJudging ("playedCards" := Json.list (Json.list responseDecoder))
     "RoundEnd" -> Json.object1 RoundEnd ("finishedRound" := finishedRoundDecoder)
 
-    "GameStart" -> Json.succeed GameStart
+    "GameStart" -> Json.object2 GameStart ("czar" := playerIdDecoder) ("call" := callDecoder)
     "GameEnd" -> Json.succeed GameEnd
 
     "ConfigChange" -> Json.object1 ConfigChange ("config" := configDecoder)

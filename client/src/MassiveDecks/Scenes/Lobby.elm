@@ -20,7 +20,7 @@ import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Models.Event as Event exposing (Event)
 import MassiveDecks.Models.JSON.Encode exposing (encodePlayerSecret)
 import MassiveDecks.Models.Game as Game
-import MassiveDecks.Models.Card as Card
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Scenes.Playing as Playing
@@ -57,9 +57,10 @@ init init lobbyAndHand secret =
 subscriptions : Model -> Sub ConsumerMessage
 subscriptions model =
   let
-    delegated = case model.lobby.round of
-      Nothing -> Config.subscriptions model.config |> Sub.map ConfigMessage
-      Just round -> Playing.subscriptions model.playing |> Sub.map PlayingMessage
+    delegated = case model.lobby.game of
+      Game.Configuring -> Config.subscriptions model.config |> Sub.map ConfigMessage
+      Game.Playing round -> Playing.subscriptions model.playing |> Sub.map PlayingMessage
+      Game.Finished -> Sub.none
 
     websocket = WebSocket.listen (webSocketUrl model.init.url model.lobby.gameCode) webSocketResponseDecoder
 
@@ -148,10 +149,15 @@ update message model =
             (model, TTSMessage ttsMessage |> LocalMessage |> Util.cmd)
 
           Playing.LocalMessage localMessage ->
-            let
-              (playing, cmd) = Playing.update localMessage model
-            in
-              ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
+            case model.lobby.game of
+              Game.Playing round ->
+                let
+                  (playing, cmd) = Playing.update localMessage model round
+                in
+                  ({ model | playing = playing }, Cmd.map (LocalMessage << PlayingMessage) cmd)
+
+              _ ->
+                (model, Cmd.none)
 
       SidebarMessage sidebarMessage ->
         let
@@ -266,23 +272,22 @@ handleEvent event =
       [ UpdateHand hand ]
 
     Event.RoundStart czar call ->
-      [ UpdateLobby (\lobby -> { lobby | round = Just (Game.Round czar call (Card.Hidden 0) False) }) ]
+      [ updateRoundState (\state -> Round.playing 0 False) ]
     Event.RoundPlayed playedCards ->
-      [ updateRound (\round -> { round | responses = Card.Hidden playedCards }) ]
+      [ updateRoundState (\state -> Round.playing playedCards (Round.afterTimeLimit state)) ]
     Event.RoundJudging playedCards ->
-        [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses playedCards Nothing)
-                                         , afterTimeLimit = False })
-        , BrowserNotificationForUser (\lobby -> lobby.round |> Maybe.map .czar) "You need to pick a winner for the round." "gavel"
+        [ updateRoundState (\state -> Round.judging playedCards False)
+        , BrowserNotificationForUser (\lobby -> lobbyRound lobby |> Maybe.map .czar) "You need to pick a winner for the round." "gavel"
         ]
     Event.RoundEnd finishedRound ->
-      [ updateRound (\round -> { round | responses = Card.Revealed (Card.RevealedResponses finishedRound.responses (Just finishedRound.playedByAndWinner)) })
+      [ updateRoundState (\state -> Round.F finishedRound.state)
       , PlayingMessage <| Playing.LocalMessage <| Playing.FinishRound finishedRound
       ]
 
-    Event.GameStart ->
-      []
+    Event.GameStart czar call ->
+      [ UpdateLobby (\lobby -> { lobby | game = Game.Playing (Round czar call (Round.playing 0 False)) }) ]
     Event.GameEnd ->
-      [ UpdateLobby (\lobby -> { lobby | round = Nothing })
+      [ UpdateLobby (\lobby -> { lobby | game = Game.Finished })
       , UpdateHand { hand = [] }
       ]
 
@@ -290,7 +295,13 @@ handleEvent event =
       [ UpdateLobby (\lobby -> { lobby | config = config }) ]
 
     Event.RoundTimeLimitHit ->
-      [ updateRound (\round -> { round | afterTimeLimit = True }) ]
+      [ updateRound (\round -> Round.setAfterTimeLimit round True) ]
+
+
+lobbyRound : Game.Lobby -> Maybe Round
+lobbyRound lobby = case lobby.game of
+  Game.Playing round -> Just round
+  _ -> Nothing
 
 
 updatePlayer : Player.Id -> (Player -> Player) -> Message
@@ -298,9 +309,23 @@ updatePlayer playerId playerUpdate =
   UpdateLobby (\lobby -> { lobby | players = List.map (\player -> if player.id == playerId then playerUpdate player else player) lobby.players })
 
 
-updateRound : (Game.Round -> Game.Round) -> Message
+updateRound : (Round -> Round) -> Message
 updateRound roundUpdate =
-  UpdateLobby (\lobby -> { lobby | round = Maybe.map roundUpdate lobby.round })
+  UpdateLobby (\lobby ->
+    let
+      game = case lobby.game of
+        Game.Playing round ->
+          Game.Playing (roundUpdate round)
+
+        other ->
+          other
+    in
+      { lobby | game = game })
+
+
+updateRoundState : (Round.State -> Round.State) -> Message
+updateRoundState roundStateUpdate =
+  updateRound (\round -> { round | state = roundStateUpdate round.state })
 
 
 overlayAlert : BrowserNotifications.ConsumerMessage -> ConsumerMessage

@@ -1,5 +1,6 @@
 module MassiveDecks.Models.Game exposing (..)
 
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
@@ -16,7 +17,6 @@ type alias GameCodeAndSecret =
 {-| A lobby ID is a string used to identify a given lobby.
 -}
 type alias GameCode = String
-
 
 
 {-| Configuration for a game.
@@ -37,24 +37,10 @@ type alias DeckInfo =
   }
 
 
-{-| A round in the game.
--}
-type alias Round =
-  { czar : Player.Id
-  , call : Card.Call
-  , responses : Card.Responses
-  , afterTimeLimit : Bool
-  }
-
-
-{-| A round that has been completed.
--}
-type alias FinishedRound =
-  { czar : Player.Id
-  , call : Card.Call
-  , responses : (List Card.PlayedCards)
-  , playedByAndWinner : Player.PlayedByAndWinner
-  }
+type State
+  = Configuring
+  | Playing Round
+  | Finished
 
 
 {-| A lobby.
@@ -63,7 +49,7 @@ type alias Lobby =
   { gameCode : String
   , config : Config
   , players : List Player
-  , round : Maybe Round
+  , game : State
   }
 
 

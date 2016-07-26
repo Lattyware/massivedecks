@@ -8,6 +8,7 @@ import Html.Keyed as Keyed
 
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
 import MassiveDecks.Models.Player as Player exposing (Player)
 import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.History as History
@@ -20,26 +21,23 @@ import MassiveDecks.Scenes.Playing.HouseRule.Available exposing (houseRules)
 import MassiveDecks.Util as Util
 
 
-view : Lobby.Model -> (List (Html Message), List (Html Message))
-view lobbyModel =
+view : Lobby.Model -> Round -> (List (Html Message), List (Html Message))
+view lobbyModel round =
   let
     model = lobbyModel.playing
     lobby = lobbyModel.lobby
+
     (header, content) = case model.finishedRound of
           Just round ->
             winnerHeaderAndContents round lobby.players
 
           Nothing ->
-            case lobby.round of
-              Just round ->
-                ([ Icon.icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ], roundContents lobbyModel round)
+            ([ Icon.icon "gavel", text (" " ++ (czarName lobby.players round.czar)) ], roundContents lobbyModel round)
 
-              Nothing ->
-                ([], [])
-    timedOut = lobby.round |> Maybe.map .afterTimeLimit |> Maybe.withDefault False
-    judging = lobby.round |> Maybe.map (\round -> case round.responses of
-      Card.Hidden _ -> False
-      Card.Revealed _ -> True) |> Maybe.withDefault False
+    timedOut = Round.afterTimeLimit round.state
+    judging = case round.state of
+      Round.J _ -> True
+      _ -> False
   in
     case model.history of
       Nothing ->
@@ -48,7 +46,8 @@ view lobbyModel =
                              , [ warningDrawer (List.concat [ skippingNotice lobby.players lobbyModel.secret.id
                                                             , timeoutNotice lobbyModel.secret.id lobby.players judging timedOut
                                                             , disconnectedNotice lobby.players
-                                                            ]) ]
+                                                            ])
+                               ]
                              ])
       Just history ->
         ([], [ History.view history lobbyModel.lobby.players |> Html.map HistoryMessage ])
@@ -74,7 +73,8 @@ gameMenu lobbyModel =
                            ]
                            [ Icon.fwIcon "history", text " ", text "Game History" ]
                        ]
-               ] ++ (List.concatMap (gameMenuItems lobbyModel) enabled))
+               ] ++ (List.concatMap (gameMenuItems lobbyModel) enabled)
+             )
         ]
 
 
@@ -98,7 +98,7 @@ gameMenuItem lobbyModel rule action =
           ]
 
 
-roundContents : Lobby.Model -> Game.Round -> List (Html Message)
+roundContents : Lobby.Model -> Round -> List (Html Message)
 roundContents lobbyModel round =
   let
     lobby = lobbyModel.lobby
@@ -109,23 +109,31 @@ roundContents lobbyModel round =
     isCzar = round.czar == id
     canPlay = List.filter (\player -> player.id == id) lobby.players
       |> List.all (\player -> player.status == Player.NotPlayed)
-    callFill = case round.responses of
-      Card.Revealed responses ->
-        Maybe.withDefault [] (model.considering `Maybe.andThen` (Util.get responses.cards))
-      Card.Hidden _ ->
-        picked
-    pickedOrChosen = case round.responses of
-      Card.Revealed responses ->
+
+    callFill = case round.state of
+      Round.P _ -> picked
+      Round.J judging -> Maybe.withDefault [] (model.considering `Maybe.andThen` (Util.get judging.responses))
+      Round.F _ -> []
+
+    pickedOrChosen = case round.state of
+      Round.P _ ->
+        pickedView picked (Card.slots round.call) (model.shownPlayed.animated ++ model.shownPlayed.toAnimate)
+
+      Round.J judging ->
         case model.considering of
           Just considering ->
-            case Util.get responses.cards considering of
+            case Util.get judging.responses considering of
               Just consideringCards -> [ consideringView considering consideringCards isCzar ]
               Nothing -> []
           Nothing -> []
-      Card.Hidden _ -> pickedView picked (Card.slots round.call) (model.shownPlayed.animated ++ model.shownPlayed.toAnimate)
-    playedOrHand = case round.responses of
-      Card.Revealed responses -> playedView isCzar responses
-      Card.Hidden _ -> handView model.picked (not canPlay) hand
+
+      Round.F _ ->
+        []
+
+    playedOrHand = case round.state of
+      Round.P _ -> handView model.picked (not canPlay) hand
+      Round.J judging -> playedView isCzar judging.responses
+      Round.F _ -> div [] []
   in
     [ playArea
       ([ div [ class "round-area" ] (List.concat [ [ CardsUI.call round.call callFill ], pickedOrChosen ])
@@ -152,12 +160,12 @@ consideringView considering consideringCards isCzar =
     div [] ([ Keyed.ol [ class "considering" ] ((List.map (\card -> (card.id, li [] [ (playedResponse card) ])) consideringCards) ++ extra) ])
 
 
-winnerHeaderAndContents : Game.FinishedRound -> List Player -> (List (Html Message), List (Html Message))
+winnerHeaderAndContents : Round.FinishedRound -> List Player -> (List (Html Message), List (Html Message))
 winnerHeaderAndContents round players =
   let
-    cards = round.responses
-    winning = Card.winningCards cards round.playedByAndWinner |> Maybe.withDefault []
-    winner = Maybe.map .name (Util.get players round.playedByAndWinner.winner) |> Maybe.withDefault ""
+    cards = round.state.responses
+    winning = Card.winningCards cards round.state.playedByAndWinner |> Maybe.withDefault []
+    winner = Maybe.map .name (Util.get players round.state.playedByAndWinner.winner) |> Maybe.withDefault ""
   in
     ( [ Icon.icon "trophy", text (" " ++ winner) ]
     , [ div [ class "winner mui-panel" ]
@@ -259,10 +267,10 @@ playButton = button
   [ Icon.icon "check" ]
 
 
-playedView : Bool -> Card.RevealedResponses -> Html Message
+playedView : Bool -> List Card.PlayedCards -> Html Message
 playedView isCzar responses =
   ol [ class "played mui--divider-top" ]
-     (List.indexedMap (\index pc -> li [] [ (playedCards isCzar index pc) ]) responses.cards)
+     (List.indexedMap (\index pc -> li [] [ (playedCards isCzar index pc) ]) responses)
 
 
 playedCards : Bool -> Int -> Card.PlayedCards -> Html Message
@@ -288,7 +296,7 @@ chooseButton playedId =
 infoBar : Game.Lobby -> Player.Secret -> List (Html Message)
 infoBar lobby secret =
   let
-    content = Maybe.oneOf [ statusInfo lobby.players secret.id, stateInfo lobby.round ]
+    content = Maybe.oneOf [ statusInfo lobby.players secret.id, stateInfo lobby.game ]
   in
     case content of
       Just message ->
@@ -319,14 +327,18 @@ statusInfo players id =
       Nothing
 
 
-stateInfo : Maybe Game.Round -> Maybe String
-stateInfo round =
-  round `Maybe.andThen` (\round ->
-    case round.responses of
-      Card.Hidden _ ->
-        Nothing
-      Card.Revealed _ ->
-        Just "The card czar is now picking a winner.")
+stateInfo : Game.State -> Maybe String
+stateInfo state =
+  case state of
+    Game.Playing round ->
+      case round.state of
+        Round.J _ ->
+          Just "The card czar is now picking a winner."
+
+        _ ->
+          Nothing
+    _ ->
+      Nothing
 
 
 warningDrawer : List (Html Message) -> Html Message

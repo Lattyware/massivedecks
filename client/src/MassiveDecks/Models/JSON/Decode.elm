@@ -2,42 +2,43 @@ module MassiveDecks.Models.JSON.Decode exposing (..)
 
 import Json.Decode exposing (..)
 
-import MassiveDecks.Models.Game exposing (..)
-import MassiveDecks.Models.Player exposing (..)
-import MassiveDecks.Models.Card exposing (..)
+import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
+import MassiveDecks.Models.Player as Player exposing (Player)
+import MassiveDecks.Models.Card as Card
 import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 
 
-lobbyAndHandDecoder : Decoder LobbyAndHand
-lobbyAndHandDecoder = object2 LobbyAndHand
+lobbyAndHandDecoder : Decoder Game.LobbyAndHand
+lobbyAndHandDecoder = object2 Game.LobbyAndHand
   ("lobby" := lobbyDecoder)
   ("hand" := handDecoder)
 
 
-lobbyDecoder : Decoder Lobby
-lobbyDecoder = object4 Lobby
+lobbyDecoder : Decoder Game.Lobby
+lobbyDecoder = object4 Game.Lobby
   ("gameCode" := string)
   ("config" := configDecoder)
   ("players" := (list playerDecoder))
-  (maybe ("round" := roundDecoder))
+  ("state" := gameStateDecoder)
 
 
-deckInfoDecoder : Decoder DeckInfo
-deckInfoDecoder = object4 DeckInfo
+deckInfoDecoder : Decoder Game.DeckInfo
+deckInfoDecoder = object4 Game.DeckInfo
   ("id" := string)
   ("name" := string)
   ("calls" := int)
   ("responses" := int)
 
 
-configDecoder : Decoder Config
-configDecoder = object2 Config
+configDecoder : Decoder Game.Config
+configDecoder = object2 Game.Config
   ("decks" := (list deckInfoDecoder))
   ("houseRules" := (list houseRuleDecoder))
 
 
-handDecoder : Decoder Hand
-handDecoder = object1 Hand
+handDecoder : Decoder Card.Hand
+handDecoder = object1 Card.Hand
   ("hand" := (list responseDecoder))
 
 
@@ -51,67 +52,91 @@ playerDecoder = object6 Player
   ("left" := bool)
 
 
-playerStatusDecoder : Decoder Status
-playerStatusDecoder = customDecoder (string) (\name -> nameToStatus name |> Result.fromMaybe ("Unknown player status '" ++ name ++ "'."))
+playerStatusDecoder : Decoder Player.Status
+playerStatusDecoder = customDecoder (string) (\name -> Player.nameToStatus name |> Result.fromMaybe ("Unknown player status '" ++ name ++ "'."))
+
+
+gameStateDecoder : Decoder Game.State
+gameStateDecoder =
+  ("gameState" := string) `andThen` (\gameState ->
+    case gameState of
+      "configuring" ->
+        succeed Game.Configuring
+
+      "playing" ->
+        map Game.Playing roundDecoder
+
+      "finished" ->
+        succeed Game.Finished
+
+      _ ->
+        fail ("Unknown game state '" ++ gameState ++ "'."))
 
 
 roundDecoder : Decoder Round
-roundDecoder = object4 Round
+roundDecoder = object3 Round
   ("czar" := playerIdDecoder)
   ("call" := callDecoder)
-  ("responses" := responsesDecoder)
-  ("afterTimeLimit" := bool)
+  ("state" := roundStateDecoder)
 
 
-finishedRoundDecoder : Decoder FinishedRound
-finishedRoundDecoder = object4 FinishedRound
-  ("czar" := playerIdDecoder)
-  ("call" := callDecoder)
+roundStateDecoder : Decoder Round.State
+roundStateDecoder =
+  ("roundState" := string) `andThen` (\roundState ->
+    case roundState of
+      "playing" ->
+        object2 Round.playing
+          ("numberPlayed" := int)
+          ("afterTimeLimit" := bool)
+
+      "judging" ->
+        object2 Round.judging
+          ("cards" := list (list responseDecoder))
+          ("afterTimeLimit" := bool)
+
+      "finished" ->
+        map Round.F finishedStateDecoder
+
+      _ ->
+        fail ("Unknown round state '" ++ roundState ++ "'."))
+
+finishedStateDecoder : Decoder Round.Finished
+finishedStateDecoder = object2 Round.Finished
   ("cards" := list (list responseDecoder))
   ("playedByAndWinner" := playedByAndWinnerDecoder)
 
 
-responsesDecoder : Decoder Responses
-responsesDecoder = customDecoder responsesTransportDecoder (\transport -> case transport.hidden of
-    Just val -> case transport.revealed of
-      Just _ -> Result.Err "Got both count and cards."
-      Nothing -> Result.Ok (Hidden val)
-    Nothing -> case transport.revealed of
-      Just val -> Result.Ok (Revealed val)
-      Nothing -> Result.Err "Got neither count nor cards."
-  )
+finishedRoundDecoder : Decoder Round.FinishedRound
+finishedRoundDecoder = object3 Round.FinishedRound
+  ("czar" := playerIdDecoder)
+  ("call" := callDecoder)
+  ("state" := finishedStateDecoder)
 
 
-revealedResponsesDecoder : Decoder RevealedResponses
-revealedResponsesDecoder = object2 RevealedResponses
-  ("cards" := list (list responseDecoder))
-  (maybe ("playedByAndWinner" := playedByAndWinnerDecoder))
-
-
-playedByAndWinnerDecoder : Decoder PlayedByAndWinner
-playedByAndWinnerDecoder = object2 PlayedByAndWinner
+playedByAndWinnerDecoder : Decoder Player.PlayedByAndWinner
+playedByAndWinnerDecoder = object2 Player.PlayedByAndWinner
   ("playedBy" := list (playerIdDecoder))
   ("winner" := playerIdDecoder)
 
 
-callDecoder : Decoder Call
-callDecoder = object2 Call
+callDecoder : Decoder Card.Call
+callDecoder = object2 Card.Call
   ("id" := string)
   ("parts" := list string)
 
 
-responseDecoder : Decoder Response
-responseDecoder = object2 Response
+responseDecoder : Decoder Card.Response
+responseDecoder = object2 Card.Response
   ("id" := string)
   ("text" := string)
 
 
-playerIdDecoder : Decoder Id
+playerIdDecoder : Decoder Player.Id
 playerIdDecoder = int
 
 
-playerSecretDecoder : Decoder Secret
-playerSecretDecoder = object2 Secret
+playerSecretDecoder : Decoder Player.Secret
+playerSecretDecoder = object2 Player.Secret
     ("id" := playerIdDecoder)
     ("secret" := string)
 
@@ -124,14 +149,3 @@ ruleNameToId name =
   case name of
     "reboot" -> Just HouseRule.Reboot
     _ -> Nothing
-
-
-responsesTransportDecoder : Decoder ResponsesTransport
-responsesTransportDecoder = object2 ResponsesTransport
-  (maybe ("hidden" := int))
-  (maybe ("revealed" := revealedResponsesDecoder))
-
-type alias ResponsesTransport =
-  { hidden : Maybe Int
-  , revealed : Maybe RevealedResponses
-  }

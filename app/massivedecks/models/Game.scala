@@ -1,7 +1,6 @@
 package massivedecks.models
 
-import play.api.libs.json.{Format, Json}
-
+import play.api.libs.json._
 import massivedecks.models.Player.Formatters._
 
 /**
@@ -26,41 +25,47 @@ object Game {
 
   case class Config(decks: List[DeckInfo], houseRules: Set[String])
 
-  case class Round(czar: Player.Id, call: Call, responses: Responses, afterTimeLimit: Boolean) {
-    require(responses.revealed.isEmpty ||
-      responses.revealed.get.cards.forall(playerResponses => playerResponses.length == call.slots),
-        "Plays for a call must have a number of responses equal to the number of spots in the call.")
-
-    def inPickingState = responses.revealed.isEmpty
-    def inJudgingState = responses.revealed.isDefined && responses.revealed.get.playedByAndWinner.isEmpty
-    def inFinishedState = responses.revealed.isDefined && responses.revealed.get.playedByAndWinner.isDefined
-
-    def byState[T](picking: (Player.Id, Call, Int) => T,
-                   judging: (Player.Id, Call, List[List[Response]]) => T,
-                   finished: (Player.Id, Call, List[List[Response]], PlayedByAndWinner) => T): T = {
-      if (responses.revealed.isEmpty) {
-        picking(czar, call, responses.hidden.get)
-      } else {
-        if (responses.revealed.get.playedByAndWinner.isEmpty) {
-          judging(czar, call, responses.revealed.get.cards)
-        } else {
-          finished(czar, call, responses.revealed.get.cards, responses.revealed.get.playedByAndWinner.get)
-        }
-      }
+  sealed trait State {
+    def gameState: String
+  }
+  object State {
+    case class Configuring() extends State {
+      override val gameState = "configuring"
+    }
+    case class Playing(round: Round) extends State {
+      override val gameState = "playing"
+    }
+    case class Finished() extends State {
+      override val gameState = "finished"
     }
   }
 
-  case class FinishedRound(czar: Player.Id, call: Call, cards: List[List[Response]], playedByAndWinner: PlayedByAndWinner)
+  case class Round(czar: Player.Id, call: Call, state: Round.State)
+  object Round {
+    sealed trait State {
+      def afterTimeLimit: Boolean
+      def roundState: String
 
-  case class Responses(hidden: Option[Int], revealed: Option[Revealed]) {
-    require(hidden.isDefined ^ revealed.isDefined, "Only one of the count or cards should be provided.")
-  }
-  object Responses {
-    def hidden(count: Int): Responses = Responses(Some(count), None)
-    def revealed(revealed: Revealed): Responses = Responses(None, Some(revealed))
-  }
+      def isPlaying: Boolean = this.isInstanceOf[State.Playing]
+      def isJudging: Boolean = this.isInstanceOf[State.Judging]
+      def isFinished: Boolean = this.isInstanceOf[State.Finished]
+    }
+    object State {
+      case class Playing(override val afterTimeLimit: Boolean, numberPlayed: Int) extends State {
+        override val roundState = "playing"
+      }
 
-  case class Revealed(cards: List[List[Response]], playedByAndWinner: Option[PlayedByAndWinner])
+      case class Judging(override val afterTimeLimit: Boolean, cards: List[List[Response]]) extends State {
+        override val roundState = "judging"
+      }
+
+      case class Finished(cards: List[List[Response]], playedByAndWinner: PlayedByAndWinner) extends State {
+        override val roundState = "finished"
+        override val afterTimeLimit = false
+      }
+    }
+    case class Finished(czar: Player.Id, call: Call, state: Round.State.Finished)
+  }
 
   case class PlayedByAndWinner(playedBy: List[Player.Id], winner: Player.Id)
 
@@ -74,13 +79,36 @@ object Game {
     implicit val callFormat: Format[Call] = Json.format[Call]
     implicit val responseFormat: Format[Response] = Json.format[Response]
     implicit val playedByAndWinnerFormat: Format[PlayedByAndWinner] = Json.format[PlayedByAndWinner]
-    implicit val revealedFormat: Format[Revealed] = Json.format[Revealed]
-    implicit val responsesFormat: Format[Responses] = Json.format[Responses]
-    implicit val roundFormat: Format[Round] = Json.format[Round]
-    implicit val finishedRoundFormat: Format[FinishedRound] = Json.format[FinishedRound]
     implicit val deckInfoFormat: Format[DeckInfo] = Json.format[DeckInfo]
     implicit val configFormat: Format[Config] = Json.format[Config]
     implicit val handFormat: Format[Hand] = Json.format[Hand]
+
+    private val playingRoundStateFormat: Format[Round.State.Playing] = Json.format[Round.State.Playing]
+    private val judgingRoundStateFormat: Format[Round.State.Judging] = Json.format[Round.State.Judging]
+    private val finishedRoundStateFormat: Format[Round.State.Finished] = Json.format[Round.State.Finished]
+    implicit val roundStateWrites: Writes[Round.State] = Writes { state: Round.State =>
+      (state match {
+        case state: Round.State.Playing =>
+          playingRoundStateFormat.writes(state)
+
+        case state: Round.State.Judging =>
+          judgingRoundStateFormat.writes(state)
+
+        case state: Round.State.Finished =>
+          finishedRoundStateFormat.writes(state)
+      }).as[JsObject] + ("roundState" -> Json.toJson(state.roundState))
+    }
+    implicit val roundWrites: Writes[Round] = Json.writes[Round]
+    implicit val finishedRoundWrites: Writes[Round.Finished] = Json.writes[Round.Finished]
+
+    private val playingGameStateFormat: Writes[State.Playing] = Json.writes[State.Playing]
+    implicit val gameStateWrites: Writes[State] = Writes { state: State =>
+      (state match {
+        case state: State.Configuring => JsObject(List())
+        case state: State.Playing => playingGameStateFormat.writes(state)
+        case state: State.Finished => JsObject(List())
+      }).as[JsObject] + ("gameState" -> Json.toJson(state.gameState))
+    }
   }
 
   private def intersperse[A](a : List[A], b : List[A]): List[A] = a match {

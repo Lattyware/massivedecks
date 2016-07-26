@@ -18,6 +18,7 @@ import MassiveDecks.Scenes.Lobby.Models exposing (Model)
 import MassiveDecks.Scenes.Lobby.Messages exposing (ConsumerMessage(..), Message(..))
 import MassiveDecks.Scenes.Lobby.Sidebar as Sidebar
 import MassiveDecks.Models.Player as Player exposing (Player, Status(..))
+import MassiveDecks.Models.Game as Game
 import MassiveDecks.Models.Notification as Notification exposing (Notification)
 import MassiveDecks.Util as Util
 
@@ -29,13 +30,18 @@ view model =
     url = model.init.url
     gameCode = lobby.gameCode
     players = lobby.players
-    (header, contents) = case lobby.round of
-      Nothing -> ([], [ Config.view model |> Html.map (ConfigMessage >> LocalMessage) ])
-      Just round ->
+    (header, contents) = case lobby.game of
+      Game.Configuring ->
+        ([], [ Config.view model |> Html.map (ConfigMessage >> LocalMessage) ])
+
+      Game.Playing round ->
         let
-          (h, c) = Playing.view model
+          (h, c) = Playing.view model round
         in
           (h |> List.map (Html.map (PlayingMessage >> LocalMessage)), c |> List.map (Html.map (PlayingMessage >> LocalMessage)))
+
+      Game.Finished ->
+        ([], [])
   in
     root model.sidebar.hidden
       [ appHeader header model

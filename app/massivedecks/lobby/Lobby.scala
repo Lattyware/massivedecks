@@ -62,10 +62,15 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     */
   val players: Players = new Players(notifiers)
 
+  def gameState = game match {
+    case None => GameModel.State.Configuring()
+    case Some(g) => GameModel.State.Playing(g.round)
+  }
+
   /**
     * @return The model for the lobby.
     */
-  def lobby = LobbyModel.Lobby(gameCode, config.config, players.players, game.map(game => game.round))
+  def lobby = LobbyModel.Lobby(gameCode, config.config, players.players, gameState)
 
   /**
     * Add a new player to the lobby.
@@ -131,7 +136,6 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     if (game.isDefined) {
       throw BadRequestException(Errors.GameInProgress())
     }
-    notifiers.gameStart()
     val current = new Game(players, config, notifiers)
     game = Some(current)
     Json.toJson(getHand(secret))
@@ -198,7 +202,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     * @return The history of the current game.
     * @throws BadRequestException with key "no-game-in-progress" if there is not a game underway.
     */
-  def gameHistory() : List[GameModel.FinishedRound] = {
+  def gameHistory() : List[GameModel.Round.Finished] = {
     validateInGame().history
   }
 
@@ -264,10 +268,10 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     val game = validateInGame()
     BadRequestException.verify((players.activePlayers.length - playerIds.size) >= Players.minimum, Errors.NotEnoughPlayers(Players.minimum))
     val requestedPlayers = players.players.filter(player => playerIds.contains(player.id))
-    if (!game.round.afterTimeLimit) {
+    if (!game.round.state.afterTimeLimit) {
       BadRequestException.verify(requestedPlayers.forall(player => player.disconnected), Errors.PlayersMustBeSkippable())
     } else {
-      if (game.round.responses.revealed.isDefined) {
+      if (game.round.state.isPlaying) {
         BadRequestException.verify(requestedPlayers.forall(player => player.status == Player.Czar), Errors.PlayersMustBeSkippable())
       } else {
         BadRequestException.verify(requestedPlayers.forall(player => player.status == Player.NotPlayed), Errors.PlayersMustBeSkippable())

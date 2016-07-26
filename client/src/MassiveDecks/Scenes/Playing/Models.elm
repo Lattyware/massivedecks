@@ -2,7 +2,7 @@ module MassiveDecks.Scenes.Playing.Models exposing (Model, ShownPlayedCards, Sho
 
 import Random
 
-import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round
 import MassiveDecks.Scenes.History.Models as History
 
 
@@ -11,7 +11,7 @@ import MassiveDecks.Scenes.History.Models as History
 type alias Model =
   { picked : List String
   , considering : Maybe Int
-  , finishedRound : Maybe Game.FinishedRound
+  , finishedRound : Maybe Round.FinishedRound
   , shownPlayed : ShownPlayedCards
   , seed : Random.Seed
   , history : Maybe History.Model

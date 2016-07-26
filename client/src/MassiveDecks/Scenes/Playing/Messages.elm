@@ -4,7 +4,7 @@ import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Scenes.History.Messages as History
 import MassiveDecks.Models.Player as Player
-import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Game.Round as Round
 import MassiveDecks.Models.Card as Card
 
 
@@ -31,7 +31,7 @@ type Message
   | Skip (List Player.Id)
   | Back
   | Redraw
-  | FinishRound Game.FinishedRound
+  | FinishRound Round.FinishedRound
   | ViewHistory
   | HistoryMessage History.ConsumerMessage
   | NoOp

@@ -14,6 +14,7 @@ import MassiveDecks.Models exposing (Init)
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.TTS as TTS
 import MassiveDecks.Models.Card as Card
+import MassiveDecks.Models.Game.Round as Round exposing (Round)
 import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.History as History
 import MassiveDecks.Scenes.History.Messages as History
@@ -65,18 +66,18 @@ subscriptions model =
 
 {-| Render the playing scene.
 -}
-view : Lobby.Model -> (List (Html ConsumerMessage), List (Html ConsumerMessage))
-view model =
+view : Lobby.Model -> Round -> (List (Html ConsumerMessage), List (Html ConsumerMessage))
+view model round =
   let
-    (header, content) = UI.view model
+    (header, content) = UI.view model round
   in
     (header |> List.map (Html.map LocalMessage), content |> List.map (Html.map LocalMessage))
 
 
 {-| Handles messages and alters the model as appropriate.
 -}
-update : Message -> Lobby.Model -> (Model, Cmd ConsumerMessage)
-update message lobbyModel =
+update : Message -> Lobby.Model -> Round -> (Model, Cmd ConsumerMessage)
+update message lobbyModel round =
   let
     model = lobbyModel.playing
     lobby = lobbyModel.lobby
@@ -86,12 +87,11 @@ update message lobbyModel =
     case message of
       Pick cardId ->
         let
-          slots = Maybe.withDefault 0 (Maybe.map (\round -> Card.slots round.call) lobby.round)
+          slots = Card.slots round.call
           canPlay = (List.length model.picked) < slots
-          playing = Maybe.withDefault False (Maybe.map (\round -> case round.responses of
-            Card.Revealed _ -> False
-            Card.Hidden _ -> True
-          ) lobby.round)
+          playing = case round.state of
+            Round.P _ -> True
+            _ -> False
         in
           if playing && canPlay then
             ({ model | picked = model.picked ++ [ cardId ] }, Cmd.none)
@@ -108,13 +108,11 @@ update message lobbyModel =
 
       Consider potentialWinnerIndex ->
         let
-          speech =
-            lobby.round `Maybe.andThen` (\round ->
-              case round.responses of
-                Card.Revealed responses ->
-                  Util.get responses.cards potentialWinnerIndex |> Maybe.map (\fill -> (round, fill))
-                Card.Hidden _ ->
-                  Nothing)
+          speech = (case round.state of
+            Round.J judging ->
+              Util.get judging.responses potentialWinnerIndex |> Maybe.map (\fill -> (round, fill))
+            _ ->
+              Nothing)
             |> Maybe.map (\(round, callFill) -> TTS.Say (CardsUI.callText round.call callFill) |> TTSMessage |> Util.cmd)
             |> Maybe.withDefault Cmd.none
         in
@@ -151,15 +149,15 @@ update message lobbyModel =
         (model, Request.send' (API.back gameCode secret) ErrorMessage ignore)
 
       LobbyAndHandUpdated ->
-        lobbyAndHandUpdated lobbyModel
+        lobbyAndHandUpdated lobbyModel round
 
       Redraw ->
         (model, Request.send (API.redraw lobbyModel.lobby.gameCode lobbyModel.secret) redrawErrorHandler ErrorMessage HandUpdate)
 
       FinishRound finishedRound ->
         let
-          cards = finishedRound.responses
-          winning = Card.winningCards cards finishedRound.playedByAndWinner |> Maybe.withDefault []
+          cards = finishedRound.state.responses
+          winning = Card.winningCards cards finishedRound.state.playedByAndWinner |> Maybe.withDefault []
           speech = Card.filled finishedRound.call winning
         in
           ({ model | finishedRound = Just finishedRound}, TTS.Say speech |> TTSMessage |> Util.cmd)
@@ -197,16 +195,15 @@ ignore : () -> ConsumerMessage
 ignore = (\_ -> LocalMessage NoOp)
 
 
-lobbyAndHandUpdated : Lobby.Model -> (Model, Cmd ConsumerMessage)
-lobbyAndHandUpdated lobbyModel =
+lobbyAndHandUpdated : Lobby.Model -> Round -> (Model, Cmd ConsumerMessage)
+lobbyAndHandUpdated lobbyModel round =
   let
     lobby = lobbyModel.lobby
     model = lobbyModel.playing
     shownPlayed = model.shownPlayed
-    playedCards = lobby.round `Maybe.andThen` (\round ->
-      case round.responses of
-        Card.Hidden count -> Just count
-        Card.Revealed _ -> Nothing)
+    playedCards = case round.state of
+      Round.P playing -> Just playing.numberPlayed
+      _ -> Nothing
     (newShownPlayed, seed) = case playedCards of
       Just amount ->
         let
