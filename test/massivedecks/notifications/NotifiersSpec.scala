@@ -33,7 +33,7 @@ class NotifiersSpec(implicit ee: ExecutionEnv) extends Specification with Mockit
   """
 
   val identifyRequest = "identify"
-  val lobbyAndHand = Lobby.LobbyAndHand(Lobby.Lobby("", Game.Config(List(), Set()), List(), None), Game.Hand(List()))
+  val lobbyAndHand = Lobby.LobbyAndHand(Lobby.Lobby("", Game.Config(List(), Set()), List(), Game.State.Configuring()), Game.Hand(List()))
   val testSecret = Player.Secret(Player.Id(0), "secret")
 
   def askNewClientToIdentify = {
@@ -96,13 +96,18 @@ class NotifiersSpec(implicit ee: ExecutionEnv) extends Specification with Mockit
       Nothing
     )
 
+    val call = Game.Call("call-id", List("call", "call"))
+    val czar = Player.Id(0)
+
     // We need to wait for the notifier to connect to the socket before sending.
     // In the real world we know first messages are lossy and sync deals with anything missed.
     Thread.sleep(100)
     val expectedMessage = Json.obj(
-      "event" -> "GameStart"
+      "event" -> "GameStart",
+      "czar" -> Json.toJson(czar),
+      "call" -> Json.toJson(call)
     ).toString
-    notifiers.gameStart()
+    notifiers.gameStart(czar, call)
 
     promisedIdentifiedMessage.future.zip(promisedUnidentifiedMessage.future) must be_==((expectedMessage, expectedMessage)).await
   }
