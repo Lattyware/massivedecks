@@ -2,7 +2,7 @@ package massivedecks.controllers
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.Future
 
@@ -11,14 +11,13 @@ import play.api.http.HttpErrorHandler
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.Logger
-
 import massivedecks.Config
 
 @Singleton
-class ErrorHandler extends HttpErrorHandler {
+class ErrorHandler @Inject()(getConfig: Config.Factory) extends HttpErrorHandler {
 
   def onClientError(request: RequestHeader, statusCode: Int, rawMessage: String) = Future.successful {
-    val config = Config(request)
+    val config = getConfig(request)
     val (message, description) = statusCode match {
       case 400 => ("Bad Request", "there was a problem with the request you made")
       case 403 => ("Forbidden", ",you are not able to access the resource you requested")
@@ -31,7 +30,7 @@ class ErrorHandler extends HttpErrorHandler {
   }
 
   def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = Future.successful {
-    val config = Config(request)
+    val config = getConfig(request)
     val description = "the server had a problem trying to handle your request"
     Logger.error(exception.getMessage)
     NotFound(views.html.error(

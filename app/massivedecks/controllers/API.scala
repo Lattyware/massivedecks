@@ -2,8 +2,10 @@ package massivedecks.controllers
 
 import javax.inject.Inject
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc._
 import massivedecks.exceptions._
@@ -13,8 +15,9 @@ import massivedecks.models.Lobby.Formatters._
 import massivedecks.models.Player
 import massivedecks.models.Player.Formatters._
 import massivedecks.stores.LobbyStore
+import play.api.libs.streams.Streams
 
-class API @Inject()(store: LobbyStore) extends Controller {
+class API @Inject()(store: LobbyStore) (implicit context: ExecutionContext) extends Controller {
 
   def createLobby() = Action {
     wrap {
@@ -25,11 +28,26 @@ class API @Inject()(store: LobbyStore) extends Controller {
     }
   }
 
-  def notifications(gameCode: String) = WebSocket.using[String] { requestHeader =>
-    store.performInLobby(gameCode) { lobby =>
-      lobby.register()
+  def notifications(gameCode: String) = WebSocket.acceptOrResult[String, String] { requestHeader => Future {
+    Try {
+      store.performInLobby(gameCode) { lobby =>
+        lobby.register()
+      }
+    } match {
+      case Success((iteratee, enumerator)) =>
+        val (sub, _) = Streams.iterateeToSubscriber(iteratee)
+        val pub = Streams.enumeratorToPublisher(enumerator)
+        Right(Flow.fromSinkAndSource(Sink.fromSubscriber(sub), Source.fromPublisher(pub)))
+
+      case Failure(error) =>
+        error match {
+          case exception: RequestException =>
+            Left(Status(exception.statusCode)(exception.details.toJson()))
+          case _ =>
+            throw error
+        }
     }
-  }
+  } }
 
   def getLobby(gameCode: String) = Action {
     wrap(store.readFromLobby(gameCode) { lobby =>

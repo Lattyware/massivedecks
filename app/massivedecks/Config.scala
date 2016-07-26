@@ -1,17 +1,20 @@
 package massivedecks
 
-import play.Play
+import javax.inject.Inject
+
+import play.api.Configuration
 import play.api.mvc.RequestHeader
 
 object Config {
-  val base = Play.application().configuration()
-
-  def getString(key: String) = Option(base.getString(key))
-
-  def apply(request: RequestHeader) = new Config(request)
+  /**
+    * Factory for dependency injection.
+    */
+  class Factory @Inject()(base: Configuration) {
+    def apply(request: RequestHeader) = new Config(base, request)
+  }
 }
-class Config(request: RequestHeader) {
-  import Config._
+class Config(base: Configuration, request: RequestHeader) {
+  def getString(key: String) = base.getString(key)
 
   def protocol = getString("md_protocol").getOrElse {
     request.headers.get("X-Forwarded-Proto") match {

@@ -87,6 +87,7 @@ class Game(players: Players, config: Config, notifiers: Notifiers) (implicit con
   /**
     * Begin the round.
     *
+    * @param firstRound If this is the first round in the game.
     * @throws BadRequestException with key "not-enough-players" if there are not enough players in the game to begin a
     *                             round. The value "required" gives the minimum number of players needed for the request
     *                             to succeed.

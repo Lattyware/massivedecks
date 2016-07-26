@@ -9,15 +9,15 @@ import play.api.Play.current
 
 import massivedecks.Config
 
-class Pages @Inject() (cached: Cached) extends Controller {
+class Pages @Inject() (cached: Cached, getConfig: Config.Factory) extends Controller {
 
-  def index() = Cached("index")(Action { request =>
-    val config = Config(request)
+  def index() = cached("index")(Action { request =>
+    val config = getConfig(request)
     Ok(views.html.index(config.url, config.version)).as(HTML)
   })
 
-  def manifest() = Cached("manifest")(Action { request =>
-    val config = Config(request)
+  def manifest() = cached("manifest")(Action { request =>
+    val config = getConfig(request)
     val json = Json.obj(
       "name" -> "Massive Decks",
       "description" -> "An online party game inspired by Cards Against Humanity.",
