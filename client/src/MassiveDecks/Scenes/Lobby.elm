@@ -272,7 +272,7 @@ handleEvent event =
       [ UpdateHand hand ]
 
     Event.RoundStart czar call ->
-      [ updateRoundState (\state -> Round.playing 0 False) ]
+      [ UpdateLobby (\lobby -> { lobby | game = Game.Playing (Round czar call (Round.playing 0 False)) }) ]
     Event.RoundPlayed playedCards ->
       [ updateRoundState (\state -> Round.playing playedCards (Round.afterTimeLimit state)) ]
     Event.RoundJudging playedCards ->

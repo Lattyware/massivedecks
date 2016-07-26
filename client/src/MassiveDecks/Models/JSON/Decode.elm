@@ -64,7 +64,7 @@ gameStateDecoder =
         succeed Game.Configuring
 
       "playing" ->
-        map Game.Playing roundDecoder
+        map Game.Playing ("round" := roundDecoder)
 
       "finished" ->
         succeed Game.Finished
