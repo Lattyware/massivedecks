@@ -207,8 +207,9 @@ lobbyAndHandUpdated lobbyModel round =
     (newShownPlayed, seed) = case playedCards of
       Just amount ->
         let
+          toShow = amount * (Card.slots round.call)
           existing = (List.length shownPlayed.animated) + (List.length shownPlayed.toAnimate)
-          (new, seed) = addShownPlayed (amount - existing) model.seed
+          (new, seed) = addShownPlayed (toShow - existing) model.seed
         in
           (ShownPlayedCards shownPlayed.animated (shownPlayed.toAnimate ++ new), seed)
 
