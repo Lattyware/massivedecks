@@ -8,7 +8,7 @@ import MassiveDecks.Models.Game exposing (GameCodeAndSecret)
 type alias Init =
   { version : String
   , url : String
-  , existingGame : Maybe GameCodeAndSecret
+  , existingGames : List GameCodeAndSecret
   , seed : String
   , browserNotificationsSupported : Bool
   }

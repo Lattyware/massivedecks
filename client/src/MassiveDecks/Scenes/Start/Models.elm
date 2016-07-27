@@ -6,6 +6,7 @@ import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.Overlay as Overlay
+import MassiveDecks.Components.Storage as Storage
 import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId, Tab)
 
 
@@ -17,9 +18,9 @@ type alias Model =
   , path : Path
   , nameInput : Input.Model InputId Message
   , gameCodeInput : Input.Model InputId Message
-  , info : Maybe String
   , errors : Errors.Model
   , overlay : Overlay.Model Message
   , buttonsEnabled : Bool
   , tabs : Tabs.Model Tab Message
+  , storage : Storage.Model
   }

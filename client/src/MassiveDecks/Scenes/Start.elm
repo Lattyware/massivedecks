@@ -13,7 +13,8 @@ import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Storage as Storage
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
-import MassiveDecks.Components.Overlay as Overlay
+import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
+import MassiveDecks.Components.Title as Title
 import MassiveDecks.Scenes.Start.Messages exposing (InputId(..), Message(..), Tab(..))
 import MassiveDecks.Scenes.Start.Models exposing (Model)
 import MassiveDecks.Scenes.Start.UI as UI
@@ -29,12 +30,6 @@ import MassiveDecks.Util as Util
 init : Init -> Path -> (Model, Cmd Message)
 init init path =
   let
-    command = case init.existingGame of
-      Just existingGame ->
-        Util.cmd (JoinLobbyAsExistingPlayer existingGame.secret existingGame.gameCode)
-
-      Nothing ->
-        Cmd.none
     tab = if path.gameCode |> Maybe.withDefault "" |> String.isEmpty then Create else Join
   in
     ( { lobby = Nothing
@@ -42,13 +37,13 @@ init init path =
       , path = path
       , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" (Util.cmd SubmitCurrentTab) InputMessage
       , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (path.gameCode |> Maybe.withDefault "") "" (Util.cmd JoinLobbyAsNewPlayer) InputMessage
-      , info = Nothing
       , errors = Errors.init
       , overlay = Overlay.init OverlayMessage
       , buttonsEnabled = True
       , tabs = Tabs.init [ Tabs.Tab Create [ text "Create" ], Tabs.Tab Join [ text "Join" ] ] tab TabsMessage
+      , storage = Storage.init init.existingGames
       }
-    , command)
+    , Maybe.map (TryExistingGame >> Util.cmd) path.gameCode |> Maybe.withDefault Cmd.none)
 
 
 {-| Subscriptions for the start screen.
@@ -85,17 +80,29 @@ view model =
 -}
 urlUpdate : Path -> Model -> (Model, Cmd Message)
 urlUpdate path model =
-  let
-    noGameCode = case path.gameCode of
-      Just _ -> False
-      Nothing -> True
-    setInput =
-      path.gameCode |> Maybe.map (\gameCode -> (GameCode, Input.SetDefaultValue gameCode) |> InputMessage |> Util.cmd)
-  in
-    { model | path = path } !
-      [ (if noGameCode then Tabs.SetTab Create else Tabs.SetTab Join) |> TabsMessage |> Util.cmd
-      , setInput |> Maybe.withDefault Cmd.none
-      ]
+  if path.gameCode /= model.path.gameCode then
+    let
+      noGameCode = case path.gameCode of
+        Just _ -> False
+        Nothing -> True
+      setInput =
+        path.gameCode |> Maybe.map (\gameCode -> (GameCode, Input.SetDefaultValue gameCode) |> InputMessage |> Util.cmd)
+    in
+      { model | path = path
+              , lobby = if noGameCode then Nothing else model.lobby
+              , buttonsEnabled = True } !
+        [ (if noGameCode then Tabs.SetTab Create else Tabs.SetTab Join) |> TabsMessage |> Util.cmd
+        , setInput
+          |> Maybe.withDefault Cmd.none
+        , path.gameCode
+          |> Maybe.map (\gc -> Title.set ("Game " ++ gc ++ " - " ++ title))
+          |> Maybe.withDefault (Title.set title)
+        , path.gameCode
+          |> Maybe.map (TryExistingGame >> Util.cmd)
+          |> Maybe.withDefault Cmd.none
+        ]
+  else
+    (model, Cmd.none)
 
 
 {-| Handles messages and alters the model as appropriate.
@@ -112,14 +119,26 @@ update message model =
     TabsMessage tabsMessage ->
       ({ model | tabs = (Tabs.update tabsMessage model.tabs) }, Cmd.none)
 
-    ShowInfoMessage message ->
-      ({ model | info = Just message }, Cmd.none)
-
-    ClearExistingGame ->
+    ClearExistingGame existingGame ->
       model !
-        [ "The game you were in has ended." |> ShowInfoMessage |> Util.cmd, Storage.storeLeftGame
+        [ Overlay "info-circle" "Game over." [ text ("The game " ++ existingGame.gameCode ++ " has ended.") ]
+            |> Overlay.Show
+            |> OverlayMessage
+            |> Util.cmd
+        , Storage.Leave existingGame |> StorageMessage |> Util.cmd
         , Navigation.newUrl model.init.url
         ]
+
+    TryExistingGame gameCode ->
+      let
+        existing =
+          List.filter (.gameCode >> ((==) gameCode)) model.storage.existingGames
+            |> List.head
+        cmd =
+          Maybe.map (\existing -> JoinLobbyAsExistingPlayer existing.secret existing.gameCode |> Util.cmd) existing
+            |> Maybe.withDefault Cmd.none
+      in
+        (model, cmd)
 
     CreateLobby ->
       ({ model | buttonsEnabled = False }, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
@@ -139,20 +158,48 @@ update message model =
       ({ model | buttonsEnabled = False }, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value))
 
     JoinGivenLobbyAsNewPlayer gameCode ->
-      (model, Request.send (API.newPlayer gameCode model.nameInput.value) newPlayerErrorHandler ErrorMessage (\secret -> JoinLobbyAsExistingPlayer secret gameCode))
+      case List.filter (.gameCode >> ((==) gameCode)) model.storage.existingGames |> List.head of
+        Nothing ->
+          let
+            cmd = (\secret -> Batch
+              [ Storage.Join (Game.GameCodeAndSecret gameCode secret) |> StorageMessage
+              , MoveToLobby gameCode
+              ])
+          in
+            model !
+              [ Request.send (API.newPlayer gameCode model.nameInput.value)
+                                 newPlayerErrorHandler
+                                 ErrorMessage
+                                 cmd
+              ]
+
+        Just _ ->
+          model !
+            [ MoveToLobby gameCode |> Util.cmd
+            , UI.alreadyInGameOverlay
+                |> Overlay.Show
+                |> OverlayMessage
+                |> Util.cmd
+            ]
+
+    MoveToLobby gameCode ->
+      model ! [ Navigation.newUrl (model.init.url ++ "#" ++ gameCode) ]
 
     JoinLobbyAsExistingPlayer secret gameCode ->
       model !
-        [ Request.send (API.getLobbyAndHand gameCode secret) getLobbyAndHandErrorHandler ErrorMessage (JoinLobby secret)
-        , Navigation.newUrl (model.init.url ++ "#" ++ gameCode)
-        , Storage.storeInGame (Game.GameCodeAndSecret gameCode secret)
+        [ Request.send (API.getLobbyAndHand gameCode secret)
+                       (getLobbyAndHandErrorHandler (Game.GameCodeAndSecret gameCode secret))
+                       ErrorMessage
+                       (JoinLobby secret)
         ]
 
     JoinLobby secret lobbyAndHand ->
       let
         (lobby, cmd) = Lobby.init model.init lobbyAndHand secret
       in
-        ({ model | lobby = Just lobby }, cmd |> Cmd.map LobbyMessage)
+        { model | lobby = Just lobby } !
+          [ cmd |> Cmd.map LobbyMessage
+          ]
 
     InputMessage message ->
       let
@@ -166,6 +213,12 @@ update message model =
     OverlayMessage overlayMessage ->
       ({ model | overlay = Overlay.update overlayMessage model.overlay }, Cmd.none)
 
+    StorageMessage storageMessage ->
+      let
+        (storageModel, cmd) = Storage.update storageMessage model.storage
+      in
+        ({ model | storage = storageModel }, cmd |> Cmd.map StorageMessage)
+
     LobbyMessage message ->
       case message of
         Lobby.ErrorMessage message ->
@@ -178,12 +231,13 @@ update message model =
           let
             leave = case model.lobby of
               Nothing -> []
-              Just lobby -> [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp) ]
+              Just lobby -> [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp)
+                            , Storage.Leave (Game.GameCodeAndSecret lobby.lobby.gameCode lobby.secret) |> StorageMessage |> Util.cmd
+                            ]
           in
             { model | lobby = Nothing
                     , buttonsEnabled = True } !
-              ([ Storage.storeLeftGame
-               , Navigation.newUrl model.init.url
+              ([ Navigation.newUrl model.init.url
                ] ++ leave)
 
         Lobby.LocalMessage message ->
@@ -204,6 +258,10 @@ update message model =
       (model, Cmd.none)
 
 
+title : String
+title = "Massive Decks"
+
+
 newPlayerErrorHandler : API.NewPlayerError -> Message
 newPlayerErrorHandler error =
   let
@@ -214,10 +272,10 @@ newPlayerErrorHandler error =
     Batch [ SetButtonsEnabled True, errorMessage ]
 
 
-getLobbyAndHandErrorHandler : API.GetLobbyAndHandError -> Message
-getLobbyAndHandErrorHandler error =
+getLobbyAndHandErrorHandler : Game.GameCodeAndSecret -> API.GetLobbyAndHandError -> Message
+getLobbyAndHandErrorHandler gameCodeAndSecret error =
   let
     errorMessage = case error of
-      API.LobbyNotFound -> ClearExistingGame
+      API.LobbyNotFound -> ClearExistingGame gameCodeAndSecret
   in
     Batch [ SetButtonsEnabled True, errorMessage ]

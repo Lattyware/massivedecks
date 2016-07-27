@@ -24,9 +24,27 @@
     margin: 15px auto 0px auto;
   }
 
-  .info-message {
+  .rejoin {
     text-align: center;
     padding: 0px 0px 10px 0px;
+
+    ul {
+      display: inline;
+      list-style: none;
+      padding: 0px;
+
+      li {
+        display: inline;
+
+        &:not(:last-of-type)::after {
+          content: ", "
+        }
+
+        &:nth-last-of-type(2)::after {
+          content: " or "
+        }
+      }
+    }
   }
 
   .mui-textfield {

@@ -1,17 +1,42 @@
-module MassiveDecks.Scenes.Start.UI exposing (view)
+module MassiveDecks.Scenes.Start.UI exposing (view, alreadyInGameOverlay)
 
 import String
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 
+import MassiveDecks.Models.Game as Game
 import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Icon as Icon
 import MassiveDecks.Components.About as About
 import MassiveDecks.Components.Input as Input
+import MassiveDecks.Components.Overlay as Overlay exposing (Overlay)
 import MassiveDecks.Scenes.Start.Models exposing (Model)
 import MassiveDecks.Scenes.Start.Messages exposing (Message(..), Tab(..))
+import MassiveDecks.Scenes.Lobby.Messages as Lobby
+
+
+alreadyInGameOverlay : Overlay Message
+alreadyInGameOverlay =
+  Overlay
+    "info-circle"
+    "Already in game."
+    [ p [] [ text "You are already in this game, so you have joined as an existing player." ]
+    , p [] [ text "If you want to join as a new player, please "
+           , a [ class "link"
+               , title "Leave the game."
+               , attribute "tabindex" "0"
+               , attribute "role" "button"
+               , onClick (Batch [ Lobby.Leave |> LobbyMessage
+                                , Overlay.Hide |> OverlayMessage
+                                ])
+               ]
+               [ text "leave the game" ]
+           , text " first."
+           ]
+    ]
 
 
 {-| Render the start screen.
@@ -26,10 +51,10 @@ view model =
     div [ id "start-screen" ]
         [ div [ id "start-screen-content", class "mui-panel" ]
               ([ h1 [ class "mui--divider-bottom" ] [ text "Massive Decks" ]
-               ] ++ (model.info |> Maybe.map (\message -> [ div [ class "info-message mui--divider-bottom" ] [ Icon.icon "info-circle", text " ", text message ] ]) |> Maybe.withDefault []) ++
-               [ Input.view model.nameInput
-               ] ++ (Tabs.view (renderTab nameEntered gameCodeEntered model) model.tabs) ++
-               [ a [ class "about-link mui--divider-top link"
+               ] ++ (existingGames model.storage.existingGames)
+                 ++ [ Input.view model.nameInput
+               ] ++ (Tabs.view (renderTab nameEntered gameCodeEntered model) model.tabs)
+                 ++ [ a [ class "about-link mui--divider-top link"
                    , attribute "tabindex" "0"
                    , attribute "role" "button"
                    , onClick (About.show model.init.version |> OverlayMessage)
@@ -55,6 +80,23 @@ renderTab nameEntered gameCodeEntered model tab =
       [ Input.view model.gameCodeInput
       , joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
       ]
+
+
+existingGames : List Game.GameCodeAndSecret -> List (Html msg)
+existingGames games =
+  if List.isEmpty games then
+    []
+  else
+    [ div [ class "rejoin mui--divider-bottom" ]
+          [ span [] [ text "You can rejoin " ]
+          , Keyed.ul [] (List.map existingGame games)
+          ]
+    ]
+
+existingGame : Game.GameCodeAndSecret -> (String, Html msg)
+existingGame game =
+  (game.gameCode, li [] [ a [ href ("#" ++ game.gameCode) ] [ text ("Game \"" ++ game.gameCode ++ "\"") ] ])
+
 
 {-| A button to join an existing lobby.
 -}
