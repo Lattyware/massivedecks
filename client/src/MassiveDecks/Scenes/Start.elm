@@ -41,7 +41,7 @@ init init path =
       , overlay = Overlay.init OverlayMessage
       , buttonsEnabled = True
       , tabs = Tabs.init [ Tabs.Tab Create [ text "Create" ], Tabs.Tab Join [ text "Join" ] ] tab TabsMessage
-      , storage = Storage.init init.existingGames
+      , storage = init.existingGames
       }
     , Maybe.map (TryExistingGame >> Util.cmd) path.gameCode |> Maybe.withDefault Cmd.none)
 
@@ -80,29 +80,26 @@ view model =
 -}
 urlUpdate : Path -> Model -> (Model, Cmd Message)
 urlUpdate path model =
-  if path.gameCode /= model.path.gameCode then
-    let
-      noGameCode = case path.gameCode of
-        Just _ -> False
-        Nothing -> True
-      setInput =
-        path.gameCode |> Maybe.map (\gameCode -> (GameCode, Input.SetDefaultValue gameCode) |> InputMessage |> Util.cmd)
-    in
-      { model | path = path
-              , lobby = if noGameCode then Nothing else model.lobby
-              , buttonsEnabled = True } !
-        [ (if noGameCode then Tabs.SetTab Create else Tabs.SetTab Join) |> TabsMessage |> Util.cmd
-        , setInput
-          |> Maybe.withDefault Cmd.none
-        , path.gameCode
-          |> Maybe.map (\gc -> Title.set ("Game " ++ gc ++ " - " ++ title))
-          |> Maybe.withDefault (Title.set title)
-        , path.gameCode
-          |> Maybe.map (TryExistingGame >> Util.cmd)
-          |> Maybe.withDefault Cmd.none
-        ]
-  else
-    (model, Cmd.none)
+  let
+    noGameCode = case path.gameCode of
+      Just _ -> False
+      Nothing -> True
+    setInput =
+      path.gameCode |> Maybe.map (\gameCode -> (GameCode, Input.SetDefaultValue gameCode) |> InputMessage |> Util.cmd)
+  in
+    { model | path = path
+            , lobby = if noGameCode then Nothing else model.lobby
+            , buttonsEnabled = True } !
+      [ (if noGameCode then Cmd.none else Tabs.SetTab Join |> TabsMessage |> Util.cmd)
+      , setInput
+        |> Maybe.withDefault Cmd.none
+      , path.gameCode
+        |> Maybe.map (\gc -> Title.set ("Game " ++ gc ++ " - " ++ title))
+        |> Maybe.withDefault (Title.set title)
+      , path.gameCode
+        |> Maybe.map (TryExistingGame >> Util.cmd)
+        |> Maybe.withDefault Cmd.none
+      ]
 
 
 {-| Handles messages and alters the model as appropriate.
@@ -120,23 +117,21 @@ update message model =
       ({ model | tabs = (Tabs.update tabsMessage model.tabs) }, Cmd.none)
 
     ClearExistingGame existingGame ->
-      model !
+      { model | storage = Storage.leave existingGame model.storage } !
         [ Overlay "info-circle" "Game over." [ text ("The game " ++ existingGame.gameCode ++ " has ended.") ]
             |> Overlay.Show
             |> OverlayMessage
             |> Util.cmd
-        , Storage.Leave existingGame |> StorageMessage |> Util.cmd
+        , Storage.Store |> StorageMessage |> Util.cmd
         , Navigation.newUrl model.init.url
         ]
 
     TryExistingGame gameCode ->
       let
-        existing =
-          List.filter (.gameCode >> ((==) gameCode)) model.storage.existingGames
-            |> List.head
+        existing = List.filter (.gameCode >> ((==) gameCode)) model.storage |> List.head
         cmd =
           Maybe.map (\existing -> JoinLobbyAsExistingPlayer existing.secret existing.gameCode |> Util.cmd) existing
-            |> Maybe.withDefault Cmd.none
+            |> Maybe.withDefault (Navigation.modifyUrl model.init.url)
       in
         (model, cmd)
 
@@ -158,20 +153,14 @@ update message model =
       ({ model | buttonsEnabled = False }, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value))
 
     JoinGivenLobbyAsNewPlayer gameCode ->
-      case List.filter (.gameCode >> ((==) gameCode)) model.storage.existingGames |> List.head of
+      case List.filter (.gameCode >> ((==) gameCode)) model.storage |> List.head of
         Nothing ->
-          let
-            cmd = (\secret -> Batch
-              [ Storage.Join (Game.GameCodeAndSecret gameCode secret) |> StorageMessage
-              , MoveToLobby gameCode
-              ])
-          in
-            model !
-              [ Request.send (API.newPlayer gameCode model.nameInput.value)
-                                 newPlayerErrorHandler
-                                 ErrorMessage
-                                 cmd
-              ]
+          model !
+            [ Request.send (API.newPlayer gameCode model.nameInput.value)
+                               newPlayerErrorHandler
+                               ErrorMessage
+                               (StoreCredentialsAndMoveToLobby gameCode)
+            ]
 
         Just _ ->
           model !
@@ -181,6 +170,12 @@ update message model =
                 |> OverlayMessage
                 |> Util.cmd
             ]
+
+    StoreCredentialsAndMoveToLobby gameCode secret ->
+      { model | storage = Storage.join (Game.GameCodeAndSecret gameCode secret) model.storage } !
+        [ Storage.Store |> StorageMessage |> Util.cmd
+        , MoveToLobby gameCode |> Util.cmd
+        ]
 
     MoveToLobby gameCode ->
       model ! [ Navigation.newUrl (model.init.url ++ "#" ++ gameCode) ]
@@ -229,14 +224,21 @@ update message model =
 
         Lobby.Leave ->
           let
-            leave = case model.lobby of
-              Nothing -> []
-              Just lobby -> [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp)
-                            , Storage.Leave (Game.GameCodeAndSecret lobby.lobby.gameCode lobby.secret) |> StorageMessage |> Util.cmd
-                            ]
+            (leave, storage) = case model.lobby of
+              Nothing ->
+                ([], model.storage)
+
+              Just lobby ->
+                ( [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp)
+                  , Storage.Store |> StorageMessage |> Util.cmd
+                  ]
+                , Storage.leave (Game.GameCodeAndSecret lobby.lobby.gameCode lobby.secret) model.storage
+                )
           in
             { model | lobby = Nothing
-                    , buttonsEnabled = True } !
+                    , buttonsEnabled = True
+                    , storage = storage
+                    } !
               ([ Navigation.newUrl model.init.url
                ] ++ leave)
 

@@ -51,7 +51,7 @@ view model =
     div [ id "start-screen" ]
         [ div [ id "start-screen-content", class "mui-panel" ]
               ([ h1 [ class "mui--divider-bottom" ] [ text "Massive Decks" ]
-               ] ++ (existingGames model.storage.existingGames)
+               ] ++ (existingGames model.storage)
                  ++ [ Input.view model.nameInput
                ] ++ (Tabs.view (renderTab nameEntered gameCodeEntered model) model.tabs)
                  ++ [ a [ class "about-link mui--divider-top link"

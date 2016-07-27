@@ -1,43 +1,37 @@
-port module MassiveDecks.Components.Storage exposing (Model, Message(..), init, update)
+port module MassiveDecks.Components.Storage exposing (Model, Message(..), update, join, leave)
 
 import MassiveDecks.Models.Game as Game
 
 
-type alias Model =
-  { existingGames : List Game.GameCodeAndSecret
-  }
+type alias Model = List Game.GameCodeAndSecret
 
 
 type Message
-  = Join Game.GameCodeAndSecret
-  | Leave Game.GameCodeAndSecret
+  = Store
+  | Clear
 
 
-port store : List Game.GameCodeAndSecret -> Cmd msg
-
-
-init : List Game.GameCodeAndSecret -> Model
-init existingGames = Model existingGames
+port store : Model -> Cmd msg
 
 
 update : Message -> Model -> (Model, Cmd Message)
 update message model =
   case message of
-    Join gameCodeAndSecret ->
-      let
-        existingGames = gameCodeAndSecret :: List.filter (different gameCodeAndSecret) model.existingGames
-      in
-        ( { model | existingGames = existingGames }
-        , store existingGames
-        )
+    Store ->
+      (model, store model)
 
-    Leave gameCodeAndSecret ->
-      let
-        existingGames = List.filter (different gameCodeAndSecret) model.existingGames
-      in
-        ( { model | existingGames = existingGames }
-        , store existingGames
-        )
+    Clear ->
+      ([], store [])
+
+
+join : Game.GameCodeAndSecret -> Model -> Model
+join gameCodeAndSecret model =
+  gameCodeAndSecret :: List.filter (different gameCodeAndSecret) model
+
+
+leave : Game.GameCodeAndSecret -> Model -> Model
+leave gameCodeAndSecret =
+  List.filter (different gameCodeAndSecret)
 
 
 different : Game.GameCodeAndSecret -> Game.GameCodeAndSecret -> Bool

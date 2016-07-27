@@ -19,6 +19,7 @@ type Message
   | JoinLobbyAsNewPlayer
   | JoinGivenLobbyAsNewPlayer String
   | JoinLobbyAsExistingPlayer Player.Secret String
+  | StoreCredentialsAndMoveToLobby String Player.Secret
   | MoveToLobby String
   | JoinLobby Player.Secret Game.LobbyAndHand
   | TryExistingGame String
