@@ -34,11 +34,11 @@ trait CachedStore extends LobbyStore {
     */
   protected def storeLobby(lobby: Lobby): Unit
 
-  override def newLobby(): String = {
+  override def newLobby(ownerName: String): String = {
     val gameCode = gameCodeManager.generate()
     val lock = lockFor(gameCode)
     try {
-      val lobby = lobbyFactory.build(gameCode)
+      val lobby = lobbyFactory.build(gameCode, ownerName)
       saveLobby(lobby)
     } finally {
       lock.unlock()

@@ -26,11 +26,6 @@ class Players(notifiers: Notifiers) {
     */
   var connected: Set[Player.Id] = Set()
 
-  /**
-    * The owner of (first player in) the lobby.
-    */
-  var owner: Option[Player.Id] = None
-
   private var secrets: Map[Player.Id, Player.Secret] = Map()
   private var nextId: Int = 0
   private var aiNames: List[String] = Players.aiName :: Random.shuffle(Players.aiNames)
@@ -55,9 +50,6 @@ class Players(notifiers: Notifiers) {
   def addPlayer(name: String): Player.Secret = {
     BadRequestException.verify(players.forall(player => player.name != name), Errors.NameInUse())
     val id = newId()
-    if (owner.isEmpty) {
-      owner = Some(id)
-    }
     val player = Player(id, name)
     players = players :+ player
     val secret = Player.Secret(id)

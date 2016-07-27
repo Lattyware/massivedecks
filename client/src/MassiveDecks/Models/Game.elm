@@ -24,6 +24,7 @@ type alias GameCode = String
 type alias Config =
   { decks : List DeckInfo
   , houseRules : List HouseRule.Id
+  , pasword : Maybe String
   }
 
 
@@ -47,6 +48,7 @@ type State
 -}
 type alias Lobby =
   { gameCode : String
+  , owner : Player.Id
   , config : Config
   , players : List Player
   , game : State
@@ -56,6 +58,6 @@ type alias Lobby =
 {-| A lobby and a player's hand.
 -}
 type alias LobbyAndHand =
-  { lobby: Lobby
+  { lobby : Lobby
   , hand: Card.Hand
   }

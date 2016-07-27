@@ -43,3 +43,4 @@ type alias FailureMessage = String
 -}
 type InputId
   = DeckId
+  | Password

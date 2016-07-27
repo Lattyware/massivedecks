@@ -22,7 +22,7 @@ object Lobby {
     * Factory for dependency injection.
     */
   class Factory @Inject() (cardcast: CardcastAPI) (implicit context: ExecutionContext) {
-    def build(gameCode: String) = new Lobby(cardcast, gameCode)
+    def build(gameCode: String, ownerName: String) = new Lobby(cardcast, gameCode, ownerName)
   }
 
   /**
@@ -40,7 +40,7 @@ object Lobby {
   * @param cardcast The cardcast api.
   * @param gameCode The game code for the lobby.
   */
-class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: ExecutionContext) {
+class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(implicit context: ExecutionContext) {
 
   /**
     * The game in progress if there is one.
@@ -67,10 +67,12 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     case Some(g) => GameModel.State.Playing(g.round)
   }
 
+  val owner = newPlayer(ownerName)
+
   /**
     * @return The model for the lobby.
     */
-  def lobby = LobbyModel.Lobby(gameCode, config.config, players.players, gameState)
+  def lobby = LobbyModel.Lobby(gameCode, owner.id, config.config, players.players, gameState)
 
   /**
     * Add a new player to the lobby.
@@ -95,10 +97,12 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     * @param playCode The cardcast play code for the deck.
     * @return An empty response.
     * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
     * @throws RequestFailedException with the key "cardcast-timeout" if the request to cardcast doesn't complete.
     */
   def addDeck(secret: Player.Secret, playCode: String): JsValue = {
     players.validateSecret(secret)
+    validateIsOwner(secret)
     Try(Await.ready({
       cardcast.deck(playCode).map { deck =>
         config.addDeck(deck)
@@ -117,9 +121,11 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     *
     * @param secret The secret of the player making the request.
     * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "not-owner" if the requester is not the owner.
     */
   def newAi(secret: Player.Secret): Unit = {
     players.validateSecret(secret)
+    validateIsOwner(secret)
     players.addAi()
   }
 
@@ -318,9 +324,12 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     * @param secret The secret of the player making the request.
     * @param rule The rule to enable.
     * @return An empty response.
+    * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "not-owner" if the requester is not the owner.
     */
   def enableRule(secret: Player.Secret, rule: String): JsValue = {
     players.validateSecret(secret)
+    validateIsOwner(secret)
     config.addHouseRule(rule)
     Json.toJson("")
   }
@@ -331,9 +340,12 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
     * @param secret The secret of the player making the request.
     * @param rule The rule to disable.
     * @return An empty response.
+    * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "not-owner" if the requester is not the owner.
     */
   def disableRule(secret: Player.Secret, rule: String): JsValue = {
     players.validateSecret(secret)
+    validateIsOwner(secret)
     config.removeHouseRule(rule)
     Json.toJson("")
   }
@@ -375,6 +387,10 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String)(implicit context: Execu
   private def validateInGame(): Game = game match {
     case Some(state) => state
     case None => throw BadRequestException(Errors.NoGameInProgress())
+  }
+
+  private def validateIsOwner(secret: Player.Secret) = {
+    ForbiddenException.verify(owner == secret, Errors.NotOwner())
   }
 
 }

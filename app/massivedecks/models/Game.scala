@@ -23,7 +23,7 @@ object Game {
 
   case class DeckInfo(id: String, name: String, calls: Int, responses: Int)
 
-  case class Config(decks: List[DeckInfo], houseRules: Set[String])
+  case class Config(decks: List[DeckInfo], houseRules: Set[String], password: Option[String])
 
   sealed trait State {
     def gameState: String

@@ -15,8 +15,8 @@ import MassiveDecks.Models.JSON.Encode exposing (..)
 
 {-| Makes a request to create a new game lobby to the server. On success, returns that lobby.
 -}
-createLobby : Request Never Game.Lobby
-createLobby = request "POST" "/api/lobbies" Nothing [] lobbyDecoder
+createLobby : String -> Request Never Game.GameCodeAndSecret
+createLobby name = request "POST" "/api/lobbies" (Just (encodeName name)) [] gameCodeAndSecretDecoder
 
 
 {-| Errors specific to new player requests.

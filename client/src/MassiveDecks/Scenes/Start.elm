@@ -136,7 +136,11 @@ update message model =
         (model, cmd)
 
     CreateLobby ->
-      ({ model | buttonsEnabled = False }, Request.send' API.createLobby ErrorMessage (\lobby -> JoinGivenLobbyAsNewPlayer lobby.gameCode))
+      ( { model | buttonsEnabled = False }
+      , Request.send'
+          (API.createLobby model.nameInput.value)
+          ErrorMessage
+          (\gameCodeAndSecret -> StoreCredentialsAndMoveToLobby gameCodeAndSecret.gameCode gameCodeAndSecret.secret))
 
     SubmitCurrentTab ->
       case model.tabs.current of

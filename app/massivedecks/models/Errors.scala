@@ -63,4 +63,6 @@ object Errors {
     ).toString()
   }
   case class DeckNotFound(error: String = "deck-not-found") extends SimpleErrorDetails
+  case class NotOwner(error: String = "not-owner") extends SimpleErrorDetails
+
 }

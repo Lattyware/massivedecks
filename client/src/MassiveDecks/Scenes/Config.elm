@@ -22,6 +22,7 @@ init : Model
 init =
   { decks = []
   , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
+  , passwordInput = Input.init Password "password-input" UI.passwordInputLabel "" "Password" (Cmd.none) InputMessage
   , loadingDecks = []
   }
 

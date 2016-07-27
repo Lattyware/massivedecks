@@ -1,4 +1,4 @@
-module MassiveDecks.Scenes.Config.UI exposing (view, deckIdInputLabel, addDeckButton)
+module MassiveDecks.Scenes.Config.UI exposing (view, deckIdInputLabel, passwordInputLabel, addDeckButton)
 
 import String
 
@@ -25,9 +25,11 @@ view lobbyModel =
     decks = lobby.config.decks
     enoughPlayers = ((List.length lobby.players) > 1)
     enoughCards = not (List.isEmpty decks)
+    canNotChangeConfig = lobbyModel.lobby.owner /= lobbyModel.secret.id
   in
     div [ id "config" ]
-        [ div [ id "config-content", class "mui-panel" ]
+        ( (if canNotChangeConfig then infoBar else [])
+          ++ [ div [ id "config-content", class "mui-panel" ]
               [ invite lobbyModel.init.url lobby.gameCode
               , div [ class "mui-divider" ] []
               , h1 [] [ text "Game Setup" ]
@@ -37,16 +39,46 @@ view lobbyModel =
                                                        [ text "Decks" ]
                                                    ]
                    , li [] [ a [ attribute "data-mui-toggle" "tab"
-                               , attribute "data-mui-controls" "house-rules" ] [ text "House Rules" ] ]
-                               ]
+                               , attribute "data-mui-controls" "house-rules"
+                               ] [ text "House Rules" ]
+                           ]
+                   , li [] [ a [ attribute "data-mui-toggle" "tab"
+                               , attribute "data-mui-controls" "lobby-settings"
+                               ] [ text "Lobby Settings" ]
+                           ]
+                   ]
               , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
-                    [ deckList decks model.loadingDecks model.deckIdInput ]
+                    [ deckList canNotChangeConfig decks model.loadingDecks model.deckIdInput ]
               , div [ id "house-rules", class "mui-tabs__pane" ]
-                    ([ rando ] ++ (List.map (\rule -> houseRule (List.member rule.id lobbyModel.lobby.config.houseRules) rule) houseRules))
+                    ([ rando canNotChangeConfig ] ++ (List.map (\rule -> houseRule canNotChangeConfig (List.member rule.id lobbyModel.lobby.config.houseRules) rule) houseRules))
+              , div [ id "lobby-settings", class "mui-tabs__pane" ]
+                    [ password model.passwordInput ]
               , div [ class "mui-divider" ] []
-              , startGameButton enoughPlayers enoughCards
+              , startGameButton canNotChangeConfig enoughPlayers enoughCards
               ]
-        ]
+        ])
+
+
+infoBar : List (Html msg)
+infoBar =
+  [ div [ id "info-bar", class "mui--z1" ]
+    [ Icon.icon "info-circle"
+    , text " "
+    , text "You can't change the configuration of the game, as you are not the owner."
+    ]
+  ] 
+
+
+passwordInputLabel : List (Html msg)
+passwordInputLabel = [ text "If blank, no password will be needed - anyone with the game code can play." ]
+
+password : Input.Model InputId Message -> Html Message
+password passwordInputModel =
+  div [] [ h3 [] [ Icon.icon "key", text " Privacy" ]
+         , p [] [ text "A password that players will need to enter to get in the game." ]
+         , Input.view passwordInputModel
+         ]
+
 
 invite : String -> String -> Html msg
 invite appUrl lobbyId =
@@ -78,8 +110,8 @@ addDeckButton deckId =
   ]
 
 
-deckList : List Game.DeckInfo -> List String -> Input.Model InputId Message -> Html Message
-deckList decks loadingDecks deckId =
+deckList : Bool -> List Game.DeckInfo -> List String -> Input.Model InputId Message -> Html Message
+deckList canNotChangeConfig decks loadingDecks deckId =
   table [ class "decks mui-table" ]
     [ thead []
       [ tr []
@@ -90,10 +122,14 @@ deckList decks loadingDecks deckId =
         ]
       ]
     , Util.tbody [] (List.concat
-      [ emptyDeckListInfo ((List.isEmpty decks) && List.isEmpty loadingDecks)
+      [ if (canNotChangeConfig && (List.isEmpty decks) ) then
+          [ ("!!emptyInfo", tr [] [ td [ colspan 4 ] [ text "No decks have been added yet." ] ]) ]
+        else
+          []
+      , emptyDeckListInfo ((not canNotChangeConfig) && (List.isEmpty decks) && List.isEmpty loadingDecks)
       , List.map loadedDeckEntry decks
       , List.map loadingDeckEntry loadingDecks
-      , [ ("!!input", tr [] [ td [ colspan 4 ] [ Input.view deckId ] ]) ]
+      , if (canNotChangeConfig) then [] else [ ("!!input", tr [] [ td [ colspan 4 ] [ Input.view deckId ] ]) ]
       ])
     ]
 
@@ -140,8 +176,8 @@ emptyDeckListInfo display =
     []
 
 
-houseRule : Bool -> HouseRule -> Html Message
-houseRule enabled rule =
+houseRule : Bool -> Bool -> HouseRule -> Html Message
+houseRule canNotChangeConfig enabled rule =
   let
     (buttonText, command) =
       if enabled then
@@ -149,22 +185,22 @@ houseRule enabled rule =
       else
         ("Enable", EnableRule rule.id)
   in
-    houseRuleTemplate (HouseRule.toString rule.id) rule.name rule.icon rule.description buttonText command
+    houseRuleTemplate canNotChangeConfig (HouseRule.toString rule.id) rule.name rule.icon rule.description buttonText command
 
 
-houseRuleTemplate : String -> String -> String -> String -> String -> msg -> Html msg
-houseRuleTemplate id' title icon description buttonText message =
+houseRuleTemplate : Bool -> String -> String -> String -> String -> String -> msg -> Html msg
+houseRuleTemplate canNotChangeConfig id' title icon description buttonText message =
   div [ id id', class "house-rule" ]
       [ div [] [ h3 [] [ Icon.icon icon, text " ", text title ]
-             , button [ class "mui-btn mui-btn--small mui-btn--primary", onClick message ]
+             , button [ class "mui-btn mui-btn--small mui-btn--primary", onClick message, disabled canNotChangeConfig ]
                       [ text buttonText ]
              ]
     , p [] [ text description ]
     ]
 
 
-rando : Html Message
-rando = houseRuleTemplate "rando" "Rando Cardrissian" "cogs"
+rando : Bool -> Html Message
+rando canNotChangeConfig = houseRuleTemplate canNotChangeConfig "rando" "Rando Cardrissian" "cogs"
   "Every round, one random card will be played for an imaginary player named Rando Cardrissian, if he wins, all players go home in a state of everlasting shame."
   "Add an AI player" AddAi
 
@@ -174,12 +210,12 @@ startGameWarning canStart = if canStart then text "" else
   span [] [ Icon.icon "info-circle", text " You will need at least two players to start the game." ]
 
 
-startGameButton : Bool -> Bool -> Html Message
-startGameButton enoughPlayers enoughCards = div [ id "start-game" ]
+startGameButton : Bool -> Bool -> Bool -> Html Message
+startGameButton notOwner enoughPlayers enoughCards = div [ id "start-game" ]
   [ startGameWarning enoughPlayers
   , button
     [ class "mui-btn mui-btn--primary mui-btn--raised"
     , onClick StartGame
-    , disabled (not (enoughPlayers && enoughCards))
+    , disabled ((not (enoughPlayers && enoughCards)) || notOwner)
     ] [ text "Start Game" ]
   ]

@@ -12,6 +12,7 @@ import massivedecks.exceptions._
 import massivedecks.models.Errors
 import massivedecks.models.Game.Formatters._
 import massivedecks.models.Lobby.Formatters._
+import massivedecks.models.Lobby.GameCodeAndSecret
 import massivedecks.models.Player
 import massivedecks.models.Player.Formatters._
 import massivedecks.stores.LobbyStore
@@ -19,11 +20,12 @@ import play.api.libs.streams.Streams
 
 class API @Inject()(store: LobbyStore) (implicit context: ExecutionContext) extends Controller {
 
-  def createLobby() = Action {
+  def createLobby() = Action(parse.json) { request: Request[JsValue] =>
     wrap {
-      val gameCode = store.newLobby()
+      val name = (request.body \ "name").validate[String].getOrElse(throw BadRequestException(Errors.InvalidName()))
+      val gameCode = store.newLobby(name)
       store.performInLobby(gameCode) { lobby =>
-        Json.toJson(lobby.lobby)
+        Json.toJson(GameCodeAndSecret(lobby.gameCode, lobby.owner))
       }
     }
   }

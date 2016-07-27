@@ -16,11 +16,18 @@ lobbyAndHandDecoder = object2 Game.LobbyAndHand
 
 
 lobbyDecoder : Decoder Game.Lobby
-lobbyDecoder = object4 Game.Lobby
+lobbyDecoder = object5 Game.Lobby
   ("gameCode" := string)
+  ("owner" := playerIdDecoder)
   ("config" := configDecoder)
   ("players" := (list playerDecoder))
   ("state" := gameStateDecoder)
+
+
+gameCodeAndSecretDecoder : Decoder Game.GameCodeAndSecret
+gameCodeAndSecretDecoder = object2 Game.GameCodeAndSecret
+  ("gameCode" := string)
+  ("secret" := playerSecretDecoder)
 
 
 deckInfoDecoder : Decoder Game.DeckInfo
@@ -32,9 +39,10 @@ deckInfoDecoder = object4 Game.DeckInfo
 
 
 configDecoder : Decoder Game.Config
-configDecoder = object2 Game.Config
+configDecoder = object3 Game.Config
   ("decks" := (list deckInfoDecoder))
   ("houseRules" := (list houseRuleDecoder))
+  (maybe ("password" := string))
 
 
 handDecoder : Decoder Card.Hand

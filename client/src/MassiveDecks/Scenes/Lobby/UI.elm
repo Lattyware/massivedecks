@@ -46,7 +46,7 @@ view model =
     root model.sidebar.hidden
       [ appHeader header model
       , spacer
-      , scores model.sidebar.shownAsOverlay players
+      , scores model.secret.id model.lobby.owner model.sidebar.shownAsOverlay players
       , contentWrapper contents
       ]
 
@@ -63,8 +63,8 @@ spacer : Html msg
 spacer = div [ class "mui--appbar-height" ] []
 
 
-scores : Bool -> List Player -> Html ConsumerMessage
-scores shownAsOverlay players =
+scores : Player.Id -> Player.Id -> Bool -> List Player -> Html ConsumerMessage
+scores client owner shownAsOverlay players =
   let
     hideMessage = LocalMessage (SidebarMessage Sidebar.Hide)
     closeLink = if shownAsOverlay then
@@ -84,10 +84,10 @@ scores shownAsOverlay players =
           , table [ class "mui-table" ]
                   [ thead [] [ tr [] [ th [ class "state", title "State" ] [ Icon.icon "tasks" ]
                                      , th [ class "name" ] [ text "Player" ]
-                                     , th [ class "score", title "Score" ] [ Icon.icon "star" ]
+                                     , th [ class "score", title "Score" ] [ Icon.icon "trophy" ]
                                      ]
                              ]
-                  , tbody [] (List.map score players)
+                  , tbody [] (List.map (score client owner) players)
                   ]
           ]
   in
@@ -102,19 +102,23 @@ scores shownAsOverlay players =
       sidebar
 
 
-score : Player -> Html msg
-score player =
+score : Player.Id -> Player.Id -> Player -> Html msg
+score client owner player =
   let
     classes = classList
       [ (Player.statusName player.status, True)
       , ("disconnected", player.disconnected)
       , ("left", player.left)
       ]
-    prename = if player.disconnected then [ Icon.icon "minus-circle", text " " ] else []
+    prename = ((if player.id == owner then [ Icon.icon "star", text " " ] else [])
+              ++ (if player.disconnected then [ Icon.icon "minus-circle", text " " ] else []))
+    afterNameTitle = (if player.id == owner then " (Owner)" else "")
+                     ++ (if player.id == client then " (You)" else "")
+                     ++ (if player.disconnected then " (Disconnected)" else "")
   in
     tr [ classes ]
       [ td [ class "state", title (statusDescription player) ] [ (playerIcon player) ]
-      , td [ class "name", title player.name ] (List.append prename [ text player.name ])
+      , td [ class "name", title (player.name ++ afterNameTitle) ] (List.append prename [ text player.name ])
       , td [ class "score" ] [ text (toString player.score) ]
       ]
 
@@ -154,13 +158,13 @@ notificationPopup notification =
 
 
 statusDescription : Player -> String
-statusDescription player = (case player.status of
+statusDescription player = case player.status of
   NotPlayed -> "Choosing"
   Played -> "Played"
   Czar -> "Round Czar"
   Ai -> "A Computer"
   Neutral -> ""
-  Skipping -> "Being Skipped") ++ if player.disconnected then " (Disconnected)" else ""
+  Skipping -> "Being Skipped"
 
 
 statusIcon : Status -> Html msg

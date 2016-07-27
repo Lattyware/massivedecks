@@ -10,5 +10,6 @@ import MassiveDecks.Scenes.Config.Messages exposing (Message, InputId)
 type alias Model =
   { decks : List Game.DeckInfo
   , deckIdInput : Input.Model InputId Message
+  , passwordInput : Input.Model InputId Message
   , loadingDecks : List String
   }

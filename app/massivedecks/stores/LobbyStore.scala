@@ -9,9 +9,10 @@ trait LobbyStore {
 
   /**
     * Make a new lobby.
+    * @param ownerName The name of the owner (the player making the lobby).
     * @return The game code for the new lobby.
     */
-  def newLobby(): String
+  def newLobby(ownerName: String): String
 
   /**
     * Perform a read-only action in the lobby.
