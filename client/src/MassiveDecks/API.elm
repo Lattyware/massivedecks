@@ -46,12 +46,19 @@ newPlayer gameCode name =
 -}
 type GetLobbyAndHandError
   = LobbyNotFound
+  | SecretWrongOrNotAPlayer
 
 
 {-| Get the lobby and the hand for the player with the given secret (using it to authenticate).
 -}
 getLobbyAndHand : String -> Player.Secret -> Request GetLobbyAndHandError Game.LobbyAndHand
-getLobbyAndHand = commandRequest "getLobbyAndHand" [] [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound) ] lobbyAndHandDecoder
+getLobbyAndHand = commandRequest
+  "getLobbyAndHand"
+  []
+  [ ((404, "lobby-not-found"), Decode.succeed LobbyNotFound)
+  , ((403, "secret-wrong-or-not-a-player"), Decode.succeed SecretWrongOrNotAPlayer)
+  ]
+  lobbyAndHandDecoder
 
 
 {-| Get the hand of the player with the given secret (using it to authenticate).

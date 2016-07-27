@@ -279,5 +279,6 @@ getLobbyAndHandErrorHandler gameCodeAndSecret error =
   let
     errorMessage = case error of
       API.LobbyNotFound -> ClearExistingGame gameCodeAndSecret
+      API.SecretWrongOrNotAPlayer -> ClearExistingGame gameCodeAndSecret
   in
     Batch [ SetButtonsEnabled True, errorMessage ]
