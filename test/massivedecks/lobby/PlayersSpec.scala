@@ -14,9 +14,6 @@ class PlayersSpec extends Specification with Mockito { def is = s2"""
     The players controller should
       Not allow new players with the same name as an existing one $notAllowNewPlayerWithSameNameAsExisting
       Notify all clients when a new player joins                  $notifyAllClientsOnNewPlayer
-      There is no owner until the first player joins              $ownerIsNoOneUntilPlayerJoins
-      Set the owner to the new player if they are first           $ownerIsNewPlayerIfFirst
-      Not set the owner if the new player is not first            $ownerIsNotChangedWhenANewPlayerJoinsAfterFirst
       Validate a valid secret                                     $validateValidSecret
       Not validate a secret for a player that doesn't exist       $noValidateSecretForNonExistentPlayer
       Not validate a secret where the secret is wrong             $noValidateSecretWhereWrong
@@ -39,30 +36,6 @@ class PlayersSpec extends Specification with Mockito { def is = s2"""
     val players = new Players(mockNotifiers)
     val secret = players.addPlayer(playerName)
     there was one(mockNotifiers).playerJoin(players.getPlayer(secret.id))
-  }
-
-  def ownerIsNewPlayerIfFirst = {
-    val mockNotifiers = mock[Notifiers]
-    val players = new Players(mockNotifiers)
-    val secret = players.addPlayer(playerName)
-    players.owner must_== Some(secret.id)
-  }
-
-  /**
-    * Mostly this exists because we want to change this.
-    */
-  def ownerIsNoOneUntilPlayerJoins = {
-    val mockNotifiers = mock[Notifiers]
-    val players = new Players(mockNotifiers)
-    players.owner must_== None
-  }
-
-  def ownerIsNotChangedWhenANewPlayerJoinsAfterFirst = {
-    val mockNotifiers = mock[Notifiers]
-    val players = new Players(mockNotifiers)
-    val secret = players.addPlayer(playerName)
-    players.addPlayer(playerName2)
-    players.owner must_== Some(secret.id)
   }
 
   def validateValidSecret = {

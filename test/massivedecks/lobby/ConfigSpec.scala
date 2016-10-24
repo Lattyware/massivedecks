@@ -57,7 +57,7 @@ class ConfigSpec extends Specification with Mockito { def is = s2"""
     val config = mockConfig
     config.addHouseRule(mockHouseRule)
     config.addDeck(mockDeck)
-    config.config must_== GameModel.Config(List(mockDeckInfo), Set(mockHouseRule))
+    config.config must_== GameModel.Config(List(mockDeckInfo), Set(mockHouseRule), None)
   }
 
 }

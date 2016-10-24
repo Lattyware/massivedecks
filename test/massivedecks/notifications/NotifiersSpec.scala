@@ -33,7 +33,7 @@ class NotifiersSpec(implicit ee: ExecutionEnv) extends Specification with Mockit
   """
 
   val identifyRequest = "identify"
-  val lobbyAndHand = Lobby.LobbyAndHand(Lobby.Lobby("", Game.Config(List(), Set()), List(), Game.State.Configuring()), Game.Hand(List()))
+  val lobbyAndHand = Lobby.LobbyAndHand(Lobby.Lobby("", Player.Id(0), Game.Config(List(), Set(), None), List(), Game.State.Configuring()), Game.Hand(List()))
   val testSecret = Player.Secret(Player.Id(0), "secret")
 
   def askNewClientToIdentify = {
