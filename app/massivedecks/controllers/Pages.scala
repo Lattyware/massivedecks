@@ -13,7 +13,11 @@ class Pages @Inject() (cached: Cached, getConfig: Config.Factory) extends Contro
 
   def index() = cached("index")(Action { request =>
     val config = getConfig(request)
-    Ok(views.html.index(config.url, config.version)).as(HTML)
+    if (!config.requestIsCanonical) {
+      Redirect(config.canonicalUrlTo(request.path))
+    } else {
+      Ok(views.html.index(config.url, config.version)).as(HTML)
+    }
   })
 
   def manifest() = cached("manifest")(Action { request =>
