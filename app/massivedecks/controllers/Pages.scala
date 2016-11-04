@@ -11,14 +11,14 @@ import massivedecks.Config
 
 class Pages @Inject() (cached: Cached, getConfig: Config.Factory) extends Controller {
 
-  def index() = cached("index")(Action { request =>
+  def index() = Action { request =>
     val config = getConfig(request)
     if (!config.requestIsCanonical) {
       Redirect(config.canonicalUrlTo(request.path))
     } else {
       Ok(views.html.index(config.url, config.version)).as(HTML)
     }
-  })
+  }
 
   def manifest() = cached("manifest")(Action { request =>
     val config = getConfig(request)

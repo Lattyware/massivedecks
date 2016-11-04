@@ -31,9 +31,9 @@ class Config(base: Configuration, request: RequestHeader) {
   def canonicalHost = getString("md_host")
   def canonicalPath = getString("md_path")
 
-  def requestIsCanonical =
-    (canonicalProtocol.forall(p => p == requestProtocol) && canonicalHost.forall(h => h == request.host)
-      && (canonicalPath.isEmpty || request.path.startsWith(canonicalPath.get)))
+  def requestIsCanonical = (canonicalProtocol.forall(proto => proto == requestProtocol)
+    && canonicalHost.forall(host => host == request.host)
+    && canonicalPath.forall(path => request.path.startsWith(path)))
 
   def canonicalUrlTo(path: String) = s"$protocol://$host$path"
 
