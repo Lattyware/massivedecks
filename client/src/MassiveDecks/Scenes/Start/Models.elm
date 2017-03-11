@@ -13,14 +13,14 @@ import MassiveDecks.Scenes.Start.Messages exposing (Message, InputId, Tab)
 {-| The state of the start screen.
 -}
 type alias Model =
-  { lobby : Maybe Lobby.Model
-  , init : Init
-  , path : Path
-  , nameInput : Input.Model InputId Message
-  , gameCodeInput : Input.Model InputId Message
-  , errors : Errors.Model
-  , overlay : Overlay.Model Message
-  , buttonsEnabled : Bool
-  , tabs : Tabs.Model Tab Message
-  , storage : Storage.Model
-  }
+    { lobby : Maybe Lobby.Model
+    , init : Init
+    , path : Path
+    , nameInput : Input.Model InputId Message
+    , gameCodeInput : Input.Model InputId Message
+    , errors : Errors.Model
+    , overlay : Overlay.Model Message
+    , buttonsEnabled : Bool
+    , tabs : Tabs.Model Tab Message
+    , storage : Storage.Model
+    }

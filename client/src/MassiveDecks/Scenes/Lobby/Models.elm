@@ -15,15 +15,15 @@ import MassiveDecks.Components.TTS as TTS
 {-| The state of the lobby.
 -}
 type alias Model =
-  { lobby : Game.Lobby
-  , hand : Card.Hand
-  , config : Config.Model
-  , playing : Playing.Model
-  , browserNotifications : BrowserNotifications.Model
-  , secret : Player.Secret
-  , init : Init
-  , notification : Maybe Notification
-  , qrNeedsRendering : Bool
-  , sidebar : Sidebar.Model
-  , tts : TTS.Model
-  }
+    { lobby : Game.Lobby
+    , hand : Card.Hand
+    , config : Config.Model
+    , playing : Playing.Model
+    , browserNotifications : BrowserNotifications.Model
+    , secret : Player.Secret
+    , init : Init
+    , notification : Maybe Notification
+    , qrNeedsRendering : Bool
+    , sidebar : Sidebar.Model
+    , tts : TTS.Model
+    }

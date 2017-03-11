@@ -5,4 +5,5 @@ import MassiveDecks.Scenes.Playing.HouseRule.Reboot as Reboot
 
 
 houseRules : List HouseRule
-houseRules = [ Reboot.rule ]
+houseRules =
+    [ Reboot.rule ]

@@ -8,8 +8,8 @@ import MassiveDecks.Scenes.Config.Messages exposing (Message, InputId)
 {-| The state of the config screen.
 -}
 type alias Model =
-  { decks : List Game.DeckInfo
-  , deckIdInput : Input.Model InputId Message
-  , passwordInput : Input.Model InputId Message
-  , loadingDecks : List String
-  }
+    { decks : List Game.DeckInfo
+    , deckIdInput : Input.Model InputId Message
+    , passwordInput : Input.Model InputId Message
+    , loadingDecks : List String
+    }
