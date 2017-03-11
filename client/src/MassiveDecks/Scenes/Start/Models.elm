@@ -18,6 +18,8 @@ type alias Model =
     , path : Path
     , nameInput : Input.Model InputId Message
     , gameCodeInput : Input.Model InputId Message
+    , passwordInput : Input.Model InputId Message
+    , passwordRequired : Maybe String
     , errors : Errors.Model
     , overlay : Overlay.Model Message
     , buttonsEnabled : Bool

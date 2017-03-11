@@ -36,3 +36,11 @@ encodePlayerId playerId =
 encodeName : String -> Json.Value
 encodeName name =
     Json.object [ ( "name", Json.string name ) ]
+
+
+encodeNameAndPassword : String -> String -> Json.Value
+encodeNameAndPassword name password =
+    Json.object
+        [ ( "name", Json.string name )
+        , ( "password", Json.string password )
+        ]

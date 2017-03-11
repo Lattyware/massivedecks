@@ -34,19 +34,23 @@ import MassiveDecks.Util as Util exposing ((:>))
 -}
 init : Init -> Game.LobbyAndHand -> Player.Secret -> ( Model, Cmd ConsumerMessage )
 init init lobbyAndHand secret =
-    { lobby = lobbyAndHand.lobby
-    , hand = lobbyAndHand.hand
-    , config = Config.init
-    , playing = Playing.init init
-    , browserNotifications = BrowserNotifications.init init.browserNotificationsSupported False
-    , secret = secret
-    , init = init
-    , notification = Nothing
-    , qrNeedsRendering = False
-    , sidebar = Sidebar.init 768 {- Should match the enhance-width in less. -}
-    , tts = TTS.init
-    }
-        ! []
+    let
+        ( config, configCmd ) =
+            Config.init lobbyAndHand.lobby secret
+    in
+        { lobby = lobbyAndHand.lobby
+        , hand = lobbyAndHand.hand
+        , config = config
+        , playing = Playing.init init
+        , browserNotifications = BrowserNotifications.init init.browserNotificationsSupported False
+        , secret = secret
+        , init = init
+        , notification = Nothing
+        , qrNeedsRendering = False
+        , sidebar = Sidebar.init 768 {- Should match the enhance-width in less. -}
+        , tts = TTS.init
+        }
+            ! [ configCmd |> Cmd.map (ConfigMessage >> LocalMessage) ]
 
 
 {-| Subscriptions for the lobby.

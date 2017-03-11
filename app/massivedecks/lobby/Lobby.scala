@@ -12,7 +12,7 @@ import massivedecks.models.{Errors, Player, Game => GameModel, Lobby => LobbyMod
 import massivedecks.models.Game.Formatters._
 import massivedecks.models.Lobby.Formatters._
 import play.api.libs.iteratee.{Enumerator, Iteratee}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, JsObject, Json}
 import massivedecks.Util
 import massivedecks.cardcast.CardcastAPI
 
@@ -67,7 +67,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     case Some(g) => GameModel.State.Playing(g.round)
   }
 
-  val owner = newPlayer(ownerName)
+  val owner = newPlayer(ownerName, None)
 
   /**
     * @return The model for the lobby.
@@ -80,8 +80,10 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     * @param name The name for the player.
     * @return The secret for the player.
     * @throws BadRequestException with key "name-in-use" if there is a player in the lobby with the same name.
+    * @throws ForbiddenException with key "password-wrong" if the password is required and wrong.
     */
-  def newPlayer(name: String): Player.Secret = {
+  def newPlayer(name: String, password: Option[String]): Player.Secret = {
+    ForbiddenException.verify(config.password.isEmpty || config.password == password, Errors.PasswordWrong())
     val secret = players.addPlayer(name)
     if (game.isDefined) {
       game.get.addPlayer(secret.id)
@@ -97,7 +99,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     * @param playCode The cardcast play code for the deck.
     * @return An empty response.
     * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
-    * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "not-owner" if the requester is not the owner.
     * @throws RequestFailedException with the key "cardcast-timeout" if the request to cardcast doesn't complete.
     */
   def addDeck(secret: Player.Secret, playCode: String): JsValue = {
@@ -113,7 +115,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
       case Failure(exception) =>
         throw RequestFailedException(Errors.CardcastTimeout())
     }
-    Json.toJson("")
+    EmptyResponse
   }
 
   /**
@@ -188,7 +190,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     val game = validateInGame()
     game.choose(secret.id, winner)
     beginRound()
-    Json.toJson("")
+    EmptyResponse
   }
 
   /**
@@ -284,7 +286,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
       }
     }
     game.skip(secret.id, playerIds)
-    Json.toJson("")
+    EmptyResponse
   }
 
   /**
@@ -298,7 +300,7 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
   def back(secret: Player.Secret): JsValue = {
     players.validateSecret(secret)
     players.back(secret.id)
-    Json.toJson("")
+    EmptyResponse
   }
 
   /**
@@ -331,7 +333,23 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     players.validateSecret(secret)
     validateIsOwner(secret)
     config.addHouseRule(rule)
-    Json.toJson("")
+    EmptyResponse
+  }
+
+  /**
+    * Set the password
+    *
+    * @param secret The secret of the player making the request.
+    * @param password The password to set, empty means no password.
+    * @return An empty response.
+    * @throws ForbiddenException with key "secret-wrong-or-not-a-player" if the secret is invalid.
+    * @throws ForbiddenException with key "not-owner" if the requester is not the owner.
+    */
+  def setPassword(secret: Player.Secret, password: Option[String]): JsValue = {
+    players.validateSecret(secret)
+    validateIsOwner(secret)
+    config.setPassword(password)
+    EmptyResponse
   }
 
   /**
@@ -347,8 +365,10 @@ class Lobby(cardcast: CardcastAPI, val gameCode: String, ownerName: String)(impl
     players.validateSecret(secret)
     validateIsOwner(secret)
     config.removeHouseRule(rule)
-    Json.toJson("")
+    EmptyResponse
   }
+
+  def EmptyResponse: JsValue = JsObject(Seq())
 
   /**
     * Register a websocket connection.

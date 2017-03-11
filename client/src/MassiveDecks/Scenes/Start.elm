@@ -40,6 +40,8 @@ init init location =
           , path = path
           , nameInput = Input.init Name "name-input" [ text "Your name in the game." ] "" "Nickname" (Util.cmd SubmitCurrentTab) InputMessage
           , gameCodeInput = Input.init GameCode "game-code-input" [ text "The code for the game to join." ] (path.gameCode |> Maybe.withDefault "") "" (Util.cmd JoinLobbyAsNewPlayer) InputMessage
+          , passwordInput = Input.init Password "password-input" [ text "The password for the game to join." ] "" "Password" (Util.cmd JoinLobbyAsNewPlayer) InputMessage
+          , passwordRequired = Nothing
           , errors = Errors.init
           , overlay = Overlay.init OverlayMessage
           , buttonsEnabled = True
@@ -182,6 +184,9 @@ update message model =
         SetButtonsEnabled enabled ->
             ( { model | buttonsEnabled = enabled }, Cmd.none )
 
+        SetPasswordRequired ->
+            ( { model | passwordRequired = Just model.gameCodeInput.value }, Cmd.none )
+
         JoinLobbyAsNewPlayer ->
             ( { model | buttonsEnabled = False }, Util.cmd (JoinGivenLobbyAsNewPlayer model.gameCodeInput.value) )
 
@@ -189,7 +194,7 @@ update message model =
             case List.filter (.gameCode >> ((==) gameCode)) model.storage |> List.head of
                 Nothing ->
                     model
-                        ! [ Request.send (API.newPlayer gameCode model.nameInput.value)
+                        ! [ Request.send (API.newPlayer gameCode model.nameInput.value model.passwordInput.value)
                                 newPlayerErrorHandler
                                 ErrorMessage
                                 (StoreCredentialsAndMoveToLobby gameCode)
@@ -237,12 +242,16 @@ update message model =
 
                 ( gameCodeInput, gameCodeCmd ) =
                     Input.update message model.gameCodeInput
+
+                ( passwordInput, passwordCmd ) =
+                    Input.update message model.passwordInput
             in
                 ( { model
                     | nameInput = nameInput
                     , gameCodeInput = gameCodeInput
+                    , passwordInput = passwordInput
                   }
-                , Cmd.batch [ nameCmd, gameCodeCmd ]
+                , Cmd.batch [ nameCmd, gameCodeCmd, passwordCmd ]
                 )
 
         OverlayMessage overlayMessage ->
@@ -318,6 +327,12 @@ newPlayerErrorHandler error =
             case error of
                 API.NameInUse ->
                     ( Name, Just "This name is already in use in this game, try something else." |> Input.Error ) |> InputMessage
+
+                API.PasswordWrong ->
+                    Batch
+                        [ SetPasswordRequired
+                        , ( Password, Just "This game requires a password, please check you have the right one." |> Input.Error ) |> InputMessage
+                        ]
 
                 API.NewPlayerLobbyNotFound ->
                     ( GameCode, Just "This game doesn't exist - check you have the right code." |> Input.Error ) |> InputMessage

@@ -32,6 +32,7 @@ type Message
     | OverlayMessage (Overlay.Message Message)
     | TabsMessage (Tabs.Message Tab)
     | StorageMessage Storage.Message
+    | SetPasswordRequired
     | Batch (List Message)
     | NoOp
 
@@ -41,6 +42,7 @@ type Message
 type InputId
     = Name
     | GameCode
+    | Password
 
 
 {-| Tabs for the start page.

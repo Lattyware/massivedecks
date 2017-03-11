@@ -28,11 +28,7 @@ class Config(notifiers: Notifiers) {
   }
 
   def setPassword(newPass: Option[String]) = {
-    if (newPass.forall(pw => pw.isEmpty)) {
-      password = None
-    } else {
-      password = newPass
-    }
+    password = newPass.flatMap(pass => if (pass.isEmpty) None else newPass)
     notifiers.configChange(config)
   }
 

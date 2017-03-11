@@ -26,6 +26,7 @@ object Errors {
   case class NameInUse(error: String = "name-in-use") extends SimpleErrorDetails
   case class BadlyFormedSecret(error: String = "badly-formed-secret") extends SimpleErrorDetails
   case class SecretWrongOrNotAPlayer(error: String = "secret-wrong-or-not-a-player") extends SimpleErrorDetails
+  case class PasswordWrong(error: String = "password-wrong") extends SimpleErrorDetails
   case class NotAPlayer(error: String = "not-a-player") extends SimpleErrorDetails
   case class NotBeingSkipped(error: String = "not-being-skipped") extends SimpleErrorDetails
   case class AlreadyLeftGame(error: String = "already-left-game") extends SimpleErrorDetails

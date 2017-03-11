@@ -128,13 +128,18 @@ update message model =
         if (identity == model.identity) then
             case change of
                 Changed value ->
-                    ( { model | value = value }, Cmd.none )
+                    ( { model
+                        | value = value
+                        , error = Nothing
+                      }
+                    , Cmd.none
+                    )
 
                 Error error ->
                     ( { model | error = error }, Cmd.none )
 
                 Submit ->
-                    ( model, model.submit )
+                    ( { model | error = Nothing }, model.submit )
 
                 SetEnabled enabled ->
                     ( { model | enabled = enabled }, Cmd.none )
@@ -145,4 +150,4 @@ update message model =
                 NoOp ->
                     ( model, Cmd.none )
         else
-            ( model, Cmd.none )
+            ( { model | error = Nothing }, Cmd.none )

@@ -10,18 +10,34 @@ import MassiveDecks.Scenes.Lobby.Models as Lobby
 import MassiveDecks.Scenes.Config.Messages exposing (ConsumerMessage(..), Message(..), InputId(..), Deck(..))
 import MassiveDecks.Scenes.Config.Models exposing (Model)
 import MassiveDecks.Scenes.Config.UI as UI
+import MassiveDecks.Models.Game as Game
+import MassiveDecks.Models.Player as Player
 import MassiveDecks.Util as Util exposing ((:>))
 
 
 {-| Create the initial model for the config screen.
 -}
-init : Model
-init =
-    { decks = []
-    , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
-    , passwordInput = Input.init Password "password-input" UI.passwordInputLabel "" "Password" (Cmd.none) InputMessage
-    , loadingDecks = []
-    }
+init : Game.Lobby -> Player.Secret -> ( Model, Cmd ConsumerMessage )
+init lobby secret =
+    let
+        canChangeConfig =
+            lobby.owner == secret.id
+
+        config =
+            lobby.config
+
+        setPasswordButton =
+            if canChangeConfig then
+                UI.setPasswordButton
+            else
+                (\_ -> [])
+    in
+        { decks = []
+        , deckIdInput = Input.initWithExtra DeckId "input-with-button" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
+        , passwordInput = Input.initWithExtra Password "input-with-button" UI.passwordInputLabel (config.password |> Maybe.withDefault "") "Password" setPasswordButton (Util.cmd SetPassword) InputMessage
+        , loadingDecks = []
+        }
+            ! [ ( Password, Input.SetEnabled canChangeConfig ) |> InputMessage |> LocalMessage |> Util.cmd ]
 
 
 {-| Subscriptions for the config screen.
@@ -77,10 +93,17 @@ update message lobbyModel =
 
             InputMessage message ->
                 let
-                    ( deckIdInput, msg ) =
+                    ( deckIdInput, deckIdMsg ) =
                         Input.update message lobbyModel.config.deckIdInput
+
+                    ( passwordInput, passwordMsg ) =
+                        Input.update message lobbyModel.config.passwordInput
                 in
-                    ( { model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg )
+                    { model
+                        | deckIdInput = deckIdInput
+                        , passwordInput = passwordInput
+                    }
+                        ! [ Cmd.map LocalMessage deckIdMsg, Cmd.map LocalMessage passwordMsg ]
 
             AddAi ->
                 ( model, Request.send_ (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp) )
@@ -93,6 +116,9 @@ update message lobbyModel =
 
             DisableRule rule ->
                 ( model, Request.send_ (API.disableRule rule gameCode secret) ErrorMessage ignore )
+
+            SetPassword ->
+                ( model, Request.send_ (API.setPassword gameCode secret model.passwordInput.value) ErrorMessage ignore )
 
             NoOp ->
                 ( model, Cmd.none )

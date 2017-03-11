@@ -1,4 +1,4 @@
-module MassiveDecks.Scenes.Config.UI exposing (view, deckIdInputLabel, passwordInputLabel, addDeckButton)
+module MassiveDecks.Scenes.Config.UI exposing (view, deckIdInputLabel, passwordInputLabel, addDeckButton, setPasswordButton)
 
 import String
 import Html exposing (..)
@@ -94,16 +94,27 @@ infoBar =
 
 passwordInputLabel : List (Html msg)
 passwordInputLabel =
-    [ text "If blank, no password will be needed - anyone with the game code can play." ]
+    [ text "If blank, anyone with the game code can join." ]
 
 
 password : Input.Model InputId Message -> Html Message
 password passwordInputModel =
     div []
         [ h3 [] [ Icon.icon "key", text " Privacy" ]
-        , p [] [ text "A password that players will need to enter to get in the game." ]
+        , p [] [ text "A password that players will need to enter to get in the game. People already in the game will not need to enter it, and anyone in the game will be able to see it." ]
         , Input.view passwordInputModel
         ]
+
+
+setPasswordButton : String -> List (Html Message)
+setPasswordButton password =
+    [ button
+        [ class "mui-btn mui-btn--small mui-btn--primary"
+        , onClick SetPassword
+        , title "Set the password."
+        ]
+        [ Icon.icon "lock" ]
+    ]
 
 
 invite : String -> String -> Html msg
