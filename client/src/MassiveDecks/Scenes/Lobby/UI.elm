@@ -130,20 +130,24 @@ score client owner player =
                 [ ( Player.statusName player.status, True )
                 , ( "disconnected", player.disconnected )
                 , ( "left", player.left )
+                , ( "you", player.id == client )
                 ]
 
         prename =
-            ((if player.id == owner then
-                [ Icon.icon "star", text " " ]
-              else
-                []
-             )
-                ++ (if player.disconnected then
-                        [ Icon.icon "minus-circle", text " " ]
-                    else
-                        []
-                   )
-            )
+            List.concat
+                [ if player.id == owner then
+                    [ Icon.icon "star", text " " ]
+                  else
+                    []
+                , if player.id == client then
+                    [ Icon.icon "user-circle", text " " ]
+                  else
+                    []
+                , if player.disconnected then
+                    [ Icon.icon "minus-circle", text " " ]
+                  else
+                    []
+                ]
 
         afterNameTitle =
             (if player.id == owner then

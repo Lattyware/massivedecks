@@ -72,6 +72,7 @@ class API @Inject()(store: LobbyStore) (implicit context: ExecutionContext) exte
           case "enableRule" => lobby.enableRule(secret, extractCommandArgument((request.body \ "rule").validate[String]))
           case "disableRule" => lobby.disableRule(secret, extractCommandArgument((request.body \ "rule").validate[String]))
           case "redraw" => lobby.redraw(secret)
+          case "setPassword" => lobby.setPassword(secret, (request.body \ "password").asOpt[String])
           case unknown => throw BadRequestException(Errors.InvalidCommand(unknown))
         }
       }
@@ -82,7 +83,7 @@ class API @Inject()(store: LobbyStore) (implicit context: ExecutionContext) exte
     wrap {
       val name = (request.body \ "name").validate[String].getOrElse(throw BadRequestException(Errors.InvalidName()))
       store.performInLobby(gameCode) { lobby =>
-        Json.toJson(lobby.newPlayer(name))
+        Json.toJson(lobby.newPlayer(name, (request.body \ "password").asOpt[String]))
       }
     }
   }

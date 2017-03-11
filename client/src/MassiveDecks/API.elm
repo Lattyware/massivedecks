@@ -25,18 +25,20 @@ createLobby name =
 -}
 type NewPlayerError
     = NameInUse
+    | PasswordWrong
     | NewPlayerLobbyNotFound
 
 
 {-| Makes a request to add a new player to the given lobby. On success, returns a `Secret` for that player.
 -}
-newPlayer : String -> String -> Request NewPlayerError Player.Secret
-newPlayer gameCode name =
+newPlayer : String -> String -> String -> Request NewPlayerError Player.Secret
+newPlayer gameCode name password =
     request
         "POST"
         ("/api/lobbies/" ++ gameCode ++ "/players")
-        (Just (encodeName name))
+        (Just (encodeNameAndPassword name password))
         [ ( ( 400, "name-in-use" ), Decode.succeed NameInUse )
+        , ( ( 403, "password-wrong" ), Decode.succeed PasswordWrong )
         , ( ( 404, "lobby-not-found" ), Decode.succeed NewPlayerLobbyNotFound )
         ]
         playerSecretDecoder
@@ -277,6 +279,13 @@ enableRule rule gameCode secret =
 disableRule : HouseRule.Id -> String -> Player.Secret -> Request Never ()
 disableRule rule gameCode secret =
     commandRequest "disableRule" [ ( "rule", rule |> HouseRule.toString |> Encode.string ) ] [] (Decode.succeed ()) gameCode secret
+
+
+{-| Make a request to set the lobby password
+-}
+setPassword : String -> Player.Secret -> String -> Request Never ()
+setPassword gameCode secret password =
+    commandRequest "setPassword" [ ( "password", password |> Encode.string ) ] [] (Decode.succeed ()) gameCode secret
 
 
 

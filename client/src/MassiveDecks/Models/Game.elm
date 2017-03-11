@@ -25,7 +25,7 @@ type alias GameCode =
 type alias Config =
     { decks : List DeckInfo
     , houseRules : List HouseRule.Id
-    , pasword : Maybe String
+    , password : Maybe String
     }
 
 

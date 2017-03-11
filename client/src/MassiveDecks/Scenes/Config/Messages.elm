@@ -24,6 +24,7 @@ type Message
     | StartGame
     | EnableRule HouseRule.Id
     | DisableRule HouseRule.Id
+    | SetPassword
     | NoOp
 
 

@@ -97,9 +97,17 @@ renderTab nameEntered gameCodeEntered model tab =
             [ createLobbyButton (nameEntered && model.buttonsEnabled) ]
 
         Join ->
-            [ Input.view model.gameCodeInput
-            , joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
-            ]
+            List.concat
+                [ [ Input.view model.gameCodeInput
+                  ]
+                , (if model.passwordRequired == (Just model.gameCodeInput.value) then
+                    [ Input.view model.passwordInput ]
+                   else
+                    []
+                  )
+                , [ joinLobbyButton (nameEntered && gameCodeEntered && model.buttonsEnabled)
+                  ]
+                ]
 
 
 existingGames : List Game.GameCodeAndSecret -> List (Html msg)
