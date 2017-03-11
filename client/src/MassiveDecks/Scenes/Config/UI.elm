@@ -66,8 +66,7 @@ infoBar =
     , text " "
     , text "You can't change the configuration of the game, as you are not the owner."
     ]
-  ] 
-
+  ]
 
 passwordInputLabel : List (Html msg)
 passwordInputLabel = [ text "If blank, no password will be needed - anyone with the game code can play." ]
@@ -189,8 +188,8 @@ houseRule canNotChangeConfig enabled rule =
 
 
 houseRuleTemplate : Bool -> String -> String -> String -> String -> String -> msg -> Html msg
-houseRuleTemplate canNotChangeConfig id' title icon description buttonText message =
-  div [ id id', class "house-rule" ]
+houseRuleTemplate canNotChangeConfig id_ title icon description buttonText message =
+  div [ id id_, class "house-rule" ]
       [ div [] [ h3 [] [ Icon.icon icon, text " ", text title ]
              , button [ class "mui-btn mui-btn--small mui-btn--primary", onClick message, disabled canNotChangeConfig ]
                       [ text buttonText ]

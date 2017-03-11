@@ -40,7 +40,7 @@ update : Message -> Model -> (Model, Cmd Message)
 update message model =
   case message of
     Toggle ->
-      (model, Task.perform Util.impossible Show Window.width)
+      (model, Task.perform Show Window.width)
 
     Show screenWidth ->
       if model.shownAsOverlay then

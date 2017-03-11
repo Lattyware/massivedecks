@@ -2,7 +2,6 @@ module MassiveDecks.Components.Errors exposing (Message(..), Model, ApplicationI
 
 import String
 
-import Http exposing (url)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -77,7 +76,7 @@ reportUrl applicationInfo message =
     version = if String.isEmpty applicationInfo.version then "Not Specified" else applicationInfo.version
     full = message ++ "\n\nApplication Info:\n\tVersion: " ++ version ++ "\n\tURL: " ++ applicationInfo.url
   in
-    url "https://github.com/Lattyware/massivedecks/issues/new" [ ( "body", full ) ]
+    "https://github.com/Lattyware/massivedecks/issues/new?body=" ++ full
 
 
 errorMessage : ApplicationInfo -> Error -> Html Message
@@ -104,5 +103,5 @@ errorMessage applicationInfo error =
                 ]
         , div [ class "mui-divider" ] []
         , p [] [ text error.message ]
-        ] `Util.andMaybe` bugReportLink)
+        ] |> Util.andMaybe bugReportLink)
       ]

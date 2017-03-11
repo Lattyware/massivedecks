@@ -1,6 +1,6 @@
 module MassiveDecks.API exposing (..)
 
-import Json.Decode as Decode exposing ((:=))
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 import MassiveDecks.API.Request exposing (..)
@@ -138,7 +138,7 @@ newGame gameCode secret =
     "newGame"
     []
     [ ((400, "game-in-progress"), Decode.succeed GameInProgress)
-    , ((400, "not-enough-players"), Decode.object1 NotEnoughPlayers ("required" := Decode.int))
+    , ((400, "not-enough-players"), Decode.map NotEnoughPlayers (Decode.field "required" Decode.int))
     ]
     handDecoder
     gameCode
@@ -189,7 +189,7 @@ play gameCode secret ids =
     [ ((400, "not-in-round"), Decode.succeed NotInRound)
     , ((400, "already-played"), Decode.succeed AlreadyPlayed)
     , ((400, "already-judging"), Decode.succeed AlreadyJudging)
-    , ((400, "wrong-number-of-cards-played"), Decode.object2 WrongNumberOfCards ("got" := Decode.int) ("expected" := Decode.int))
+    , ((400, "wrong-number-of-cards-played"), Decode.map2 WrongNumberOfCards (Decode.field "got" Decode.int) (Decode.field "expected" Decode.int))
     ]
     handDecoder
     gameCode
@@ -213,7 +213,7 @@ skip gameCode secret players =
   commandRequest
     "skip"
     [ ("players", Encode.list (List.map Encode.int players)) ]
-    [ ((400, "not-enough-players"), Decode.object1 NotEnoughPlayersToSkip ("required" := Decode.int))
+    [ ((400, "not-enough-players"), Decode.map NotEnoughPlayersToSkip (Decode.field "required" Decode.int))
     , ((400, "players-must-be-skippable"), Decode.succeed PlayersNotSkippable)
     ]
     (Decode.succeed ())

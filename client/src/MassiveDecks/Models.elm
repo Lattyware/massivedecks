@@ -1,5 +1,7 @@
 module MassiveDecks.Models exposing (..)
 
+import Navigation
+
 import MassiveDecks.Models.Game exposing (GameCodeAndSecret)
 
 
@@ -18,4 +20,10 @@ type alias Init =
 -}
 type alias Path =
   { gameCode : Maybe String
+  }
+
+
+pathFromLocation : Navigation.Location -> Path
+pathFromLocation location =
+  { gameCode = Maybe.map Tuple.second (String.uncons location.hash)
   }

@@ -361,16 +361,13 @@ updateLobbyAndHand lobbyAndHand model =
 notificationChange : Model -> Maybe Notification -> (Model, Cmd ConsumerMessage)
 notificationChange model notification =
   let
-    newNotification = Maybe.oneOf
-      [ notification
-      , model.notification
-      ]
+    newNotification = notification |> Util.or model.notification
     cmd = case newNotification of
       Just nn ->
         let
           dismiss = Util.after (Time.second * 5) (Task.succeed nn)
         in
-          Task.perform Util.impossible (LocalMessage << DismissNotification) dismiss
+          Task.perform (LocalMessage << DismissNotification) dismiss
 
       Nothing ->
         Cmd.none

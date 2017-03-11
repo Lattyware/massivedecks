@@ -1,7 +1,6 @@
 module MassiveDecks.Scenes.Playing.UI exposing (view)
 
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Keyed as Keyed
@@ -112,7 +111,7 @@ roundContents lobbyModel round =
 
     callFill = case round.state of
       Round.P _ -> picked
-      Round.J judging -> Maybe.withDefault [] (model.considering `Maybe.andThen` (Util.get judging.responses))
+      Round.J judging -> Maybe.withDefault [] (model.considering |> Maybe.andThen (Util.get judging.responses))
       Round.F _ -> []
 
     pickedOrChosen = case round.state of
@@ -296,7 +295,7 @@ chooseButton playedId =
 infoBar : Game.Lobby -> Player.Secret -> List (Html Message)
 infoBar lobby secret =
   let
-    content = Maybe.oneOf [ statusInfo lobby.players secret.id, stateInfo lobby.game ]
+    content = statusInfo lobby.players secret.id |> Util.or (stateInfo lobby.game)
   in
     case content of
       Just message ->

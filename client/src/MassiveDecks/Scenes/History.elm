@@ -14,7 +14,7 @@ init : String -> (Model, Cmd ConsumerMessage)
 init gameCode =
   ( { rounds = Nothing
     }
-  , Request.send' (API.getHistory gameCode) ErrorMessage (LocalMessage << Load)
+  , Request.send_ (API.getHistory gameCode) ErrorMessage (LocalMessage << Load)
   )
 
 

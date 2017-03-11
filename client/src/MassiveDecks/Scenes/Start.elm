@@ -3,11 +3,10 @@ module MassiveDecks.Scenes.Start exposing (update, urlUpdate, view, init, subscr
 import String
 
 import Html exposing (..)
-import Html.App as Html
 
 import Navigation
 
-import MassiveDecks.Models exposing (Init, Path)
+import MassiveDecks.Models exposing (Init, Path, pathFromLocation)
 import MassiveDecks.Models.Game as Game
 import MassiveDecks.Components.Tabs as Tabs
 import MassiveDecks.Components.Storage as Storage
@@ -27,9 +26,10 @@ import MassiveDecks.Util as Util
 
 {-| Create the initial model for the start screen.
 -}
-init : Init -> Path -> (Model, Cmd Message)
-init init path =
+init : Init -> Navigation.Location -> (Model, Cmd Message)
+init init location =
   let
+    path = pathFromLocation location
     tab = if path.gameCode |> Maybe.withDefault "" |> String.isEmpty then Create else Join
   in
     ( { lobby = Nothing
@@ -113,6 +113,9 @@ update message model =
       in
         ({ model | errors = newErrors }, Cmd.map ErrorMessage cmd)
 
+    PathChange path ->
+      urlUpdate path model
+
     TabsMessage tabsMessage ->
       ({ model | tabs = (Tabs.update tabsMessage model.tabs) }, Cmd.none)
 
@@ -137,7 +140,7 @@ update message model =
 
     CreateLobby ->
       ( { model | buttonsEnabled = False }
-      , Request.send'
+      , Request.send_
           (API.createLobby model.nameInput.value)
           ErrorMessage
           (\gameCodeAndSecret -> StoreCredentialsAndMoveToLobby gameCodeAndSecret.gameCode gameCodeAndSecret.secret))
@@ -233,7 +236,7 @@ update message model =
                 ([], model.storage)
 
               Just lobby ->
-                ( [ Request.send' (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp)
+                ( [ Request.send_ (API.leave lobby.lobby.gameCode lobby.secret) ErrorMessage (\_ -> NoOp)
                   , Storage.Store |> StorageMessage |> Util.cmd
                   ]
                 , Storage.leave (Game.GameCodeAndSecret lobby.lobby.gameCode lobby.secret) model.storage
