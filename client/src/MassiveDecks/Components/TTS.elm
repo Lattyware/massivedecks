@@ -4,27 +4,38 @@ import MassiveDecks.Util as Util
 
 
 type alias Model =
-  { enabled : Bool
-  }
+    { enabled : Bool
+    }
 
 
 type Message
-  = Say String
-  | Enabled Bool
+    = Say String
+    | Enabled Bool
 
 
 init : Model
-init = { enabled = False }
+init =
+    { enabled = False }
 
 
-update : Message -> Model -> (Model, Cmd Message)
+update : Message -> Model -> ( Model, Cmd Message )
 update message model =
-  case message of
-    Say text ->
-      (model, if model.enabled then say text else Cmd.none)
+    case message of
+        Say text ->
+            ( model
+            , if model.enabled then
+                say text
+              else
+                Cmd.none
+            )
 
-    Enabled enabled ->
-      ({ model | enabled = enabled }, if enabled then Cmd.none else Say "" |> Util.cmd)
+        Enabled enabled ->
+            ( { model | enabled = enabled }
+            , if enabled then
+                Cmd.none
+              else
+                Say "" |> Util.cmd
+            )
 
 
 port say : String -> Cmd msg

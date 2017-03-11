@@ -16,28 +16,28 @@ import MassiveDecks.Components.TTS as TTS
 {-| This type is used for all sending of messages, allowing us to send messages handled outside this scene.
 -}
 type ConsumerMessage
-  = ErrorMessage Errors.Message
-  | OverlayMessage (Overlay.Message Message)
-  | Leave
-  | LocalMessage Message
+    = ErrorMessage Errors.Message
+    | OverlayMessage (Overlay.Message Message)
+    | Leave
+    | LocalMessage Message
 
 
 {-| The messages used in the start screen.
 -}
 type Message
-  = DismissNotification Notification
-  | SetNotification (List Player -> Maybe Notification)
-  | UpdateLobbyAndHand Game.LobbyAndHand
-  | UpdateLobby (Game.Lobby -> Game.Lobby)
-  | UpdateHand Card.Hand
-  | Identify
-  | DisplayInviteOverlay
-  | BrowserNotificationForUser (Game.Lobby -> Maybe Player.Id) String String
-  | RenderQr
-  | Batch (List Message)
-  | NoOp
-  | BrowserNotificationsMessage BrowserNotifications.Message
-  | ConfigMessage Config.ConsumerMessage
-  | PlayingMessage Playing.ConsumerMessage
-  | SidebarMessage Sidebar.Message
-  | TTSMessage TTS.Message
+    = DismissNotification Notification
+    | SetNotification (List Player -> Maybe Notification)
+    | UpdateLobbyAndHand Game.LobbyAndHand
+    | UpdateLobby (Game.Lobby -> Game.Lobby)
+    | UpdateHand Card.Hand
+    | Identify
+    | DisplayInviteOverlay
+    | BrowserNotificationForUser (Game.Lobby -> Maybe Player.Id) String String
+    | RenderQr
+    | Batch (List Message)
+    | NoOp
+    | BrowserNotificationsMessage BrowserNotifications.Message
+    | ConfigMessage Config.ConsumerMessage
+    | PlayingMessage Playing.ConsumerMessage
+    | SidebarMessage Sidebar.Message
+    | TTSMessage TTS.Message

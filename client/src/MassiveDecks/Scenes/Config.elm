@@ -1,9 +1,7 @@
 module MassiveDecks.Scenes.Config exposing (update, view, init, subscriptions)
 
 import String
-
 import Html exposing (Html)
-
 import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
 import MassiveDecks.Components.Input as Input
@@ -19,104 +17,122 @@ import MassiveDecks.Util as Util exposing ((:>))
 -}
 init : Model
 init =
-  { decks = []
-  , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
-  , passwordInput = Input.init Password "password-input" UI.passwordInputLabel "" "Password" (Cmd.none) InputMessage
-  , loadingDecks = []
-  }
+    { decks = []
+    , deckIdInput = Input.initWithExtra DeckId "deck-id-input" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
+    , passwordInput = Input.init Password "password-input" UI.passwordInputLabel "" "Password" (Cmd.none) InputMessage
+    , loadingDecks = []
+    }
 
 
 {-| Subscriptions for the config screen.
 -}
 subscriptions : Model -> Sub ConsumerMessage
-subscriptions model = Sub.none
+subscriptions model =
+    Sub.none
 
 
 {-| Render the config screen.
 -}
 view : Lobby.Model -> Html ConsumerMessage
-view lobbyModel = UI.view lobbyModel |> Html.map LocalMessage
+view lobbyModel =
+    UI.view lobbyModel |> Html.map LocalMessage
 
 
 {-| Handles messages and alters the model as appropriate.
 -}
-update : Message -> Lobby.Model -> (Model, Cmd ConsumerMessage)
+update : Message -> Lobby.Model -> ( Model, Cmd ConsumerMessage )
 update message lobbyModel =
-  let
-    lobby = lobbyModel.lobby
-    gameCode = lobbyModel.lobby.gameCode
-    secret = lobbyModel.secret
-    model = lobbyModel.config
-  in
-    case message of
-      ConfigureDecks (Request rawDeckId) ->
-        let
-          deckId = String.toUpper rawDeckId
-        in
-          { model | loadingDecks = model.loadingDecks ++ [ deckId ] } !
-            [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage (\_ -> (Add deckId) |> ConfigureDecks |> LocalMessage)
-            , inputClearErrorCmd DeckId
-            ]
+    let
+        lobby =
+            lobbyModel.lobby
 
-      AddDeck ->
-        (model, Util.cmd (LocalMessage (ConfigureDecks (Request model.deckIdInput.value))))
+        gameCode =
+            lobbyModel.lobby.gameCode
 
-      ConfigureDecks (Add deckId) ->
-        (removeDeckLoadingSpinner deckId model, Cmd.none)
+        secret =
+            lobbyModel.secret
 
-      ConfigureDecks (Fail deckId errorMessage) ->
-        (removeDeckLoadingSpinner deckId model, inputSetErrorCmd DeckId errorMessage)
+        model =
+            lobbyModel.config
+    in
+        case message of
+            ConfigureDecks (Request rawDeckId) ->
+                let
+                    deckId =
+                        String.toUpper rawDeckId
+                in
+                    { model | loadingDecks = model.loadingDecks ++ [ deckId ] }
+                        ! [ Request.send (API.addDeck gameCode secret deckId) (addDeckErrorHandler deckId) ErrorMessage (\_ -> (Add deckId) |> ConfigureDecks |> LocalMessage)
+                          , inputClearErrorCmd DeckId
+                          ]
 
-      InputMessage message ->
-        let
-          (deckIdInput, msg) = Input.update message lobbyModel.config.deckIdInput
-        in
-          ({ model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg)
+            AddDeck ->
+                ( model, Util.cmd (LocalMessage (ConfigureDecks (Request model.deckIdInput.value))) )
 
-      AddAi ->
-        (model, Request.send_ (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp))
+            ConfigureDecks (Add deckId) ->
+                ( removeDeckLoadingSpinner deckId model, Cmd.none )
 
-      StartGame ->
-        (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage HandUpdate)
+            ConfigureDecks (Fail deckId errorMessage) ->
+                ( removeDeckLoadingSpinner deckId model, inputSetErrorCmd DeckId errorMessage )
 
-      EnableRule rule ->
-        (model, Request.send_ (API.enableRule rule gameCode secret) ErrorMessage ignore)
+            InputMessage message ->
+                let
+                    ( deckIdInput, msg ) =
+                        Input.update message lobbyModel.config.deckIdInput
+                in
+                    ( { model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg )
 
-      DisableRule rule ->
-        (model, Request.send_ (API.disableRule rule gameCode secret) ErrorMessage ignore)
+            AddAi ->
+                ( model, Request.send_ (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp) )
 
-      NoOp ->
-        (model, Cmd.none)
+            StartGame ->
+                ( model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage HandUpdate )
+
+            EnableRule rule ->
+                ( model, Request.send_ (API.enableRule rule gameCode secret) ErrorMessage ignore )
+
+            DisableRule rule ->
+                ( model, Request.send_ (API.disableRule rule gameCode secret) ErrorMessage ignore )
+
+            NoOp ->
+                ( model, Cmd.none )
 
 
 ignore : () -> ConsumerMessage
-ignore = (\_ -> LocalMessage NoOp)
+ignore =
+    (\_ -> LocalMessage NoOp)
 
 
 inputClearErrorCmd : InputId -> Cmd ConsumerMessage
-inputClearErrorCmd inputId = (inputId, Nothing |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd
+inputClearErrorCmd inputId =
+    ( inputId, Nothing |> Input.Error ) |> InputMessage |> LocalMessage |> Util.cmd
 
 
 inputSetErrorCmd : InputId -> String -> Cmd ConsumerMessage
-inputSetErrorCmd inputId error = (inputId, Just error |> Input.Error) |> InputMessage |> LocalMessage |> Util.cmd
+inputSetErrorCmd inputId error =
+    ( inputId, Just error |> Input.Error ) |> InputMessage |> LocalMessage |> Util.cmd
 
 
 removeDeckLoadingSpinner : String -> Model -> Model
-removeDeckLoadingSpinner deckId model = { model | loadingDecks = List.filter ((/=) deckId) model.loadingDecks }
+removeDeckLoadingSpinner deckId model =
+    { model | loadingDecks = List.filter ((/=) deckId) model.loadingDecks }
 
 
 addDeckErrorHandler : String -> API.AddDeckError -> ConsumerMessage
 addDeckErrorHandler deckId error =
-  case error of
-    API.CardcastTimeout ->
-      ConfigureDecks (Fail deckId "There was a problem accessing CardCast, please try again after a short wait.") |> LocalMessage
+    case error of
+        API.CardcastTimeout ->
+            ConfigureDecks (Fail deckId "There was a problem accessing CardCast, please try again after a short wait.") |> LocalMessage
 
-    API.DeckNotFound ->
-      ConfigureDecks (Fail deckId "The given play code doesn't exist, please check you have the correct code.") |> LocalMessage
+        API.DeckNotFound ->
+            ConfigureDecks (Fail deckId "The given play code doesn't exist, please check you have the correct code.") |> LocalMessage
 
 
 newGameErrorHandler : API.NewGameError -> ConsumerMessage
 newGameErrorHandler error =
-  case error of
-    API.GameInProgress -> ErrorMessage <| Errors.New "Can't start the game - it is already in progress." False
-    API.NotEnoughPlayers required -> ErrorMessage <| Errors.New ("Can't start the game - you need at least " ++ (toString required) ++ " players to start the game.") False
+    case error of
+        API.GameInProgress ->
+            ErrorMessage <| Errors.New "Can't start the game - it is already in progress." False
+
+        API.NotEnoughPlayers required ->
+            ErrorMessage <| Errors.New ("Can't start the game - you need at least " ++ (toString required) ++ " players to start the game.") False
