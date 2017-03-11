@@ -1,5 +1,6 @@
 module MassiveDecks.Scenes.Start.Messages exposing (..)
 
+import MassiveDecks.Models exposing (Path)
 import MassiveDecks.Components.Input as Input
 import MassiveDecks.Components.Errors as Errors
 import MassiveDecks.Components.Tabs as Tabs
@@ -14,6 +15,7 @@ import MassiveDecks.Models.Player as Player
 -}
 type Message
   = SubmitCurrentTab
+  | PathChange Path
   | CreateLobby
   | SetButtonsEnabled Bool
   | JoinLobbyAsNewPlayer

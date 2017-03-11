@@ -92,7 +92,7 @@ view : Model id msg -> Html msg
 view model =
   div [ class model.class ]
     ([ div [ class "mui-textfield" ]
-        ([ input [ type' "text"
+        ([ input [ type_ "text"
                  , defaultValue model.value
                  , placeholder model.placeholder
                  , disabled (not model.enabled)
@@ -100,7 +100,7 @@ view model =
                  , Util.onKeyDown "Enter" (model.embedMethod (model.identity, Submit)) (model.embedMethod (model.identity, NoOp))
                  ] []
          , label [] (List.append [ Icon.icon "info-circle", text " " ] model.label)
-         ] `Util.andMaybe` (error model.error))
+         ] |> Util.andMaybe (error model.error))
      ] ++ model.extra model.value)
 
 

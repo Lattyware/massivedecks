@@ -1,7 +1,6 @@
 module MassiveDecks.Scenes.Lobby.UI exposing (view, inviteOverlay)
 
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 

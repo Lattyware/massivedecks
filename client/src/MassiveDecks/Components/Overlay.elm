@@ -2,7 +2,6 @@ port module MassiveDecks.Components.Overlay exposing (Overlay, Model, Message(..
 
 import Json.Decode as Json
 
-import Html.App as Html
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

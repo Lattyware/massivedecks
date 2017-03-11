@@ -3,7 +3,6 @@ module MassiveDecks.Scenes.Config exposing (update, view, init, subscriptions)
 import String
 
 import Html exposing (Html)
-import Html.App as Html
 
 import MassiveDecks.API as API
 import MassiveDecks.API.Request as Request
@@ -75,16 +74,16 @@ update message lobbyModel =
           ({ model | deckIdInput = deckIdInput }, Cmd.map LocalMessage msg)
 
       AddAi ->
-        (model, Request.send' (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp))
+        (model, Request.send_ (API.newAi gameCode secret) ErrorMessage (\_ -> LocalMessage NoOp))
 
       StartGame ->
         (model, Request.send (API.newGame gameCode secret) newGameErrorHandler ErrorMessage HandUpdate)
 
       EnableRule rule ->
-        (model, Request.send' (API.enableRule rule gameCode secret) ErrorMessage ignore)
+        (model, Request.send_ (API.enableRule rule gameCode secret) ErrorMessage ignore)
 
       DisableRule rule ->
-        (model, Request.send' (API.disableRule rule gameCode secret) ErrorMessage ignore)
+        (model, Request.send_ (API.disableRule rule gameCode secret) ErrorMessage ignore)
 
       NoOp ->
         (model, Cmd.none)

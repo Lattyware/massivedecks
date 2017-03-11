@@ -4,7 +4,6 @@ import Random
 import String
 
 import Html exposing (..)
-import Html.App as Html
 
 import AnimationFrame
 
@@ -146,7 +145,7 @@ update message lobbyModel round =
         (model, Request.send (API.skip gameCode secret playerIds) skipErrorHandler ErrorMessage ignore)
 
       Back ->
-        (model, Request.send' (API.back gameCode secret) ErrorMessage ignore)
+        (model, Request.send_ (API.back gameCode secret) ErrorMessage ignore)
 
       LobbyAndHandUpdated ->
         lobbyAndHandUpdated lobbyModel round

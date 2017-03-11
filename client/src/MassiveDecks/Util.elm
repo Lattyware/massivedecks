@@ -20,8 +20,14 @@ impossible n = impossible n
 
 {-| Add an item to a list if the value is not nothing.
 -}
-andMaybe : List a -> Maybe a -> List a
-andMaybe values maybeExtra = List.append values (Maybe.map (\value -> [ value ]) maybeExtra |> Maybe.withDefault [])
+andMaybe : Maybe a -> List a -> List a
+andMaybe maybeExtra values = List.append values (Maybe.map (\value -> [ value ]) maybeExtra |> Maybe.withDefault [])
+
+
+or : Maybe a -> Maybe a -> Maybe a
+or a b = case a of
+  Just _ -> a
+  Nothing -> b
 
 
 {-| Give the first value from the list that matches the given condition. If none do, return `Nothing`.
@@ -58,7 +64,7 @@ lobbyUrl url lobbyId = url ++ "#" ++ lobbyId
 {-| Create a command that just sends the given message instantly.
 -}
 cmd : msg -> Cmd msg
-cmd message = Task.succeed message |> Task.perform identity (\_ -> message)
+cmd message = Task.perform identity (Task.succeed message)
 
 
 {-| Chains two updates together to produce a single update.
@@ -135,7 +141,7 @@ apply fs value = List.map (\f -> f value) fs
 -}
 after : Time -> Task x a -> Task x a
 after waitFor task =
-  Process.sleep waitFor `Task.andThen` (\_ -> task)
+  Process.sleep waitFor |> Task.andThen (\_ -> task)
 
 {-| Check if a Maybe is Nothing.
 -}

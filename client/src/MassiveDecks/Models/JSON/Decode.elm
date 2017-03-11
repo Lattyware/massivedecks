@@ -10,54 +10,54 @@ import MassiveDecks.Scenes.Playing.HouseRule.Id as HouseRule
 
 
 lobbyAndHandDecoder : Decoder Game.LobbyAndHand
-lobbyAndHandDecoder = object2 Game.LobbyAndHand
-  ("lobby" := lobbyDecoder)
-  ("hand" := handDecoder)
+lobbyAndHandDecoder = map2 Game.LobbyAndHand
+  (field "lobby" lobbyDecoder)
+  (field "hand" handDecoder)
 
 
 lobbyDecoder : Decoder Game.Lobby
-lobbyDecoder = object5 Game.Lobby
-  ("gameCode" := string)
-  ("owner" := playerIdDecoder)
-  ("config" := configDecoder)
-  ("players" := (list playerDecoder))
-  ("state" := gameStateDecoder)
+lobbyDecoder = map5 Game.Lobby
+  (field "gameCode" string)
+  (field "owner" playerIdDecoder)
+  (field "config" configDecoder)
+  (field "players" (list playerDecoder))
+  (field "state" gameStateDecoder)
 
 
 gameCodeAndSecretDecoder : Decoder Game.GameCodeAndSecret
-gameCodeAndSecretDecoder = object2 Game.GameCodeAndSecret
-  ("gameCode" := string)
-  ("secret" := playerSecretDecoder)
+gameCodeAndSecretDecoder = map2 Game.GameCodeAndSecret
+  (field "gameCode" string)
+  (field "secret" playerSecretDecoder)
 
 
 deckInfoDecoder : Decoder Game.DeckInfo
-deckInfoDecoder = object4 Game.DeckInfo
-  ("id" := string)
-  ("name" := string)
-  ("calls" := int)
-  ("responses" := int)
+deckInfoDecoder = map4 Game.DeckInfo
+  (field "id" string)
+  (field "name" string)
+  (field "calls" int)
+  (field "responses" int)
 
 
 configDecoder : Decoder Game.Config
-configDecoder = object3 Game.Config
-  ("decks" := (list deckInfoDecoder))
-  ("houseRules" := (list houseRuleDecoder))
-  (maybe ("password" := string))
+configDecoder = map3 Game.Config
+  (field "decks" (list deckInfoDecoder))
+  (field "houseRules" (list houseRuleDecoder))
+  (maybe (field "password" string))
 
 
 handDecoder : Decoder Card.Hand
-handDecoder = object1 Card.Hand
-  ("hand" := (list responseDecoder))
+handDecoder = map Card.Hand
+  (field "hand" (list responseDecoder))
 
 
 playerDecoder : Decoder Player
-playerDecoder = object6 Player
-  ("id" := playerIdDecoder)
-  ("name" := string)
-  ("status" := playerStatusDecoder)
-  ("score" := int)
-  ("disconnected" := bool)
-  ("left" := bool)
+playerDecoder = map6 Player
+  (field "id" playerIdDecoder)
+  (field "name" string)
+  (field "status" playerStatusDecoder)
+  (field "score" int)
+  (field "disconnected" bool)
+  (field "left" bool)
 
 
 playerStatusDecoder : Decoder Player.Status
@@ -66,77 +66,77 @@ playerStatusDecoder = customDecoder (string) (\name -> Player.nameToStatus name 
 
 gameStateDecoder : Decoder Game.State
 gameStateDecoder =
-  ("gameState" := string) `andThen` (\gameState ->
+  (field "gameState" string |> andThen (\gameState ->
     case gameState of
       "configuring" ->
         succeed Game.Configuring
 
       "playing" ->
-        map Game.Playing ("round" := roundDecoder)
+        map Game.Playing (field "round" roundDecoder)
 
       "finished" ->
         succeed Game.Finished
 
       _ ->
-        fail ("Unknown game state '" ++ gameState ++ "'."))
+        fail ("Unknown game state '" ++ gameState ++ "'.")))
 
 
 roundDecoder : Decoder Round
-roundDecoder = object3 Round
-  ("czar" := playerIdDecoder)
-  ("call" := callDecoder)
-  ("state" := roundStateDecoder)
+roundDecoder = map3 Round
+  (field "czar" playerIdDecoder)
+  (field "call" callDecoder)
+  (field "state" roundStateDecoder)
 
 
 roundStateDecoder : Decoder Round.State
 roundStateDecoder =
-  ("roundState" := string) `andThen` (\roundState ->
+  (field "roundState" string |> andThen (\roundState ->
     case roundState of
       "playing" ->
-        object2 Round.playing
-          ("numberPlayed" := int)
-          ("afterTimeLimit" := bool)
+        map2 Round.playing
+          (field "numberPlayed" int)
+          (field "afterTimeLimit" bool)
 
       "judging" ->
-        object2 Round.judging
-          ("cards" := list (list responseDecoder))
-          ("afterTimeLimit" := bool)
+        map2 Round.judging
+          (field "cards" (list (list responseDecoder)))
+          (field "afterTimeLimit" bool)
 
       "finished" ->
         map Round.F finishedStateDecoder
 
       _ ->
-        fail ("Unknown round state '" ++ roundState ++ "'."))
+        fail ("Unknown round state '" ++ roundState ++ "'.")))
 
 finishedStateDecoder : Decoder Round.Finished
-finishedStateDecoder = object2 Round.Finished
-  ("cards" := list (list responseDecoder))
-  ("playedByAndWinner" := playedByAndWinnerDecoder)
+finishedStateDecoder = map2 Round.Finished
+  (field "cards" (list (list responseDecoder)))
+  (field "playedByAndWinner" playedByAndWinnerDecoder)
 
 
 finishedRoundDecoder : Decoder Round.FinishedRound
-finishedRoundDecoder = object3 Round.FinishedRound
-  ("czar" := playerIdDecoder)
-  ("call" := callDecoder)
-  ("state" := finishedStateDecoder)
+finishedRoundDecoder = map3 Round.FinishedRound
+  (field "czar" playerIdDecoder)
+  (field "call" callDecoder)
+  (field "state" finishedStateDecoder)
 
 
 playedByAndWinnerDecoder : Decoder Player.PlayedByAndWinner
-playedByAndWinnerDecoder = object2 Player.PlayedByAndWinner
-  ("playedBy" := list (playerIdDecoder))
-  ("winner" := playerIdDecoder)
+playedByAndWinnerDecoder = map2 Player.PlayedByAndWinner
+  (field "playedBy" (list (playerIdDecoder)))
+  (field "winner" playerIdDecoder)
 
 
 callDecoder : Decoder Card.Call
-callDecoder = object2 Card.Call
-  ("id" := string)
-  ("parts" := list string)
+callDecoder = map2 Card.Call
+  (field "id" string)
+  (field "parts" (list string))
 
 
 responseDecoder : Decoder Card.Response
-responseDecoder = object2 Card.Response
-  ("id" := string)
-  ("text" := string)
+responseDecoder = map2 Card.Response
+  (field "id" string)
+  (field "text" string)
 
 
 playerIdDecoder : Decoder Player.Id
@@ -144,16 +144,26 @@ playerIdDecoder = int
 
 
 playerSecretDecoder : Decoder Player.Secret
-playerSecretDecoder = object2 Player.Secret
-    ("id" := playerIdDecoder)
-    ("secret" := string)
+playerSecretDecoder = map2 Player.Secret
+    (field "id" playerIdDecoder)
+    (field "secret" string)
 
 
 houseRuleDecoder : Decoder HouseRule.Id
 houseRuleDecoder = customDecoder (string) (\name -> ruleNameToId name |> Result.fromMaybe ("Unknown house rule '" ++ name ++ "'."))
+
 
 ruleNameToId : String -> Maybe HouseRule.Id
 ruleNameToId name =
   case name of
     "reboot" -> Just HouseRule.Reboot
     _ -> Nothing
+
+
+customDecoder : Decoder b -> (b -> Result String a) -> Decoder a
+customDecoder decoder toResult =
+  andThen (\a ->
+    case toResult a of
+      Ok b -> succeed b
+      Err err -> fail err
+  ) decoder

@@ -1,6 +1,6 @@
 module MassiveDecks.Models.Event exposing (Event(..), fromJson)
 
-import Json.Decode as Json exposing ((:=))
+import Json.Decode as Json
 
 import MassiveDecks.Models.JSON.Decode exposing (..)
 import MassiveDecks.Models.Game as Game
@@ -42,32 +42,32 @@ fromJson json = Json.decodeString eventDecoder json
 
 eventDecoder : Json.Decoder Event
 eventDecoder =
-  ("event" := Json.string) `Json.andThen` specificEventDecoder
+  (Json.field "event" Json.string) |> Json.andThen specificEventDecoder
 
 
 specificEventDecoder : String  -> Json.Decoder Event
 specificEventDecoder name =
   case name of
-    "Sync" -> Json.object1 Sync ("lobbyAndHand" := lobbyAndHandDecoder)
+    "Sync" -> Json.map Sync (Json.field "lobbyAndHand" lobbyAndHandDecoder)
 
-    "PlayerJoin" -> Json.object1 PlayerJoin ("player" := playerDecoder)
-    "PlayerStatus" -> Json.object2 PlayerStatus ("player" := playerIdDecoder) ("status" := playerStatusDecoder)
-    "PlayerLeft" -> Json.object1 PlayerLeft ("player" := playerIdDecoder)
-    "PlayerDisconnect" -> Json.object1 PlayerDisconnect ("player" := playerIdDecoder)
-    "PlayerReconnect" -> Json.object1 PlayerReconnect ("player" := playerIdDecoder)
-    "PlayerScoreChange" -> Json.object2 PlayerScoreChange ("player" := playerIdDecoder) ("score" := Json.int)
+    "PlayerJoin" -> Json.map PlayerJoin (Json.field "player" playerDecoder)
+    "PlayerStatus" -> Json.map2 PlayerStatus (Json.field "player" playerIdDecoder) (Json.field "status" playerStatusDecoder)
+    "PlayerLeft" -> Json.map PlayerLeft (Json.field "player" playerIdDecoder)
+    "PlayerDisconnect" -> Json.map PlayerDisconnect (Json.field "player" playerIdDecoder)
+    "PlayerReconnect" -> Json.map PlayerReconnect (Json.field "player" playerIdDecoder)
+    "PlayerScoreChange" -> Json.map2 PlayerScoreChange (Json.field "player" playerIdDecoder) (Json.field "score" Json.int)
 
-    "HandChange" -> Json.object1 HandChange ("hand" := handDecoder)
+    "HandChange" -> Json.map HandChange (Json.field "hand" handDecoder)
 
-    "RoundStart" -> Json.object2 RoundStart ("czar" := playerIdDecoder) ("call" := callDecoder)
-    "RoundPlayed" -> Json.object1 RoundPlayed ("playedCards" := Json.int)
-    "RoundJudging" -> Json.object1 RoundJudging ("playedCards" := Json.list (Json.list responseDecoder))
-    "RoundEnd" -> Json.object1 RoundEnd ("finishedRound" := finishedRoundDecoder)
+    "RoundStart" -> Json.map2 RoundStart (Json.field "czar" playerIdDecoder) (Json.field "call" callDecoder)
+    "RoundPlayed" -> Json.map RoundPlayed (Json.field "playedCards" Json.int)
+    "RoundJudging" -> Json.map RoundJudging (Json.field "playedCards" (Json.list (Json.list responseDecoder)))
+    "RoundEnd" -> Json.map RoundEnd (Json.field "finishedRound" finishedRoundDecoder)
 
-    "GameStart" -> Json.object2 GameStart ("czar" := playerIdDecoder) ("call" := callDecoder)
+    "GameStart" -> Json.map2 GameStart (Json.field "czar" playerIdDecoder) (Json.field "call" callDecoder)
     "GameEnd" -> Json.succeed GameEnd
 
-    "ConfigChange" -> Json.object1 ConfigChange ("config" := configDecoder)
+    "ConfigChange" -> Json.map ConfigChange (Json.field "config" configDecoder)
 
     "RoundTimeLimitHit" -> Json.succeed RoundTimeLimitHit
 
