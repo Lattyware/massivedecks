@@ -26,7 +26,7 @@ We also use:
 * [Font Awesome](https://fortawesome.github.io/Font-Awesome/)
 * [MUI](https://www.muicss.com/)
 
-Massive Decks is under [the GPLv3 license][license]. The game concept 'Cards against Humanity' is used under a
+Massive Decks is under [the AGPLv3 license][license]. The game concept 'Cards against Humanity' is used under a
 [Creative Commons BY-NC-SA 2.0 license][cah-license] granted by [Cards against Humanity][cah].
 
 [massivedecks]: https://massivedecks.herokuapp.com/
