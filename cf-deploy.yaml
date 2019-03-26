@@ -1,0 +1,12 @@
+---
+applications:
+- name: massivedecks
+  memory: 512M
+  instances: 1
+  buildpacks:
+    - https://github.com/heroku/heroku-buildpack-nodejs
+    - https://github.com/listrophy/heroku-buildpack-elm
+  routes:
+    # You can define your own routes here should you wish to.
+    # For now, massivedecks.mybluemix.net is set as a example (but this works on IBM Cloud Foundry).
+    - route: massivedecks.mybluemix.net
