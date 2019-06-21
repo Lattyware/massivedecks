@@ -1,0 +1,39 @@
+module MassiveDecks.Pages.Lobby.Token exposing (decode)
+
+import Base64
+import Json.Decode as Json
+import MassiveDecks.Models.Decoders as Decoders
+import MassiveDecks.Pages.Lobby.Model exposing (..)
+
+
+{-| Decode a token to some claims.
+-}
+decode : Token -> Result TokenDecodingError Auth
+decode token =
+    case token |> String.split "." of
+        _ :: body :: _ :: [] ->
+            body
+                |> Base64.decode
+                |> Result.mapError TokenBase64Error
+                |> Result.andThen
+                    (\json ->
+                        json
+                            |> Json.decodeString decodeClaims
+                            |> Result.mapError TokenJsonError
+                            |> Result.map (\claims -> Auth token claims)
+                    )
+
+        _ ->
+            Err (InvalidTokenStructure token)
+
+
+
+{- Private -}
+
+
+decodeClaims : Json.Decoder Claims
+decodeClaims =
+    Json.map3 Claims
+        (Json.field "gc" Decoders.gameCode)
+        (Json.field "uid" Decoders.userId)
+        (Json.field "pvg" Decoders.privilege)

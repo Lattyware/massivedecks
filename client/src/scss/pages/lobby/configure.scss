@@ -1,0 +1,129 @@
+@import "../../colors";
+@import "../../card/variables";
+
+.configure {
+  padding: 1em;
+  height: 100%;
+  overflow: auto;
+
+  wl-card {
+    max-width: 30em;
+    margin: 1em auto;
+  }
+
+  .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    .game-code {
+      font-size: 1.5em;
+    }
+  }
+
+  h2,
+  h3 {
+    margin: 0.5em 0 0 0;
+  }
+
+  .multipart {
+    wl-switch {
+      margin-right: 0.5em;
+    }
+  }
+}
+
+.decks table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+
+  th {
+    text-align: center;
+    padding: 1em 0.5em;
+  }
+
+  th.deck-name {
+    text-align: left;
+  }
+
+  tr {
+    border-top: 1px solid $secondary-background;
+  }
+
+  .deck-row .name {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+  }
+
+  thead tr {
+    border-top: none;
+  }
+
+  .deck-name {
+    width: auto;
+  }
+
+  .count {
+    width: 2em;
+    text-align: right;
+  }
+
+  .remove-button {
+    display: none;
+    margin: 0 0 0 0.1em;
+  }
+
+  tr:hover .remove-button {
+    display: inline-flex;
+  }
+}
+
+#source-selector {
+  flex-basis: 7em;
+  flex-shrink: 1;
+  height: 100%;
+  margin-right: 0.5em;
+  --input-padding-top-bottom: 0.9em;
+}
+
+.house-rules {
+  margin-top: 2em;
+}
+
+.house-rule {
+  margin: 1em 0;
+  opacity: 0.6;
+
+  &:first-of-type {
+    margin: 0 0 1em 0;
+  }
+
+  h4 {
+    margin: 0;
+  }
+
+  &.enabled {
+    opacity: 1;
+
+    .house-rule-settings {
+      transition: height 200ms ease-in;
+      height: fit-content;
+    }
+  }
+
+  .form-section {
+    margin: 0;
+  }
+
+  .house-rule-settings {
+    height: 0;
+    overflow: hidden;
+    transition: height 200ms ease-out;
+
+    .form-section {
+      margin: 0 1.5em;
+    }
+  }
+}

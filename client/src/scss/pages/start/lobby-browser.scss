@@ -1,0 +1,17 @@
+.lobby-browser {
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  a {
+    .svg-inline--fa {
+      margin-right: 0.3em;
+    }
+  }
+
+  .subheader {
+    font-size: 0.8em;
+  }
+}

@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  internal:
+
+services:
+  server:
+    image: "massivedecks/server:latest"
+    networks:
+      - internal
+    restart: unless-stopped
+
+  client:
+    image: "massivedecks/client:latest"
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+    restart: unless-stopped

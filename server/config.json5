@@ -1,0 +1,91 @@
+{
+  // In a production environment, be sure to change this value to a random secret for security.
+  // You can use `npm run generate-secret` to generate a suitable value.
+  // Note that changes to this value will kick all users from all games.
+  secret: "CHANGE ME",
+
+  // The port to serve on. This should be behind a proxy.
+  port: 8081,
+
+  // The path this is hosted behind - only relevant when behind a reverse proxy, this won't actually host on a different
+  // path. This should always have a trailing slash if it isn't empty, and never one at the start.
+  basePath: "",
+
+  // Timeouts determine how long the server waits before taking certain actions.
+  // These values are all ISO 8601 durations.
+  timeouts: {
+    // How long to wait in between checking timeouts.
+    // Note that this will effectively determine the resolution of all other timeouts, so should be kept low.
+    // Increasing the value will decrease server load, however.
+    // Zero-durations will result in instant execution, regardless of frequency here.
+    timeoutCheckFrequency: "PT1S",
+
+    // How long to wait before marking a player as disconnected.
+    disconnectionGracePeriod: "PT5S",
+
+    // How long to wait after everyone has played to begin the revealing phase. Having this as a non-zero value lets
+    // the last person playing
+    finishedPlayingDelay: "PT2S",
+
+    // How long to wait after a winner for the round is decided to move to the next round.
+    // Note the client will let users look at the winner for longer than this, this just means users can't advance and
+    // the round timer won't start for this long after a winner is picked, as such zero is a perfectly valid setting
+    // here.
+    nextRoundDelay: "PT5S"
+  },
+
+  // How to store game data.
+  storage: {
+    // Example of a configuration using in-memory storage. Note this means server restart wipes all data.
+    type: "InMemory",
+
+    //    type: "PostgreSQL",
+    //    connection: {
+    //      host: "localhost",
+    //      port: 5432,
+    //      user: "postgres",
+    //      database: "postgres",
+    //      password: "md",
+    //      keepAlive: false
+    //    },
+
+    //// Example of a configuration using a postgres database.
+    // type: "PostgreSQL",
+    // connection: {
+    //   host: "postgres",
+    //   port: 5432 ,
+    //   user: "massivedecks",
+    //   database: "massivedecks",
+    //   password: "massivedecks",
+    //   keepAlive: false,
+    // },
+
+    // How often to delete abandoned/finished games (an ISO 8601 duration).
+    garbageCollectionFrequency: "PT5M"
+  },
+
+  // How to cache game data.
+  cache: {
+    // Example of a configuration using in-memory storage.
+    type: "InMemory",
+
+    //// Example of a configuration using a postgres database.
+    // type: "PostgreSQL",
+    // connection: {
+    //   host: "postgres",
+    //   port: 5432 ,
+    //   user: "massivedecks",
+    //   database: "massivedecks",
+    //   password: "massivedecks",
+    //   keepAlive: false,
+    // },
+
+    // How old a cached value should be before we check to see if we should update it on a hit.
+    checkAfter: "PT5M"
+  },
+
+  // The version of Massive Decks (displayed in the footer on the main page, and given in bug reports).
+  // Please don't change this unless you are running a custom version, and if so use a unique prefix, so it is clear
+  // in bug reports.
+  version: "dev"
+}

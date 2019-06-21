@@ -1,5 +1,27 @@
-language: scala
-scala:
-  - 2.11.8
-jdk:
-  - oraclejdk8
+language: sh
+
+services:
+  - docker
+
+sudo: required
+
+env:
+  global:
+    - VERSION=${TRAVIS_TAG:-${TRAVIS_COMMIT}-dev}
+  matrix:
+  - COMPONENT=server
+  - COMPONENT=client
+
+before_install:
+  - cd ${COMPONENT}
+
+install: true
+
+script:
+  - docker build -t massivedecks/${COMPONENT}:${VERSION} --build-arg VCS_REF="${TRAVIS_COMMIT}" --build-arg BUILD_DATE="$(date --rfc-3339=seconds)" --build-arg VERSION="${VERSION}" .
+
+deploy:
+  provider: script
+  script: bash ../docker_push "${COMPONENT}" "${VERSION}"
+  on:
+    branch: v2

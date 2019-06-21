@@ -1,0 +1,239 @@
+@import "./colors";
+@import "./card/variables";
+@import "./fonts";
+@import "./animation.scss";
+@import "./variables.scss";
+
+@mixin no-wrap() {
+  white-space: nowrap;
+}
+
+.no-wrap {
+  @include no-wrap();
+}
+
+body {
+  color: $on-primary;
+  background: $background url(../../assets/images/background.svg) repeat;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  font-family: "Roboto", sans-serif;
+  min-width: $min-page-width;
+}
+
+.game-code-input {
+  --input-font-family: "Source Code Pro", monospace;
+}
+
+.game-code {
+  font-family: "Source Code Pro", monospace;
+  .svg-inline--fa {
+    margin-left: 0.3em;
+  }
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: #000000;
+  padding: 0.1em 0.5em;
+}
+
+h1 {
+  font-family: "Helvetica Neue", "Nimbus Sans L", sans-serif;
+  font-weight: 700;
+  margin: 0.5em;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  font-size: 0.8em;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  text-align: left;
+}
+
+a,
+.link-button {
+  color: inherit;
+  text-decoration: none;
+
+  &:not(.tab) {
+    background: linear-gradient(to top, $secondary 50%, $transparent 50%)
+      no-repeat 0 10%;
+    background-size: 100% 200%;
+    transition: background-position 0.3s cubic-bezier(0.64, 0.9, 0.8, 1);
+  }
+
+  &:hover {
+    background-position: 0 100%;
+  }
+}
+
+.page {
+  padding: 2em;
+}
+
+.term {
+  @include no-wrap();
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  text-rendering: optimizeLegibility;
+
+  .icon-prefix {
+    display: none;
+  }
+
+  .icon-suffix {
+    display: none;
+  }
+}
+
+.compressed-terms {
+  .term {
+    .full {
+      display: none;
+    }
+    .icon-prefix {
+      display: inline;
+    }
+    .icon-suffix {
+      display: inline;
+    }
+  }
+}
+
+.instruction {
+  @include no-wrap();
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-rendering: optimizeLegibility;
+
+  &:before {
+    content: "[";
+  }
+
+  &:after {
+    content: "]";
+  }
+}
+
+.game-card .instruction {
+  &:before,
+  &:after {
+    content: none;
+  }
+}
+
+.amount {
+  @include no-wrap();
+  display: inline-flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  text-align: center;
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: 0.3em;
+  border-radius: 50%;
+  background: var(--fg, $call-background);
+  color: var(--bg, $call-color);
+}
+
+// TODO: Is this not used any more?
+.form-chunk {
+  margin: 0 0 0.5em 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-self: stretch;
+}
+
+// TODO: Move to Elm asset loader when one works.
+.forceLoad {
+  background: url(../../assets/images/reread-icon.svg);
+}
+
+.empty-info {
+  text-align: center;
+  padding: 1em;
+  font-size: 1.2em;
+  opacity: 0.3;
+
+  .svg-inline--fa {
+    margin-right: 0.3em;
+  }
+}
+
+.form-section {
+  margin: 1em 0;
+
+  display: flex;
+  flex-direction: column;
+
+  .multipart {
+    display: flex;
+    align-items: center;
+
+    min-height: 2em;
+
+    .primary {
+      flex-grow: 1;
+    }
+
+    label {
+      margin-left: 0.5em;
+    }
+  }
+}
+
+.segment {
+  display: inline-block;
+}
+
+@mixin message {
+  font-size: 0.75em;
+  padding: 0.25em;
+  display: flex;
+  align-items: center;
+
+  .svg-inline--fa {
+    margin-right: 0.3em;
+  }
+}
+
+.info {
+  @include message;
+}
+
+.inline-error {
+  @include message;
+  color: $error;
+}
+
+.warning {
+  @include message;
+  color: #6f6401;
+}
+
+.remove-from-flow {
+  position: absolute;
+}
+
+@import "./fonts";
+@import "./cards";
+@import "./error";
+@import "./settings";
+@import "./game";
+@import "./pages/start";
+@import "./pages/unknown-page";
+@import "./pages/spectate";
+@import "./pages/lobby";
+@import "./weightless";
+
+@import "@fortawesome/fontawesome-free/css/svg-with-js.min.css";

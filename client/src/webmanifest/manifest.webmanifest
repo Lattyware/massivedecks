@@ -1,0 +1,17 @@
+{
+  "name": "Massive Decks",
+  "short_name": "Massive Decks",
+  "lang": "en",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#cccccc",
+  "orientation": "natural",
+  "description": "A comedy party game.",
+  "icons": [
+    {
+      "src": "../../assets/images/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "48x48 72x72 96x96 128x128 256x256"
+    }
+  ]
+}

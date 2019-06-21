@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "esNext",
+    "target": "es5",
+    "noImplicitAny": true,
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "strict":  true,
+    "sourceMap": true,
+    "baseUrl":  ".",
+    "moduleResolution": "node",
+    "lib": [ "es2015", "dom" ]
+  },
+  "include":  [
+    "src/ts/**/*"
+  ],
+  "exclude":  [
+    "node_modules",
+    "dist"
+  ]
+}

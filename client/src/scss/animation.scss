@@ -1,0 +1,12 @@
+.animation {
+  transition: transform 200ms ease-in, opacity 200ms ease-in;
+  opacity: 0;
+}
+
+.animation.entering {
+  opacity: 1;
+}
+
+.animation.exiting {
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
+}

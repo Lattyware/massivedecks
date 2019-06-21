@@ -1,0 +1,248 @@
+@import "../colors";
+@import "../card/variables";
+@import "../game";
+@import "./lobby/configure";
+@import "./lobby/invite";
+@import "~weightless/style/base/elevation";
+
+$users-width: 15em;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.1;
+  }
+}
+
+.lobby {
+  box-sizing: border-box;
+  height: 100vh;
+  padding-top: 4em;
+  overflow: hidden;
+
+  .content-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: fit-content;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+#top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  z-index: 10;
+
+  height: 4em;
+  padding: 0 1em;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+
+  color: $call-color;
+  background-color: $call-background;
+
+  .left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .title-call {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+
+    margin: 0 1em;
+
+    white-space: pre;
+    font-size: 1em;
+    text-rendering: optimizeLegibility;
+    font-family: "Helvetica Neue", "Nimbus Sans L", sans-serif;
+    font-weight: 700;
+
+    display: flex;
+    justify-content: center;
+
+    .slot {
+      display: inline-block;
+      flex-shrink: 0;
+      flex-basis: 3em;
+      border-bottom: 0.1em solid $call-color;
+    }
+
+    &::before {
+      content: "“";
+    }
+
+    &::after {
+      content: "”";
+    }
+  }
+}
+
+#scroll-frame {
+  flex-grow: 100;
+  flex-shrink: 1;
+  flex-basis: $card-width;
+  max-height: 100%;
+  max-width: 100%;
+  min-width: $card-width;
+
+  overflow: auto;
+}
+
+.outlined-solid-icon {
+  path {
+    fill: none;
+    stroke: black;
+    stroke-width: 32px;
+  }
+}
+
+.loading {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapsed-users .users {
+  flex-grow: 0;
+  flex-basis: 0;
+}
+
+.context-help {
+  left: $users-width;
+}
+
+.collapsed-users .context-help {
+  left: 0;
+}
+
+.users {
+  font-size: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  z-index: 2;
+
+  border-radius: 0;
+
+  padding: 0;
+
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+
+  min-height: 100%;
+
+  flex-basis: $users-width;
+
+  transition: flex-basis 0.3s, flex-grow 0.3s, padding-left 0.3s,
+    padding-right 0.3s;
+
+  --list-item-padding: 0.5em;
+
+  .collapsible {
+    padding: 1em;
+  }
+
+  .user {
+    position: relative;
+    display: flex;
+
+    .term {
+      margin-left: 0.5em;
+    }
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    margin-top: 0.5em;
+  }
+}
+
+.cast-button {
+  &.connecting {
+    animation: fadeIn 1s infinite alternate;
+  }
+
+  &.connected {
+    color: $secondary;
+  }
+}
+
+.you {
+  font-weight: bold;
+}
+
+.notifications {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  list-style: none;
+  z-index: 100;
+}
+
+.notification {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 1em;
+  padding: 0;
+  transform: translateY(100%);
+
+  --card-bg: #{$call-background};
+  --card-color: #{$call-color};
+
+  &.entering {
+    transform: translateY(0%);
+  }
+
+  .content {
+    display: flex;
+    align-items: center;
+    padding: 0.05em;
+
+    .icon {
+      margin: 0 0.5em 0 1em;
+    }
+
+    .action {
+      margin-left: 0.5em;
+    }
+  }
+}
+
+.menu {
+  --list-item-border-radius: 0;
+  padding: 0;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    wl-list-item {
+      width: 100%;
+    }
+  }
+}

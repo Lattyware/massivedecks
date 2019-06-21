@@ -1,0 +1,15 @@
+import "@webcomponents/webcomponentsjs/webcomponents-loader";
+import "weightless/button";
+import "weightless/card";
+import "weightless/expansion";
+import "weightless/list-item";
+import "weightless/nav";
+import "weightless/popover";
+import "weightless/popover-card";
+import "weightless/select";
+import "weightless/switch";
+import "weightless/tab";
+import "weightless/tab-group";
+import "weightless/textfield";
+import "weightless/textarea";
+import "weightless/tooltip";
