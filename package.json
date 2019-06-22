@@ -1,0 +1,17 @@
+{
+    "name": "massivedecks",
+    "description": "Pulls together both the server and client for Massive Decks, a comedy party game.",
+    "version": "2.0.0",
+    "author": "Reread Games <team@rereadgames.com>",
+    "license": "AGPL-3.0-or-later",
+    "private": true,
+    "repository": "github:Lattyware/massivedecks",
+    "engines": {
+        "node": ">=11 <12"
+    },
+    "scripts": {
+        "build": "npm run build-client && npm run build-server",
+        "build-client": "(cd client && npm ci && npm install --only=dev && npm run build)",
+        "build-server": "(cd server && npm ci && npm install --only=dev && npm run build && cp package*.json dist && cp config.json5 dist && (cd dist && npm ci --only=prod))"
+    }
+}

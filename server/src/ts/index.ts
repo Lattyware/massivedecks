@@ -37,25 +37,20 @@ process.on("unhandledRejection", function(reason, promise) {
   process.exit(1);
 });
 
+function getConfigFilePath(): string {
+  const configPath = process.env["MD_CONFIG_PATH"];
+  return configPath === undefined ? "config.json5" : configPath;
+}
+
 async function main(): Promise<void> {
   const config = serverConfig.parse(JSON5.parse(
-    (await promisify(fs.readFile)("config.json5")).toString()
+    (await promisify(fs.readFile)(getConfigFilePath())).toString()
   ) as serverConfig.Unparsed);
-
-  const envSecret = process.env.MD_SECRET;
-  if (envSecret !== undefined) {
-    config.secret = envSecret;
-  }
-
-  const envVersion = process.env.MD_VERSION;
-  if (envVersion !== undefined) {
-    config.version = envVersion;
-  }
 
   const { app } = ws(express());
 
   app.use(helmet());
-  app.set('trust proxy', true);
+  app.set("trust proxy", true);
 
   const environment = app.get("env");
 
@@ -199,9 +194,13 @@ async function main(): Promise<void> {
     .loadFromStore(state)
     .catch(error => logging.logException("Error running store tasks:", error));
 
-  app.listen(config.listenOn, () =>
-    logging.logger.info(`Listening on ${config.listenOn}.`)
-  );
+  app.listen(config.listenOn, async () => {
+    logging.logger.info(`Listening on ${config.listenOn}.`);
+    if (config.touchOnStart !== null) {
+      const f = await promisify(fs.open)(config.touchOnStart, "w");
+      await promisify(fs.close)(f);
+    }
+  });
 }
 
 main().catch(error => {

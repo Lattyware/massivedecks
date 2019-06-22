@@ -1,22 +1,29 @@
 {
   "name": "server",
+  "description": "The game server for Massive Decks, a comedy party game.",
   "version": "2.0.0",
-  "description": "Massive Decks server.",
-  "main": "dist/index.js",
-  "scripts": {
-    "generate-json-validators": "npx typescript-json-validator src/ts/action/validation.ts --collection --noExtraProps--format=full --aliasRefs --ignoreErrors && sed -i '1s;^;/* eslint-disable */\\n;' src/ts/action/validation.validator.ts",
-    "build": "tsc",
-    "prestart": "npm run build",
-    "dev": "nodemon .",
-    "debug": "nodemon --inspect .",
-    "generate-secret": "npm run prestart && node dist/secret.js"
-  },
   "author": "Reread Games <team@rereadgames.com>",
   "license": "AGPL-3.0-or-later",
   "private": true,
+  "repository": "github:Lattyware/massivedecks",
   "engines": {
-    "node": ">=0.12"
+    "node": ">=11 <12"
   },
+  "main": "dist/index.js",
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "nodemon .",
+    "debug": "nodemon --inspect .",
+    "generate-json-validators": "npx typescript-json-validator src/ts/action/validation.ts --collection --noExtraProps--format=full --aliasRefs --ignoreErrors && sed -i '1s;^;/* eslint-disable */\\n;' src/ts/action/validation.validator.ts",
+    "generate-secret": "npm run prestart && node dist/secret.js"
+  },
+  "files": [
+    "dist/*",
+    "config.json5"
+  ],
   "dependencies": {
     "ajv": "^6.10.0",
     "axios": "^0.19.0",
@@ -52,7 +59,7 @@
     "@types/wu": "^2.1.39",
     "@typescript-eslint/eslint-plugin": "^1.10.2",
     "@typescript-eslint/parser": "^1.10.2",
-    "eslint": "^6.0.0",
+    "eslint": "^5.12.1",
     "eslint-config-prettier": "^5.0.0",
     "eslint-plugin-prettier": "^3.1.0",
     "nodemon": "^1.19.1",

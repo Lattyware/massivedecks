@@ -5,11 +5,23 @@ type Duration = UnparsedDuration | ParsedDuration;
 type UnparsedDuration = string;
 type ParsedDuration = number;
 
-export interface Config<D extends Duration> {
+const environmental: (keyof EnvironmentalConfig)[] = [
+  "secret",
+  "listenOn",
+  "basePath",
+  "version",
+  "touchOnStart"
+];
+
+export interface EnvironmentalConfig {
   secret: string;
   listenOn: number | string; // Port or unix socket path.
   basePath: string;
   version: string;
+  touchOnStart: string;
+}
+
+export interface Config<D extends Duration> extends EnvironmentalConfig {
   timeouts: Timeouts<D>;
   storage: BaseStorage<D>;
   cache: BaseCache<D>;
@@ -98,9 +110,24 @@ export const parseTimeouts = (
     parseDuration(value)
   );
 
-export const parse = (config: Unparsed): Parsed => ({
-  ...config,
-  timeouts: parseTimeouts(config.timeouts),
-  storage: parseStorage(config.storage),
-  cache: parseCache(config.cache)
-});
+export const parse = (config: Unparsed): Parsed =>
+  pullFromEnvironment({
+    ...config,
+    timeouts: parseTimeouts(config.timeouts),
+    storage: parseStorage(config.storage),
+    cache: parseCache(config.cache)
+  });
+
+export const pullFromEnvironment = (config: Parsed): Parsed => {
+  for (const name of environmental) {
+    const envName = `MD_${name
+      .split(/(?=[A-Z])/)
+      .join("_")
+      .toUpperCase()}`;
+    const value = process.env[envName];
+    if (value !== undefined) {
+      config[name] = value;
+    }
+  }
+  return config;
+};

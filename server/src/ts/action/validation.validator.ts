@@ -22,13 +22,13 @@ export const Schema = {
     Action: {
       anyOf: [
         {
+          $ref: "#/definitions/Authenticate"
+        },
+        {
           $ref: "#/definitions/Judge"
         },
         {
           $ref: "#/definitions/Reveal"
-        },
-        {
-          $ref: "#/definitions/Authenticate"
         },
         {
           $ref: "#/definitions/Submit"
@@ -64,7 +64,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_2"
+          $ref: "#/definitions/NameType"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -247,7 +247,7 @@ export const Schema = {
       description: "A user declares the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType"
+          $ref: "#/definitions/NameType_1"
         },
         winner: {
           $ref: "#/definitions/Id"
@@ -263,15 +263,15 @@ export const Schema = {
       type: "string"
     },
     NameType: {
-      enum: ["Judge"],
+      enum: ["Authenticate"],
       type: "string"
     },
     NameType_1: {
-      enum: ["Reveal"],
+      enum: ["Judge"],
       type: "string"
     },
     NameType_2: {
-      enum: ["Authenticate"],
+      enum: ["Reveal"],
       type: "string"
     },
     NameType_3: {
@@ -373,7 +373,7 @@ export const Schema = {
       description: "A user judges the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_1"
+          $ref: "#/definitions/NameType_2"
         },
         play: {
           $ref: "#/definitions/Id"

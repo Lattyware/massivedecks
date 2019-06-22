@@ -7,7 +7,9 @@ sudo: required
 
 env:
   global:
-    - VERSION=${TRAVIS_TAG:-${TRAVIS_COMMIT}-dev}
+    - COMMIT_VERSION=${TRAVIS_COMMIT}-dev
+    - TAG_VERSION=${TRAVIS_TAG}
+    - VERSION=${TAG_VERSION:-${COMMIT_VERSION}}
   matrix:
   - COMPONENT=server
   - COMPONENT=client
@@ -18,10 +20,10 @@ before_install:
 install: true
 
 script:
-  - docker build -t massivedecks/${COMPONENT}:${VERSION} --build-arg VCS_REF="${TRAVIS_COMMIT}" --build-arg BUILD_DATE="$(date --rfc-3339=seconds)" --build-arg VERSION="${VERSION}" .
+  - docker build -t massivedecks/${COMPONENT}:${COMMIT_VERSION} --build-arg VCS_REF="${TRAVIS_COMMIT}" --build-arg BUILD_DATE="$(date --rfc-3339=seconds)" --build-arg VERSION="${VERSION}" .
 
 deploy:
   provider: script
-  script: bash ../docker_push "${COMPONENT}" "${VERSION}"
+  script: bash ../docker_push "${COMPONENT}" "${COMMIT_VERSION}" "${TAG_VERSION}"
   on:
     branch: v2

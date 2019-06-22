@@ -9,10 +9,12 @@
   listenOn: 8081,
   // It is also possible to listen on a unix socket.
   // listenOn: "/tmp/sock",
+  // This will be overwritten by the environment variable MD_LISTEN_ON, if set.
 
   // The path this is hosted behind - only relevant when behind a reverse proxy, this won't actually host on a different
   // path. This should always have a trailing slash if it isn't empty, and never one at the start.
   basePath: "",
+  // This will be overwritten by the environment variable MD_BASE_PATH, if set.
 
   // Timeouts determine how long the server waits before taking certain actions.
   // These values are all ISO 8601 durations.
@@ -87,7 +89,11 @@
     checkAfter: "PT5M"
   },
 
+  // A file to touch when the server is started. If null, we won't touch any files.
+  touchOnStart: null,
+  // This will be overwritten by the environment variable MD_TOUCH_ON_START, if set.
+
   // The version of Massive Decks.
-  // This will be overwritten by the environment variable MD_VERSION, if set.
   version: "dev"
+  // This will be overwritten by the environment variable MD_VERSION, if set.
 }

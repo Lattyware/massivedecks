@@ -1,0 +1,37 @@
+{
+  "name": "massivedecks",
+  "repository": "https://github.com/Lattyware/massivedecks",
+  "website": "https://github.com/Lattyware/massivedecks",
+  "keywords": ["game", "party", "comedy"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-nginx.git"
+    },
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ],
+  "env": {
+    "MD_SECRET": {
+      "description": "A key used by the application to secure user authentication.",
+      "generator": "secret"
+    },
+    "MD_CONFIG_PATH": {
+      "description": "The path to the config file for the server.",
+      "value": "server/config.json5"
+    },
+    "MD_BASE_PATH": {
+      "description": "The base path the proxy presents the application as. This should always have a trailing slash if it isn't empty, and never one at the start. Leaving this blank should be fine.",
+      "value": "",
+      "required": false
+    },
+    "MD_LISTEN_ON": {
+      "description": "The port or socket to listen on. For Heroku, nginx listens to the /tmp/nginx.socket socket.",
+      "value": "/tmp/nginx.socket"
+    },
+    "MD_TOUCH_ON_START": {
+      "description": "A file to touch when the server has started, useful for signaling to a reverse proxy that the server is up. On Heroku, we use /tmp/app-initialized.",
+      "value": "/tmp/app-initialized"
+    }
+  }
+}
