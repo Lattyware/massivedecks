@@ -7,7 +7,7 @@ type ParsedDuration = number;
 
 export interface Config<D extends Duration> {
   secret: string;
-  port: number;
+  listenOn: number | string; // Port or unix socket path.
   basePath: string;
   version: string;
   timeouts: Timeouts<D>;
@@ -21,6 +21,7 @@ export type Unparsed = Config<UnparsedDuration>;
 type Timeouts<D extends Duration> = {
   timeoutCheckFrequency: D;
   disconnectionGracePeriod: D;
+  finishedPlayingDelay: D;
   nextRoundDelay: D;
 } & { [key: string]: D };
 

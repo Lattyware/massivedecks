@@ -12,7 +12,9 @@ LABEL maintainer="team@rereadgames.com"
 
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION
+ARG VERSION=dev
+
+ENV MD_VERSION $VERSION
 
 LABEL org.label-schema.name="massivedecks/server"
 LABEL org.label-schema.description="The web server for Massive Decks, a comedy party game."

@@ -3,9 +3,12 @@
   // You can use `npm run generate-secret` to generate a suitable value.
   // Note that changes to this value will kick all users from all games.
   secret: "CHANGE ME",
+  // This will be overwritten by the environment variable MD_SECRET, if set.
 
-  // The port to serve on. This should be behind a proxy.
-  port: 8081,
+  // The port to serve on. Note this should always be behind a reverse proxy.
+  listenOn: 8081,
+  // It is also possible to listen on a unix socket.
+  // listenOn: "/tmp/sock",
 
   // The path this is hosted behind - only relevant when behind a reverse proxy, this won't actually host on a different
   // path. This should always have a trailing slash if it isn't empty, and never one at the start.
@@ -84,8 +87,7 @@
     checkAfter: "PT5M"
   },
 
-  // The version of Massive Decks (displayed in the footer on the main page, and given in bug reports).
-  // Please don't change this unless you are running a custom version, and if so use a unique prefix, so it is clear
-  // in bug reports.
+  // The version of Massive Decks.
+  // This will be overwritten by the environment variable MD_VERSION, if set.
   version: "dev"
 }

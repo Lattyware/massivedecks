@@ -76,7 +76,7 @@ export const handle: gameAction.Handler<Submit> = (
     if (timeout !== undefined) {
       timeouts.push({
         timeout: timeout,
-        after: server.config.timeouts.nextRoundDelay
+        after: server.config.timeouts.finishedPlayingDelay
       });
     }
     return { lobby, events, timeouts };

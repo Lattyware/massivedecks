@@ -23,6 +23,7 @@ import * as userDisconnect from "./timeout/user-disconnect";
 import * as user from "./user";
 import * as token from "./user/token";
 import * as checkAlive from "./action/initial/check-alive";
+import helmet from "helmet";
 
 sourceMapSupport.install();
 
@@ -41,8 +42,19 @@ async function main(): Promise<void> {
     (await promisify(fs.readFile)("config.json5")).toString()
   ) as serverConfig.Unparsed);
 
+  const envSecret = process.env.MD_SECRET;
+  if (envSecret !== undefined) {
+    config.secret = envSecret;
+  }
+
+  const envVersion = process.env.MD_VERSION;
+  if (envVersion !== undefined) {
+    config.version = envVersion;
+  }
+
   const { app } = ws(express());
 
+  app.use(helmet());
   app.set('trust proxy', true);
 
   const environment = app.get("env");
@@ -187,8 +199,8 @@ async function main(): Promise<void> {
     .loadFromStore(state)
     .catch(error => logging.logException("Error running store tasks:", error));
 
-  app.listen(config.port, () =>
-    logging.logger.info(`Serving on port ${config.port}.`)
+  app.listen(config.listenOn, () =>
+    logging.logger.info(`Listening on ${config.listenOn}.`)
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Massive Decks server.",
   "main": "dist/index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "express-ws": "^4.0.0",
     "generic-pool": "^3.7.1",
     "hashids": "^1.2.2",
+    "helmet": "^3.18.0",
     "http-status-codes": "^1.3.2",
     "json5": "^2.1.0",
     "jsonwebtoken": "^8.5.1",
@@ -43,19 +44,20 @@
     "@types/express-ws": "^3.0.0",
     "@types/generic-pool": "^3.1.9",
     "@types/hashids": "^1.0.30",
+    "@types/helmet": "^0.0.43",
     "@types/json5": "0.0.30",
     "@types/jsonwebtoken": "^8.3.2",
     "@types/source-map-support": "^0.5.0",
     "@types/uuid": "^3.4.4",
-    "@types/wu": "latest",
+    "@types/wu": "^2.1.39",
     "@typescript-eslint/eslint-plugin": "^1.10.2",
     "@typescript-eslint/parser": "^1.10.2",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.3.0",
+    "eslint": "^6.0.0",
+    "eslint-config-prettier": "^5.0.0",
     "eslint-plugin-prettier": "^3.1.0",
     "nodemon": "^1.19.1",
     "prettier": "1.18.2",
     "typescript": "^3.5.2",
-    "typescript-json-validator": "^2.2.0"
+    "typescript-json-validator": "^2.2.2"
   }
 }
