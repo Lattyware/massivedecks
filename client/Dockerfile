@@ -2,10 +2,12 @@ FROM node:11-alpine
 
 WORKDIR /md
 
+COPY ["./package.json", "./package-lock.json", "./"]
+RUN ["npm", "ci"]
+
+COPY ["./tsconfig.json", "./webpack.config.js", "./elm.json", "./"]
 COPY ["./src", "./src"]
 COPY ["./assets", "./assets"]
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "./elm.json", "./"]
-RUN ["npm", "ci"]
 RUN ["npm", "run", "build"]
 
 FROM nginx:mainline-alpine

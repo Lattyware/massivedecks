@@ -2,9 +2,11 @@ FROM node:11-alpine
 
 WORKDIR /md
 
-COPY ["./src", "./src"]
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./config.json5", "./"]
+COPY ["./package.json", "./package-lock.json", "./"]
 RUN ["npm", "ci"]
+
+COPY ["./src", "./src"]
+COPY ["./tsconfig.json", "./config.json5", "./"]
 RUN ["npm", "run", "build"]
 
 FROM node:11-alpine
@@ -28,9 +30,11 @@ LABEL org.label-schema.version=$VERSION
 
 WORKDIR /md
 
-COPY --from=0 ["/md/dist", "./"]
-COPY ["./package.json", "./package-lock.json", "./config.json5", "./"]
+COPY ["./package.json", "./package-lock.json", "./"]
 RUN ["npm", "ci", "--only=production"]
+
+COPY ["./config.json5", "./"]
+COPY --from=0 ["/md/dist", "./"]
 
 EXPOSE 8081
 CMD ["node", "./index.js"]

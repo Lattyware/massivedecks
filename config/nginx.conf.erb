@@ -43,37 +43,33 @@ http {
 		server_name _;
 		keepalive_timeout 5;
 
-		location ~* \.(woff2|png|svg|css|js)$ {
-            expires 365d;
-        }
-
-        location / {
-            root "/app/client/dist";
-        }
-
-        location ~ /games/(.*) {
-            root "/app/client/dist";
-        }
-
-        location /cast.html {
-            root "/app/client/dist";
-        }
+        root "/app/client/dist";
 
         location /api {
-			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-			proxy_set_header Host $http_host;
-			proxy_redirect off;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
 			proxy_pass http://app_server;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "Upgrade";
-	    }
-
-	    error_page 404 /index.html
-
-        location = /index.html {
-            root "/app/client/dist";
-            internal;
         }
+
+        location /assets {
+            expires 365d;
+        }
+
+        location ~ ^/games/(.*)/?$ {
+            try_files "" /index.html;
+        }
+
+        location = /cast {
+            try_files "" /cast.html;
+        }
+
+        location = / {
+            try_files "" /index.html;
+        }
+
+        error_page 404 /;
 	}
 }

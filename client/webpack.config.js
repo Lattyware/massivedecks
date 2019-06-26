@@ -138,7 +138,10 @@ module.exports = (env, argv) => {
     output: {
       path: dist,
       publicPath: "/",
-      filename: "assets/scripts/[name].[hash].js"
+      filename:
+        mode === "production"
+          ? "assets/scripts/[name].[chunkhash].js"
+          : "assets/scripts/[name].[hash].js"
     },
     module: {
       rules: [
@@ -177,7 +180,7 @@ module.exports = (env, argv) => {
           test: /\.(jpg|png|svg)$/,
           loader: "file-loader",
           options: {
-            name: "assets/images/[name].[ext]"
+            name: "assets/images/[name].[hash].[ext]"
           }
         },
         // Font assets.
@@ -185,7 +188,7 @@ module.exports = (env, argv) => {
           test: /\.(woff2)$/,
           loader: "file-loader",
           options: {
-            name: "assets/fonts/[name].[ext]",
+            name: "assets/fonts/[name].[hash].[ext]",
             publicPath: "/"
           }
         },
@@ -196,7 +199,7 @@ module.exports = (env, argv) => {
             {
               loader: "file-loader",
               options: {
-                name: "[name].[ext]",
+                name: "assets/[name].[hash].[ext]",
                 publicPath: "/"
               }
             },
@@ -281,7 +284,7 @@ module.exports = (env, argv) => {
         "**": {
           target: "http://localhost:8080",
           pathRewrite: {
-            "cast.html": "cast.html",
+            cast: "cast.html",
             ".*": ""
           }
         }

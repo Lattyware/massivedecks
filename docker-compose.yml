@@ -5,13 +5,15 @@ networks:
 
 services:
   server:
-    image: "massivedecks/server:latest"
+    build: ./server
+    image: "massivedecks/server:dev"
     networks:
       - internal
     restart: unless-stopped
 
   client:
-    image: "massivedecks/client:latest"
+    build: ./client
+    image: "massivedecks/client:dev"
     ports:
       - "8080:8080"
     networks:
