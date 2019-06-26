@@ -34,7 +34,7 @@ export const handle: Handler<SetHandSize> = (auth, lobby, action) => {
     return {
       lobby,
       events: [
-        event.target({
+        event.targetAll({
           event: "HandSizeSet",
           handSize: action.handSize,
           version: config.version.toString()

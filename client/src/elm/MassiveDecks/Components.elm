@@ -22,6 +22,7 @@ import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import Html.Attributes.Aria as Aria
 import Html.Events as HtmlE
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
@@ -96,7 +97,11 @@ errorWithFix errorString fixString fix =
 
 linkButton : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 linkButton attrs contents =
-    Html.button (HtmlA.class "link-button" :: attrs) contents
+    Html.span (HtmlA.class "link-button" :: Aria.role "button" :: HtmlA.tabindex 0 :: attrs) contents
+
+
+
+--Html.button (HtmlA.class "link-button" :: attrs) contents
 
 
 {-| A button that is just an icon.

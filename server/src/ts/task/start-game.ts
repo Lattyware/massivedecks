@@ -34,9 +34,12 @@ export class StartGame extends task.TaskBase<decks.Templates[]> {
     }
     const lobbyGame = game.start(work, lobby.users.keys(), lobby.config.rules);
     const gameRound = round.censor(lobbyGame.round);
-    const events = wu(lobbyGame.players).map(([id, player]) =>
-      event.targetSpecifically(gameStarted.of(gameRound, player.hand), id)
-    );
+    const baseEvent = gameStarted.of(gameRound);
+    const events = [
+      event.playerSpecificAddition(baseEvent, (id, user, player) => ({
+        hand: player.hand
+      }))
+    ];
     lobby.game = lobbyGame;
     return { lobby, events };
   }

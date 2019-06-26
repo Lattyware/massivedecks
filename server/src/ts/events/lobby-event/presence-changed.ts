@@ -17,9 +17,20 @@ export interface Joined extends Base {
   name: user.Name;
 }
 
+export const joined = (user: user.Id, name: user.Name): Joined => ({
+  event: "Joined",
+  user,
+  name
+});
+
 /**
  * A user disconnects from the lobby.
  */
 export interface Left extends Base {
   event: "Left";
 }
+
+export const left = (user: user.Id): Left => ({
+  event: "Left",
+  user
+});

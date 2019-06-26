@@ -33,7 +33,7 @@ export class LoadDeckSummary extends task.TaskBase<deckSource.Summary> {
       return {
         lobby,
         events: [
-          event.target(
+          event.targetAll(
             decksChanged.of(
               this.source,
               { change: "Load", summary: work },

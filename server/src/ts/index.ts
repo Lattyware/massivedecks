@@ -23,6 +23,7 @@ import * as userDisconnect from "./timeout/user-disconnect";
 import * as user from "./user";
 import * as token from "./user/token";
 import * as checkAlive from "./action/initial/check-alive";
+import * as presenceChanged from "./events/lobby-event/presence-changed";
 import helmet from "helmet";
 
 sourceMapSupport.install();
@@ -125,9 +126,7 @@ async function main(): Promise<void> {
       return {
         change: {
           lobby,
-          events: [
-            event.target({ event: "Joined", user: id, name: newUser.name })
-          ],
+          events: [event.targetAll(presenceChanged.joined(id, newUser.name))],
           timeouts: [
             {
               timeout: userDisconnect.of(id),

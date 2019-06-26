@@ -70,7 +70,7 @@ export const handle: gameAction.Handler<Submit> = (
       playedBy: auth.uid,
       revealed: false
     });
-    const events = [event.target(playSubmitted.of(auth.uid))];
+    const events = [event.targetAll(playSubmitted.of(auth.uid))];
     const timeouts = [];
     const timeout = finishedPlaying.ifNeeded(lobbyRound);
     if (timeout !== undefined) {

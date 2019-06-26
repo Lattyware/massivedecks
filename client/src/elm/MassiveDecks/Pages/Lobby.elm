@@ -49,6 +49,7 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
+import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import Weightless as Wl
 import Weightless.Attributes as WlA
@@ -263,7 +264,6 @@ view shared model =
             model.lobby
                 |> Maybe.andThen .game
                 |> Maybe.map (.game >> .round >> Round.data >> .call >> .body >> Parts.viewSingleLine)
-                |> Maybe.withDefault []
 
         notifications =
             model.notifications |> List.map (keyedViewNotification shared model.lobby)
@@ -287,7 +287,7 @@ view shared model =
                     , castButton
                     ]
                 )
-            , Html.div [ HtmlA.class "title-call" ] title
+            , title |> Maybe.map (Html.div [ HtmlA.class "title-call" ]) |> Maybe.withDefault Html.nothing
             , Html.div [] [ Settings.view shared ]
             ]
         , model.lobby
@@ -309,26 +309,26 @@ view shared model =
 {- Private -}
 
 
-gameMenu : Shared -> Html msg
+gameMenu : Shared -> Html Global.Msg
 gameMenu shared =
     let
         id =
             "game-menu-button"
 
         menuItems =
-            [ Menu.item Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers Nothing
+            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers (ToggleInviteDialog |> Global.LobbyMsg |> Just)
             , Menu.Separator
-            , Menu.item Icon.userClock Strings.SetAway Strings.SetAway Nothing
-            , Menu.item Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame Nothing
+            , Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
+            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame Nothing
             , Menu.Separator
-            , Menu.item Icon.info Strings.AboutTheGame Strings.AboutTheGame Nothing
-            , Menu.item Icon.bug Strings.ReportError Strings.ReportError Nothing
+            , Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGame (Just "https://github.com/lattyware/massivedecks")
+            , Menu.link Icon.bug Strings.ReportError Strings.ReportError (Just "https://github.com/Lattyware/massivedecks/issues/new")
             ]
     in
     Html.div []
         [ Components.iconButtonStyled [ HtmlA.id id, Strings.GameMenu |> Lang.title shared ]
             ( [ Icon.lg ], Icon.bars )
-        , Menu.view shared id WlA.XLeft WlA.YBottom menuItems
+        , Menu.view shared id WlA.XCenter WlA.YBottom menuItems
         ]
 
 
@@ -513,10 +513,10 @@ viewUser shared player selectedUser game ( userId, user ) =
             "user-" ++ userId
 
         menuItems =
-            [ Menu.item Icon.userCog Strings.Promote Strings.Promote Nothing
+            [ Menu.button Icon.userCog Strings.Promote Strings.Promote Nothing
             , Menu.Separator
-            , Menu.item Icon.userClock Strings.SetAway Strings.SetAway Nothing
-            , Menu.item Icon.ban Strings.KickUser Strings.KickUser Nothing
+            , Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
+            , Menu.button Icon.ban Strings.KickUser Strings.KickUser Nothing
             ]
     in
     ( userId

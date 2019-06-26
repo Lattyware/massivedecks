@@ -5,11 +5,11 @@ import * as configured from "../configured";
  */
 export interface PasswordSet extends configured.Base {
   event: "PasswordSet";
-  password?: string | boolean;
+  password?: string;
 }
 
-export const censor = (passwordSet: PasswordSet): PasswordSet => ({
+export const of = (version: string, password?: string): PasswordSet => ({
   event: "PasswordSet",
-  version: passwordSet.version,
-  password: passwordSet.password !== undefined
+  version: version,
+  ...(password !== undefined ? { password } : {})
 });

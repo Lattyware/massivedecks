@@ -51,7 +51,7 @@ export async function handle(
     if (user.connection !== "Connected") {
       user.connection = "Connected";
       return {
-        events: [event.target(connectionChanged.connected(claims.uid))]
+        events: [event.targetAll(connectionChanged.connected(claims.uid))]
       };
     } else {
       return {};

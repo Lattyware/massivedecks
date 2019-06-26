@@ -43,7 +43,7 @@ export const handle: Handler<SetScoreLimit> = (auth, lobby, action) => {
       delete config.rules.scoreLimit;
     }
     config.version = version;
-    return { lobby, events: [event.target(scoreLimitSet)] };
+    return { lobby, events: [event.targetAll(scoreLimitSet)] };
   } else {
     return {};
   }

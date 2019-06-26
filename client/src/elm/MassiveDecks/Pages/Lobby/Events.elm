@@ -70,4 +70,4 @@ type GameEvent
         , call : Card.Call
         , drawn : Maybe (List Card.Response)
         }
-    | StartRevealing { plays : List Play.Id }
+    | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.Response) }

@@ -48,7 +48,7 @@ export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
     }
     return {
       lobby,
-      events: [event.target(playRevealed.of(play.id, play.play))]
+      events: [event.targetAll(playRevealed.of(play.id, play.play))]
     };
   } else {
     return {};

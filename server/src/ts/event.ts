@@ -1,16 +1,14 @@
-import WebSocket from "ws";
-import wu from "wu";
 import { GameEvent } from "./events/game-event";
 import { LobbyEvent } from "./events/lobby-event";
 import { UserEvent } from "./events/user-event";
-import { Game } from "./games/game";
-import * as player from "./games/player";
+import { Player } from "./games/player";
 import { Lobby } from "./lobby";
 import * as logging from "./logging";
 import { SocketManager } from "./socket-manager";
+import * as socketManager from "./socket-manager";
 import * as user from "./user";
 import { User } from "./user";
-import * as util from "./util";
+import { GameCode } from "./lobby/game-code";
 
 /**
  * An event send to clients to update them on the state of the game.
@@ -18,153 +16,148 @@ import * as util from "./util";
 export type Event = LobbyEvent | UserEvent | GameEvent;
 
 /**
- * An event with who it should be sent to.
+ * Defines how to distribute an event efficiently.
  */
-export interface Targeted {
-  targets?: Set<user.Id> | ((id: user.Id, user: User) => boolean);
-  event: Event;
-}
+export type Distributor = (
+  lobby: Lobby,
+  send: (target: user.Id, payload: string) => void
+) => void;
 
 /**
- * Give the event a target of all users in the lobby that fulfil the given
- * targeting predicate. If the predicate is not given, it will be sent to all.
- * @param event The event.
- * @param targets The function that determines if the event will be sent to
- * a given user.
+ * Send the event to every user in the lobby.
+ * @param event The event to send.
  */
-export const target = (
-  event: Event,
-  targets?: (id: user.Id, user: User) => boolean
-): Targeted => ({ targets, event });
+export const targetAll = (event: Event): Distributor => (lobby, send) => {
+  const rendered = JSON.stringify(event);
+  for (const id of lobby.users.keys()) {
+    send(id, rendered);
+  }
+};
 
 /**
- * Give the event a target of the given users.
- * @param event The event.
- * @param targets The users to send the event to.
+ * Send the event to the specifically targeted users.
+ * @param event The event to send.
+ * @param targets The targets to send it to.
  */
-export const targetSpecifically = (
+export const targetOnly = (
   event: Event,
   ...targets: user.Id[]
-): Targeted => ({ targets: new Set(targets), event });
-
-/**
- * Target the given event by privilege. Sending only the event as given to
- * privileged users, and optionally a censored version to unprivileged users.
- * @param event
- * @param censor
- */
-export function* targetByPrivilege<T extends Event>(
-  event: T,
-  censor?: (event: T) => T
-): Iterable<Targeted> {
-  yield target(event, (_, user) => user.privilege === "Privileged");
-  if (censor !== undefined) {
-    yield target(censor(event), (_, user) => user.privilege === "Unprivileged");
+): Distributor => (lobby, send) => {
+  const rendered = JSON.stringify(event);
+  const targetSet = new Set(targets);
+  for (const id of lobby.users.keys()) {
+    if (targetSet.has(id)) {
+      send(id, rendered);
+    }
   }
-}
+};
 
 /**
- * Target the given event by player role. Sending only the event as given to
- * the czar, and optionally a censored version to other players.
- * @param game The game at hand.
- * @param event The event to send to the czar.
- * @param censor The function to censor the event for players.
- */
-export function* targetByPlayerRole<T extends Event>(
-  game: Game,
-  event: T,
-  censor?: (event: T) => T
-): Iterable<Targeted> {
-  yield target(event, (id, _) => player.role(game, id) === "Czar");
-  if (censor !== undefined) {
-    yield target(event, (id, _) => player.role(game, id) === "Player");
-  }
-}
-
-/**
- * Target the given event to only one player, but send a censored version to
- * everyone else.
- * @param player The player to send the initial event to.
+ * Send an event to every user in the lobby, sending some additional data to
+ * the users represented in the given map.
  * @param event The event to send.
- * @param censor The function to censor the event for others.
+ * @param additions The additions by user.
  */
-export function* targetByPlayer<T extends Event, U extends Event>(
-  player: user.Id,
+export const additionally = <T extends Event>(
   event: T,
-  censor: (event: T) => U
-): Iterable<Targeted> {
-  yield targetSpecifically(event, player);
-  if (censor !== undefined) {
-    yield target(event, (id, _) => id !== player);
+  additions: Map<user.Id, Partial<T>>
+): Distributor => (lobby, send) => {
+  const basicRendered = JSON.stringify(event);
+  for (const id of lobby.users.keys()) {
+    const addition = additions.get(id);
+    if (addition !== undefined) {
+      const full: T = { ...event, ...addition };
+      send(id, JSON.stringify(full));
+    } else {
+      send(id, basicRendered);
+    }
   }
-}
-
-function sendHelper(
-  sockets: Map<user.Id, WebSocket>,
-  serializedEvent: string,
-  event: Event
-): (user: user.Id) => void {
-  return user => {
-    try {
-      const socket = sockets.get(user);
-      if (socket) {
-        socket.send(serializedEvent);
-        logging.logger.info("WebSocket send:", {
-          user: user,
-          event: event
-        });
-      }
-    } catch (error) {}
-  };
-}
+};
 
 /**
- * Send the given events to the targets given with them.
- * @param sockets The sockets to send with.
- * @param lobby The lobby as context to send the events in.
- * @param firstEvent The first event to send (there must be at least one).
- * @param restEvents Any further events to send.
+ * Send an event to every user in the lobby, sending some edditional element if
+ * the user fulfills the given condition.
+ * @param event The event to send.
+ * @param condition The condition to apply.
+ * @param addition The addition to add if the given condition passes.
  */
-export function send(
-  sockets: SocketManager,
-  lobby: Lobby,
-  firstEvent: Targeted,
-  ...restEvents: Targeted[]
-): void;
+export const conditionally = <T extends Event>(
+  event: T,
+  condition: (id: user.Id, user: User) => boolean,
+  addition: Partial<T>
+): Distributor => (lobby, send) => {
+  const basicRendered = JSON.stringify(event);
+  const full: T = { ...event, ...addition };
+  const fullRendered = JSON.stringify(full);
+  for (const [id, user] of lobby.users.entries()) {
+    send(id, condition(id, user) ? fullRendered : basicRendered);
+  }
+};
+
+/**
+ * Send an event to every user in the lobby, sending some additional element to
+ * each player.
+ * @param event The event to send.
+ * @param addition A function to get the addition to send to the given player.
+ */
+export const playerSpecificAddition = <T extends Event, U extends Partial<T>>(
+  event: T,
+  addition: (id: user.Id, user: User, player: Player) => U
+): Distributor => (lobby, send) => {
+  const basicRendered = JSON.stringify(event);
+  const game = lobby.game;
+  if (game === undefined) {
+    for (const id of lobby.users.keys()) {
+      send(id, basicRendered);
+    }
+  } else {
+    for (const [id, user] of lobby.users.entries()) {
+      const player = game.players.get(id);
+      if (player !== undefined) {
+        const toAdd = addition(id, user, player);
+        const full: T = { ...event, ...toAdd };
+        send(id, JSON.stringify(full));
+      }
+    }
+  }
+};
+
+const sendHelper = (
+  sockets: socketManager.Sockets,
+  gameCode: GameCode
+): ((user: user.Id, serializedEvent: string) => void) => (
+  user,
+  serializedEvent
+) => {
+  try {
+    const socket = sockets.get(gameCode, user);
+    if (socket) {
+      socket.send(serializedEvent);
+      logging.logger.info("WebSocket send:", {
+        user: user,
+        event: serializedEvent
+      });
+    }
+  } catch (error) {
+    logging.logException("Exception sending to WebSocket", error);
+  }
+};
+
 /**
  * Send the given events to the targets given with them.
  * @param sockets The sockets to send with.
+ * @param gameCode The game code for the lobby being sent in.
  * @param lobby The lobby as context to send the events in.
  * @param events An iterable of events with targets.
  */
 export function send(
   sockets: SocketManager,
+  gameCode: GameCode,
   lobby: Lobby,
-  events: Iterable<Targeted>
-): void;
-export function send(
-  sockets: SocketManager,
-  lobby: Lobby,
-  firstEvent: Targeted | Iterable<Targeted>,
-  ...restEvents: Targeted[]
+  events: Iterable<Distributor>
 ): void {
-  const events = util.isIterable(firstEvent)
-    ? firstEvent
-    : [firstEvent, ...restEvents];
+  const sendToUser = sendHelper(sockets.sockets, gameCode);
   for (const event of events) {
-    const sendToUser = sendHelper(
-      sockets.sockets,
-      JSON.stringify(event.event),
-      event.event
-    );
-    const targets = event.targets;
-    (targets === undefined
-      ? wu(lobby.users.keys())
-      : targets instanceof Function
-      ? wu(lobby.users.entries())
-          .filter(([id, user]) => targets(id, user))
-          .map(([id]) => id)
-      : targets
-    ).forEach(sendToUser);
+    event(lobby, sendToUser);
   }
 }

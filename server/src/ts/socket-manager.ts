@@ -15,8 +15,6 @@ import * as user from "./user";
 import * as token from "./user/token";
 import * as sync from "./events/user-event/sync";
 
-export type Sockets = Map<user.Id, WebSocket>;
-
 const parseJson = (raw: string): object => {
   try {
     return JSON.parse(raw);
@@ -29,7 +27,7 @@ export class SocketManager {
   public readonly sockets: Sockets;
 
   public constructor() {
-    this.sockets = new Map();
+    this.sockets = new Sockets();
   }
 
   private readonly errorWSHandler = <T>(
@@ -78,7 +76,7 @@ export class SocketManager {
             );
             auth = knownAuth;
             const uid = auth.uid;
-            sockets.set(auth.uid, socket);
+            sockets.set(auth.gc, uid, socket);
             await change.apply(server, auth.gc, lobby => {
               let hand = undefined;
               let play = undefined;
@@ -104,7 +102,7 @@ export class SocketManager {
               return {
                 lobby,
                 events: [
-                  event.targetSpecifically(
+                  event.targetOnly(
                     sync.of(gameLobby.censor(lobby, knownAuth), hand, play),
                     uid
                   )
@@ -133,7 +131,7 @@ export class SocketManager {
     socket.on("close", async () => {
       if (auth) {
         const uid = auth.uid;
-        sockets.delete(uid);
+        sockets.delete(auth.gc, uid);
         await change.apply(server, auth.gc, lobby => ({
           lobby,
           timeouts: [
@@ -146,5 +144,41 @@ export class SocketManager {
         logging.logger.info("WebSocket disconnect:", { user: auth.uid });
       }
     });
+  }
+}
+
+export class Sockets {
+  private readonly sockets: Map<GameCode, Map<user.Id, WebSocket>>;
+
+  public constructor() {
+    this.sockets = new Map();
+  }
+
+  public set(gameCode: GameCode, id: user.Id, socket: WebSocket): void {
+    this.users(gameCode).set(id, socket);
+  }
+
+  public get(gameCode: GameCode, id: user.Id): WebSocket | undefined {
+    return this.users(gameCode).get(id);
+  }
+
+  public delete(gameCode: GameCode, id: user.Id): boolean {
+    const users = this.users(gameCode);
+    const didDelete = users.delete(id);
+    if (users.size < 1) {
+        this.sockets.delete(gameCode);
+    }
+    return didDelete;
+  }
+
+  private users(gameCode: GameCode): Map<user.Id, WebSocket> {
+    const existing = this.sockets.get(gameCode);
+    if (existing !== undefined) {
+      return existing;
+    } else {
+      const created = new Map();
+      this.sockets.set(gameCode, created);
+      return created;
+    }
   }
 }

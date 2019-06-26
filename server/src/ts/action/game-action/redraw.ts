@@ -39,10 +39,11 @@ export const handle: gameAction.Handler<Redraw> = (auth, lobby, action) => {
   player.hand = game.decks.responses.replace(...player.hand);
   return {
     lobby,
-    events: event.targetByPlayer(
-      auth.uid,
-      handRedrawn.of(auth.uid, player.hand),
-      handRedrawn.censor
-    )
+    events: [
+      event.additionally(
+        handRedrawn.of(auth.uid),
+        new Map([[auth.uid, { hand: player.hand }]])
+      )
+    ]
   };
 };

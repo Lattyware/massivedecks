@@ -1,4 +1,4 @@
-# Massive Decks [![Build Status](https://travis-ci.org/Lattyware/massivedecks.svg?branch=v2)](https://travis-ci.org/Lattyware/massivedecks)
+# Massive Decks [![Build Status](https://travis-ci.com/Lattyware/massivedecks.svg?branch=v2)](https://travis-ci.com/Lattyware/massivedecks)
 
 Massive Decks is a comedy party game based on [Cards against Humanity][cah]. The game is open source software available 
 under [the AGPLv3 license][license].

@@ -45,7 +45,7 @@ export const handle: gameAction.Handler<Judge> = (
     lobby.game.round = completedRound;
     return {
       lobby,
-      events: [event.target(roundFinished.of(completedRound))],
+      events: [event.targetAll(roundFinished.of(completedRound))],
       timeouts: [
         {
           timeout: roundStart.of(),

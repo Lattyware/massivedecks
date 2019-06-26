@@ -467,8 +467,9 @@ playRevealed =
 
 startRevealing : Json.Decoder Events.GameEvent
 startRevealing =
-    Json.map (\ps -> Events.StartRevealing { plays = ps })
+    Json.map2 (\ps -> \dr -> Events.StartRevealing { plays = ps, drawn = dr })
         (Json.field "plays" (Json.list playId))
+        (Json.maybe (Json.field "drawn" (Json.list response)))
 
 
 gameEvent : Json.Decoder Events.GameEvent -> Json.Decoder Event

@@ -28,14 +28,14 @@ export interface TimeoutAfter {
   after: number;
 }
 
-export const handler: Handler<Timeout> = (server, timeout, lobby) => {
+export const handler: Handler<Timeout> = (server, timeout, gameCode, lobby) => {
   switch (timeout.timeout) {
     case "UserDisconnect":
-      return userDisconnect.handle(server, timeout, lobby);
+      return userDisconnect.handle(server, timeout, gameCode, lobby);
     case "RoundStart":
-      return roundStart.handle(server, timeout, lobby);
+      return roundStart.handle(server, timeout, gameCode, lobby);
     case "FinishedPlaying":
-      return finishedPlaying.handle(server, timeout, lobby);
+      return finishedPlaying.handle(server, timeout, gameCode, lobby);
   }
 };
 
@@ -50,7 +50,7 @@ export async function handle(server: ServerState): Promise<void> {
     await change.apply(
       server,
       lobby,
-      lobby => handler(server, timeout, lobby),
+      lobbyState => handler(server, timeout, lobby, lobbyState),
       id
     );
   }
@@ -59,5 +59,6 @@ export async function handle(server: ServerState): Promise<void> {
 export type Handler<T extends Timeout> = (
   server: ServerState,
   timeout: T,
+  gameCode: GameCode,
   lobby: Lobby
 ) => Change;

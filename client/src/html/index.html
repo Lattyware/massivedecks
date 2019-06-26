@@ -4,6 +4,7 @@
         <meta charset="utf-8">
 
         <title>Massive Decks</title>
+        <meta name="description" content="A comedy party game." />
 
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,9 +15,15 @@
         <link rel="manifest" href="../webmanifest/manifest.webmanifest">
 
         <link href="../scss/massive-decks.scss" type="text/css" rel="stylesheet"/>
+
+        <link rel="preload" href="../../assets/fonts/nimbus-sans-l-regular.woff2" as="font" crossorigin />
+        <link rel="preload" href="../../assets/fonts/roboto-v18-latin-regular.woff2" as="font" crossorigin />
+        <link rel="preload" href="../../assets/fonts/nimbus-sans-l-700.woff2" as="font" crossorigin />
     </head>
     <body>
-        <script src="/assets/scripts/index.js"></script>
-        <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+        <noscript>
+            <p>Massive Decks requires javascript to run.</p>
+        </noscript>
+        <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" defer></script>
     </body>
 </html>

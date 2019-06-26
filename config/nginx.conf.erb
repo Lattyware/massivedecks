@@ -14,8 +14,9 @@ events {
 
 http {
     gzip on;
+    gzip_static on;
     gzip_comp_level 2;
-    gzip_min_length 512;
+    gzip_min_length 64;
 
 	server_tokens off;
 
@@ -42,7 +43,19 @@ http {
 		server_name _;
 		keepalive_timeout 5;
 
+		location ~* \.(woff2|png|svg|css|js)$ {
+            expires 365d;
+        }
+
         location / {
+            root "/app/client/dist";
+        }
+
+        location ~ /games/(.*) {
+            root "/app/client/dist";
+        }
+
+        location /cast.html {
             root "/app/client/dist";
         }
 
@@ -55,5 +68,12 @@ http {
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "Upgrade";
 	    }
+
+	    error_page 404 /index.html
+
+        location = /index.html {
+            root "/app/client/dist";
+            internal;
+        }
 	}
 }

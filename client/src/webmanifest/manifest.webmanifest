@@ -3,15 +3,21 @@
   "short_name": "Massive Decks",
   "lang": "en",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#cccccc",
+  "theme_color": "#42a5f5",
   "orientation": "natural",
   "description": "A comedy party game.",
   "icons": [
     {
       "src": "../../assets/images/icon.svg",
       "type": "image/svg+xml",
-      "sizes": "48x48 72x72 96x96 128x128 256x256"
+      "sizes": "48x48 72x72 96x96 128x128 256x256 512x512"
+    },
+    {
+      "src": "../../assets/images/icon-large.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ]
 }

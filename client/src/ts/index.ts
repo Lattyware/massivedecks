@@ -1,4 +1,4 @@
-import "../html/index.html";
+//import "../html/index.html";
 import "./weightless";
 import { Client as CastClient } from "./chromecast";
 import { OutboundPort, Settings, Token } from "../elm/MassiveDecks";

@@ -12,9 +12,9 @@ export interface GameStarted {
 
 export const of = (
   round: publicRound.Playing,
-  hand: card.Response[]
+  hand?: card.Response[]
 ): GameStarted => ({
   event: "GameStarted",
   round,
-  hand
+  ...(hand !== undefined ? { hand } : {})
 });

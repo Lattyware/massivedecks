@@ -364,7 +364,7 @@ applyGameEvent gameEvent model =
             in
             ( { model | game = game, hand = model.hand ++ drawnAsList }, cmd )
 
-        Events.StartRevealing { plays } ->
+        Events.StartRevealing { plays, drawn } ->
             case model.game.round of
                 Round.P r ->
                     let
@@ -379,8 +379,13 @@ applyGameEvent gameEvent model =
                                 r.call
                                 (plays |> List.map (\id -> Play id Nothing))
                                 |> Round.R
+
+                        newHand =
+                            model.hand
+                                |> List.filter (\c -> not (List.member c.details.id r.pick.cards))
+                                |> (\h -> h ++ (drawn |> Maybe.withDefault []))
                     in
-                    ( { model | game = { oldGame | round = newRound } }, Cmd.none )
+                    ( { model | game = { oldGame | round = newRound }, hand = newHand }, Cmd.none )
 
                 _ ->
                     -- TODO: Error

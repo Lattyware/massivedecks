@@ -4,6 +4,7 @@ import * as roundStarted from "../events/game-event/round-started";
 import * as game from "../games/game";
 import * as timeout from "../timeout";
 import * as card from "../games/cards/card";
+import * as player from "../games/player";
 
 /**
  * Indicates that the round should start if it is still appropriate to do so.
@@ -16,19 +17,26 @@ export const of = (): RoundStart => ({
   timeout: "RoundStart"
 });
 
-export const handle: timeout.Handler<RoundStart> = (server, timeout, lobby) => {
+export const handle: timeout.Handler<RoundStart> = (
+  server,
+  timeout,
+  gameCode,
+  lobby
+) => {
   const lobbyGame = lobby.game;
   if (lobbyGame !== undefined) {
-    const round = lobbyGame.round;
-    if (round.stage === "Complete") {
+    const gameRound = lobbyGame.round;
+    if (gameRound.stage === "Complete") {
       const czar = game.nextCzar(lobbyGame);
-      const [call] = lobbyGame.decks.calls.replace(round.call);
+      const [call] = lobbyGame.decks.calls.replace(gameRound.call);
       const slotCount = card.slotCount(call);
-      const roundId = round.id + 1;
+      const roundId = gameRound.id + 1;
       const playersInRound = new Set(
         wu(lobbyGame.playerOrder).filter(id => id !== czar)
       );
-      lobbyGame.decks.responses.discard(round.plays.flatMap(play => play.play));
+      lobbyGame.decks.responses.discard(
+        gameRound.plays.flatMap(play => play.play)
+      );
       lobbyGame.round = {
         stage: "Playing",
         id: roundId,
@@ -38,29 +46,26 @@ export const handle: timeout.Handler<RoundStart> = (server, timeout, lobby) => {
         plays: []
       };
       const playersArray = Array.from(playersInRound);
-      const basicEvent = roundStarted.of(roundId, czar, playersArray, call);
-      let events: event.Targeted[];
+      const baseEvent = roundStarted.of(roundId, czar, playersArray, call);
+
+      let events;
       if (
         slotCount > 2 ||
         (slotCount === 2 &&
           lobbyGame.rules.houseRules.packingHeat !== undefined)
       ) {
-        events = [
-          event.target(basicEvent, (id, user) => user.role !== "Player")
-        ];
         const responseDeck = lobbyGame.decks.responses;
-        for (const [id, player] of lobbyGame.players) {
-          const extra = responseDeck.draw(slotCount - 1);
-          player.hand.push(...extra);
-          events.push(
-            event.targetSpecifically(
-              roundStarted.of(roundId, czar, playersArray, call, extra),
-              id
-            )
-          );
+        const drawnByPlayer = new Map();
+        for (const [id, playerState] of lobbyGame.players) {
+          if (player.role(lobbyGame, id) === "Player") {
+            const drawn = responseDeck.draw(slotCount - 1);
+            drawnByPlayer.set(id, { drawn });
+            playerState.hand.push(...drawn);
+          }
         }
+        events = [event.additionally(baseEvent, drawnByPlayer)];
       } else {
-        events = [event.target(basicEvent)];
+        events = [event.targetAll(baseEvent)];
       }
       return { lobby, events };
     }

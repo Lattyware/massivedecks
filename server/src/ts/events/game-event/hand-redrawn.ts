@@ -13,13 +13,8 @@ export interface Public {
   player: user.Id;
 }
 
-export const of = (player: user.Id, hand: card.Response[]): HandRedrawn => ({
+export const of = (player: user.Id, hand?: card.Response[]): HandRedrawn => ({
   event: "HandRedrawn",
   player,
-  hand
-});
-
-export const censor = (event: HandRedrawn): Public => ({
-  event: event.event,
-  player: event.player
+  ...(hand !== undefined ? { hand } : {})
 });

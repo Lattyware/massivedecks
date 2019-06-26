@@ -65,7 +65,7 @@ export const handle: Handler<ChangeDecks> = (auth, lobby, action) => {
     };
     return {
       lobby,
-      events: [event.target(decksChanged)],
+      events: [event.targetAll(decksChanged)],
       tasks: [new LoadDeckSummary(auth.gc, deckSource)]
     };
   }

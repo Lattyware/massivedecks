@@ -41,7 +41,7 @@ export const handle: Handler<ChangeHouseRule> = (auth, lobby, action) => {
   return {
     lobby,
     events: [
-      event.target(houseRuleChanged.of(action.change, lobby.config.version))
+      event.targetAll(houseRuleChanged.of(action.change, lobby.config.version))
     ]
   };
 };

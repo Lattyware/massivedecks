@@ -30,7 +30,7 @@ export const handle: gameAction.Handler<TakeBack> = (auth, lobby, action) => {
       throw new InvalidActionError("No play to take back.");
     }
     plays.splice(playIndex, 1);
-    return { lobby, events: [event.target(playTakenBack.of(auth.uid))] };
+    return { lobby, events: [event.targetAll(playTakenBack.of(auth.uid))] };
   } else {
     return {};
   }

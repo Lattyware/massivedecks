@@ -58,6 +58,7 @@ h1 {
 
 a,
 .link-button {
+  display: inline;
   color: inherit;
   text-decoration: none;
 
@@ -144,16 +145,6 @@ a,
   color: var(--bg, $call-color);
 }
 
-// TODO: Is this not used any more?
-.form-chunk {
-  margin: 0 0 0.5em 0;
-
-  display: flex;
-  flex-direction: column;
-
-  align-self: stretch;
-}
-
 // TODO: Move to Elm asset loader when one works.
 .forceLoad {
   background: url(../../assets/images/reread-icon.svg);
@@ -171,7 +162,7 @@ a,
 }
 
 .form-section {
-  margin: 1em 0;
+  margin: 0.5em 0;
 
   display: flex;
   flex-direction: column;

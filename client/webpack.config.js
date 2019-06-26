@@ -4,6 +4,8 @@ const TerserPlugin = require("terser-webpack-plugin");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const path = require("path");
 const inliner = require("sass-inline-svg");
+const CompressionPlugin = require("compression-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = (env, argv) => {
   // WebStorm doesn't give any arguments, causing this to blow up without the check.
@@ -20,7 +22,7 @@ module.exports = (env, argv) => {
     {
       loader: "file-loader",
       options: {
-        name: "[name].css",
+        name: "[name].[hash].css",
         outputPath: "assets/styles"
       }
     },
@@ -75,7 +77,22 @@ module.exports = (env, argv) => {
     }
   ];
 
-  const plugins = [];
+  const plugins = [
+    new HtmlWebpackPlugin({
+      template: "src/html/index.html",
+      filename: "index.html",
+      inject: "body",
+      excludeChunks: ["cast"],
+      test: /\.html$/
+    }),
+    new HtmlWebpackPlugin({
+      template: "src/html/cast.html",
+      filename: "cast.html",
+      inject: "body",
+      excludeChunks: ["index"],
+      test: /\.html$/
+    })
+  ];
 
   if (dev) {
     // Load CSS without refreshing in a dev env.
@@ -94,6 +111,18 @@ module.exports = (env, argv) => {
   if (prod) {
     // If we are in production, ensure we don't have old files lying around.
     plugins.push(new CleanWebpackPlugin());
+    plugins.push(
+      new CompressionPlugin({
+        test: /\.(js|css|html|webmanifest|svg)$/
+      }) //,
+      // new CompressionPlugin({
+      //   test: /\.(js|css|html|webmanifest|svg)$/,
+      //   filename: "[path].br[query]",
+      //   algorithm: "brotliCompress",
+      //   compressionOptions: { level: 11 }
+      // })
+    );
+    plugins.push(new webpack.HashedModuleIdsPlugin());
   }
 
   return {
@@ -109,7 +138,7 @@ module.exports = (env, argv) => {
     output: {
       path: dist,
       publicPath: "/",
-      filename: "assets/scripts/[name].js"
+      filename: "assets/scripts/[name].[hash].js"
     },
     module: {
       rules: [
@@ -118,15 +147,6 @@ module.exports = (env, argv) => {
           test: /\.html$/,
           exclude: [/elm-stuff/, /node_modules/],
           use: [
-            {
-              loader: "file-loader",
-              options: {
-                name: "[name].[ext]"
-              }
-            },
-            {
-              loader: "extract-loader"
-            },
             {
               loader: "html-loader",
               options: { attrs: ["img:src", "link:href"] }
@@ -193,10 +213,20 @@ module.exports = (env, argv) => {
     },
     plugins: plugins,
     optimization: {
+      runtimeChunk: "single",
+      splitChunks: {
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendors",
+            chunks: "all"
+          }
+        }
+      },
       minimizer: [
         // Typescript
         new TerserPlugin({
-          test: /assets\/scripts\/(index|cast)\.js$/,
+          test: /assets\/scripts\/(index|cast|runtime|vendors)\..*\.js$/,
           sourceMap: dev,
           parallel: true,
           terserOptions: {
@@ -207,7 +237,7 @@ module.exports = (env, argv) => {
         }),
         // Elm - we can do otherwise dangerous optimisation thanks to the purity.
         new UglifyJsPlugin({
-          test: /assets\/scripts\/massive-decks\.js$/,
+          test: /assets\/scripts\/massive-decks\..*\.js$/,
           uglifyOptions: {
             compress: {
               pure_funcs: [

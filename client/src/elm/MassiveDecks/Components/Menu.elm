@@ -2,7 +2,8 @@ module MassiveDecks.Components.Menu exposing
     ( Item
     , Menu
     , Part(..)
-    , item
+    , button
+    , link
     , view
     )
 
@@ -15,6 +16,8 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Attributes as HtmlA
+import MassiveDecks.Util.Maybe as Maybe
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
@@ -28,26 +31,33 @@ type alias Menu msg =
 {-| A part of a menu.
 -}
 type Part msg
-    = Part (Item msg)
+    = Button Item (Maybe msg)
+    | Link Item (Maybe String)
     | Separator
     | Nothing
 
 
 {-| A menu item
 -}
-type alias Item msg =
+type alias Item =
     { icon : Icon
     , text : MdString
     , description : MdString
-    , action : Maybe msg
     }
 
 
-{-| Convenience function for an item part.
+{-| Convenience function for a menu button.
 -}
-item : Icon -> MdString -> MdString -> Maybe msg -> Part msg
-item icon text description action =
-    Item icon text description action |> Part
+button : Icon -> MdString -> MdString -> Maybe msg -> Part msg
+button icon text description action =
+    Button (Item icon text description) action
+
+
+{-| Convenience function for a menu link.
+-}
+link : Icon -> MdString -> MdString -> Maybe String -> Part msg
+link icon text description href =
+    Link (Item icon text description) href
 
 
 {-| Render a menu to Html.
@@ -76,23 +86,15 @@ view shared anchorId xOrigin yOrigin menu =
 menuItem : Shared -> Part msg -> Html msg
 menuItem shared mi =
     case mi of
-        Part { icon, text, description, action } ->
-            let
-                actionAttrs =
-                    action
-                        |> Maybe.map (\m -> [ m |> HtmlE.onClick, WlA.clickable ])
-                        |> Maybe.withDefault [ WlA.disabled ]
-
-                attrs =
-                    (description |> Lang.title shared) :: actionAttrs
-            in
+        Button item action ->
             Html.li []
-                [ Wl.listItem attrs
-                    [ Icon.viewStyled [ WlA.listItemSlot WlA.BeforeItem, Icon.fw ] icon
+                [ listItem shared item (Maybe.isJust action) (action |> Maybe.map HtmlE.onClick |> Maybe.withDefault HtmlA.nothing)
+                ]
 
-                    -- We have an icon already, so we don't want to enhance this.
-                    , text |> Lang.string shared |> Html.text
-                    ]
+        Link item href ->
+            Html.li []
+                [ Html.blankA [ href |> Maybe.map HtmlA.href |> Maybe.withDefault HtmlA.nothing ]
+                    [ listItem shared item (Maybe.isJust href) HtmlA.nothing ]
                 ]
 
         Separator ->
@@ -100,3 +102,17 @@ menuItem shared mi =
 
         Nothing ->
             Html.nothing
+
+
+listItem : Shared -> Item -> Bool -> Html.Attribute msg -> Html msg
+listItem shared { icon, text, description } enabled attr =
+    Wl.listItem
+        [ description |> Lang.title shared
+        , WlA.clickable |> Maybe.justIf enabled |> Maybe.withDefault WlA.disabled
+        , attr
+        ]
+        [ Icon.viewStyled [ WlA.listItemSlot WlA.BeforeItem, Icon.fw ] icon
+
+        -- We have an icon already, so we don't want to enhance this.
+        , text |> Lang.string shared |> Html.text
+        ]

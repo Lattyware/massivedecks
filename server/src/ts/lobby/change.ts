@@ -7,7 +7,7 @@ import { GameCode } from "./game-code";
 
 export interface Change {
   lobby?: Lobby;
-  events?: Iterable<event.Targeted>;
+  events?: Iterable<event.Distributor>;
   timeouts?: Iterable<timeout.TimeoutAfter>;
   tasks?: Iterable<Task>;
 }
@@ -19,6 +19,7 @@ export type HandlerWithReturnValue<T> = (
 
 function internalApply(
   server: ServerState,
+  gameCode: GameCode,
   originalLobby: Lobby,
   change: Change
 ): {
@@ -30,7 +31,7 @@ function internalApply(
   const lobby: Lobby =
     change.lobby !== undefined ? change.lobby : originalLobby;
   if (change.events !== undefined) {
-    event.send(server.socketManager, lobby, change.events);
+    event.send(server.socketManager, gameCode, lobby, change.events);
   }
   let currentLobby = lobby;
   const returnTasks = change.tasks !== undefined ? [...change.tasks] : [];
@@ -42,8 +43,9 @@ function internalApply(
       } else {
         const chained = internalApply(
           server,
+          gameCode,
           currentLobby,
-          timeout.handler(server, timeoutAfter.timeout, currentLobby)
+          timeout.handler(server, timeoutAfter.timeout, gameCode, currentLobby)
         );
         if (chained.lobby !== undefined) {
           lobbyUnchanged = false;
@@ -83,7 +85,7 @@ export async function applyAndReturn<T>(
     gameCode,
     lobby => {
       const { change, returnValue } = handler(lobby);
-      const result = internalApply(server, lobby, change);
+      const result = internalApply(server, gameCode, lobby, change);
       return {
         transaction: {
           lobby: result.lobby,

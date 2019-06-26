@@ -12,6 +12,6 @@
     "scripts": {
         "build": "npm run build-client && npm run build-server",
         "build-client": "(cd client && npm ci && npm install --only=dev && npm run build)",
-        "build-server": "(cd server && npm ci && npm install --only=dev && npm run build && cp package*.json dist && cp config.json5 dist && (cd dist && npm ci --only=prod))"
+        "build-server": "(cd server && npm ci && npm install --only=dev && npm run build && cp package*.json dist && (cd dist && npm ci --only=prod))"
     }
 }

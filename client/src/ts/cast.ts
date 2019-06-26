@@ -1,4 +1,4 @@
-import "../html/cast.html";
+//import "../html/cast.html";
 import { Server as CastServer } from "./chromecast";
 
 import(/* webpackChunkName: "massive-decks" */ "../elm/MassiveDecks").then(

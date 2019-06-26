@@ -2,6 +2,7 @@ import * as event from "../event";
 import * as connectionChanged from "../events/lobby-event/connection-changed";
 import * as timeout from "../timeout";
 import * as user from "../user";
+import { GameCode } from "../lobby/game-code";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
@@ -19,10 +20,11 @@ export const of = (user: user.Id): UserDisconnect => ({
 export const handle: timeout.Handler<UserDisconnect> = (
   server,
   timeout,
+  gameCode,
   lobby
 ) => {
   const id = timeout.user;
-  const socket = server.socketManager.sockets.get(id);
+  const socket = server.socketManager.sockets.get(gameCode, id);
   if (socket === undefined) {
     const userData = lobby.users.get(id);
     if (userData === undefined) {
@@ -32,7 +34,7 @@ export const handle: timeout.Handler<UserDisconnect> = (
       userData.connection = "Disconnected";
       return {
         lobby,
-        events: [event.target(connectionChanged.disconnected(id))]
+        events: [event.targetAll(connectionChanged.disconnected(id))]
       };
     }
   }

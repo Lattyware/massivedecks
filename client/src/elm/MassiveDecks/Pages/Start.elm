@@ -17,6 +17,7 @@ import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card exposing (Card)
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Source.Model as Source
+import MassiveDecks.Components as Components
 import MassiveDecks.Error as Error
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Messages as Global
@@ -319,18 +320,18 @@ joinContent shared model =
         (List.concat
             [ rejoinSection shared model
             , nameField shared model
-            , [ Html.div [ HtmlA.class "form-chunk" ]
-                    [ Wl.textField
+            , [ Components.formSection shared
+                    "game-code-input"
+                    (Wl.textField
                         [ HtmlA.class "game-code-input"
                         , GameCodeChanged >> Global.StartMsg |> HtmlE.onInput
                         , WlA.value (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
                         , WlA.outlined
                         , Strings.GameCodeTerm |> Lang.label shared
                         ]
-                        -- "game-code"
-                        -- (Weightless.Help [ Strings.GameCodeHowToAcquire |> Lang.html shared ])
                         []
-                    ]
+                    )
+                    [ Components.info Strings.GameCodeHowToAcquire ]
               , Wl.button
                     [ buttonAttr
                     ]
@@ -385,8 +386,9 @@ nameField shared model =
         _ =
             ""
     in
-    [ Html.div [ HtmlA.class "form-chunk" ]
-        [ Wl.textField
+    [ Components.formSection shared
+        "name-input"
+        (Wl.textField
             [ NameChanged
                 >> Global.StartMsg
                 |> HtmlE.onInput
@@ -395,7 +397,8 @@ nameField shared model =
             , WlA.outlined
             ]
             []
-        ]
+        )
+        []
     ]
 
 
