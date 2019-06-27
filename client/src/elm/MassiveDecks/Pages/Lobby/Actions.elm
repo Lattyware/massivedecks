@@ -6,6 +6,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , reveal
     , setHandSize
     , setPassword
+    , setPublic
     , setScoreLimit
     , startGame
     , submit
@@ -54,6 +55,11 @@ setPassword value =
 changeHouseRule : Rules.HouseRuleChange -> String -> Cmd msg
 changeHouseRule value =
     configAction "ChangeHouseRule" [ ( "change", value |> Encoders.houseRuleChange ) ]
+
+
+setPublic : Bool -> String -> Cmd msg
+setPublic value =
+    configAction "SetPublic" [ ( "public", value |> Json.bool ) ]
 
 
 submit : List Card.Id -> Cmd msg

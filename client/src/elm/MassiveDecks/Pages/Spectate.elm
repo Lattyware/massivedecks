@@ -18,6 +18,7 @@ import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Spectate.Messages as Spectate
 import MassiveDecks.Pages.Spectate.Model exposing (..)
@@ -119,7 +120,7 @@ view shared model =
         ]
     , Html.div [ HtmlA.class "join-info" ]
         [ Html.p [] [ Strings.JoinTheGame |> Lang.html shared ]
-        , Html.p [] [ Strings.GameCode { code = model.route.lobby.gameCode } |> Lang.html shared ]
+        , Html.p [] [ Strings.GameCode { code = GameCode.toString model.route.lobby.gameCode } |> Lang.html shared ]
         , Html.p [] [ Html.text (stripProtocol shared.origin) ]
         ]
     , Html.div [ HtmlA.class "qr-code" ] qr

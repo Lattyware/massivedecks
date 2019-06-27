@@ -59,6 +59,7 @@ export interface Summary {
   gameCode: GameCode;
   state: State;
   users: { players: number; spectators: number };
+  password?: boolean;
 }
 
 /**
@@ -67,7 +68,8 @@ export interface Summary {
 export const defaultConfig = (): Config => ({
   version: 0,
   rules: rules.create(),
-  decks: []
+  decks: [],
+  public: false
 });
 
 /**
@@ -104,7 +106,8 @@ export const summary = (gameCode: GameCode, lobby: Lobby): Summary => ({
   users: util.counts(Object.values(lobby.users), {
     players: user.isPlaying,
     spectators: user.isSpectating
-  })
+  }),
+  ...(lobby.config.password !== undefined ? { password: true } : {})
 });
 
 /**
@@ -121,11 +124,11 @@ function usersObj(lobby: Lobby): { [id: string]: user.Public } {
   return obj;
 }
 
-export const censor = (lobby: Lobby, auth: token.Claims): Public => ({
+export const censor = (lobby: Lobby): Public => ({
   name: lobby.name,
   public: lobby.public,
   users: usersObj(lobby),
   owner: lobby.owner,
-  config: config.censor(lobby.config, auth),
+  config: config.censor(lobby.config),
   ...(lobby.game === undefined ? {} : { game: game.censor(lobby.game) })
 });

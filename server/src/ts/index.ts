@@ -94,7 +94,7 @@ async function main(): Promise<void> {
     res.status(HttpStatus.CREATED).json(token);
   });
 
-  app.post("/api/games/alive", async (req, res) => {
+  app.post("/api/alive", async (req, res) => {
     const result: { [key: string]: boolean } = {};
     for (const current of checkAlive.validate(req.body).tokens) {
       try {

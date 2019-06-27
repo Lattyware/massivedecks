@@ -5,4 +5,4 @@ import MassiveDecks.Requests.HttpData.Messages as HttpData
 
 
 type Msg
-    = SummaryUpdate (HttpData.Msg (List Summary))
+    = SummaryUpdate (HttpData.Msg () (List Summary))

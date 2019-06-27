@@ -566,7 +566,7 @@ playStateDetail round userId =
         Just (Round.P p) ->
             case Player.playState p userId of
                 Player.Playing ->
-                    Just Strings.Playing
+                    Just Strings.StillPlaying
 
                 Player.Played ->
                     Just Strings.Played

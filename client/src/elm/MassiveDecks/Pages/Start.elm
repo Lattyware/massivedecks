@@ -13,15 +13,17 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import Http
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card exposing (Card)
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form as Form
+import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Error as Error
-import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
@@ -34,6 +36,7 @@ import MassiveDecks.Requests.Api as Api
 import MassiveDecks.Requests.HttpData as HttpData
 import MassiveDecks.Requests.HttpData.Messages as HttpData
 import MassiveDecks.Requests.HttpData.Model as HttpData exposing (HttpData)
+import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util as Util
@@ -78,6 +81,7 @@ init shared r =
       , lobbies = lobbies
       , newLobbyRequest = HttpData.initLazy
       , joinLobbyRequest = HttpData.initLazy
+      , password = Nothing
       }
     , lobbiesCmd
     )
@@ -106,7 +110,7 @@ update msg model =
                 Just gc ->
                     Util.modelLift (\jlr -> { model | joinLobbyRequest = jlr })
                         (HttpData.update
-                            (joinGameRequest gc model.name)
+                            (joinGameRequest gc model.name model.password)
                             httpDataMsg
                             model.joinLobbyRequest
                         )
@@ -116,6 +120,26 @@ update msg model =
 
         LobbyBrowserMsg lbm ->
             Util.modelLift (\lobbies -> { model | lobbies = lobbies }) (LobbyBrowser.update lbm model.lobbies)
+
+        PasswordChanged newPassword ->
+            ( { model | password = Just newPassword }, Cmd.none )
+
+        PasswordWrong ->
+            if Maybe.isJust model.password then
+                let
+                    jlr =
+                        model.joinLobbyRequest
+
+                    newJlr =
+                        { jlr
+                            | error = MdError.InvalidLobbyPassword |> MdError.Authentication |> Just
+                            , loading = False
+                        }
+                in
+                ( { model | joinLobbyRequest = newJlr }, Cmd.none )
+
+            else
+                ( { model | password = Just "", joinLobbyRequest = HttpData.initLazy }, Cmd.none )
 
 
 view : Shared -> Model -> List (Html Global.Msg)
@@ -170,20 +194,38 @@ view shared model =
 
 startGameRequest : String -> HttpData.Pull Global.Msg
 startGameRequest name =
-    HttpData.interceptedRequest
-        (Api.newLobby { owner = { name = name } })
-        (Token.decode >> Result.mapError Error.Token)
-        (StartGame >> Global.StartMsg)
-        (Global.JoinLobby name)
+    Api.newLobby
+        ((HttpData.Response >> StartGame >> Global.StartMsg)
+            |> Request.intercept Request.passthrough Request.passthrough (Request.replace (Global.JoinLobby name))
+        )
+        { owner = { name = name, password = Nothing } }
+        |> Http.request
 
 
-joinGameRequest : GameCode -> String -> HttpData.Pull Global.Msg
-joinGameRequest gameCode name =
-    HttpData.interceptedRequest
-        (Api.joinLobby gameCode { name = name })
-        (Token.decode >> Result.mapError Error.Token)
-        (StartGame >> Global.StartMsg)
-        (Global.JoinLobby name)
+joinGameRequest : GameCode -> String -> Maybe String -> HttpData.Pull Global.Msg
+joinGameRequest gameCode name password =
+    Api.joinLobby
+        ((HttpData.Response >> JoinGame >> Global.StartMsg)
+            |> Request.intercept Request.passthrough (Request.maybeReplace onJoinError) (Request.replace (Global.JoinLobby name))
+        )
+        gameCode
+        { name = name, password = password }
+        |> Http.request
+
+
+onJoinError : MdError -> Maybe Global.Msg
+onJoinError error =
+    case error of
+        MdError.Authentication ae ->
+            case ae of
+                MdError.InvalidLobbyPassword ->
+                    PasswordWrong |> Global.StartMsg |> Just
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 loadingOrLoaded : Model -> Bool
@@ -276,16 +318,13 @@ newContent shared model =
                 Icon.view Icon.play
 
         error =
-            model.newLobbyRequest.error
-                |> Maybe.map
-                    (\e ->
-                        [ Error.view shared (Route.Start model.route) e ]
-                    )
-                |> Maybe.withDefault []
+            model.newLobbyRequest.generalError
+                |> Maybe.map (Error.view shared (Route.Start model.route))
+                |> Maybe.withDefault Html.nothing
     in
     Html.div [ HtmlA.class "new-game start-tab" ]
         (List.concat
-            [ error
+            [ [ error ]
             , nameField shared model
             , [ Wl.button
                     [ buttonAttr
@@ -315,12 +354,23 @@ joinContent shared model =
 
             else
                 Icon.view Icon.play
+
+        error =
+            model.joinLobbyRequest.generalError
+                |> Maybe.map (Error.view shared (Route.Start model.route))
+                |> Maybe.withDefault Html.nothing
+
+        maybePasswordField =
+            model.password
+                |> Maybe.map (passwordField shared model.joinLobbyRequest.error)
+                |> Maybe.withDefault []
     in
     Html.div [ HtmlA.class "join-game start-tab" ]
         (List.concat
-            [ rejoinSection shared model
+            [ [ error ]
+            , rejoinSection shared model
             , nameField shared model
-            , [ Components.formSection shared
+            , [ Form.section shared
                     "game-code-input"
                     (Wl.textField
                         [ HtmlA.class "game-code-input"
@@ -331,14 +381,34 @@ joinContent shared model =
                         ]
                         []
                     )
-                    [ Components.info Strings.GameCodeHowToAcquire ]
-              , Wl.button
+                    [ Message.info Strings.GameCodeHowToAcquire ]
+              ]
+            , maybePasswordField
+            , [ Wl.button
                     [ buttonAttr
                     ]
                     [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
               ]
             ]
         )
+
+
+passwordField : Shared -> Maybe MdError -> String -> List (Html Global.Msg)
+passwordField shared error password =
+    [ Form.section shared
+        "password-input"
+        (Wl.textField
+            [ PasswordChanged >> Global.StartMsg |> HtmlE.onInput
+            , WlA.value password
+            , WlA.outlined
+            , Strings.LobbyPassword |> Lang.label shared
+            ]
+            []
+        )
+        [ Message.info Strings.LobbyRequiresPassword
+        , error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none
+        ]
+    ]
 
 
 rejoinSection : Shared -> Model -> List (Html Global.Msg)
@@ -364,7 +434,7 @@ rejoinLobby shared result =
         Ok auth ->
             Html.li []
                 [ Html.a [ Route.Lobby { gameCode = auth.claims.gc } |> Route.href ]
-                    [ Strings.RejoinGame { code = auth.claims.gc } |> Lang.html shared
+                    [ Strings.RejoinGame { code = GameCode.toString auth.claims.gc } |> Lang.html shared
                     ]
                 ]
                 |> Just
@@ -386,7 +456,7 @@ nameField shared model =
         _ =
             ""
     in
-    [ Components.formSection shared
+    [ Form.section shared
         "name-input"
         (Wl.textField
             [ NameChanged

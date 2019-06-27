@@ -86,7 +86,9 @@ language l =
 userRegistration : User.Registration -> Json.Value
 userRegistration r =
     Json.object
-        [ ( "name", r.name |> Json.string ) ]
+        (( "name", r.name |> Json.string )
+            :: (r.password |> Maybe.map (\p -> [ ( "password", p |> Json.string ) ]) |> Maybe.withDefault [])
+        )
 
 
 houseRuleChange : Rules.HouseRuleChange -> Json.Value

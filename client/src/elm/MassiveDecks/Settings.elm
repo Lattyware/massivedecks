@@ -17,6 +17,8 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Http
 import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form as Form
+import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.LocalStorage as LocalStorage
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
@@ -24,12 +26,12 @@ import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Requests.Api as Api
+import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Settings.Messages exposing (..)
 import MassiveDecks.Settings.Model exposing (..)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
-import MassiveDecks.Util.Result as Result
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
@@ -44,13 +46,8 @@ init settings =
             else
                 settings.tokens
                     |> Dict.values
-                    |> Api.checkAlive
+                    |> Api.checkAlive (Request.map ignore ignore (RemoveInvalid >> Global.SettingsMsg))
                     |> Http.request
-                    |> Cmd.map
-                        (Result.map (RemoveInvalid >> Global.SettingsMsg)
-                            >> Result.mapError (always Global.NoOp)
-                            >> Result.unify
-                        )
     in
     ( { settings = settings
       , open = False
@@ -160,6 +157,11 @@ auths settings =
 {- Private -}
 
 
+ignore : anything -> Global.Msg
+ignore =
+    always Global.NoOp
+
+
 changeSettings : (Settings -> Settings) -> Model -> ( Model, Cmd msg )
 changeSettings f model =
     let
@@ -178,7 +180,7 @@ compactSwitch shared =
         settings =
             model.settings
     in
-    Components.formSection shared
+    Form.section shared
         "compact-cards"
         (Html.div
             [ HtmlA.class "multipart" ]
@@ -193,7 +195,7 @@ compactSwitch shared =
                 ]
             ]
         )
-        [ Components.info Strings.CompactCardsExplanation ]
+        [ Message.info Strings.CompactCardsExplanation ]
 
 
 
@@ -202,7 +204,7 @@ compactSwitch shared =
 
 speechSwitch : Shared -> Html Global.Msg
 speechSwitch shared =
-    Components.formSection shared
+    Form.section shared
         "speech"
         (Html.div
             [ HtmlA.class "multipart" ]
@@ -214,7 +216,7 @@ speechSwitch shared =
                 ]
             ]
         )
-        [ Components.info Strings.SpeechExplanation ]
+        [ Message.info Strings.SpeechExplanation ]
 
 
 
@@ -223,7 +225,7 @@ speechSwitch shared =
 
 notificationsSwitch : Shared -> Html Global.Msg
 notificationsSwitch shared =
-    Components.formSection shared
+    Form.section shared
         "notifications"
         (Html.div
             [ HtmlA.class "multipart" ]
@@ -235,8 +237,8 @@ notificationsSwitch shared =
                 ]
             ]
         )
-        [ Components.info Strings.NotificationsExplanation
-        , Components.info Strings.NotificationsBrowserPermissions
+        [ Message.info Strings.NotificationsExplanation
+        , Message.info Strings.NotificationsBrowserPermissions
         ]
 
 
@@ -246,7 +248,7 @@ languageSelector shared =
         selected =
             Lang.currentLanguage shared
     in
-    Components.formSection
+    Form.section
         shared
         "language"
         (Wl.select
@@ -256,7 +258,7 @@ languageSelector shared =
             ]
             (Lang.languages |> List.map (languageOption selected))
         )
-        [ Components.info Strings.MissingLanguage ]
+        [ Message.info Strings.MissingLanguage ]
 
 
 onChangeLang : String -> Global.Msg

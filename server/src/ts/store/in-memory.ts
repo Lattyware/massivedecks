@@ -53,9 +53,10 @@ export class InMemoryStore extends Store {
   }
 
   public async *lobbySummaries(): AsyncIterableIterator<gameLobby.Summary> {
-    for (const summary of wu(this.lobbies.entries()).spreadMap(
-      gameLobby.summary
-    )) {
+    const publicSummaries = wu(this.lobbies.entries())
+      .filter(([_, l]) => l.config.public)
+      .spreadMap(gameLobby.summary);
+    for (const summary of publicSummaries) {
       yield summary;
     }
   }

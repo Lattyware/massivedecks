@@ -6,6 +6,8 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Json.Decode
 import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form as Form
+import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -18,7 +20,6 @@ import MassiveDecks.Util.Html as Html
 import QRCode
 import Url exposing (Url)
 import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 {-| A button to show the dialog.
@@ -54,8 +55,8 @@ dialog shared gameCode password open =
             ]
             Icon.times
         , Wl.card [ onClickNoPropegation Global.NoOp ]
-            [ Strings.InviteExplanation { gameCode = gameCode, password = password } |> Lang.html shared
-            , Components.formSection shared
+            [ Strings.InviteExplanation { gameCode = GameCode.toString gameCode, password = password } |> Lang.html shared
+            , Form.section shared
                 "invite-link"
                 (Html.div [ HtmlA.class "multipart" ]
                     [ Html.input
@@ -68,7 +69,7 @@ dialog shared gameCode password open =
                     , Components.iconButton [ "invite-link-field" |> Global.Copy |> HtmlE.onClick ] Icon.copy
                     ]
                 )
-                [ Components.info Strings.InviteLinkHelp ]
+                [ Message.info Strings.InviteLinkHelp ]
             , lobbyUrl |> qr
             ]
         ]
@@ -81,7 +82,7 @@ overlay shared gameCode =
     Html.div [ HtmlA.class "invite" ]
         [ Html.div [ HtmlA.class "join-info" ]
             [ Html.p [] [ Strings.JoinTheGame |> Lang.html shared ]
-            , Html.p [] [ Strings.GameCode { code = gameCode } |> Lang.html shared ]
+            , Html.p [] [ Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared ]
             , Html.p [] [ Html.text (stripProtocol shared.origin) ]
             ]
         , Html.div [ HtmlA.class "qr-code" ] [ url shared gameCode |> qr ]

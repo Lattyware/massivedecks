@@ -8,10 +8,12 @@ import * as setHandSize from "./configure/set-hand-size";
 import { SetHandSize } from "./configure/set-hand-size";
 import * as setPassword from "./configure/set-password";
 import { SetPassword } from "./configure/set-password";
+import { SetPublic } from "./configure/set-public";
 import * as setScoreLimit from "./configure/set-score-limit";
 import { SetScoreLimit } from "./configure/set-score-limit";
 import * as changeHouseRule from "./configure/change-house-rule";
 import { ChangeHouseRule } from "./configure/change-house-rule";
+import * as setPublic from "./configure/set-public";
 
 /**
  * An action to change the configuration of the lobby.
@@ -21,14 +23,16 @@ export type Configure =
   | SetHandSize
   | SetScoreLimit
   | ChangeDecks
-  | ChangeHouseRule;
+  | ChangeHouseRule
+  | SetPublic;
 
 const possible = new Set([
   setPassword.is,
   setHandSize.is,
   setScoreLimit.is,
   changeDecks.is,
-  changeHouseRule.is
+  changeHouseRule.is,
+  setPublic.is
 ]);
 
 /**
@@ -65,5 +69,7 @@ export const handle: Handler<Configure> = (auth, lobby, action, config) => {
       return changeDecks.handle(auth, lobby, action, config);
     case "ChangeHouseRule":
       return changeHouseRule.handle(auth, lobby, action, config);
+    case "SetPublic":
+      return setPublic.handle(auth, lobby, action, config);
   }
 };

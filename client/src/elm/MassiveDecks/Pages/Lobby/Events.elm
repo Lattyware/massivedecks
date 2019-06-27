@@ -43,6 +43,7 @@ type ConfigChanged
     | ScoreLimitSet { limit : Maybe Int }
     | PasswordSet { password : Maybe String }
     | HouseRuleChanged { change : Rules.HouseRuleChange }
+    | PublicSet { public : Bool }
 
 
 type DeckChange

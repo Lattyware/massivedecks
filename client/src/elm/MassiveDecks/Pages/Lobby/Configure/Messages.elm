@@ -15,6 +15,8 @@ type Msg
     | ScoreLimitChange Target (Maybe Int)
     | PasswordChange Target (Maybe String)
     | HouseRuleChange Target Rules.HouseRuleChange
+    | PublicChange Target Bool
+    | TogglePasswordVisibility
 
 
 {-| We don't want to push every tiny change to the server. Instead we only push some changes.

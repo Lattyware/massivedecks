@@ -2,7 +2,6 @@ module MassiveDecks.Error exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Http
 import Json.Decode as Json
 import MassiveDecks.Error.Model exposing (..)
 import MassiveDecks.Model exposing (Shared)
@@ -104,13 +103,10 @@ render error =
     case error of
         Http httpError ->
             case httpError of
-                Http.NetworkError ->
+                NetworkError ->
                     Model Strings.NetworkError Nothing
 
-                Http.BadBody message ->
-                    Model Strings.BadPayloadError ("Decoding error: " ++ message |> Just)
-
-                Http.BadStatus code ->
+                BadStatus code ->
                     case code of
                         504 ->
                             Model Strings.ServerDownError Nothing
@@ -118,10 +114,10 @@ render error =
                         _ ->
                             Model Strings.BadStatusError (code |> String.fromInt |> Just)
 
-                Http.Timeout ->
+                Timeout ->
                     Model Strings.TimeoutError Nothing
 
-                Http.BadUrl url ->
+                BadUrl url ->
                     Model Strings.BadUrlError (Just ("Url: " ++ url))
 
         Token tokenError ->
@@ -141,6 +137,3 @@ render error =
 
         Json jsonError ->
             Model Strings.BadPayloadError (jsonError |> Json.errorToString |> Just)
-
-        Generic string ->
-            Model string Nothing

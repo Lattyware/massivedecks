@@ -17,6 +17,8 @@ import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form as Form
+import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
@@ -24,7 +26,7 @@ import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Messages exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Events as Events
-import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
+import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Invite as Invite
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
@@ -47,11 +49,13 @@ init =
     , scoreLimit = Just 25
     , tab = Decks
     , password = Nothing
+    , passwordVisible = False
     , houseRules =
         { rando = Nothing
         , packingHeat = Nothing
         , reboot = Nothing
         }
+    , public = False
     }
 
 
@@ -63,7 +67,9 @@ updateFromConfig config model =
     , handSize = config.rules.handSize
     , scoreLimit = config.rules.scoreLimit
     , password = config.password
+    , passwordVisible = model.passwordVisible
     , houseRules = config.rules.houseRules
+    , public = config.public
     }
 
 
@@ -106,12 +112,22 @@ update msg model config =
             in
             ( { model | password = value }, cmd )
 
+        TogglePasswordVisibility ->
+            ( { model | passwordVisible = not model.passwordVisible }, Cmd.none )
+
         HouseRuleChange target value ->
             let
                 send =
                     ifRemote (Actions.changeHouseRule value config.version) target
             in
             ( { model | houseRules = model.houseRules |> Rules.apply value }, send )
+
+        PublicChange target value ->
+            let
+                send =
+                    ifRemote (Actions.setPublic value config.version) target
+            in
+            ( { model | public = value }, send )
 
 
 view : Shared -> Bool -> Model -> GameCode -> Lobby -> Config -> Html Global.Msg
@@ -122,7 +138,7 @@ view shared canEdit model gameCode lobby config =
                 [ Html.h2 [] [ lobby.name |> Html.text ]
                 , Html.div []
                     [ Invite.button shared
-                    , Strings.GameCode { code = gameCode } |> Lang.html shared
+                    , Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared
                     ]
                 ]
             , Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab shared model.tab))
@@ -160,6 +176,11 @@ applyChange configChange oldConfig oldConfigure =
             , { oldConfigure | houseRules = oldConfigure.houseRules |> Rules.apply change }
             )
 
+        Events.PublicSet { public } ->
+            ( { oldConfig | public = public }
+            , { oldConfigure | public = public }
+            )
+
 
 
 {- Private -}
@@ -178,7 +199,7 @@ startGameSegment shared canEdit lobby config =
             else
                 [ WlA.disabled ]
     in
-    Components.formSection shared
+    Form.section shared
         "start-game"
         (Wl.button startGameAttrs [ Strings.StartGame |> Lang.html shared ])
         (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
@@ -227,7 +248,7 @@ applyDeckChange event config configure =
     ( newConfig, newConfigure )
 
 
-startGameProblems : Dict User.Id User -> Config -> List (Components.Message Global.Msg)
+startGameProblems : Dict User.Id User -> Config -> List (Message Global.Msg)
 startGameProblems users config =
     let
         -- We assume decks will have calls/responses.
@@ -242,7 +263,7 @@ startGameProblems users config =
 
         deckIssues =
             if noDecks then
-                [ Components.errorWithFix
+                [ Message.errorWithFix
                     Strings.NeedAtLeastOneDeck
                     Strings.NoDecksHint
                     ("CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> lift)
@@ -250,14 +271,14 @@ startGameProblems users config =
                 ]
 
             else if loadingDecks then
-                [ Strings.WaitForDecks |> Components.info |> Just ]
+                [ Strings.WaitForDecks |> Message.info |> Just ]
 
             else
                 [ Strings.MissingCardType { cardType = Strings.Call }
-                    |> Components.error
+                    |> Message.error
                     |> Maybe.justIf ((summaries .calls |> List.sum) < 1)
                 , Strings.MissingCardType { cardType = Strings.Response }
-                    |> Components.error
+                    |> Message.error
                     |> Maybe.justIf ((summaries .responses |> List.sum) < 1)
                 ]
 
@@ -265,7 +286,7 @@ startGameProblems users config =
             users |> Dict.values |> List.filter (\user -> user.role == User.Player) |> List.length
 
         playerIssues =
-            [ Components.errorWithFix
+            [ Message.errorWithFix
                 Strings.NeedAtLeastThreePlayers
                 Strings.Invite
                 (Lobby.ToggleInviteDialog |> Global.LobbyMsg)
@@ -288,7 +309,7 @@ ifRemote cmd target =
 
 tabs : List Tab
 tabs =
-    [ Decks, Rules, Game ]
+    [ Decks, Rules, Privacy ]
 
 
 tab : Shared -> Tab -> Tab -> Html Global.Msg
@@ -309,8 +330,8 @@ tabName target =
         Rules ->
             Strings.ConfigureRules
 
-        Game ->
-            Strings.ConfigureGame
+        Privacy ->
+            Strings.ConfigurePrivacy
 
 
 tabContent : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
@@ -322,7 +343,7 @@ tabContent shared canEdit model lobby config =
         Rules ->
             configureRules shared canEdit model lobby config
 
-        Game ->
+        Privacy ->
             configureGameSettings shared canEdit model lobby config
 
 
@@ -347,7 +368,7 @@ handSize shared canEdit model config =
         value =
             model.handSize
     in
-    Components.formSection shared
+    Form.section shared
         "hand-size"
         (Html.div
             [ HtmlA.class "multipart" ]
@@ -372,7 +393,7 @@ handSize shared canEdit model config =
                 (Icon.save |> Maybe.justIf (config.rules.handSize /= value) |> Maybe.withDefault Icon.check)
             ]
         )
-        [ Components.info Strings.HandSizeDescription ]
+        [ Message.info Strings.HandSizeDescription ]
 
 
 scoreLimit : Shared -> Bool -> Model -> Config -> Html Global.Msg
@@ -384,7 +405,7 @@ scoreLimit shared canEdit model config =
         value =
             model.scoreLimit
     in
-    Components.formSection shared
+    Form.section shared
         "score-limit"
         (Html.div
             [ HtmlA.class "multipart" ]
@@ -414,7 +435,7 @@ scoreLimit shared canEdit model config =
                 (Icon.save |> Maybe.justIf (config.rules.scoreLimit /= value) |> Maybe.withDefault Icon.check)
             ]
         )
-        [ Components.info Strings.ScoreLimitDescription ]
+        [ Message.info Strings.ScoreLimitDescription ]
 
 
 houseRules : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
@@ -460,7 +481,7 @@ houseRule shared id { default, change, title, description, extract, insert } can
                 |> Maybe.withDefault []
     in
     Html.div [ HtmlA.classList [ ( "house-rule", True ), ( "enabled", enabled ) ] ]
-        [ Components.formSection
+        [ Form.section
             shared
             id
             (Html.div [ HtmlA.class "multipart" ]
@@ -473,7 +494,7 @@ houseRule shared id { default, change, title, description, extract, insert } can
                     (Icon.check |> Maybe.justIf saved |> Maybe.withDefault Icon.save)
                 ]
             )
-            [ Components.info (localValue |> description) ]
+            [ Message.info (localValue |> description) ]
         , Html.div [ HtmlA.class "house-rule-settings" ] settings
         ]
 
@@ -485,7 +506,7 @@ rando shared canEdit model config =
 
 randoSettings : Shared -> Bool -> Rules.Rando -> (Rules.Rando -> Global.Msg) -> List (Html Global.Msg)
 randoSettings shared canEdit value localChange =
-    [ Components.formSection
+    [ Form.section
         shared
         "rando-number"
         (Wl.textField
@@ -503,7 +524,7 @@ randoSettings shared canEdit value localChange =
             ]
             []
         )
-        [ Strings.HouseRuleRandoCardrissianNumberDescription |> Components.info ]
+        [ Strings.HouseRuleRandoCardrissianNumberDescription |> Message.info ]
     ]
 
 
@@ -524,7 +545,7 @@ reboot shared canEdit model config =
 
 rebootSettings : Shared -> Bool -> Rules.Reboot -> (Rules.Reboot -> Global.Msg) -> List (Html Global.Msg)
 rebootSettings shared canEdit value localChange =
-    [ Components.formSection
+    [ Form.section
         shared
         "reboot-cost"
         (Wl.textField
@@ -542,7 +563,7 @@ rebootSettings shared canEdit value localChange =
             ]
             []
         )
-        [ Strings.HouseRuleRebootCostDescription |> Components.info ]
+        [ Strings.HouseRuleRebootCostDescription |> Message.info ]
     ]
 
 
@@ -618,7 +639,7 @@ configureGameSettings shared canEdit model lobby config =
 
                     Nothing ->
                         [ "" |> WlA.value, WlA.disabled ]
-                , [ Strings.GamePassword |> Lang.string shared |> WlA.label
+                , [ Strings.LobbyPassword |> Lang.string shared |> WlA.label
                   , WlA.minLength 1
                   , WlA.outlined
                   , HtmlA.class "primary"
@@ -629,6 +650,7 @@ configureGameSettings shared canEdit model lobby config =
                         [ HtmlE.onInput (Just >> PasswordChange Local >> lift)
                         , HtmlE.onBlur (model.password |> PasswordChange Remote |> lift)
                         ]
+                , [ WlA.Password |> WlA.type_ ] |> Maybe.justIf (not model.passwordVisible) |> Maybe.withDefault []
                 ]
 
         passwordSwitchAttrs =
@@ -645,12 +667,17 @@ configureGameSettings shared canEdit model lobby config =
                 ]
 
         password =
-            Components.formSection
+            Form.section
                 shared
-                "add-deck"
+                "password"
                 (Html.div [ HtmlA.class "multipart" ]
                     [ Wl.switch passwordSwitchAttrs
                     , Wl.textField passwordAttrs []
+                    , Components.iconButton
+                        [ TogglePasswordVisibility |> lift |> HtmlE.onClick
+                        , WlA.disabled |> Maybe.justIf (Maybe.isNothing model.password) |> Maybe.withDefault HtmlA.nothing
+                        ]
+                        (Icon.eyeSlash |> Maybe.justIf model.passwordVisible |> Maybe.withDefault Icon.eye)
                     , Components.iconButton
                         [ WlA.disabled
                             |> Maybe.justIf (not canEdit || config.password == model.password)
@@ -659,12 +686,27 @@ configureGameSettings shared canEdit model lobby config =
                         (Icon.save |> Maybe.justIf (config.password /= model.password) |> Maybe.withDefault Icon.check)
                     ]
                 )
-                [ Components.info Strings.GamePasswordDescription
-                , Components.warning Strings.PasswordNotSecured
+                [ Message.info Strings.LobbyPasswordDescription
+                , Message.warning Strings.PasswordShared
+                , Message.warning Strings.PasswordNotSecured
                 ]
+
+        public =
+            Form.section shared
+                "public"
+                (Html.div [ HtmlA.class "multipart" ]
+                    [ Wl.switch
+                        [ WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault (PublicChange Remote >> lift |> HtmlE.onCheck)
+                        , WlA.checked |> Maybe.justIf model.public |> Maybe.withDefault HtmlA.nothing
+                        ]
+                    , Html.span [ HtmlA.class "primary" ] [ Strings.Public |> Lang.html shared ]
+                    ]
+                )
+                [ Message.info Strings.PublicDescription ]
     in
     Html.div [ HtmlA.class "game-settings" ]
-        [ password
+        [ public
+        , password
         ]
 
 
@@ -681,7 +723,7 @@ addDeckWidget shared existing deckToAdd =
     in
     Html.form
         [ submit |> Result.map (lift >> HtmlE.onSubmit) |> Result.withDefault HtmlA.nothing ]
-        [ Components.formSection
+        [ Form.section
             shared
             "add-deck"
             (Html.div [ HtmlA.class "multipart" ]
@@ -707,12 +749,12 @@ addDeckWidget shared existing deckToAdd =
         ]
 
 
-submitDeckAction : List Deck -> Source.External -> Result (Components.Message Global.Msg) Msg
+submitDeckAction : List Deck -> Source.External -> Result (Message Global.Msg) Msg
 submitDeckAction existing deckToAdd =
     let
         potentialProblem =
             if List.any (.source >> Source.Ex >> Source.equals (Source.Ex deckToAdd)) existing then
-                Strings.DeckAlreadyAdded |> Components.error |> Just
+                Strings.DeckAlreadyAdded |> Message.error |> Just
 
             else
                 Source.validate (Source.Ex deckToAdd)

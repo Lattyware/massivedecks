@@ -13,7 +13,7 @@ import MassiveDecks.Game.Rules as Rules exposing (Rules)
 type Tab
     = Decks
     | Rules
-    | Game
+    | Privacy
 
 
 type alias DeckError =
@@ -28,8 +28,10 @@ type alias Model =
     , handSize : Int
     , scoreLimit : Maybe Int
     , password : Maybe String
+    , passwordVisible : Bool
     , tab : Tab
     , houseRules : Rules.HouseRules
+    , public : Bool
     }
 
 
@@ -46,4 +48,5 @@ type alias Config =
     , decks : List Deck
     , password : Maybe String
     , version : String
+    , public : Bool
     }

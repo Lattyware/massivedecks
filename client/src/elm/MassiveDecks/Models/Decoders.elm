@@ -10,6 +10,7 @@ module MassiveDecks.Models.Decoders exposing
     , lobbyState
     , lobbySummary
     , lobbyToken
+    , mdError
     , privilege
     , revealingRound
     , settings
@@ -44,28 +45,34 @@ import MassiveDecks.User as User exposing (User)
 import Set exposing (Set)
 
 
+unknownValue : String -> String -> Json.Decoder a
+unknownValue name value =
+    ("Unknown " ++ name ++ ": \"" ++ value ++ "\".") |> Json.fail
+
+
 castStatus : Json.Decoder Cast.Status
 castStatus =
-    Json.field "status" Json.string
-        |> Json.andThen
-            (\status ->
-                case status of
-                    "NoDevicesAvailable" ->
-                        Json.succeed Cast.NoDevicesAvailable
+    Json.field "status" Json.string |> Json.andThen castStatusByName
 
-                    "NotConnected" ->
-                        Json.succeed Cast.NotConnected
 
-                    "Connecting" ->
-                        Json.succeed Cast.Connecting
+castStatusByName : String -> Json.Decoder Cast.Status
+castStatusByName name =
+    case name of
+        "NoDevicesAvailable" ->
+            Json.succeed Cast.NoDevicesAvailable
 
-                    "Connected" ->
-                        Json.map Cast.Connected
-                            (Json.field "name" Json.string)
+        "NotConnected" ->
+            Json.succeed Cast.NotConnected
 
-                    _ ->
-                        Json.fail ("Unknown cast status: " ++ status)
-            )
+        "Connecting" ->
+            Json.succeed Cast.Connecting
+
+        "Connected" ->
+            Json.map Cast.Connected
+                (Json.field "name" Json.string)
+
+        _ ->
+            unknownValue "cast status" name
 
 
 castFlags : Json.Decoder Cast.Flags
@@ -115,7 +122,7 @@ sourceByName name =
             Json.field "playCode" Json.string |> Json.map (Cardcast.playCode >> Source.Cardcast)
 
         _ ->
-            "Unknown source \"" ++ name ++ "\"" |> Json.fail
+            unknownValue "source" name
 
 
 tokenValidity : Json.Decoder (Dict Lobby.Token Bool)
@@ -130,16 +137,15 @@ lobbyToken =
 
 language : Json.Decoder Language
 language =
-    Json.string
-        |> Json.andThen
-            (\code ->
-                case Lang.fromCode code of
-                    Just lang ->
-                        Json.succeed lang
+    Json.string |> Json.andThen languageFromCode
 
-                    Nothing ->
-                        Json.fail ("Unknown language code: '" ++ code ++ "'.")
-            )
+
+languageFromCode : String -> Json.Decoder Language
+languageFromCode code =
+    code
+        |> Lang.fromCode
+        |> Maybe.map Json.succeed
+        |> Maybe.withDefault (unknownValue "language code" code)
 
 
 lobby : Json.Decoder Lobby
@@ -150,7 +156,6 @@ lobby =
         (Json.field "users" users)
         (Json.field "owner" userId)
         (Json.field "config" config)
-        --(Json.field "game" game |> Json.map (Game.emptyModel >> Just))
         (Json.maybe (Json.field "game" game |> Json.map Game.emptyModel))
 
 
@@ -167,11 +172,12 @@ game =
 
 config : Json.Decoder Configure.Config
 config =
-    Json.map4 Configure.Config
+    Json.map5 Configure.Config
         (Json.field "rules" rules)
         (Json.field "decks" (Json.list deck))
         (Json.maybe (Json.field "password" Json.string))
         (Json.field "version" Json.string)
+        (Json.maybe (Json.field "public" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 deck : Json.Decoder Configure.Deck
@@ -238,19 +244,20 @@ player =
 
 control : Json.Decoder Player.Control
 control =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Human" ->
-                        Json.succeed Player.Human
+    Json.string |> Json.andThen controlByName
 
-                    "Computer" ->
-                        Json.succeed Player.Computer
 
-                    _ ->
-                        Json.fail ("Unknown controller: " ++ name)
-            )
+controlByName : String -> Json.Decoder Player.Control
+controlByName name =
+    case name of
+        "Human" ->
+            Json.succeed Player.Human
+
+        "Computer" ->
+            Json.succeed Player.Computer
+
+        _ ->
+            unknownValue "user controller" name
 
 
 score : Json.Decoder Player.Score
@@ -275,79 +282,84 @@ user =
 
 userConnection : Json.Decoder User.Connection
 userConnection =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Connected" ->
-                        Json.succeed User.Connected
+    Json.string |> Json.andThen userConnectionByName
 
-                    "Disconnected" ->
-                        Json.succeed User.Disconnected
 
-                    _ ->
-                        Json.fail ("Unknown connection state: " ++ name)
-            )
+userConnectionByName : String -> Json.Decoder User.Connection
+userConnectionByName name =
+    case name of
+        "Connected" ->
+            Json.succeed User.Connected
+
+        "Disconnected" ->
+            Json.succeed User.Disconnected
+
+        _ ->
+            unknownValue "connection state" name
 
 
 userPresence : Json.Decoder User.Presence
 userPresence =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Joined" ->
-                        Json.succeed User.Joined
+    Json.string |> Json.andThen userPresenceByName
 
-                    "Left" ->
-                        Json.succeed User.Left
 
-                    _ ->
-                        Json.fail ("Unknown presence state: " ++ name)
-            )
+userPresenceByName : String -> Json.Decoder User.Presence
+userPresenceByName name =
+    case name of
+        "Joined" ->
+            Json.succeed User.Joined
+
+        "Left" ->
+            Json.succeed User.Left
+
+        _ ->
+            unknownValue "presence state" name
 
 
 role : Json.Decoder User.Role
 role =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Spectator" ->
-                        Json.succeed User.Spectator
+    Json.string |> Json.andThen roleByName
 
-                    "Player" ->
-                        Json.succeed User.Player
 
-                    _ ->
-                        Json.fail ("Unknown role: " ++ name)
-            )
+roleByName : String -> Json.Decoder User.Role
+roleByName name =
+    case name of
+        "Spectator" ->
+            Json.succeed User.Spectator
+
+        "Player" ->
+            Json.succeed User.Player
+
+        _ ->
+            unknownValue "user role" name
 
 
 lobbyState : Json.Decoder Lobby.State
 lobbyState =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Playing" ->
-                        Json.succeed Lobby.Playing
+    Json.string |> Json.andThen lobbyStateByName
 
-                    "SettingUp" ->
-                        Json.succeed Lobby.SettingUp
 
-                    _ ->
-                        Json.fail ("Unknown lobby state: " ++ name)
-            )
+lobbyStateByName : String -> Json.Decoder Lobby.State
+lobbyStateByName name =
+    case name of
+        "Playing" ->
+            Json.succeed Lobby.Playing
+
+        "SettingUp" ->
+            Json.succeed Lobby.SettingUp
+
+        _ ->
+            unknownValue "lobby state" name
 
 
 lobbySummary : Json.Decoder LobbyBrowser.Summary
 lobbySummary =
-    Json.map4 LobbyBrowser.Summary
+    Json.map5 LobbyBrowser.Summary
         (Json.field "name" Json.string)
         (Json.field "gameCode" gameCode)
         (Json.field "state" lobbyState)
         (Json.field "users" userSummary)
+        (Json.maybe (Json.field "password" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 userId : Json.Decoder User.Id
@@ -357,19 +369,20 @@ userId =
 
 privilege : Json.Decoder User.Privilege
 privilege =
-    Json.string
-        |> Json.andThen
-            (\name ->
-                case name of
-                    "Privileged" ->
-                        Json.succeed User.Privileged
+    Json.string |> Json.andThen privilegeByName
 
-                    "Unprivileged" ->
-                        Json.succeed User.Unprivileged
 
-                    _ ->
-                        Json.fail ("Unknown privilege level '" ++ name ++ "'.")
-            )
+privilegeByName : String -> Json.Decoder User.Privilege
+privilegeByName name =
+    case name of
+        "Privileged" ->
+            Json.succeed User.Privileged
+
+        "Unprivileged" ->
+            Json.succeed User.Unprivileged
+
+        _ ->
+            unknownValue "privilege level" name
 
 
 userSummary : Json.Decoder LobbyBrowser.UserSummary
@@ -426,6 +439,9 @@ eventByName name =
         "HouseRuleChanged" ->
             configured houseRuleChanged
 
+        "PublicSet" ->
+            configured publicSet
+
         "GameStarted" ->
             gameStarted
 
@@ -448,7 +464,7 @@ eventByName name =
             gameEvent roundFinished
 
         _ ->
-            Json.fail ("Unknown event '" ++ name ++ "'.")
+            unknownValue "event" name
 
 
 roundFinished : Json.Decoder Events.GameEvent
@@ -514,7 +530,7 @@ houseRuleChangeFromName name =
             maybeHouseRuleChange (Json.field "cost" Json.int) Rules.Reboot Rules.RebootChange
 
         _ ->
-            Json.fail ("Unknown house rule (for change) \"" ++ name ++ "\"")
+            unknownValue "house rule (for change)" name
 
 
 maybeHouseRuleChange :
@@ -562,6 +578,12 @@ presence : Events.PresenceState -> Json.Decoder Event
 presence state =
     Json.map (\u -> Events.Presence { user = u, state = state })
         (Json.field "user" userId)
+
+
+publicSet : Json.Decoder Events.ConfigChanged
+publicSet =
+    Json.map (\public -> Events.PublicSet { public = public })
+        (Json.field "public" Json.bool)
 
 
 passwordSet : Json.Decoder Events.ConfigChanged
@@ -620,7 +642,7 @@ deckChangeByName name =
             Json.field "reason" failReason |> Json.map (\r -> Events.Fail { reason = r })
 
         _ ->
-            "Unknown deck change \"" ++ name ++ "\"" |> Json.fail
+            unknownValue "deck change" name
 
 
 failReason : Json.Decoder Source.LoadFailureReason
@@ -638,7 +660,7 @@ failReasonByName name =
             Json.succeed Source.NotFound
 
         _ ->
-            "Unknown failure reason \"" ++ name ++ "\"" |> Json.fail
+            unknownValue "failure reason" name
 
 
 play : Json.Decoder Play
@@ -721,7 +743,7 @@ transformByName maybeName =
                     Json.succeed Parts.Capitalize
 
                 _ ->
-                    Json.fail ("Unknown transform '" ++ name ++ "'.")
+                    unknownValue "transform" name
 
 
 round : Json.Decoder Round
@@ -745,7 +767,7 @@ roundByName name =
             completeRound |> Json.map Round.C
 
         _ ->
-            Json.fail ("Unknown round stage '" ++ name ++ "'.")
+            unknownValue "round stage" name
 
 
 playerSet : Json.Decoder (Set User.Id)
@@ -809,7 +831,7 @@ playerRoleByName name =
             Json.succeed Player.RPlayer
 
         _ ->
-            Json.fail ("Unknown player role: '" ++ name ++ "'.")
+            unknownValue "player role" name
 
 
 userRole : Json.Decoder User.Role
@@ -827,7 +849,7 @@ userRoleByName name =
             Json.succeed User.Player
 
         _ ->
-            Json.fail ("Unknown user role: '" ++ name ++ "'.")
+            unknownValue "user role" name
 
 
 mdError : Json.Decoder MdError
@@ -868,14 +890,38 @@ mdErrorByName name =
             Json.succeed MdError.OutOfCardsError |> Json.map MdError.Game
 
         _ ->
-            Json.fail ("Unknown error: '" ++ name ++ "'.")
+            unknownValue "error" name
+
+
+stage : Json.Decoder Round.Stage
+stage =
+    Json.string |> Json.andThen stageByName
+
+
+stageByName : String -> Json.Decoder Round.Stage
+stageByName name =
+    case name of
+        "Playing" ->
+            Json.succeed Round.SPlaying
+
+        "Revealing" ->
+            Json.succeed Round.SRevealing
+
+        "Judging" ->
+            Json.succeed Round.SJudging
+
+        "Complete" ->
+            Json.succeed Round.SComplete
+
+        _ ->
+            unknownValue "round stage" name
 
 
 incorrectRoundStageError : Json.Decoder MdError.ActionExecutionError
 incorrectRoundStageError =
     Json.map2 (\s -> \e -> MdError.IncorrectRoundStageError { stage = s, expected = e })
-        (Json.field "stage" Json.string)
-        (Json.field "expected" Json.string)
+        (Json.field "stage" stage)
+        (Json.field "expected" stage)
 
 
 configEditConflictError : Json.Decoder MdError.ActionExecutionError
@@ -917,12 +963,12 @@ authenticationErrorByName name =
             Json.succeed MdError.InvalidLobbyPassword
 
         _ ->
-            Json.fail ("Unknown authentication failure reason: '" ++ name ++ "'.")
+            unknownValue "authentication failure reason" name
 
 
 lobbyError : Json.Decoder MdError.LobbyNotFoundError
 lobbyError =
-    Json.field "reason" Json.string |> Json.andThen lobbyErrorByName
+    Json.string |> Json.andThen lobbyErrorByName
 
 
 lobbyErrorByName : String -> Json.Decoder MdError.LobbyNotFoundError
@@ -935,4 +981,4 @@ lobbyErrorByName name =
             Json.succeed MdError.DoesNotExist
 
         _ ->
-            Json.fail ("Unknown lobby error reason: '" ++ name ++ "'.")
+            unknownValue "lobby not found error" name

@@ -4,7 +4,6 @@ module MassiveDecks.Strings.Languages.En exposing (pack)
 This is the primary language, strings here are the canonical representation, and are suitable to translate from.
 -}
 
-import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
@@ -108,6 +107,9 @@ translate mdString =
 
         RejoinGame { code } ->
             [ Text "Rejoin “", GameCode { code = code } |> Ref, Text "”." ]
+
+        LobbyRequiresPassword ->
+            [ Text "You need a password to join this game. Try asking the person that invited you." ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -281,6 +283,12 @@ translate mdString =
         CzarDescription ->
             [ Text "The player judging the round." ]
 
+        Player ->
+            [ Text "Player" ]
+
+        Spectator ->
+            [ Text "Spectator" ]
+
         Call ->
             [ Text "Black Card" ]
 
@@ -306,7 +314,7 @@ translate mdString =
             [ Text "A code that lets other people find and join your game." ]
 
         GameCode { code } ->
-            [ Text (GameCode.toString code) ]
+            [ Text code ]
 
         GameCodeSpecificDescription ->
             [ Text "Give this game code to people and they can join the game." ]
@@ -317,7 +325,7 @@ translate mdString =
         Deck ->
             [ Text "Deck" ]
 
-        Playing ->
+        StillPlaying ->
             [ Text "Playing" ]
 
         PlayingDescription ->
@@ -417,13 +425,13 @@ translate mdString =
             [ Text "Casting to ", Text deviceName, Text "." ]
 
         Players ->
-            [ Text "Players" ]
+            [ Ref (Plural { singular = Player, amount = Nothing }) ]
 
         PlayersDescription ->
             [ Text "Users playing the game." ]
 
         Spectators ->
-            [ Text "Audience" ]
+            [ Ref (Plural { singular = Spectator, amount = Nothing }) ]
 
         SpectatorsDescription ->
             [ Text "Users watching the game without playing." ]
@@ -532,8 +540,8 @@ translate mdString =
         ConfigureRules ->
             [ Text "Rules" ]
 
-        ConfigureGame ->
-            [ Text "Game" ]
+        ConfigurePrivacy ->
+            [ Text "Privacy" ]
 
         HandSize ->
             [ Text "Hand Size" ]
@@ -560,23 +568,33 @@ translate mdString =
         NeedAtLeastThreePlayers ->
             [ Text "You need at least three players to start the game." ]
 
-        PasswordNotSecured ->
-            [ Text "Please note that game passwords are "
-            , Em [ Text "not" ]
-            , Text " stored securely and are shared with everyone in the lobby"
-            , Text "—given this, please "
-            , Em [ Text "do not" ]
-            , Text " use passwords you use elsewhere."
+        PasswordShared ->
+            [ Text "Anyone in the game can see the password! "
+            , Text "Hiding it above only affects you (useful if streaming, etc…)."
             ]
 
-        GamePassword ->
+        PasswordNotSecured ->
+            [ Text "Game passwords are "
+            , Em [ Text "not" ]
+            , Text " stored securely—given this, please "
+            , Em [ Text "do not" ]
+            , Text " use serious passwords you use elsewhere!"
+            ]
+
+        LobbyPassword ->
             [ Text "Game Password" ]
 
-        GamePasswordDescription ->
+        LobbyPasswordDescription ->
             [ Text "A password to users must enter before they can join the game." ]
 
         StartGame ->
             [ Text "Start Game" ]
+
+        Public ->
+            [ Text "Public Game" ]
+
+        PublicDescription ->
+            [ Text "If enabled, the game will show up in the public game list for anyone to find." ]
 
         -- Game
         SubmitPlay ->
@@ -590,6 +608,18 @@ translate mdString =
 
         LikePlay ->
             [ Text "Add a like to this play." ]
+
+        Playing ->
+            [ Text "Playing" ]
+
+        Revealing ->
+            [ Text "Revealing" ]
+
+        Judging ->
+            [ Text "Judging" ]
+
+        Complete ->
+            [ Text "Finished" ]
 
         -- Instructions
         PlayInstruction { numberOfCards } ->
@@ -669,6 +699,46 @@ translate mdString =
 
         CastError ->
             [ Text "Sorry, something went wrong trying to connect to the game." ]
+
+        IncorrectPlayerRoleError { role, expected } ->
+            [ Text "You need to be a ", Ref expected, Text " to do that, but you are a ", Ref role, Text "." ]
+
+        IncorrectUserRoleError { role, expected } ->
+            [ Text "You need to be a ", Ref expected, Text " to do that, but you are a ", Ref role, Text "." ]
+
+        IncorrectRoundStageError { stage, expected } ->
+            [ Text "The round needs to be at the ", Ref expected, Text " stage to do that, but it is at the ", Ref stage, Text " stage." ]
+
+        ConfigEditConflictError ->
+            [ Text "Someone else changed the configuration before you, so their changes took priority." ]
+
+        UnprivilegedError ->
+            [ Text "You don't have the privileges to do that." ]
+
+        GameNotStartedError ->
+            [ Text "The game needs to started to do that." ]
+
+        IncorrectIssuerError ->
+            [ Text "Your credentials to join this game are out of date, the game no longer exists." ]
+
+        InvalidAuthenticationError ->
+            [ Text "Your credentials to join this game are corrupt." ]
+
+        InvalidLobbyPasswordError ->
+            [ Text "The game password you gave was wrong. Try typing it again and if it still doesn't work, ask the person who invited you again." ]
+
+        LobbyClosedError { gameCode } ->
+            [ Text "The game you wish to join (", Ref (GameCode { code = gameCode }), Text ") has ended." ]
+
+        LobbyDoesNotExistError { gameCode } ->
+            [ Text "The game code you entered ("
+            , Ref (GameCode { code = gameCode })
+            , Text ") doesn't exist. "
+            , Text "Try typing it again and if it still doesn't work, ask the person who invited you again."
+            ]
+
+        OutOfCardsError ->
+            [ Text "There were not enough cards in the deck to deal everyone a hand! Try adding more decks in the game configuration." ]
 
         -- Language Names
         English ->

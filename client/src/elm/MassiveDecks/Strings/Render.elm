@@ -186,7 +186,7 @@ enhanceHtml context mdString unenhanced =
         CardcastPlayCode ->
             [ Html.blankA [ HtmlA.href "https://www.cardcastgame.com/browse" ] unenhanced ]
 
-        Playing ->
+        StillPlaying ->
             term context PlayingDescription Icon.clock unenhanced
 
         Played ->

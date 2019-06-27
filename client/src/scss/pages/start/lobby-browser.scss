@@ -5,13 +5,18 @@
     align-items: center;
   }
 
-  a {
-    .svg-inline--fa {
-      margin-right: 0.3em;
-    }
+  h2,
+  h3 {
+    margin: 0;
   }
 
-  .subheader {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .lobby-game-code {
     font-size: 0.8em;
   }
 }

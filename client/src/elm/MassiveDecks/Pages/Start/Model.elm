@@ -3,6 +3,7 @@ module MassiveDecks.Pages.Start.Model exposing
     , Model
     )
 
+import MassiveDecks.Models.MdError exposing (LobbyNotFoundError, MdError)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
@@ -18,8 +19,9 @@ type alias Model =
     , lobbies : LobbyBrowser.Model
     , name : String
     , gameCode : Maybe GameCode
-    , newLobbyRequest : HttpData Lobby.Auth
-    , joinLobbyRequest : HttpData Lobby.Auth
+    , newLobbyRequest : HttpData () Lobby.Auth
+    , joinLobbyRequest : HttpData MdError Lobby.Auth
+    , password : Maybe String
     }
 
 

@@ -8,6 +8,7 @@ module MassiveDecks.Game.Round exposing
     , Playing
     , Revealing
     , Round(..)
+    , Stage(..)
     , complete
     , data
     , idDecoder
@@ -15,12 +16,15 @@ module MassiveDecks.Game.Round exposing
     , noPick
     , playing
     , revealing
+    , stage
+    , stageDescription
     )
 
 import Dict exposing (Dict)
 import Json.Decode as Json
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.User as User
 import Set exposing (Set)
 
@@ -34,6 +38,51 @@ type Id
 idDecoder : Json.Decoder Id
 idDecoder =
     Json.string |> Json.map Id
+
+
+{-| The stage of the round.
+-}
+type Stage
+    = SPlaying
+    | SRevealing
+    | SJudging
+    | SComplete
+
+
+{-| Get the stage of the given round.
+-}
+stage : Round -> Stage
+stage round =
+    case round of
+        P _ ->
+            SPlaying
+
+        R _ ->
+            SRevealing
+
+        J _ ->
+            SJudging
+
+        C _ ->
+            SComplete
+
+
+{-| A description of the given stage.
+-}
+stageDescription : Stage -> MdString
+stageDescription toDescribe =
+    case toDescribe of
+        SPlaying ->
+            Strings.Playing
+
+        SRevealing ->
+            Strings.Revealing
+
+        SJudging ->
+            Strings.Judging
+
+        SComplete ->
+            Strings.Complete
 
 
 {-| A round during a game.

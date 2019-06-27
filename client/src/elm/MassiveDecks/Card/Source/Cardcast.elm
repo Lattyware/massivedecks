@@ -6,7 +6,7 @@ import Html.Events as HtmlE
 import MassiveDecks.Card.Source.Cardcast.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
-import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
@@ -46,10 +46,10 @@ equals (PlayCode pc) source =
             False
 
 
-problem : PlayCode -> Maybe (Components.Message msg)
+problem : PlayCode -> Maybe (Message msg)
 problem (PlayCode pc) =
     if String.isEmpty pc then
-        Strings.CardcastEmptyPlayCode |> Components.info |> Just
+        Strings.CardcastEmptyPlayCode |> Message.info |> Just
 
     else
         Nothing

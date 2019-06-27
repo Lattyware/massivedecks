@@ -1,10 +1,10 @@
 module MassiveDecks.Requests.HttpData.Messages exposing (Msg(..))
 
-import MassiveDecks.Error.Model as Error exposing (Error)
+import MassiveDecks.Requests.Request as Request
 
 
 {-| A message for HttpData.
 -}
-type Msg result
+type Msg error result
     = Pull
-    | Response (Result Error result)
+    | Response (Request.Response error result)

@@ -6,10 +6,13 @@ module MassiveDecks.User exposing
     , Registration
     , Role(..)
     , User
+    , roleDescription
     )
 
 {-| Operations and models for a user in the game.
 -}
+
+import MassiveDecks.Strings as Strings exposing (MdString)
 
 
 {-| A unique Id for a user.
@@ -32,6 +35,16 @@ type Role
     | Spectator
 
 
+roleDescription : Role -> MdString
+roleDescription toDescribe =
+    case toDescribe of
+        Player ->
+            Strings.Player
+
+        Spectator ->
+            Strings.Spectator
+
+
 {-| If the user is actively a part of the lobby.
 -}
 type Presence
@@ -50,6 +63,7 @@ type Connection
 -}
 type alias Registration =
     { name : String
+    , password : Maybe String
     }
 
 

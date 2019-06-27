@@ -4,7 +4,7 @@
 import Ajv = require("ajv");
 import { RegisterUser, CreateLobby, Action, CheckAlive } from "./validation";
 export const ajv = new Ajv({
-  allErrors: true,
+  allErrors: false,
   coerceTypes: false,
   format: "fast",
   nullable: true,
@@ -47,6 +47,9 @@ export const Schema = {
         },
         {
           $ref: "#/definitions/SetPassword"
+        },
+        {
+          $ref: "#/definitions/SetPublic"
         },
         {
           $ref: "#/definitions/SetScoreLimit"
@@ -188,7 +191,7 @@ export const Schema = {
       description: "Set the hand size for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_7"
+          $ref: "#/definitions/NameType_8"
         },
         change: {
           $ref: "#/definitions/Change"
@@ -287,14 +290,18 @@ export const Schema = {
       type: "string"
     },
     NameType_6: {
-      enum: ["SetScoreLimit"],
+      enum: ["SetPublic"],
       type: "string"
     },
     NameType_7: {
-      enum: ["ChangeHouseRule"],
+      enum: ["SetScoreLimit"],
       type: "string"
     },
     NameType_8: {
+      enum: ["ChangeHouseRule"],
+      type: "string"
+    },
+    NameType_9: {
       enum: ["StartGame"],
       type: "string"
     },
@@ -424,12 +431,31 @@ export const Schema = {
       required: ["action", "if"],
       type: "object"
     },
+    SetPublic: {
+      defaultProperties: [],
+      description: "Set (or unset) the password for the lobby.",
+      properties: {
+        action: {
+          $ref: "#/definitions/NameType_6"
+        },
+        if: {
+          description:
+            "If the config version doesn't match this, the operation will be rejected.\nThis avoids users accidentally overwriting each other's changes.",
+          type: "string"
+        },
+        public: {
+          type: "boolean"
+        }
+      },
+      required: ["action", "if", "public"],
+      type: "object"
+    },
     SetScoreLimit: {
       defaultProperties: [],
       description: "(Un)Set the score limit for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_6"
+          $ref: "#/definitions/NameType_7"
         },
         if: {
           description:
@@ -451,7 +477,7 @@ export const Schema = {
       description: "Start a game in the lobby if possible.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_8"
+          $ref: "#/definitions/NameType_9"
         }
       },
       required: ["action"],

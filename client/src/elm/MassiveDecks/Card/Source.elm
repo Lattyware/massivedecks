@@ -16,7 +16,7 @@ import MassiveDecks.Card.Source.Cardcast as Cardcast
 import MassiveDecks.Card.Source.Fake as Fake
 import MassiveDecks.Card.Source.Methods exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
-import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
 import Weightless as Wl
 import Weightless.Attributes as WlA
@@ -52,7 +52,7 @@ name source =
     () |> (methods source |> .name)
 
 
-validate : Source -> Maybe (Components.Message msg)
+validate : Source -> Maybe (Message msg)
 validate source =
     () |> (methods source |> .problem)
 

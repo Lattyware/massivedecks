@@ -2,6 +2,7 @@ import { DecksChanged } from "./configured/decks-changed";
 import { HandSizeSet } from "./configured/hand-size-set";
 import { HouseRuleChanged } from "./configured/house-rule-changed";
 import { PasswordSet } from "./configured/password-set";
+import { PublicSet } from "./configured/public-set";
 import { ScoreLimitSet } from "./configured/score-limit-set";
 
 /**
@@ -12,7 +13,8 @@ export type Configured =
   | HandSizeSet
   | ScoreLimitSet
   | DecksChanged
-  | HouseRuleChanged;
+  | HouseRuleChanged
+  | PublicSet;
 
 export interface Base {
   event: string;

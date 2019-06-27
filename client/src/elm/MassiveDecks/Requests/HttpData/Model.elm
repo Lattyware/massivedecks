@@ -8,10 +8,11 @@ import MassiveDecks.Error.Model as Error exposing (Error)
 
 {-| Some data that is requested and received via an HTTP request.
 -}
-type alias HttpData result =
+type alias HttpData error result =
     { loading : Bool
     , data : Maybe result
-    , error : Maybe Error
+    , error : Maybe error
+    , generalError : Maybe Error
     }
 
 

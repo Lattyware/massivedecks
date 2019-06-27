@@ -15,13 +15,7 @@ decode token =
             body
                 |> Base64.decode
                 |> Result.mapError TokenBase64Error
-                |> Result.andThen
-                    (\json ->
-                        json
-                            |> Json.decodeString decodeClaims
-                            |> Result.mapError TokenJsonError
-                            |> Result.map (\claims -> Auth token claims)
-                    )
+                |> Result.andThen (decodeJson token)
 
         _ ->
             Err (InvalidTokenStructure token)
@@ -29,6 +23,14 @@ decode token =
 
 
 {- Private -}
+
+
+decodeJson : Token -> String -> Result TokenDecodingError Auth
+decodeJson token json =
+    json
+        |> Json.decodeString decodeClaims
+        |> Result.mapError TokenJsonError
+        |> Result.map (\claims -> Auth token claims)
 
 
 decodeClaims : Json.Decoder Claims

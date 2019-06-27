@@ -3,8 +3,6 @@ module MassiveDecks.Strings exposing (MdString(..))
 {-| This module deals with text that is shown to the user in the application - strings.
 -}
 
-import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
-
 
 {-| Each type represents a message that may be shown to the user. Some have arguments that are variable but should be
 included in some form in the message.
@@ -36,7 +34,8 @@ type MdString
     | NameLabel -- A label for a user name text field.
     | NameInUse -- An error indicating the name the user asked for is already in use and they should try another.
     | RejoinTitle -- A title for a list of games the user was previously in and might be able to rejoin.
-    | RejoinGame { code : GameCode } -- A description of the action of attempting to rejoin a game the user was previously in.
+    | RejoinGame { code : String } -- A description of the action of attempting to rejoin a game the user was previously in.
+    | LobbyRequiresPassword -- An explanation that the given lobby requires a password to join.
       -- Rules
     | CardsAgainstHumanity -- The name of "Cards Against Humanity" (https://cardsagainsthumanity.com/).
     | Rules -- The title for a DESCRIPTION of the rules.
@@ -79,6 +78,8 @@ type MdString
       -- Terms
     | Czar -- The name for the "Card Czar" (the player that judges the round).
     | CzarDescription -- A short description of what the czar does.
+    | Player -- A term for a player in the game with no special role.
+    | Spectator -- A term for a user who watches the game, but doesn't play in it.
     | Call -- The name for a call card (a black card).
     | CallDescription -- A short description of what a call is.
     | Response -- The name for a response card (a white card).
@@ -87,11 +88,11 @@ type MdString
     | PointDescription -- A short description of what a point is.
     | GameCodeTerm -- The term for a unique code for a game that allows a user to find the game easily.
     | GameCodeDescription -- A short description of what a game code is.
-    | GameCode { code : GameCode } -- Render a game code.
+    | GameCode { code : String } -- Render a game code.
     | GameCodeSpecificDescription -- A short description of what a specific game code and how to use it.
     | GameCodeHowToAcquire -- A short description of how to get a game code.
     | Deck -- The name for a deck of cards.
-    | Playing -- A term for a person who is in a round, but has not yet submitted a play.
+    | StillPlaying -- A term for a person who is in a round, but has not yet submitted a play.
     | PlayingDescription -- A description of a person who is in a round, but has not yet submitted a play.
     | Played -- A term for a person who is in a round, and has submitted a play.
     | PlayedDescription -- A description of a person who is in a round, and has submitted a play.
@@ -111,7 +112,7 @@ type MdString
     | NumberOfCards { numberOfCards : Int } -- A number of cards as a single-digit number. This will be enhanced to render specially as a circle with the number in.
       -- Lobby
     | Invite -- A description of the action of inviting players to the game.
-    | InviteExplanation { gameCode : GameCode, password : Maybe String } -- An explanation of how players can join the game using the given game code and, potentially, password.
+    | InviteExplanation { gameCode : String, password : Maybe String } -- An explanation of how players can join the game using the given game code and, potentially, password.
     | InviteLinkHelp -- An explanation that the users can send the link to people to invite them to the game.
     | Cast -- A description of the action of casting a view of the game to another device (e.g: a TV).
     | CastConnecting -- A description of trying to connect to the casting device.
@@ -153,22 +154,29 @@ type MdString
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.
     | ConfigureDecks -- A name for the section of the configuration screen for changing the decks for the game.
     | ConfigureRules -- A name for the section of the configuration screen for changing the rules for the game.
-    | ConfigureGame -- A name for the section of the configuration screen for changing the settings for the game.
+    | ConfigurePrivacy -- A name for the section of the configuration screen for changing the settings for the game.
     | HandSize -- The name of the rule defining how many cards a player can hold in their hand.
     | HandSizeDescription -- The description of the above rule.
     | ScoreLimit -- The name of the rule defining how many points a player has to accumulate to win the game.
     | ScoreLimitDescription -- The description of the above rule.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
+    | PasswordShared -- A warning that game passwords are visible to anyone else in the game.
     | PasswordNotSecured -- A warning that game passwords are not stored securely and should not be used elsewhere.
-    | GamePassword -- A short label for the game password.
-    | GamePasswordDescription -- A description of a password to stop random people entering your game.
+    | LobbyPassword -- A short label for the lobby password.
+    | LobbyPasswordDescription -- A description of a password to stop random people entering your lobby.
     | StartGame -- A short description of the action of starting the game.
+    | Public -- The name of the setting for making the lobby public.
+    | PublicDescription -- A description of what the public setting does (makes the game visible in the lobby browser).
       -- Game
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
     | JudgePlay -- A description of the action of choosing a play to win the round.
     | LikePlay -- A description of the action of liking a play.
+    | Playing -- A description of the stage of the round where players are playing responses into the round.
+    | Revealing -- A description of the stage of the round where the czar is revealing the plays.
+    | Judging -- A description of the stage of the round where the czar is picking a winner.
+    | Complete -- A description of the stage of the round where it is finished.
       -- Instructions
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
     | SubmitInstruction -- Instruction to the player on how to submit their play.
@@ -194,6 +202,18 @@ type MdString
     | BadStatusError -- An error where the server gave a response we didn't expect.
     | BadPayloadError -- An error where the server gave a response we didn't understand.
     | CastError -- An error where we the cast device couldn't connect to the game.
+    | IncorrectPlayerRoleError { role : MdString, expected : MdString } -- An error where the player tries to do something when they don't have the right role (czar/player).
+    | IncorrectUserRoleError { role : MdString, expected : MdString } -- An error where the user tries to do something when they don't have the right role (player/spectator).
+    | IncorrectRoundStageError { stage : MdString, expected : MdString } -- An error where the user tries to do something when it doesn't make sense given the stage of the game.
+    | ConfigEditConflictError -- An error where the user tries to make a change to the configuration, but someone else changed it first.
+    | UnprivilegedError -- An error where the user doesn't have the privileges to perform the action they are trying to do.
+    | GameNotStartedError -- An error where the game hasn't started and the user tries to do something that needs to be done in a game.
+    | IncorrectIssuerError -- An error where the user tries to authenticate using credentials that are out of date.
+    | InvalidAuthenticationError -- An error where the user tries to authenticate using credentials that are corrupted.
+    | InvalidLobbyPasswordError -- An error where the user tries to join a game with the wrong lobby password.
+    | LobbyClosedError { gameCode : String } -- An error where the user tries to join a game that has finished.
+    | LobbyDoesNotExistError { gameCode : String } -- An error where the user tries to join a game that never existed.
+    | OutOfCardsError -- An error where there weren't enough cards in the deck to deal cards that were needed, even after shuffling discards.
       -- Language Names
     | English -- The name of the English language (no specific dialect).
     | BritishEnglish -- The name of the British dialect of the English language.

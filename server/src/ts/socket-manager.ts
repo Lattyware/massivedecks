@@ -103,7 +103,7 @@ export class SocketManager {
                 lobby,
                 events: [
                   event.targetOnly(
-                    sync.of(gameLobby.censor(lobby, knownAuth), hand, play),
+                    sync.of(gameLobby.censor(lobby), hand, play),
                     uid
                   )
                 ]
@@ -166,7 +166,7 @@ export class Sockets {
     const users = this.users(gameCode);
     const didDelete = users.delete(id);
     if (users.size < 1) {
-        this.sockets.delete(gameCode);
+      this.sockets.delete(gameCode);
     }
     return didDelete;
   }

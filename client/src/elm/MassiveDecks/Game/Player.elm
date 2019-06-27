@@ -7,9 +7,11 @@ module MassiveDecks.Game.Player exposing
     , isCzar
     , playState
     , role
+    , roleDescription
     )
 
 import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.User as User
 import Set
 
@@ -40,6 +42,16 @@ type Control
 type Role
     = RCzar
     | RPlayer
+
+
+roleDescription : Role -> MdString
+roleDescription toDescribe =
+    case toDescribe of
+        RCzar ->
+            Strings.Czar
+
+        RPlayer ->
+            Strings.Player
 
 
 {-| The state of a player in regards to playing into a round.
