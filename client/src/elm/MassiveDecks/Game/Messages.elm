@@ -16,3 +16,4 @@ type Msg
     | ScrollToTop
     | SetPlayStyles PlayStyles
     | AdvanceRound
+    | Redraw

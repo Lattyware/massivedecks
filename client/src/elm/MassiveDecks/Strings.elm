@@ -52,6 +52,7 @@ type MdString
     | HouseRules -- A description of what house rules are.
     | HouseRuleReboot -- The name of the "Rebooting the Universe" house rule.
     | HouseRuleRebootDescription { cost : Maybe Int } -- A description of the "Rebooting the Universe" house rule.
+    | HouseRuleRebootAction { cost : Int } -- A description of the action of spending cost points to redraw your hand.
     | HouseRuleRebootCost -- A description of the cost of redrawing your hand.
     | HouseRuleRebootCostDescription --
     | HouseRulePackingHeat -- The name of the "Packing Heat" house rule.

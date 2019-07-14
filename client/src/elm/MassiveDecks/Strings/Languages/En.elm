@@ -200,6 +200,14 @@ translate mdString =
             , Text " to discard their hand and draw a new one."
             ]
 
+        HouseRuleRebootAction { cost } ->
+            [ Text "Spend "
+            , Text (asWord cost)
+            , Text " "
+            , Ref (Plural { singular = Point, amount = Just cost })
+            , Text " to discard your hand and draw a new one."
+            ]
+
         HouseRuleRebootCost ->
             [ Ref Point, Text " Cost" ]
 

@@ -28,6 +28,7 @@ import MassiveDecks.Game.Round.Complete as Complete
 import MassiveDecks.Game.Round.Judging as Judging
 import MassiveDecks.Game.Round.Playing as Playing
 import MassiveDecks.Game.Round.Revealing as Revealing
+import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Actions as Actions
@@ -40,6 +41,7 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
 import Set
 import Task
@@ -188,6 +190,9 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        Redraw ->
+            ( model, Actions.redraw )
+
 
 subscriptions : Model -> Sub Global.Msg
 subscriptions model =
@@ -250,7 +255,8 @@ view shared auth decks users model =
             Html.div [ HtmlA.id "context-help" ] helpContent
     in
     Html.div [ HtmlA.id "game" ]
-        [ help
+        [ minorActions shared auth game
+        , help
         , Html.div [ HtmlA.class "round" ]
             [ renderedCall
             , viewAction shared action
@@ -269,6 +275,33 @@ view shared auth decks users model =
                 [ Icon.view Icon.arrowUp ]
             ]
         ]
+
+
+minorActions : Shared -> Lobby.Auth -> Game -> Html Global.Msg
+minorActions shared auth game =
+    let
+        localPlayer =
+            game.players |> Dict.get auth.claims.uid
+    in
+    Html.div [ HtmlA.id "minor-actions" ]
+        (List.filterMap identity
+            [ Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
+                (localPlayer |> Maybe.map .score)
+                game.rules.houseRules.reboot
+            ]
+        )
+
+
+rebootButton : Shared -> Int -> Rules.Reboot -> Html Global.Msg
+rebootButton shared score reboot =
+    Components.iconButton
+        [ HtmlA.id "redraw"
+        , { cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.title shared
+        , WlA.disabled
+            |> Maybe.justIf (score < reboot.cost)
+            |> Maybe.withDefault (Redraw |> lift |> HtmlE.onClick)
+        ]
+        Icon.random
 
 
 viewAction : Shared -> Maybe Action -> Html Global.Msg

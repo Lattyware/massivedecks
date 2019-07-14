@@ -49,12 +49,30 @@
   --card-padding: 0.5em;
 
   #context-help-button {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 
   wl-popover-card {
     min-width: 10em;
   }
+}
+
+#minor-actions {
+  position: fixed;
+  top: $top-bar-height;
+  left: $users-width;
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s;
+  z-index: 1;
+
+  wl-button {
+    font-size: 1.2rem;
+  }
+}
+
+.collapsed-users #minor-actions {
+  left: 0;
 }
 
 // The button to scroll to the top of the game area.
