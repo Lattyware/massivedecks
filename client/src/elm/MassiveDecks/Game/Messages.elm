@@ -15,3 +15,4 @@ type Msg
     | Like
     | ScrollToTop
     | SetPlayStyles PlayStyles
+    | AdvanceRound

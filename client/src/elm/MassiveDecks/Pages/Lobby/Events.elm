@@ -4,7 +4,6 @@ module MassiveDecks.Pages.Lobby.Events exposing
     , Event(..)
     , GameEvent(..)
     , PresenceState(..)
-    , Redraw(..)
     )
 
 import Dict exposing (Dict)
@@ -28,6 +27,7 @@ type Event
       -- Not a game event because we don't need to be in a game
     | GameStarted { round : Round.Playing, hand : List Card.Response }
     | Game GameEvent
+    | PrivilegeSet { user : User.Id, privilege : User.Privilege, token : Maybe Lobby.Token }
 
 
 {-| The user's intentional presence in the lobby.
@@ -53,13 +53,8 @@ type DeckChange
     | Fail { reason : Source.LoadFailureReason }
 
 
-type Redraw
-    = Player { hand : List Card.Response }
-    | Other { player : User.Id }
-
-
 type GameEvent
-    = HandRedrawn Redraw
+    = HandRedrawn { player : User.Id, hand : Maybe (List Card.Response) }
     | PlayRevealed { id : Play.Id, play : List Card.Response }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }

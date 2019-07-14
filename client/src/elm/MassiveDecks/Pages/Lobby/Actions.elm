@@ -2,6 +2,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     ( addDeck
     , changeHouseRule
     , judge
+    , redraw
     , removeDeck
     , reveal
     , setHandSize
@@ -80,6 +81,11 @@ reveal play =
 judge : Play.Id -> Cmd msg
 judge play =
     action "Judge" [ ( "winner", play |> Json.string ) ]
+
+
+redraw : Cmd msg
+redraw =
+    action "Redraw" []
 
 
 

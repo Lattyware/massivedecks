@@ -62,8 +62,14 @@ link icon text description href =
 
 {-| Render a menu to Html.
 -}
-view : Shared -> String -> WlA.XOrigin -> WlA.YOrigin -> Menu msg -> Html msg
-view shared anchorId xOrigin yOrigin menu =
+view :
+    Shared
+    -> String
+    -> ( WlA.XOrigin, WlA.YOrigin )
+    -> ( WlA.XOrigin, WlA.YOrigin )
+    -> Menu msg
+    -> Html msg
+view shared anchorId ( xAnchor, yAnchor ) ( xTransform, yTransform ) menu =
     Wl.popover
         (List.concat
             [ [ WlA.anchor anchorId
@@ -73,7 +79,8 @@ view shared anchorId xOrigin yOrigin menu =
               , HtmlA.class "menu"
               , WlA.disableFocusTrap
               ]
-            , WlA.anchorOrigin xOrigin yOrigin
+            , WlA.anchorOrigin xAnchor yAnchor
+            , WlA.transformOrigin xTransform yTransform
             ]
         )
         [ Wl.popoverCard [] [ Html.ul [] (menu |> List.map (menuItem shared)) ] ]

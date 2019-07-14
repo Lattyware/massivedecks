@@ -7,6 +7,7 @@ import "weightless/nav";
 import "weightless/popover";
 import "weightless/popover-card";
 import "weightless/select";
+import "weightless/slider";
 import "weightless/switch";
 import "weightless/tab";
 import "weightless/tab-group";

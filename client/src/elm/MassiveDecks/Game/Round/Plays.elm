@@ -22,7 +22,7 @@ type alias Details msg =
 -}
 view : String -> Maybe Play.Id -> List (Details msg) -> Html msg
 view class picked details =
-    HtmlK.ul [ HtmlA.classList [ ( class, True ), ( "plays", True ) ] ] (details |> List.map (viewPlay picked))
+    HtmlK.ul [ HtmlA.classList [ ( class, True ), ( "cards", True ), ( "plays", True ) ] ] (details |> List.map (viewPlay picked))
 
 
 
@@ -32,13 +32,12 @@ view class picked details =
 viewPlay : Maybe Play.Id -> Details msg -> ( String, Html msg )
 viewPlay picked { id, responses, action, attrs } =
     ( id
-    , Html.li
-        (List.concat
-            [ [ HtmlA.classList [ ( "play", True ), ( "picked", picked == Just id ) ]
-              , action |> Maybe.map HtmlE.onClick |> Maybe.withDefault HtmlA.nothing
-              ]
-            , attrs
-            ]
-        )
-        (responses |> List.map (\card -> Html.div [ HtmlA.class "overlap" ] [ card ]))
+    , Html.li []
+        [ Html.ol
+            (HtmlA.classList [ ( "play", True ), ( "card-set", True ), ( "picked", picked == Just id ) ]
+                :: (action |> Maybe.map HtmlE.onClick |> Maybe.withDefault HtmlA.nothing)
+                :: attrs
+            )
+            (responses |> List.map (\card -> Html.li [] [ card ]))
+        ]
     )

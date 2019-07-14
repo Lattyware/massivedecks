@@ -6,3 +6,4 @@ type Action
     | TakeBack
     | Judge
     | Like
+    | Advance

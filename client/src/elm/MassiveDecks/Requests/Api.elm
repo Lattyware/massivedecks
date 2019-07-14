@@ -67,7 +67,7 @@ checkAlive : (Request.Response () (Dict Lobby.Token Bool) -> msg) -> List Lobby.
 checkAlive msg tokens =
     { method = "POST"
     , headers = []
-    , url = url [ "games", "alive" ]
+    , url = url [ "alive" ]
     , body = tokens |> Encoders.checkAlive |> Http.jsonBody
     , expect = Request.expectResponse msg noError Decoders.tokenValidity
     , timeout = Nothing

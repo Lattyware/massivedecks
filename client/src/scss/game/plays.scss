@@ -1,0 +1,16 @@
+// A play with the user's name.
+.play-with-byline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// The user's name.
+.byline {
+  font-size: 2em;
+  text-align: center;
+
+  svg {
+    margin-right: 0.5em;
+  }
+}

@@ -4,7 +4,6 @@ module MassiveDecks.Pages.Start.LobbyBrowser.Model exposing
     , UserSummary
     )
 
-import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Requests.HttpData.Model exposing (HttpData)

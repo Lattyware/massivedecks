@@ -21,6 +21,7 @@ import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Error as Error
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
@@ -43,7 +44,6 @@ import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Version as Version
-import Reread
 import Svg.Attributes as SvgA
 import Weightless as Wl
 import Weightless.Attributes as WlA
@@ -169,13 +169,13 @@ view shared model =
                     , Strings.MDProject |> Lang.title shared
                     , HtmlA.href "https://github.com/Lattyware/massivedecks"
                     ]
-                    [ Icon.viewStyled [ Strings.MDLogoDescription |> Lang.alt shared ] Reread.mdIcon ]
+                    [ Icon.viewStyled [ Strings.MDLogoDescription |> Lang.alt shared ] Icon.massiveDecks ]
                 , Html.blankA
                     [ HtmlA.class "logo"
                     , Strings.DevelopedByReread |> Lang.title shared
                     , HtmlA.href "https://www.rereadgames.com/"
                     ]
-                    [ Icon.viewStyled [ Strings.RereadLogoDescription |> Lang.alt shared ] Reread.icon ]
+                    [ Icon.viewStyled [ Strings.RereadLogoDescription |> Lang.alt shared ] Icon.rereadGames ]
                 ]
             , Html.p [ HtmlA.class "version" ]
                 [ Html.text "\""

@@ -8,6 +8,7 @@ import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Messages as Global
@@ -20,16 +21,16 @@ import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 
 
-view : Shared -> List Configure.Deck -> Dict User.Id User -> Round.Complete -> RoundView Global.Msg
-view shared decks users round =
+view : Shared -> Bool -> List Configure.Deck -> Dict User.Id User -> Round.Complete -> RoundView Global.Msg
+view shared nextRoundReady decks users round =
     let
         winning =
             round.plays |> Dict.get round.winner
     in
-    { instruction = Nothing
-    , action = Nothing
+    { instruction = Strings.AdvanceRoundInstruction |> Maybe.justIf nextRoundReady
+    , action = Action.Advance |> Maybe.justIf nextRoundReady
     , content =
-        HtmlK.ul [ HtmlA.class "judging plays" ]
+        HtmlK.ul [ HtmlA.class "complete plays cards" ]
             (round.plays |> Dict.toList |> List.map (viewPlay shared decks users round.winner))
     , fillCallWith = winning |> Maybe.withDefault []
     }
@@ -45,7 +46,7 @@ viewPlay :
 viewPlay shared decks users winner ( id, responses ) =
     let
         cards =
-            responses |> List.map (\r -> Card.view shared decks Card.Front [] (Card.R r))
+            responses |> List.map (\r -> ( r.details.id, Card.view shared decks Card.Front [] (Card.R r) ))
 
         playedBy =
             users |> Dict.get id |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
@@ -58,6 +59,6 @@ viewPlay shared decks users winner ( id, responses ) =
     ( id
     , Html.li [ HtmlA.class "play-with-byline" ]
         [ Html.span [ HtmlA.class "byline" ] byline
-        , Html.div [ HtmlA.class "play" ] cards
+        , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )

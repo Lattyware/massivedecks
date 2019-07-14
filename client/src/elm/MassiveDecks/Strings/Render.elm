@@ -154,7 +154,7 @@ enhanceHtml context mdString unenhanced =
             prefixed unenhanced Icon.parachuteBox
 
         HouseRuleReboot ->
-            prefixed unenhanced Icon.redo
+            prefixed unenhanced Icon.random
 
         HouseRuleRandoCardrissian ->
             prefixed unenhanced Icon.robot

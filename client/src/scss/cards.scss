@@ -2,12 +2,9 @@
 @import "./colors";
 @import "./fonts";
 @import "./card/sources";
+@import "./card/size";
 
-.compact-cards .card-area {
-  --card-aspect-ratio: #{$card-compact-ratio};
-}
-
-.card-area {
+#game {
   --card-aspect-ratio: #{$card-ratio};
   @include fluid-type(20rem, 64rem, 0.5rem, 0.8rem);
 }
@@ -59,12 +56,14 @@
           height: 1em;
           flex-grow: 1;
           flex-basis: 2em;
+          max-width: 14em;
           border-bottom: 0.1em solid var(--fg);
         }
       }
     }
   }
 
+  // Creates a fixed size from an aspect ratio.
   .aspect {
     transition: transform 0.75s;
     transform-style: preserve-3d;
@@ -73,7 +72,7 @@
     width: 100%;
     @include pad-to-aspect-ratio(var(--card-aspect-ratio));
 
-    & > * {
+    & .side {
       position: absolute;
       top: 0;
       left: 0;
@@ -129,6 +128,7 @@
     line-height: 1.4em;
   }
 
+  // For custom cards.
   textarea {
     display: block;
     vertical-align: top;
@@ -178,17 +178,5 @@
         font-size: 1.4em;
       }
     }
-  }
-
-  &.error .side {
-    border-color: $error;
-  }
-}
-
-.picked {
-  position: relative;
-
-  .side {
-    border-color: $primary;
   }
 }

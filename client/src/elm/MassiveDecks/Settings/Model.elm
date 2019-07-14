@@ -1,4 +1,11 @@
-module MassiveDecks.Settings.Model exposing (Model, Settings)
+module MassiveDecks.Settings.Model exposing
+    ( CardSize(..)
+    , Model
+    , Settings
+    , cardSizeFromValue
+    , cardSizeToValue
+    , cardSizes
+    )
 
 import Dict exposing (Dict)
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
@@ -23,5 +30,45 @@ type alias Settings =
     , lastUsedName : Maybe String
     , recentDecks : List Source.External
     , chosenLanguage : Maybe Language
-    , compactCards : Bool
+    , cardSize : CardSize
     }
+
+
+type CardSize
+    = Minimal
+    | Square
+    | Full
+
+
+cardSizes : List CardSize
+cardSizes =
+    [ Minimal, Square, Full ]
+
+
+cardSizeToValue : CardSize -> Int
+cardSizeToValue size =
+    case size of
+        Minimal ->
+            1
+
+        Square ->
+            2
+
+        Full ->
+            3
+
+
+cardSizeFromValue : Int -> Maybe CardSize
+cardSizeFromValue size =
+    case size of
+        1 ->
+            Just Minimal
+
+        2 ->
+            Just Square
+
+        3 ->
+            Just Full
+
+        _ ->
+            Nothing

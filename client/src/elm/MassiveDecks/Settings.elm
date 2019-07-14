@@ -3,6 +3,7 @@ module MassiveDecks.Settings exposing
     , defaults
     , init
     , onJoinLobby
+    , onTokenUpdate
     , update
     , view
     )
@@ -19,6 +20,7 @@ import Http
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
+import MassiveDecks.Icon as Icon
 import MassiveDecks.LocalStorage as LocalStorage
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
@@ -34,6 +36,7 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import Weightless as Wl
 import Weightless.Attributes as WlA
+import Weightless.Slider as Slider
 
 
 init : Settings -> ( Model, Cmd Global.Msg )
@@ -63,7 +66,7 @@ defaults =
     , openUserList = False
     , recentDecks = []
     , chosenLanguage = Nothing
-    , compactCards = False
+    , cardSize = Full
     }
 
 
@@ -76,8 +79,8 @@ update msg model =
         ChangeLang language ->
             changeSettings (\s -> { s | chosenLanguage = language }) model
 
-        ChangeCompactCards enabled ->
-            changeSettings (\s -> { s | compactCards = enabled }) model
+        ChangeCardSize size ->
+            changeSettings (\s -> { s | cardSize = size }) model
 
         ChangeOpenUserList open ->
             changeSettings (\s -> { s | openUserList = open }) model
@@ -117,7 +120,7 @@ view shared =
                 [ Html.h3 [] [ Strings.SettingsTitle |> Lang.html shared ]
                 , Html.div [ HtmlA.class "body" ]
                     [ languageSelector shared
-                    , compactSwitch shared
+                    , cardSize shared
                     , speechSwitch shared
                     , notificationsSwitch shared
                     ]
@@ -139,6 +142,22 @@ onJoinLobby auth name model =
             { settings
                 | tokens = Dict.insert (auth.claims.gc |> GameCode.toString) auth.token settings.tokens
                 , lastUsedName = Just name
+            }
+    in
+    ( { model | settings = updatedSettings }, LocalStorage.store updatedSettings )
+
+
+{-| Replace a token in our storage because it has been updated.
+-}
+onTokenUpdate : Lobby.Auth -> Model -> ( Model, Cmd msg )
+onTokenUpdate auth model =
+    let
+        settings =
+            model.settings
+
+        updatedSettings =
+            { settings
+                | tokens = Dict.insert (auth.claims.gc |> GameCode.toString) auth.token settings.tokens
             }
     in
     ( { model | settings = updatedSettings }, LocalStorage.store updatedSettings )
@@ -171,8 +190,8 @@ changeSettings f model =
     ( { model | settings = settings }, LocalStorage.store settings )
 
 
-compactSwitch : Shared -> Html Global.Msg
-compactSwitch shared =
+cardSize : Shared -> Html Global.Msg
+cardSize shared =
     let
         model =
             shared.settings
@@ -181,29 +200,60 @@ compactSwitch shared =
             model.settings
     in
     Form.section shared
-        "compact-cards"
+        "card-size"
         (Html.div
             [ HtmlA.class "multipart" ]
-            [ Wl.switch
-                [ HtmlA.checked settings.compactCards
-                , HtmlE.onCheck (ChangeCompactCards >> Global.SettingsMsg)
+            [ Wl.slider
+                [ HtmlA.class "primary"
+                , Slider.step 1
+                , Slider.min 1
+                , Slider.max 3
+                , WlA.label "Card Size"
+                , WlA.outlined
+                , Slider.thumbLabel True
+                , String.toInt
+                    >> Maybe.andThen cardSizeFromValue
+                    >> Maybe.withDefault Full
+                    >> ChangeCardSize
+                    >> Global.SettingsMsg
+                    |> HtmlE.onInput
+                , model.settings.cardSize |> cardSizeToValue |> String.fromInt |> WlA.value
                 ]
-            , Html.label []
-                [ Icon.view Icon.searchMinus
-                , Html.text " "
-                , Strings.CompactCardsSetting |> Lang.html shared
+                [ Icon.viewStyled [ Slider.slot Slider.Before ] Icon.searchMinus
+                , [ model.settings.cardSize |> cardSizeThumb ] |> Html.span [ Slider.slot Slider.ThumbLabel ]
+                , Icon.viewStyled [ Slider.slot Slider.After ] Icon.searchPlus
                 ]
             ]
+         --            [ Wl.switch
+         --                [ HtmlA.checked settings.compactCards
+         --                , HtmlE.onCheck (ChangeCompactCards >> Global.SettingsMsg)
+         --                ]
+         --            , Html.label []
+         --                [ Icon.view Icon.searchMinus
+         --                , Html.text " "
+         --                , Strings.CompactCardsSetting |> Lang.html shared
+         --                ]
+         --            ]
         )
-        [ Message.info Strings.CompactCardsExplanation ]
+        [ Message.info Strings.CardSizeExplanation ]
 
 
+cardSizeThumb : CardSize -> Html msg
+cardSizeThumb size =
+    case size of
+        Minimal ->
+            Icon.view Icon.minimalCardSize
 
--- TODO: Impl
+        Square ->
+            Icon.view Icon.squareCardSize
+
+        Full ->
+            Icon.view Icon.callCard
 
 
 speechSwitch : Shared -> Html Global.Msg
 speechSwitch shared =
+    -- TODO: Impl
     Form.section shared
         "speech"
         (Html.div
@@ -219,12 +269,9 @@ speechSwitch shared =
         [ Message.info Strings.SpeechExplanation ]
 
 
-
--- TODO: Impl
-
-
 notificationsSwitch : Shared -> Html Global.Msg
 notificationsSwitch shared =
+    -- TODO: Impl
     Form.section shared
         "notifications"
         (Html.div

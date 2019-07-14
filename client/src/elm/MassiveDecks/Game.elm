@@ -17,6 +17,7 @@ import Html.Events as HtmlE
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
 import MassiveDecks.Game.Action.Model as Action exposing (Action)
 import MassiveDecks.Game.Messages exposing (..)
@@ -39,6 +40,7 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Maybe as Maybe
 import Set
 import Task
 import Weightless as Wl
@@ -176,6 +178,16 @@ update msg model =
         SetPlayStyles playStyles ->
             ( { model | playStyles = playStyles }, Cmd.none )
 
+        AdvanceRound ->
+            case model.nextRound of
+                Just nextRound ->
+                    ( { model | game = { game | round = Round.P nextRound }, nextRound = Nothing }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Global.Msg
 subscriptions model =
@@ -197,7 +209,7 @@ view shared auth decks users model =
                     Judging.view shared auth decks round
 
                 Round.C round ->
-                    Complete.view shared decks users round
+                    Complete.view shared (Maybe.isJust model.nextRound) decks users round
 
         game =
             model.game
@@ -212,33 +224,49 @@ view shared auth decks users model =
             call |> Card.viewFilled shared decks Card.Front [] parts
 
         help =
-            case instruction of
-                Just i ->
-                    Html.div [ HtmlA.class "context-help" ] [ Icon.view Icon.questionCircle, i |> Lang.html shared ]
+            let
+                id =
+                    "context-help-button"
 
-                Nothing ->
-                    Html.nothing
+                helpContent =
+                    case instruction of
+                        Just i ->
+                            [ Components.iconButton
+                                [ HtmlA.id id, Strings.WhatToDo |> Lang.title shared ]
+                                Icon.question
+                            , Wl.popover
+                                (List.concat
+                                    [ WlA.anchorOrigin WlA.XCenter WlA.YBottom
+                                    , WlA.transformOrigin WlA.XRight WlA.YTop
+                                    , [ WlA.anchor id, WlA.fixed, WlA.anchorOpenEvents [ "click" ] ]
+                                    ]
+                                )
+                                [ Wl.popoverCard [] [ i |> Lang.html shared ] ]
+                            ]
+
+                        Nothing ->
+                            []
+            in
+            Html.div [ HtmlA.id "context-help" ] helpContent
     in
     Html.div [ HtmlA.id "game" ]
         [ help
-        , Html.div [ HtmlA.class "card-area" ]
-            [ Html.div [ HtmlA.class "play-area" ]
-                [ Html.div [ HtmlA.class "cards-in-play" ] [ renderedCall ]
-                , viewAction shared action
-                ]
-            , content
-            , Html.div [ HtmlA.class "scroll-top-spacer" ] []
+        , Html.div [ HtmlA.class "round" ]
+            [ renderedCall
+            , viewAction shared action
+            ]
+        , content
+        , Html.div [ HtmlA.class "scroll-top-spacer" ] []
 
-            -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping.
-            , Html.div [ HtmlA.class "scroll-top" ]
-                [ Wl.button
-                    [ WlA.flat
-                    , WlA.fab
-                    , WlA.inverted
-                    , ScrollToTop |> lift |> HtmlE.onClick
-                    ]
-                    [ Icon.view Icon.arrowUp ]
+        -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
+        , Html.div [ HtmlA.class "scroll-top" ]
+            [ Wl.button
+                [ WlA.flat
+                , WlA.fab
+                , WlA.inverted
+                , ScrollToTop |> lift |> HtmlE.onClick
                 ]
+                [ Icon.view Icon.arrowUp ]
             ]
         ]
 
@@ -248,25 +276,29 @@ viewAction shared visible =
     Html.div [] (Action.actions |> List.map (Action.view shared visible))
 
 
-applyGameEvent : Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
-applyGameEvent gameEvent model =
+applyGameEvent : Lobby.Auth -> Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
+applyGameEvent auth gameEvent model =
     case gameEvent of
-        Events.HandRedrawn redraw ->
-            case redraw of
-                Events.Player { hand } ->
-                    -- TODO: Impl
-                    ( model, Cmd.none )
+        Events.HandRedrawn { player, hand } ->
+            let
+                game =
+                    model.game
 
-                Events.Other { player } ->
-                    --let
-                    --    playerRecord =
-                    --        Dict.get player model.game.players
-                    --
-                    --    newPlayerRecord =
-                    --        Dict.insert player { playerRecord | score = playerRecord.score - lobby.config.rules.houseRules }
-                    --in
-                    -- TODO: Impl
-                    ( model, Cmd.none )
+                -- TODO: Error, if the rule isn't enabled, we are out of sync.
+                cost =
+                    game.rules.houseRules.reboot |> Maybe.map .cost |> Maybe.withDefault 0
+
+                updatePlayer =
+                    \id -> \p -> { p | score = p.score - cost } |> Maybe.justIf (player == id) |> Maybe.withDefault p
+
+                -- TODO: Error, if we get a hand but the event claims another player, we are out of sync.
+                newHand =
+                    hand |> Maybe.andThen (Maybe.justIf (player == auth.claims.uid)) |> Maybe.withDefault model.hand
+
+                players =
+                    game.players |> Dict.map updatePlayer
+            in
+            ( { model | game = { game | players = players }, hand = newHand }, Cmd.none )
 
         Events.PlayRevealed { id, play } ->
             let
@@ -350,19 +382,13 @@ applyGameEvent gameEvent model =
 
         Events.RoundStarted { id, czar, players, call, drawn } ->
             let
-                oldGame =
-                    model.game
-
                 drawnAsList =
                     drawn |> Maybe.withDefault []
 
                 ( newRound, cmd ) =
                     Playing.init (Round.playing id czar players call Set.empty) Round.noPick
-
-                game =
-                    { oldGame | round = Round.P newRound }
             in
-            ( { model | game = game, hand = model.hand ++ drawnAsList }, cmd )
+            ( { model | nextRound = Just newRound, hand = model.hand ++ drawnAsList }, cmd )
 
         Events.StartRevealing { plays, drawn } ->
             case model.game.round of

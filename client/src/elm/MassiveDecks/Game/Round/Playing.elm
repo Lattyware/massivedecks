@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import Html.Keyed as HtmlK
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Game.Action.Model as Action
@@ -66,7 +67,7 @@ view shared auth decks model round =
                         ( Just Action.TakeBack, Strings.WaitingForPlaysInstruction, True )
 
         hand =
-            Html.div [ HtmlA.classList [ ( "hand", True ), ( "not-playing", notPlaying ) ] ]
+            HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]
                 (model.hand |> List.map (round.pick.cards |> viewHandCard shared decks))
 
         backgroundPlays =
@@ -93,9 +94,10 @@ view shared auth decks model round =
 {- Private -}
 
 
-viewHandCard : Shared -> List Configure.Deck -> List Card.Id -> Card.Response -> Html Global.Msg
+viewHandCard : Shared -> List Configure.Deck -> List Card.Id -> Card.Response -> ( String, Html Global.Msg )
 viewHandCard shared decks picked response =
-    Card.view
+    ( response.details.id
+    , Card.view
         shared
         decks
         Card.Front
@@ -103,6 +105,7 @@ viewHandCard shared decks picked response =
         , response.details.id |> Game.Pick |> lift |> HtmlE.onClick
         ]
         (Card.R response)
+    )
 
 
 viewBackgroundPlay : PlayStyles -> Int -> Set User.Id -> User.Id -> Html msg

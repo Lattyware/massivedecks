@@ -250,11 +250,11 @@ translate mdString =
             , Text "!"
             ]
 
-        CompactCardsSetting ->
+        CardSizeSetting ->
             [ Text "Compact Cards" ]
 
-        CompactCardsExplanation ->
-            [ Text "Show cards as square—this is useful on small screens to fit more cards on at once." ]
+        CardSizeExplanation ->
+            [ Text "Adjust how big cards are—this can be useful on small screens to scroll less." ]
 
         SpeechSetting ->
             [ Text "Text To Speech" ]
@@ -475,6 +475,12 @@ translate mdString =
         LeaveGame ->
             [ Text "Leave Game" ]
 
+        EndGame ->
+            [ Text "End Game" ]
+
+        EndGameDescription ->
+            [ Text "End the game early." ]
+
         KickUser ->
             [ Text "Kick" ]
 
@@ -609,6 +615,9 @@ translate mdString =
         LikePlay ->
             [ Text "Add a like to this play." ]
 
+        AdvanceRound ->
+            [ Text "Next round." ]
+
         Playing ->
             [ Text "Playing" ]
 
@@ -622,6 +631,9 @@ translate mdString =
             [ Text "Finished" ]
 
         -- Instructions
+        WhatToDo ->
+            [ Text "What should I be doing?" ]
+
         PlayInstruction { numberOfCards } ->
             [ Text "You need to choose "
             , Text (asWord numberOfCards)
@@ -648,7 +660,10 @@ translate mdString =
             [ Text "Click on the plays to flip them, then pick the one you think is best." ]
 
         WaitingForCzarInstruction ->
-            [ Text "You ware waiting for the ", Ref Czar, Text " to reveal the plays and pick a winner for the round." ]
+            [ Text "You can like plays while you wait for the ", Ref Czar, Text " to reveal the plays and pick a winner for the round." ]
+
+        AdvanceRoundInstruction ->
+            [ Text "The next round has started, you can advance." ]
 
         -- 404 Unknown
         UnknownPageTitle ->

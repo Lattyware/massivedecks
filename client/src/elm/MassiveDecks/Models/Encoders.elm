@@ -43,13 +43,18 @@ settings s =
                 [ [ ( "tokens", s.tokens |> Dict.toList |> List.map (\( gc, t ) -> ( gc, Json.string t )) |> Json.object )
                   , ( "openUserList", Json.bool s.openUserList )
                   , ( "recentDecks", Json.list source s.recentDecks )
-                  , ( "compactCards", Json.bool s.compactCards )
+                  , ( "compactCards", s.cardSize |> cardSize )
                   ]
                 , lun
                 , cl
                 ]
     in
     Json.object fields
+
+
+cardSize : Settings.CardSize -> Json.Value
+cardSize =
+    Settings.cardSizeToValue >> Json.int
 
 
 lobbyCreation : Start.LobbyCreation -> Json.Value

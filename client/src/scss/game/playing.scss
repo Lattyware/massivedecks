@@ -1,0 +1,71 @@
+@import "../card/variables";
+
+// A hand of cards.
+.hand {
+  margin-top: 0.5em;
+
+  position: relative;
+
+  &.not-playing {
+    pointer-events: none;
+
+    .game-card .aspect::after {
+      content: "";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 0.75em;
+      background-color: #000000;
+      opacity: 0.1;
+    }
+  }
+}
+
+// Unknown plays for the round animated in at the top of the screen during the playing stage.
+.background-plays {
+  --card-aspect-ratio: #{$card-ratio};
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -10;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+
+  .play {
+    position: relative;
+    transform: translateY(-100%);
+    transition: transform 500ms ease-in;
+    width: $card-width + $card-margin * 2;
+    @include pad-to-aspect-ratio(var(--card-aspect-ratio));
+
+    .game-card {
+      transform: rotate(0);
+      transition: transform 500ms ease-in;
+      transform-origin: center;
+
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+    }
+
+    &.played {
+      transform: translateY(0);
+      transition: transform 500ms ease-out;
+
+      .game-card {
+        transform: rotate(var(--rotation));
+        transition: transform 500ms ease-out;
+      }
+    }
+  }
+}

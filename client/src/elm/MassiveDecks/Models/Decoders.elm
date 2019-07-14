@@ -97,7 +97,12 @@ settings =
         (Json.maybe (Json.field "lastUsedName" Json.string))
         (Json.field "recentDecks" (Json.list externalSource))
         (Json.maybe (Json.field "chosenLanguage" language))
-        (Json.field "compactCards" Json.bool)
+        (Json.field "compactCards" cardSize)
+
+
+cardSize : Json.Decoder Settings.CardSize
+cardSize =
+    Json.int |> Json.andThen (\i -> i |> Settings.cardSizeFromValue |> Maybe.map Json.succeed |> Maybe.withDefault (unknownValue "card size" (String.fromInt i)))
 
 
 gameCode : Json.Decoder GameCode
@@ -463,8 +468,29 @@ eventByName name =
         "RoundFinished" ->
             gameEvent roundFinished
 
+        "HandRedrawn" ->
+            gameEvent handRedrawn
+
+        "PrivilegeSet" ->
+            privilegeSet
+
         _ ->
             unknownValue "event" name
+
+
+privilegeSet : Json.Decoder Events.Event
+privilegeSet =
+    Json.map3 (\u -> \p -> \t -> Events.PrivilegeSet { user = u, privilege = p, token = t })
+        (Json.field "user" userId)
+        (Json.field "privilege" privilege)
+        (Json.maybe (Json.field "token" lobbyToken))
+
+
+handRedrawn : Json.Decoder Events.GameEvent
+handRedrawn =
+    Json.map2 (\pl -> \ha -> Events.HandRedrawn { player = pl, hand = ha })
+        (Json.field "player" userId)
+        (Json.maybe (Json.field "hand" (Json.list response)))
 
 
 roundFinished : Json.Decoder Events.GameEvent

@@ -37,6 +37,7 @@ module Weightless.Attributes exposing
     , outlined
     , readonly
     , selected
+    , step
     , textFieldSlot
     , transformOrigin
     , type_
@@ -47,6 +48,11 @@ module Weightless.Attributes exposing
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Json.Encode as Json
+
+
+step : Int -> Html.Attribute msg
+step =
+    numberAttr "step"
 
 
 min : Int -> Html.Attribute msg

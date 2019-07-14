@@ -17,7 +17,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon .",
     "debug": "nodemon --inspect .",
-    "generate-json-validators": "npx typescript-json-validator src/ts/action/validation.ts --collection --noExtraProps--format=full --aliasRefs --ignoreErrors && sed -i '1s;^;/* eslint-disable */\\n;' src/ts/action/validation.validator.ts",
+    "generate-json-validators": "npx typescript-json-validator src/ts/action/validation.ts --collection --noExtraProps --format=full --aliasRefs --ignoreErrors && sed -i -e 's/allErrors: true/allErrors: false/g' -e 's/ChangeBase<\"\\(.*\\)\",\\(.*\\)>/ChangeBase\\1/g' -e 's/\\/\\* tslint:disable \\*\\//\\/\\* eslint-disable \\*\\//g' src/ts/action/validation.validator.ts",
     "generate-secret": "npm run prestart && node dist/secret.js"
   },
   "files": [
@@ -40,7 +40,7 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "source-map-support": "^0.5.12",
-    "ts-postgres": "^1.0.2",
+    "ts-postgres": "^1.1.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "wu": "^2.1.0"
@@ -57,10 +57,10 @@
     "@types/source-map-support": "^0.5.0",
     "@types/uuid": "^3.4.4",
     "@types/wu": "^2.1.39",
-    "@typescript-eslint/eslint-plugin": "^1.10.2",
-    "@typescript-eslint/parser": "^1.10.2",
-    "eslint": "^5.12.1",
-    "eslint-config-prettier": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^1.11.0",
+    "@typescript-eslint/parser": "^1.11.0",
+    "eslint": "^6.0.1",
+    "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-prettier": "^3.1.0",
     "nodemon": "^1.19.1",
     "prettier": "1.18.2",

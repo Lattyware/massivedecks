@@ -68,8 +68,8 @@ type MdString
     | LanguageSetting -- The label for the "Language" setting.
     | MissingLanguage -- A question asking if the user doesn't see the language they want.
     | TranslationBeg -- A request for help translating the game.
-    | CompactCardsSetting -- The label for the "Compact Cards" setting.
-    | CompactCardsExplanation -- An explanation of what compact cards does (makes cards square).
+    | CardSizeSetting -- The label for the "Card Size" setting.
+    | CardSizeExplanation -- An explanation of what the card size does (changes the size of the card).
     | SpeechSetting -- The label for the speech setting.
     | SpeechExplanation -- An explanation of what the speech setting does (enables TTS on cards).
     | NotificationsSetting -- The label for the notifications setting.
@@ -133,6 +133,8 @@ type MdString
     | InvitePlayers -- A short term for inviting players to the game.
     | SetAway -- A short term for leaving the game temporarily.
     | LeaveGame -- A short term for the action of leaving the game permanently.
+    | EndGame -- A short term for the action of ending the game early.
+    | EndGameDescription -- A description of the action of ending the game early.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
     | Promote -- A short term for the action of allowing a user to edit the game configuration.
       -- Notifications
@@ -173,17 +175,20 @@ type MdString
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
     | JudgePlay -- A description of the action of choosing a play to win the round.
     | LikePlay -- A description of the action of liking a play.
+    | AdvanceRound -- A description of the action of finishing looking at the winner and advancing to the next round.
     | Playing -- A description of the stage of the round where players are playing responses into the round.
     | Revealing -- A description of the stage of the round where the czar is revealing the plays.
     | Judging -- A description of the stage of the round where the czar is picking a winner.
     | Complete -- A description of the stage of the round where it is finished.
       -- Instructions
+    | WhatToDo -- A description of the action of asking for help on what to do in the game at this time.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
     | SubmitInstruction -- Instruction to the player on how to submit their play.
     | WaitingForPlaysInstruction -- Instruction to the player that they need to wait for other players to play.
     | CzarsDontPlayInstruction -- Instruction to the player that as Czar they don't play into the round.
     | RevealPlaysInstruction -- Instruction to reveal plays for the round.
     | WaitingForCzarInstruction -- Instruction to wait for the czar to reveal plays and pick a winner.
+    | AdvanceRoundInstruction -- Instruction that the next round is ready and they can advance.
       -- 404 Unknown
     | UnknownPageTitle -- A title explaining the page the user tried to go to doesn't exist.
     | GoBackHome -- The action to go back to the main page of the application.

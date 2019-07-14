@@ -40,17 +40,21 @@ import MassiveDecks.Pages.Lobby.Invite as Invite
 import MassiveDecks.Pages.Lobby.Messages exposing (..)
 import MassiveDecks.Pages.Lobby.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
+import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Settings.Messages as Settings
+import MassiveDecks.Settings.Model as Settings
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.Result as Result
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
@@ -99,7 +103,7 @@ subscriptions model =
         [ model.lobby |> Maybe.andThen .game |> Maybe.map Game.subscriptions |> Maybe.withDefault Sub.none
         , model.notifications |> Animated.subscriptions |> Sub.map (NotificationMsg >> Global.LobbyMsg)
         , ServerConnection.notifications
-            (EventReceived >> Global.LobbyMsg)
+            eventPreprocess
             (ErrorReceived >> Global.LobbyMsg)
             (Error.Json >> Error.Add >> Global.ErrorMsg)
         ]
@@ -149,7 +153,7 @@ update msg model =
                                     (\game ->
                                         Util.modelLift
                                             (\g -> { model | lobby = Just { lobby | game = Just g } })
-                                            (Game.applyGameEvent gameEvent game)
+                                            (Game.applyGameEvent model.auth gameEvent game)
                                     )
                                 |> Maybe.withDefault ( model, Cmd.none )
 
@@ -192,6 +196,16 @@ update msg model =
                                             UserLeft user
                             in
                             addNotification message { model | lobby = Just { lobby | users = newUsers } }
+
+                        Events.PrivilegeSet { user, privilege } ->
+                            let
+                                updateUser =
+                                    \id -> \u -> { u | privilege = privilege } |> Maybe.justIf (user == id) |> Maybe.withDefault u
+
+                                users =
+                                    lobby.users |> Dict.map updateUser
+                            in
+                            ( { model | lobby = Just { lobby | users = users } }, Cmd.none )
 
                 Nothing ->
                     case event of
@@ -260,21 +274,15 @@ view shared model =
             else
                 Icon.users
 
-        title =
-            model.lobby
-                |> Maybe.andThen .game
-                |> Maybe.map (.game >> .round >> Round.data >> .call >> .body >> Parts.viewSingleLine)
-
         notifications =
             model.notifications |> List.map (keyedViewNotification shared model.lobby)
     in
     [ Html.div
-        [ HtmlA.classList
-            [ ( "lobby", True )
-            , ( "compact-cards", shared.settings.settings.compactCards )
-            ]
+        [ HtmlA.id "lobby"
+        , HtmlA.classList [ ( "collapsed-users", not usersShown ) ]
+        , shared.settings.settings.cardSize |> cardSizeToAttr
         ]
-        [ Html.div [ HtmlA.id "top-bar" ]
+        (Html.div [ HtmlA.id "top-bar" ]
             [ Html.div [ HtmlA.class "left" ]
                 (List.concat
                     [ [ Components.iconButtonStyled
@@ -282,22 +290,22 @@ view shared model =
                             , Strings.ToggleUserList |> Lang.title shared
                             ]
                             ( [ Icon.lg ], usersIcon )
-                      , gameMenu shared
+                      , lobbyMenu shared model.auth
                       ]
                     , castButton
                     ]
                 )
-            , title |> Maybe.map (Html.div [ HtmlA.class "title-call" ]) |> Maybe.withDefault Html.nothing
             , Html.div [] [ Settings.view shared ]
             ]
-        , model.lobby
-            |> Maybe.map (viewLobby shared model.configure usersShown model.auth model.selectedUser)
-            |> Maybe.withDefault
-                (Html.div [ HtmlA.class "loading" ]
-                    [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
-                )
-        , HtmlK.ol [ HtmlA.class "notifications" ] notifications
-        ]
+            :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
+            :: (model.lobby
+                    |> Maybe.map (viewLobby shared model.configure model.auth model.selectedUser)
+                    |> Maybe.withDefault
+                        [ Html.div [ HtmlA.class "loading" ]
+                            [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
+                        ]
+               )
+        )
     , Invite.dialog shared
         model.auth.claims.gc
         (model.lobby |> Maybe.andThen (.config >> .password))
@@ -309,26 +317,71 @@ view shared model =
 {- Private -}
 
 
-gameMenu : Shared -> Html Global.Msg
-gameMenu shared =
+cardSizeToAttr : Settings.CardSize -> Html.Attribute msg
+cardSizeToAttr cardSize =
+    case cardSize of
+        Settings.Minimal ->
+            HtmlA.class "minimal-card-size"
+
+        Settings.Square ->
+            HtmlA.class "square-card-size"
+
+        Settings.Full ->
+            HtmlA.nothing
+
+
+eventPreprocess : Events.Event -> Global.Msg
+eventPreprocess event =
+    case event of
+        Events.PrivilegeSet { token } ->
+            Global.Batch
+                [ token
+                    |> Maybe.map (Token.decode >> Result.unifiedMap (Error.Token >> Error.Add >> Global.ErrorMsg) Global.UpdateToken)
+                    |> Maybe.withDefault Global.NoOp
+                , event |> EventReceived |> Global.LobbyMsg
+                ]
+
+        _ ->
+            event |> EventReceived |> Global.LobbyMsg
+
+
+lobbyMenu : Shared -> Auth -> Html Global.Msg
+lobbyMenu shared auth =
     let
         id =
-            "game-menu-button"
+            "lobby-menu-button"
 
-        menuItems =
-            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers (ToggleInviteDialog |> Global.LobbyMsg |> Just)
-            , Menu.Separator
-            , Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
+        lobbyMenuItems =
+            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers (ToggleInviteDialog |> Global.LobbyMsg |> Just) ]
+
+        userLobbyMenuItems =
+            [ Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
             , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame Nothing
-            , Menu.Separator
-            , Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGame (Just "https://github.com/lattyware/massivedecks")
+            ]
+
+        privilegedLobbyMenuItems =
+            [ Menu.button Icon.stopCircle Strings.EndGame Strings.EndGameDescription Nothing
+            ]
+
+        mdMenuItems =
+            [ Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGame (Just "https://github.com/lattyware/massivedecks")
             , Menu.link Icon.bug Strings.ReportError Strings.ReportError (Just "https://github.com/Lattyware/massivedecks/issues/new")
             ]
+
+        menuItems =
+            [ lobbyMenuItems |> Just
+            , userLobbyMenuItems |> Just
+            , privilegedLobbyMenuItems |> Maybe.justIf (auth.claims.pvg == User.Privileged)
+            , mdMenuItems |> Just
+            ]
+
+        separatedMenuItems =
+            menuItems |> List.filterMap identity |> List.intersperse [ Menu.Separator ] |> List.concat
     in
     Html.div []
         [ Components.iconButtonStyled [ HtmlA.id id, Strings.GameMenu |> Lang.title shared ]
             ( [ Icon.lg ], Icon.bars )
-        , Menu.view shared id WlA.XCenter WlA.YBottom menuItems
+        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XLeft, WlA.YTop ) separatedMenuItems
         ]
 
 
@@ -447,30 +500,29 @@ username shared users id =
         |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
 
 
-viewLobby : Shared -> Configure.Model -> Bool -> Auth -> Maybe User.Id -> Lobby -> Html Global.Msg
-viewLobby shared configure usersShown auth selectedUser lobby =
+viewLobby : Shared -> Configure.Model -> Auth -> Maybe User.Id -> Lobby -> List (Html Global.Msg)
+viewLobby shared configure auth selectedUser lobby =
     let
         game =
             lobby.game |> Maybe.map .game
 
         privileged =
             auth.claims.pvg == User.Privileged
-
-        content =
-            [ viewUsers shared auth.claims.uid selectedUser lobby.users game
-            , Html.div [ HtmlA.id "scroll-frame" ]
-                [ lobby.game
-                    |> Maybe.map (Game.view shared auth lobby.config.decks lobby.users)
-                    |> Maybe.withDefault (Configure.view shared privileged configure auth.claims.gc lobby lobby.config)
-                ]
-            ]
     in
-    Html.div [ HtmlA.classList [ ( "content-wrapper", True ), ( "collapsed-users", not usersShown ) ] ] content
+    [ Html.div [ HtmlA.id "lobby-content" ]
+        [ viewUsers shared auth.claims.uid selectedUser lobby.users game
+        , Html.div [ HtmlA.id "scroll-frame" ]
+            [ lobby.game
+                |> Maybe.map (Game.view shared auth lobby.config.decks lobby.users)
+                |> Maybe.withDefault (Configure.view shared privileged configure auth.claims.gc lobby lobby.config)
+            ]
+        ]
+    ]
 
 
 viewUsers : Shared -> User.Id -> Maybe User.Id -> Dict User.Id User -> Maybe Game -> Html Global.Msg
 viewUsers shared player selectedUser users game =
-    Wl.card [ HtmlA.class "users" ]
+    Wl.card [ HtmlA.id "users" ]
         [ Html.div [ HtmlA.class "collapsible" ]
             [ users
                 |> Dict.toList
@@ -533,7 +585,7 @@ viewUser shared player selectedUser game ( userId, user ) =
                 )
             , Html.span [ WlA.listItemSlot WlA.AfterItem ] score
             ]
-        , Menu.view shared id WlA.XRight WlA.YTop menuItems
+        , Menu.view shared id ( WlA.XRight, WlA.YCenter ) ( WlA.XLeft, WlA.YCenter ) menuItems
         ]
     )
 

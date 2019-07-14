@@ -163,6 +163,14 @@ update msg model =
             , Cmd.batch [ lobbyCmd, settingsCmd ]
             )
 
+        UpdateToken auth ->
+            let
+                shared =
+                    model.shared
+            in
+            Util.modelLift (\settings -> { model | shared = { shared | settings = settings } })
+                (Settings.onTokenUpdate auth shared.settings)
+
         StartMsg startMsg ->
             case model.page of
                 Pages.Start startModel ->
@@ -215,7 +223,7 @@ update msg model =
         Refresh ->
             ( model, Navigation.reload )
 
-        -- TODO: Maybe popup something here?
+        -- TODO: Error? This would be an application error. It's pretty harmless though, probably not worth interrupting.
         BlockedExternalUrl ->
             ( model, Cmd.none )
 
@@ -224,6 +232,9 @@ update msg model =
 
         NoOp ->
             ( model, Cmd.none )
+
+        Batch messages ->
+            Util.batchUpdate messages model update
 
 
 view : Model -> Browser.Document Msg

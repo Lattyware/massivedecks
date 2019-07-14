@@ -1,81 +1,23 @@
-@import "card/variables";
-@import "colors";
+@import "./card/variables";
+@import "./colors";
 @import "~weightless/style/base/elevation";
+@import "./game/judging";
+@import "./game/playing";
+@import "./game/plays";
+@import "./pages/lobby/variables";
 
+// The main game area.
 #game {
-  height: 100%;
   position: relative;
 
   display: flex;
   flex-direction: column;
   align-items: stretch;
 
-  .card-area {
-    position: relative;
-  }
-
-  .context-help {
-    position: fixed;
-    top: 4em;
-    right: 0;
-    z-index: 1;
-
-    background-color: $secondary-background;
-    padding: 0.5em;
-    border-bottom-left-radius: 1em;
-
-    display: flex;
-    align-items: center;
-    align-self: stretch;
-
-    transition: transform 200ms ease-out;
-    transform: translate(calc(100% - 2em), 0);
-
-    &:hover,
-    &:active {
-      transform: translate(0, 0);
-      transition: transform 200ms ease-in;
-    }
-
-    & > svg {
-      margin-right: 0.5em;
-    }
-  }
-
-  .scroll-top {
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-
-    wl-button {
-      pointer-events: all;
-      position: sticky;
-      bottom: 0.5em;
-      margin: 0.5em;
-      z-index: 1;
-
-      opacity: 0.5;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
-  // This pushes the scroll-top button down below the page content.
-  .scroll-top-spacer {
-    height: 6em;
-  }
-
+  // A button that allows the user to perform the main action in the game for them at this moment.
   .action {
     position: fixed;
-    // Hack because the debugger covers it up.
+    // TODO: Remove Hack (here because the debugger covers it up).
     bottom: 5rem;
     //bottom: 1em;
     right: 1rem;
@@ -84,179 +26,105 @@
 
     --button-fab-size: 4rem;
     font-size: 1.5rem;
-  }
 
-  // A style for actions that the game is waiting on - high contrast to grab attention.
-  .important {
-    --button-bg: #{$secondary};
-    --button-color: #{$on-secondary};
-    --button-bg-hover: #{$secondary-light};
-    --button-color-hover: #{$on-secondary-light};
-    --button-bg-active: #{$secondary-dark};
-    --button-color-acitve: #{$on-secondary-dark};
+    // A style for actions that the game is waiting on - high contrast to grab attention.
+    &.important {
+      --button-bg: #{$secondary};
+      --button-color: #{$on-secondary};
+      --button-bg-hover: #{$secondary-light};
+      --button-color-hover: #{$on-secondary-light};
+      --button-bg-active: #{$secondary-dark};
+      --button-color-acitve: #{$on-secondary-dark};
+    }
   }
 }
 
-.play-area {
-  overflow: hidden;
+// Contextual help for the player telling them what they need to do at this point in the game.
+#context-help {
+  font-size: 1.2rem;
+  position: fixed;
+  top: $top-bar-height;
+  right: 0;
+  z-index: 1;
+  --card-padding: 0.5em;
+
+  #context-help-button {
+    font-size: 1.4rem;
+  }
+
+  wl-popover-card {
+    min-width: 10em;
+  }
+}
+
+// The button to scroll to the top of the game area.
+.scroll-top {
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  wl-button {
+    pointer-events: all;
+    position: sticky;
+    bottom: 0.5em;
+    margin: 0.5em;
+    z-index: 1;
+
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// This pushes the scroll-top button down below the page content.
+.scroll-top-spacer {
+  height: 6em;
+}
+
+// Where the call for the round is displayed.
+.round {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: stretch;
-  flex-basis: $card-width;
+  align-items: center;
   min-width: $card-width;
-  padding: 2em 0;
+  padding: 1em 0;
+}
 
-  .cards-in-play {
-    display: flex;
-    justify-content: center;
+// A play or card that has been picked by the player as the target of some action.
+.game-card,
+ol.card-set {
+  &.picked {
+    .side {
+      border-color: $primary;
+    }
   }
 }
 
-.hand {
-  margin-top: 0.5em;
-
+// Display some number of cards or card sets together.
+ul.cards {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
 
-  position: relative;
-
-  &.not-playing {
-    pointer-events: none;
-
-    .game-card .aspect::after {
-      content: "";
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 0.75em;
-      background-color: #000000;
-      opacity: 0.1;
-    }
-  }
-}
-
-.background-plays {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: -10;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-evenly;
-
-  .play {
-    position: relative;
-    transform: translateY(-100%);
-    transition: transform 500ms ease-in;
-    width: $card-width + $card-margin * 2;
-    @include pad-to-aspect-ratio(var(--card-aspect-ratio));
-
-    .game-card {
-      transform: rotate(0);
-      transition: transform 500ms ease-in;
-      transform-origin: center;
-
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-    }
-
-    &.played {
-      transform: translateY(0);
-      transition: transform 500ms ease-out;
-
-      .game-card {
-        transform: rotate(var(--rotation));
-        transition: transform 500ms ease-out;
-      }
-    }
-  }
-}
-
-.plays {
   list-style: none;
   padding: 0;
-
   margin-top: 0.5em;
-
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-
-  position: relative;
-
-  .play-with-byline {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .byline {
-    font-size: 2em;
-    text-align: center;
-
-    svg {
-      margin-right: 0.5em;
-    }
-  }
-
-  .play {
-    display: flex;
-    margin: 1em;
-
-    .overlap {
-      flex-shrink: 1;
-      flex-grow: 0;
-      flex-basis: $card-width;
-      overflow: visible;
-      z-index: 0;
-
-      &:last-of-type {
-        width: $card-width;
-      }
-
-      &:hover {
-        z-index: 1;
-      }
-
-      .game-card {
-        margin: 0 $card-margin;
-      }
-    }
-  }
 }
 
-.liked {
-  .side::after {
-    position: absolute;
-    bottom: 1em;
-    right: 1em;
-    width: 8em;
-    height: 8em;
-    transform: rotate(-0.125turn);
-
-    display: block;
-    content: "";
-    opacity: 0.3;
-    //noinspection CssInvalidFunction
-    background: inline-svg(
-      "./assets/images/certificate-thumbs-up.svg",
-      (
-        path: (
-          fill: $primary
-        )
-      )
-    );
-  }
+// Multiple cards that are grouped together.
+ol.card-set {
+  margin: 0.5em;
+  display: flex;
+  list-style: none;
+  padding: 0;
 }

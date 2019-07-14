@@ -22,9 +22,11 @@ type Msg
     | LobbyMsg Lobby.Msg
     | SettingsMsg Settings.Msg
     | ErrorMsg Error.Msg
+    | UpdateToken Lobby.Auth
     | CastStatusUpdate Cast.Status
     | TryCast Lobby.Auth
     | Refresh
     | BlockedExternalUrl
     | Copy String
     | NoOp
+    | Batch (List Msg)

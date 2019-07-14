@@ -13,13 +13,26 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Util.Html.Attributes as HtmlA
 import Weightless.Attributes as WlA
 
 
 actions : List Action
 actions =
-    [ Submit, TakeBack, Judge, Like ]
+    [ Submit, TakeBack, Judge, Like, Advance ]
+
+
+{-| Style for actions that are blocking the game from continuing until they are performed.
+-}
+blocking : List (Html.Attribute msg)
+blocking =
+    [ HtmlA.class "important" ]
+
+
+{-| Style for an action that doesn't block the game.
+-}
+normal : List (Html.Attribute msg)
+normal =
+    [ WlA.inverted, WlA.outlined ]
 
 
 view : Shared -> Maybe Action -> Action -> Html Global.Msg
@@ -28,16 +41,19 @@ view shared visible action =
         { icon, attrs, title, onClick } =
             case action of
                 Submit ->
-                    IconView Icon.check [ HtmlA.class "important" ] Strings.SubmitPlay Game.Submit
+                    IconView Icon.check blocking Strings.SubmitPlay Game.Submit
 
                 TakeBack ->
-                    IconView Icon.undo [ WlA.inverted, WlA.outlined ] Strings.TakeBackPlay Game.TakeBack
+                    IconView Icon.undo normal Strings.TakeBackPlay Game.TakeBack
 
                 Judge ->
-                    IconView Icon.trophy [ HtmlA.class "important" ] Strings.JudgePlay Game.Judge
+                    IconView Icon.trophy blocking Strings.JudgePlay Game.Judge
 
                 Like ->
-                    IconView Icon.thumbsUp [ WlA.inverted, WlA.outlined ] Strings.LikePlay Game.Like
+                    IconView Icon.thumbsUp normal Strings.LikePlay Game.Like
+
+                Advance ->
+                    IconView Icon.forward normal Strings.AdvanceRound Game.AdvanceRound
     in
     Components.floatingActionButton
         (List.concat
