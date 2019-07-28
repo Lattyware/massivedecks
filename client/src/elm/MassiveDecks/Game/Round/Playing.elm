@@ -8,16 +8,16 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
-import MassiveDecks.Card as Card
+import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Messages as Global
-import MassiveDecks.Model exposing (..)
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure
+import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Strings as Strings
@@ -33,7 +33,7 @@ init round pick =
     let
         cmd =
             round.players
-                |> playStylesGenerator (Card.slotCount round.call)
+                |> playStylesGenerator (Call.slotCount round.call)
                 |> Random.generate (Game.SetPlayStyles >> lift)
     in
     ( { round | pick = pick }
@@ -41,11 +41,11 @@ init round pick =
     )
 
 
-view : Shared -> Lobby.Auth -> List Configure.Deck -> Model -> Round.Playing -> RoundView Global.Msg
-view shared auth decks model round =
+view : Lobby.Auth -> Config -> Model -> Round.Playing -> RoundView Global.Msg
+view auth config model round =
     let
         slots =
-            Card.slotCount round.call
+            Call.slotCount round.call
 
         missingFromPick =
             slots - (round.pick.cards |> List.length)
@@ -68,7 +68,7 @@ view shared auth decks model round =
 
         hand =
             HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]
-                (model.hand |> List.map (round.pick.cards |> viewHandCard shared decks))
+                (model.hand |> List.map (round.pick.cards |> viewHandCard config))
 
         backgroundPlays =
             Html.div [ HtmlA.class "background-plays" ]
@@ -94,17 +94,16 @@ view shared auth decks model round =
 {- Private -}
 
 
-viewHandCard : Shared -> List Configure.Deck -> List Card.Id -> Card.Response -> ( String, Html Global.Msg )
-viewHandCard shared decks picked response =
+viewHandCard : Config -> List Card.Id -> Card.Response -> ( String, Html Global.Msg )
+viewHandCard config picked response =
     ( response.details.id
-    , Card.view
-        shared
-        decks
+    , Response.view
+        config
         Card.Front
         [ HtmlA.classList [ ( "picked", List.member response.details.id picked ) ]
         , response.details.id |> Game.Pick |> lift |> HtmlE.onClick
         ]
-        (Card.R response)
+        response
     )
 
 
@@ -123,7 +122,8 @@ viewBackgroundPlay playStyles slots played for =
 
 viewBackgroundPlayCard : CardStyle -> Html msg
 viewBackgroundPlayCard playStyle =
-    Card.viewUnknownResponse [ "rotate(" ++ String.fromFloat playStyle.rotation ++ "turn)" |> HtmlA.style "transform" ]
+    Response.viewUnknown
+        [ "rotate(" ++ String.fromFloat playStyle.rotation ++ "turn)" |> HtmlA.style "transform" ]
 
 
 lift : Game.Msg -> Global.Msg

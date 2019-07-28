@@ -142,7 +142,7 @@ view shared canEdit model gameCode lobby config =
                     ]
                 ]
             , Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab shared model.tab))
-            , tabContent shared canEdit model lobby config
+            , tabContent shared canEdit model config
             ]
         , Wl.card []
             [ startGameSegment shared canEdit lobby config
@@ -265,8 +265,11 @@ startGameProblems users config =
             if noDecks then
                 [ Message.errorWithFix
                     Strings.NeedAtLeastOneDeck
-                    Strings.NoDecksHint
-                    ("CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> lift)
+                    [ { description = Strings.NoDecksHint
+                      , icon = Icon.plus
+                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> lift
+                      }
+                    ]
                     |> Just
                 ]
 
@@ -283,15 +286,33 @@ startGameProblems users config =
                 ]
 
         playerCount =
-            users |> Dict.values |> List.filter (\user -> user.role == User.Player) |> List.length
+            users
+                |> Dict.values
+                |> List.filter (\user -> user.role == User.Player && user.presence == User.Joined)
+                |> List.length
+
+        aiPlayers =
+            config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
 
         playerIssues =
             [ Message.errorWithFix
                 Strings.NeedAtLeastThreePlayers
-                Strings.Invite
-                (Lobby.ToggleInviteDialog |> Global.LobbyMsg)
-                -- TODO: 3! 2 for testing.
-                |> Maybe.justIf (playerCount < 2)
+                [ { description = Strings.Invite
+                  , icon = Icon.bullhorn
+                  , action = Lobby.ToggleInviteDialog |> Global.LobbyMsg
+                  }
+                , { description = Strings.AddAnAiPlayer
+                  , icon = Icon.robot
+                  , action =
+                        { number = 3 - playerCount + aiPlayers }
+                            |> Just
+                            |> Rules.RandoChange
+                            |> HouseRuleChange Remote
+                            |> Lobby.ConfigureMsg
+                            |> Global.LobbyMsg
+                  }
+                ]
+                |> Maybe.justIf (playerCount < 3)
             ]
     in
     [ deckIssues, playerIssues ] |> List.concat |> List.filterMap identity
@@ -334,28 +355,32 @@ tabName target =
             Strings.ConfigurePrivacy
 
 
-tabContent : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
-tabContent shared canEdit model lobby config =
-    case model.tab of
-        Decks ->
-            configureDecks shared canEdit model lobby config
+tabContent : Shared -> Bool -> Model -> Config -> Html Global.Msg
+tabContent shared canEdit model config =
+    let
+        viewTab =
+            case model.tab of
+                Decks ->
+                    configureDecks
 
-        Rules ->
-            configureRules shared canEdit model lobby config
+                Rules ->
+                    configureRules
 
-        Privacy ->
-            configureGameSettings shared canEdit model lobby config
+                Privacy ->
+                    configureGameSettings
+    in
+    viewTab shared canEdit model config
 
 
-configureRules : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
-configureRules shared canEdit model lobby config =
+configureRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
+configureRules shared canEdit model config =
     Html.div [ HtmlA.class "rules" ]
         [ Html.div [ HtmlA.class "core-rules" ]
             [ Html.h3 [] [ Strings.GameRulesTitle |> Lang.html shared ]
             , handSize shared canEdit model config
             , scoreLimit shared canEdit model config
             ]
-        , houseRules shared canEdit model lobby config
+        , houseRules shared canEdit model config
         ]
 
 
@@ -438,8 +463,8 @@ scoreLimit shared canEdit model config =
         [ Message.info Strings.ScoreLimitDescription ]
 
 
-houseRules : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
-houseRules shared canEdit model lobby config =
+houseRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
+houseRules shared canEdit model config =
     Html.div [ HtmlA.class "house-rules" ]
         [ Html.h3 [] [ Strings.HouseRulesTitle |> Lang.html shared ]
         , rando shared canEdit model config
@@ -567,8 +592,8 @@ rebootSettings shared canEdit value localChange =
     ]
 
 
-configureDecks : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
-configureDecks shared canEdit model lobby config =
+configureDecks : Shared -> Bool -> Model -> Config -> Html Global.Msg
+configureDecks shared canEdit model config =
     let
         hint =
             if canEdit then
@@ -628,8 +653,8 @@ configureDecks shared canEdit model lobby config =
         )
 
 
-configureGameSettings : Shared -> Bool -> Model -> Lobby -> Config -> Html Global.Msg
-configureGameSettings shared canEdit model lobby config =
+configureGameSettings : Shared -> Bool -> Model -> Config -> Html Global.Msg
+configureGameSettings shared canEdit model config =
     let
         passwordAttrs =
             List.concat

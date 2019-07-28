@@ -1,4 +1,9 @@
-/** The rules for a standard game.*/
+import { HouseRules } from "./rules/houseRules";
+import * as houseRules from "./rules/houseRules";
+import * as rando from "./rules/rando";
+
+/** The rules for a standard game.
+ */
 export interface Rules {
   /**
    * The number of cards in each player's hand.
@@ -21,13 +26,7 @@ export interface Rules {
 export interface Public {
   handSize: number;
   scoreLimit?: number;
-  houseRules: HouseRules;
-}
-
-export interface HouseRules {
-  packingHeat?: PackingHeat;
-  reboot?: Reboot;
-  rando?: Rando;
+  houseRules: houseRules.Public;
 }
 
 /**
@@ -36,13 +35,12 @@ export interface HouseRules {
 export const create = (): Rules => ({
   handSize: 10,
   scoreLimit: 25,
-  houseRules: {}
+  houseRules: houseRules.create()
 });
 
 /**
  * Configuration for the "Packing Heat" house rule.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface PackingHeat {}
 
 /**
@@ -60,18 +58,9 @@ export interface Reboot {
   cost: number;
 }
 
-export interface Rando {
-  /**
-   * The number of AI players to add to the game.
-   * @TJS-type integer
-   * @minimum 1
-   * @maximum 10
-   */
-  number: number;
-}
-
 export const censor = (rules: Rules): Public => ({
-  ...rules
+  ...rules,
+  houseRules: houseRules.censor(rules.houseRules)
 });
 
 export interface ChangeBase<Name extends string, HouseRule> {
@@ -80,7 +69,7 @@ export interface ChangeBase<Name extends string, HouseRule> {
 }
 
 export type ChangePackingHeat = ChangeBase<"PackingHeat", PackingHeat>;
-export type ChangeRando = ChangeBase<"Rando", Rando>;
+export type ChangeRando = ChangeBase<"Rando", rando.Public>;
 export type ChangeReboot = ChangeBase<"Reboot", Reboot>;
 
 export type Change = ChangePackingHeat | ChangeRando | ChangeReboot;

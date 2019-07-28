@@ -9,7 +9,7 @@ module MassiveDecks.Pages.Spectate.Model exposing
     , playingPlay
     )
 
-import MassiveDecks.Card.Model as Card exposing (Card)
+import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Pages.Spectate.Route exposing (..)
 import MassiveDecks.User as User

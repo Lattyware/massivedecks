@@ -1,3 +1,5 @@
+// If the duration is changed, sync to Animated.elm
+
 .animation {
   transition: transform 200ms ease-in, opacity 200ms ease-in;
   opacity: 0;

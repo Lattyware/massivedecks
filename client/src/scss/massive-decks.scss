@@ -23,6 +23,10 @@ body {
   min-width: $min-page-width;
 }
 
+#game {
+  background: $background url(../../assets/images/background.svg) repeat;
+}
+
 .game-code-input {
   --input-font-family: "Source Code Pro", monospace;
 }
@@ -193,8 +197,8 @@ a,
   display: flex;
   align-items: center;
 
-  .svg-inline--fa {
-    margin-right: 0.3em;
+  .message-type-icon {
+    margin: 0.3em;
   }
 }
 
@@ -205,11 +209,27 @@ a,
 .inline-error {
   @include message;
   color: $error;
+  background-color: lighten($error, 55%);
+  border-radius: 0.5em;
 }
 
 .warning {
   @include message;
   color: #6f6401;
+}
+
+.fixes {
+  display: inline-block;
+  padding: 0;
+  margin: 0 0 0 auto;
+
+  li {
+    display: inline-block;
+
+    wl-button {
+      margin: 0;
+    }
+  }
 }
 
 .remove-from-flow {

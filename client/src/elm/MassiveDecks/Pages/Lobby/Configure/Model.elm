@@ -4,6 +4,7 @@ module MassiveDecks.Pages.Lobby.Configure.Model exposing
     , DeckError
     , Model
     , Tab(..)
+    , fake
     )
 
 import MassiveDecks.Card.Source.Model as Source
@@ -49,4 +50,24 @@ type alias Config =
     , password : Maybe String
     , version : String
     , public : Bool
+    }
+
+
+{-| A fake configuration.
+-}
+fake : Config
+fake =
+    { rules =
+        { handSize = 0
+        , scoreLimit = Nothing
+        , houseRules =
+            { rando = Nothing
+            , packingHeat = Nothing
+            , reboot = Nothing
+            }
+        }
+    , decks = []
+    , password = Nothing
+    , version = ""
+    , public = False
     }

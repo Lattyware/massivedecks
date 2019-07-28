@@ -1,4 +1,7 @@
 import { CreateLobby } from "./action/initial/create-lobby";
+import { RegisterUser } from "./action/initial/register-user";
+import * as event from "./event";
+import * as presenceChanged from "./events/lobby-event/presence-changed";
 import * as game from "./games/game";
 import { Game } from "./games/game";
 import * as rules from "./games/rules";
@@ -8,7 +11,6 @@ import { GameCode } from "./lobby/game-code";
 import * as user from "./user";
 import { User } from "./user";
 import * as util from "./util";
-import * as token from "./user/token";
 
 /**
  * A game lobby.
@@ -132,3 +134,22 @@ export const censor = (lobby: Lobby): Public => ({
   config: config.censor(lobby.config),
   ...(lobby.game === undefined ? {} : { game: game.censor(lobby.game) })
 });
+
+export const addUser = (
+  lobby: Lobby,
+  registration: RegisterUser,
+  change?: (user: User) => User
+): {
+  user: user.Id;
+  events: Iterable<event.Distributor>;
+} => {
+  const newUser = user.create(registration);
+  const changedUser = change === undefined ? newUser : change(newUser);
+  const id = lobby.nextUserId.toString();
+  lobby.nextUserId += 1;
+  lobby.users.set(id, changedUser);
+  return {
+    user: id,
+    events: [event.targetAll(presenceChanged.joined(id, changedUser))]
+  };
+};

@@ -117,7 +117,7 @@ enhanceHtml context mdString unenhanced =
         GameCodeTerm ->
             term context GameCodeDescription Icon.qrcode unenhanced
 
-        GameCode { code } ->
+        GameCode _ ->
             [ Html.span
                 [ HtmlA.class "game-code", GameCodeSpecificDescription |> asString context |> HtmlA.title ]
                 unenhanced
@@ -137,6 +137,9 @@ enhanceHtml context mdString unenhanced =
 
         Spectators ->
             term context SpectatorsDescription Icon.eye unenhanced
+
+        Left ->
+            term context LeftDescription Icon.signOutAlt unenhanced
 
         Privileged ->
             term context PrivilegedDescription Icon.userCog unenhanced

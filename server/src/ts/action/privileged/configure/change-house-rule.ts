@@ -4,6 +4,7 @@ import * as rules from "../../../games/rules";
 import { Handler } from "../../handler";
 import * as configure from "../configure";
 import * as houseRuleChanged from "../../../events/lobby-event/configured/house-rule-changed";
+import * as rando from "../../../games/rules/rando";
 
 /**
  * Set the hand size for the lobby.
@@ -24,24 +25,40 @@ export const is = (action: Action): action is ChangeHouseRule =>
   action.action === name;
 
 export const handle: Handler<ChangeHouseRule> = (auth, lobby, action) => {
-  const houseRules = lobby.config.rules.houseRules;
+  const hr = lobby.config.rules.houseRules;
+  const events = [];
+  let changed = false;
   switch (action.change.houseRule) {
     case "PackingHeat":
-      houseRules.packingHeat = action.change.settings;
+      if (hr.packingHeat !== action.change.settings) {
+        hr.packingHeat = action.change.settings;
+        changed = true;
+      }
       break;
     case "Rando":
-      houseRules.rando = action.change.settings;
+      const userEvents = rando.change(lobby, hr.rando, action.change.settings);
+      if (userEvents !== null) {
+        events.push(...userEvents);
+        changed = true;
+      }
       break;
     case "Reboot":
-      houseRules.reboot = action.change.settings;
+      if (hr.reboot !== action.change.settings) {
+        hr.reboot = action.change.settings;
+        changed = true;
+      }
       break;
   }
-  lobby.config.version += 1;
-
-  return {
-    lobby,
-    events: [
+  if (changed) {
+    lobby.config.version += 1;
+    events.push(
       event.targetAll(houseRuleChanged.of(action.change, lobby.config.version))
-    ]
-  };
+    );
+    return {
+      lobby,
+      events
+    };
+  } else {
+    return {};
+  }
 };

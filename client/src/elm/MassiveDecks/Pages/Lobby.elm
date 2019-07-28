@@ -61,7 +61,7 @@ import Weightless.Attributes as WlA
 
 changeRoute : Route -> Model -> ( Model, Cmd Global.Msg )
 changeRoute r model =
-    ( { model | route = r, lobby = Nothing, selectedUser = Nothing }, Cmd.none )
+    ( { model | route = r, lobby = Nothing }, Cmd.none )
 
 
 init : Shared -> Route -> Maybe Auth -> Route.Fork ( Model, Cmd Global.Msg )
@@ -80,7 +80,6 @@ init shared r auth =
                     ( { route = r
                       , auth = a
                       , lobby = Nothing
-                      , selectedUser = Nothing
                       , configure = Configure.init
                       , notificationId = 0
                       , notifications = []
@@ -112,9 +111,6 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Global.Msg )
 update msg model =
     case msg of
-        SelectUser user ->
-            ( { model | selectedUser = user }, Cmd.none )
-
         GameMsg gameMsg ->
             case model.lobby of
                 Just l ->
@@ -173,19 +169,21 @@ update msg model =
                             let
                                 newUsers =
                                     case state of
-                                        Events.UserJoined { name } ->
+                                        Events.UserJoined { name, privilege, control } ->
                                             Dict.insert
                                                 user
                                                 { name = name
                                                 , presence = User.Joined
                                                 , connection = User.Connected
-                                                , privilege = User.Unprivileged
+                                                , privilege = privilege
                                                 , role = User.Player
+                                                , control = control
                                                 }
                                                 lobby.users
 
                                         Events.UserLeft ->
-                                            Dict.remove user lobby.users
+                                            lobby.users
+                                                |> Dict.update user (Maybe.map (\u -> { u | presence = User.Left }))
 
                                 message =
                                     case state of
@@ -199,11 +197,8 @@ update msg model =
 
                         Events.PrivilegeSet { user, privilege } ->
                             let
-                                updateUser =
-                                    \id -> \u -> { u | privilege = privilege } |> Maybe.justIf (user == id) |> Maybe.withDefault u
-
                                 users =
-                                    lobby.users |> Dict.map updateUser
+                                    lobby.users |> Dict.update user (Maybe.map (\u -> { u | privilege = privilege }))
                             in
                             ( { model | lobby = Just { lobby | users = users } }, Cmd.none )
 
@@ -236,7 +231,7 @@ update msg model =
             Util.lift
                 (\notifications -> { model | notifications = notifications })
                 (NotificationMsg >> Global.LobbyMsg)
-                (Animated.update { removeDone = Just notificationAnimationDuration } notificationMsg model.notifications)
+                (Animated.update { removeDone = Just Animated.defaultDuration } notificationMsg model.notifications)
 
         ToggleInviteDialog ->
             ( { model | inviteDialogOpen = not model.inviteDialogOpen }, Cmd.none )
@@ -299,7 +294,7 @@ view shared model =
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
             :: (model.lobby
-                    |> Maybe.map (viewLobby shared model.configure model.auth model.selectedUser)
+                    |> Maybe.map (viewLobby shared model.configure model.auth)
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
                             [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
@@ -402,11 +397,6 @@ notificationDuration =
     3500
 
 
-notificationAnimationDuration : Int
-notificationAnimationDuration =
-    200
-
-
 applySync : Model -> Lobby -> Maybe (List Card.Response) -> Maybe (List Card.Id) -> ( Model, Cmd Global.Msg )
 applySync model state hand pick =
     let
@@ -500,8 +490,8 @@ username shared users id =
         |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
 
 
-viewLobby : Shared -> Configure.Model -> Auth -> Maybe User.Id -> Lobby -> List (Html Global.Msg)
-viewLobby shared configure auth selectedUser lobby =
+viewLobby : Shared -> Configure.Model -> Auth -> Lobby -> List (Html Global.Msg)
+viewLobby shared configure auth lobby =
     let
         game =
             lobby.game |> Maybe.map .game
@@ -510,35 +500,59 @@ viewLobby shared configure auth selectedUser lobby =
             auth.claims.pvg == User.Privileged
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
-        [ viewUsers shared auth.claims.uid selectedUser lobby.users game
+        [ viewUsers shared auth.claims.uid lobby.users game
         , Html.div [ HtmlA.id "scroll-frame" ]
             [ lobby.game
-                |> Maybe.map (Game.view shared auth lobby.config.decks lobby.users)
+                |> Maybe.map (Game.view shared auth lobby.config lobby.users)
                 |> Maybe.withDefault (Configure.view shared privileged configure auth.claims.gc lobby lobby.config)
             ]
         ]
     ]
 
 
-viewUsers : Shared -> User.Id -> Maybe User.Id -> Dict User.Id User -> Maybe Game -> Html Global.Msg
-viewUsers shared player selectedUser users game =
+viewUsers : Shared -> User.Id -> Dict User.Id User -> Maybe Game -> Html Global.Msg
+viewUsers shared player users game =
+    let
+        ( active, inactive ) =
+            users |> Dict.toList |> List.partition (\( _, user ) -> user.presence == User.Joined)
+
+        activeGroups =
+            active |> byRole |> List.map (viewRoleGroup shared player game)
+
+        inactiveGroup =
+            if List.isEmpty inactive then
+                []
+
+            else
+                [ viewUserListGroup shared player game ( ( "left", Strings.Left ), inactive ) ]
+
+        groups =
+            List.concat [ activeGroups, inactiveGroup ]
+    in
     Wl.card [ HtmlA.id "users" ]
-        [ Html.div [ HtmlA.class "collapsible" ]
-            [ users
-                |> Dict.toList
-                |> byRole
-                |> List.map (viewRoleGroup shared player selectedUser game)
-                |> HtmlK.ol []
-            ]
-        ]
+        [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
 
 
-viewRoleGroup : Shared -> User.Id -> Maybe User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html Global.Msg )
-viewRoleGroup shared player selectedUser game ( role, users ) =
-    ( role |> roleId
-    , Html.li []
-        [ Html.span [] [ role |> roleDescription |> Lang.html shared ]
-        , HtmlK.ol [] (users |> List.map (viewUser shared player selectedUser game))
+viewRoleGroup : Shared -> User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html Global.Msg )
+viewRoleGroup shared player game ( role, users ) =
+    let
+        idAndDescription =
+            case role of
+                User.Player ->
+                    ( "players", Strings.Players )
+
+                User.Spectator ->
+                    ( "spectators", Strings.Spectators )
+    in
+    viewUserListGroup shared player game ( idAndDescription, users )
+
+
+viewUserListGroup : Shared -> User.Id -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html Global.Msg )
+viewUserListGroup shared player game ( ( id, description ), users ) =
+    ( id
+    , Html.li [ HtmlA.class id ]
+        [ Html.span [] [ description |> Lang.html shared ]
+        , HtmlK.ol [] (users |> List.map (viewUser shared player game))
         ]
     )
 
@@ -555,8 +569,8 @@ byRole users =
         |> List.filter (\( _, us ) -> not (List.isEmpty us))
 
 
-viewUser : Shared -> User.Id -> Maybe User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html Global.Msg )
-viewUser shared player selectedUser game ( userId, user ) =
+viewUser : Shared -> User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html Global.Msg )
+viewUser shared player game ( userId, user ) =
     let
         ( secondary, score ) =
             userDetails shared game userId user
@@ -565,18 +579,49 @@ viewUser shared player selectedUser game ( userId, user ) =
             "user-" ++ userId
 
         menuItems =
-            [ Menu.button Icon.userCog Strings.Promote Strings.Promote Nothing
-            , Menu.Separator
-            , Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
-            , Menu.button Icon.ban Strings.KickUser Strings.KickUser Nothing
-            ]
+            if user.control == User.Human then
+                let
+                    privilegeMenuItems =
+                        case user.privilege of
+                            User.Unprivileged ->
+                                Just [ Menu.button Icon.userPlus Strings.Promote Strings.Promote Nothing ]
+
+                            User.Privileged ->
+                                Just [ Menu.button Icon.userMinus Strings.Demote Strings.Demote Nothing ]
+
+                    presenceMenuItems =
+                        case user.presence of
+                            User.Joined ->
+                                Just
+                                    [ Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
+                                    , Menu.button Icon.ban Strings.KickUser Strings.KickUser Nothing
+                                    ]
+
+                            User.Left ->
+                                Nothing
+                in
+                [ privilegeMenuItems, presenceMenuItems ]
+                    |> List.filterMap identity
+                    |> List.intersperse [ Menu.Separator ]
+                    |> List.concat
+
+            else
+                []
+
+        ( menu, clickable ) =
+            if List.isEmpty menuItems then
+                ( Html.nothing, HtmlA.nothing )
+
+            else
+                ( menuItems |> Menu.view shared id ( WlA.XRight, WlA.YCenter ) ( WlA.XLeft, WlA.YCenter )
+                , WlA.clickable
+                )
     in
     ( userId
     , Html.li []
         [ Wl.listItem
-            [ Just userId |> SelectUser |> Global.LobbyMsg |> HtmlE.onClick
-            , HtmlA.classList [ ( "mdc-menu-surface--anchor", True ), ( "you", player == userId ) ]
-            , WlA.clickable
+            [ HtmlA.classList [ ( "you", player == userId ) ]
+            , clickable
             , HtmlA.id id
             ]
             [ Html.div [ HtmlA.class "user compressed-terms" ]
@@ -585,7 +630,7 @@ viewUser shared player selectedUser game ( userId, user ) =
                 )
             , Html.span [ WlA.listItemSlot WlA.AfterItem ] score
             ]
-        , Menu.view shared id ( WlA.XRight, WlA.YCenter ) ( WlA.XLeft, WlA.YCenter ) menuItems
+        , menu
         ]
     )
 
@@ -601,7 +646,7 @@ userDetails shared game userId user =
 
         details =
             [ Strings.Privileged |> Maybe.justIf (user.privilege == User.Privileged)
-            , player |> Maybe.andThen (\p -> Strings.Ai |> Maybe.justIf (p.control == Player.Computer))
+            , Strings.Ai |> Maybe.justIf (user.control == User.Computer)
             , round |> Maybe.andThen (\r -> Strings.Czar |> Maybe.justIf (Player.isCzar r userId))
             , playStateDetail round userId
             ]
@@ -633,26 +678,6 @@ playStateDetail round userId =
 viewDetails : Shared -> List (Maybe MdString) -> List (Html Global.Msg)
 viewDetails shared details =
     details |> List.filterMap identity |> List.map (Lang.html shared) |> List.intersperse (Html.text " ")
-
-
-roleDescription : User.Role -> Strings.MdString
-roleDescription role =
-    case role of
-        User.Player ->
-            Strings.Players
-
-        User.Spectator ->
-            Strings.Spectators
-
-
-roleId : User.Role -> String
-roleId role =
-    case role of
-        User.Player ->
-            "players"
-
-        User.Spectator ->
-            "spectators"
 
 
 viewCastButton : Auth -> List (Html.Attribute Global.Msg) -> List (Html Global.Msg)

@@ -1,11 +1,8 @@
 import wu from "wu";
-import * as event from "../event";
-import * as gameStarted from "../events/game-event/game-started";
 import * as decks from "../games/cards/decks";
 import * as source from "../games/cards/source";
 import * as sources from "../games/cards/sources";
 import * as game from "../games/game";
-import * as round from "../games/game/round";
 import { Lobby } from "../lobby";
 import { Change } from "../lobby/change";
 import { GameCode } from "../lobby/game-code";
@@ -28,20 +25,23 @@ export class StartGame extends task.TaskBase<decks.Templates[]> {
     );
   }
 
-  protected resolve(lobby: Lobby, work: decks.Templates[]): Change {
+  protected resolve(
+    lobby: Lobby,
+    work: decks.Templates[],
+    server: ServerState
+  ): Change {
     if (lobby.game !== undefined) {
       return {};
     }
     const lobbyGame = game.start(work, lobby.users.keys(), lobby.config.rules);
-    const gameRound = round.censor(lobbyGame.round);
-    const baseEvent = gameStarted.of(gameRound);
-    const events = [
-      event.playerSpecificAddition(baseEvent, (id, user, player) => ({
-        hand: player.hand
-      }))
-    ];
-    lobby.game = lobbyGame;
-    return { lobby, events };
+
+    const atStartOfRound = game.atStartOfRound(server, true, lobbyGame);
+    lobby.game = atStartOfRound.game;
+    return {
+      lobby,
+      events: atStartOfRound.events,
+      timeouts: atStartOfRound.timeouts
+    };
   }
 
   // This is super unlikely timing-wise, and if it happens, the user just has

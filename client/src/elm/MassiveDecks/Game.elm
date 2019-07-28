@@ -14,7 +14,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
-import MassiveDecks.Card as Card
+import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Components as Components
@@ -32,7 +32,7 @@ import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Actions as Actions
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure
+import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
@@ -40,8 +40,6 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
-import MassiveDecks.Util.Html as Html
-import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
 import Set
 import Task
@@ -88,7 +86,7 @@ update msg model =
                                 picks.cards ++ [ id ]
 
                         extra =
-                            max 0 (List.length picked - (playingRound.call |> Card.slotCount))
+                            max 0 (List.length picked - (playingRound.call |> Call.slotCount))
 
                         newRound =
                             Round.P { playingRound | pick = { picks | cards = picked |> List.drop extra } }
@@ -181,9 +179,9 @@ update msg model =
             ( { model | playStyles = playStyles }, Cmd.none )
 
         AdvanceRound ->
-            case model.nextRound of
-                Just nextRound ->
-                    ( { model | game = { game | round = Round.P nextRound }, nextRound = Nothing }
+            case model.completeRound of
+                Just _ ->
+                    ( { model | completeRound = Nothing }
                     , Cmd.none
                     )
 
@@ -199,22 +197,27 @@ subscriptions model =
     Sub.none
 
 
-view : Shared -> Lobby.Auth -> List Configure.Deck -> Dict User.Id User -> Model -> Html Global.Msg
-view shared auth decks users model =
+view : Shared -> Lobby.Auth -> Config -> Dict User.Id User -> Model -> Html Global.Msg
+view shared auth config users model =
     let
         { instruction, action, content, fillCallWith } =
-            case game.round of
-                Round.P round ->
-                    Playing.view shared auth decks model round
+            case model.completeRound of
+                Just completeRound ->
+                    Complete.view shared (Round.C completeRound /= game.round) config users completeRound
 
-                Round.R round ->
-                    Revealing.view shared auth decks round
+                Nothing ->
+                    case game.round of
+                        Round.P round ->
+                            Playing.view auth config model round
 
-                Round.J round ->
-                    Judging.view shared auth decks round
+                        Round.R round ->
+                            Revealing.view auth config round
 
-                Round.C round ->
-                    Complete.view shared (Maybe.isJust model.nextRound) decks users round
+                        Round.J round ->
+                            Judging.view auth config round
+
+                        Round.C round ->
+                            Complete.view shared False config users round
 
         game =
             model.game
@@ -226,7 +229,7 @@ view shared auth decks users model =
             fillCallWith |> List.map .body
 
         renderedCall =
-            call |> Card.viewFilled shared decks Card.Front [] parts
+            call |> Call.viewFilled shared config Card.Front [] parts
 
         help =
             let
@@ -415,13 +418,29 @@ applyGameEvent auth gameEvent model =
 
         Events.RoundStarted { id, czar, players, call, drawn } ->
             let
-                drawnAsList =
-                    drawn |> Maybe.withDefault []
-
-                ( newRound, cmd ) =
-                    Playing.init (Round.playing id czar players call Set.empty) Round.noPick
+                game =
+                    model.game
             in
-            ( { model | nextRound = Just newRound, hand = model.hand ++ drawnAsList }, cmd )
+            case model.game.round of
+                Round.C c ->
+                    let
+                        drawnAsList =
+                            drawn |> Maybe.withDefault []
+
+                        ( newRound, cmd ) =
+                            Playing.init (Round.playing id czar players call Set.empty) Round.noPick
+                    in
+                    ( { model
+                        | game = { game | round = Round.P newRound }
+                        , completeRound = Just c
+                        , hand = model.hand ++ drawnAsList
+                      }
+                    , cmd
+                    )
+
+                _ ->
+                    -- TODO: Error
+                    ( model, Cmd.none )
 
         Events.StartRevealing { plays, drawn } ->
             case model.game.round of
@@ -458,7 +477,7 @@ applyGameStarted lobby round hand =
             lobby.users |> Dict.toList |> List.map (\( id, _ ) -> id)
 
         defaultPlayer =
-            { control = Player.Human, score = 0 }
+            { score = 0 }
 
         game =
             { round = Round.P round

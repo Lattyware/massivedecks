@@ -1,6 +1,5 @@
 module MassiveDecks.Game.Player exposing
-    ( Control(..)
-    , PlayState(..)
+    ( PlayState(..)
     , Player
     , Role(..)
     , Score
@@ -19,8 +18,7 @@ import Set
 {-| A player in the game.
 -}
 type alias Player =
-    { control : Control
-    , score : Score
+    { score : Score
     }
 
 
@@ -28,13 +26,6 @@ type alias Player =
 -}
 type alias Score =
     Int
-
-
-{-| How the player is being controlled.
--}
-type Control
-    = Human
-    | Computer
 
 
 {-| The role the player currently has in the game.

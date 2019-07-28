@@ -6,6 +6,7 @@ export interface User {
   presence: Presence;
   connection: Connection;
   privilege: Privilege;
+  control: Control;
   role: Role;
 }
 
@@ -17,6 +18,7 @@ export interface Public {
   presence: Presence;
   connection: Connection;
   privilege: Privilege;
+  control: Control;
   role: Role;
 }
 
@@ -53,6 +55,11 @@ export type Connection = "Connected" | "Disconnected";
 export type Role = "Spectator" | "Player";
 
 /**
+ * Who/what is controlling the player—a human or the computer?
+ */
+export type Control = "Human" | "Computer";
+
+/**
  * If the user is playing.
  */
 export const isPlaying: (user: User) => boolean = user =>
@@ -69,26 +76,21 @@ export const isSpectating: (user: User) => boolean = user =>
  * @param registration The details of the user to create.
  * @param privilege The level of privilege the user has.
  */
-export function create(
+export const create = (
   registration: RegisterUser,
   privilege: Privilege = "Unprivileged"
-): User {
-  return {
-    name: registration.name,
-    presence: "Joined",
-    connection: "Connected",
-    privilege: privilege,
-    role: "Player"
-  };
-}
+): User => ({
+  name: registration.name,
+  presence: "Joined",
+  connection: "Connected",
+  privilege: privilege,
+  control: "Human",
+  role: "Player"
+});
 
 /**
  * Gives a version of the user with only publicly visible properties.
  */
 export const censor: (user: User) => Public = user => ({
-  name: user.name,
-  presence: user.presence,
-  connection: user.connection,
-  privilege: user.privilege,
-  role: user.role
+  ...user
 });

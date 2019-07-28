@@ -56,7 +56,9 @@ init flags url key =
             Route.fromUrl url
 
         { settings, browserLanguages } =
-            Json.decodeValue Decoders.flags flags |> Result.toMaybe |> Maybe.withDefault (Flags Settings.defaults [])
+            Json.decodeValue Decoders.flags flags
+                |> Result.toMaybe
+                |> Maybe.withDefault (Flags Settings.defaults [])
 
         ( initialisedSettings, settingsCmd ) =
             Settings.init settings
@@ -109,7 +111,8 @@ update msg model =
     case msg of
         ChangePage route ->
             if oldRoute /= route then
-                changePageFromRoute model.shared route model.page |> Util.modelLift (\p -> { model | page = p })
+                changePageFromRoute model.shared route model.page
+                    |> Util.modelLift (\p -> { model | page = p })
 
             else
                 ( model, Cmd.none )
@@ -154,7 +157,9 @@ update msg model =
                             )
 
                         Route.Redirect redirect ->
-                            ( changePageFromRoute model.shared redirect model.page, ( shared.settings, Cmd.none ) )
+                            ( changePageFromRoute model.shared redirect model.page
+                            , ( shared.settings, Cmd.none )
+                            )
             in
             ( { model
                 | shared = { shared | settings = settings }

@@ -11,7 +11,7 @@ module MassiveDecks.Components.Form.Message exposing
     )
 
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
+import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -20,11 +20,13 @@ import MassiveDecks.Components as Components
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
+import Svg.Attributes as Svg
 
 
 type alias Fix msg =
-    { text : MdString
-    , msg : msg
+    { description : MdString
+    , icon : Icon
+    , action : msg
     }
 
 
@@ -48,7 +50,7 @@ info mdString =
     Just
         { severity = Info
         , description = mdString
-        , fix = Nothing
+        , fixes = []
         }
 
 
@@ -57,7 +59,7 @@ warning mdString =
     Just
         { severity = Warning
         , description = mdString
-        , fix = Nothing
+        , fixes = []
         }
 
 
@@ -66,16 +68,16 @@ error mdString =
     Just
         { severity = Error
         , description = mdString
-        , fix = Nothing
+        , fixes = []
         }
 
 
-errorWithFix : MdString -> MdString -> msg -> Message msg
-errorWithFix errorString fixString fix =
+errorWithFix : MdString -> List (Fix msg) -> Message msg
+errorWithFix errorString fixes =
     Just
         { severity = Error
         , description = errorString
-        , fix = Just { text = fixString, msg = fix }
+        , fixes = fixes
         }
 
 
@@ -91,12 +93,12 @@ none =
 type alias InternalMessage msg =
     { severity : Severity
     , description : MdString
-    , fix : Maybe (Fix msg)
+    , fixes : List (Fix msg)
     }
 
 
 internalMessage : Shared -> InternalMessage msg -> Html msg
-internalMessage shared { severity, description, fix } =
+internalMessage shared { severity, description, fixes } =
     let
         ( class, icon ) =
             case severity of
@@ -108,16 +110,20 @@ internalMessage shared { severity, description, fix } =
 
                 Error ->
                     ( "inline-error", Icon.exclamationCircle )
-
-        fixLink =
-            case fix of
-                Just { text, msg } ->
-                    [ Html.text " ", Components.linkButton [ msg |> HtmlE.onClick ] [ text |> Lang.html shared ] ]
-
-                Nothing ->
-                    []
     in
     Html.span [ HtmlA.class class ]
-        [ Icon.viewStyled [ Icon.fw ] icon
-        , Html.span [] ((description |> Lang.html shared) :: fixLink)
+        [ Icon.viewStyled [ Icon.fw, Svg.class "message-type-icon" ] icon
+        , Html.span [] [ description |> Lang.html shared ]
+        , Html.ul [ HtmlA.class "fixes" ] (fixes |> List.map (viewFix shared))
+        ]
+
+
+viewFix : Shared -> Fix msg -> Html msg
+viewFix shared { icon, description, action } =
+    Html.li []
+        [ Components.iconButton
+            [ action |> HtmlE.onClick
+            , description |> Lang.title shared
+            ]
+            icon
         ]

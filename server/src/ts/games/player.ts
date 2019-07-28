@@ -7,7 +7,6 @@ import { Game } from "./game";
  */
 export interface Player {
   hand: Hand;
-  control: Control;
   score: Score;
 }
 
@@ -15,7 +14,6 @@ export interface Player {
  * A player containing only state all users can see.
  */
 export interface Public {
-  control: Control;
   score: Score;
 }
 
@@ -23,11 +21,6 @@ export interface Public {
  * The role the player currently has in the game.
  */
 export type Role = "Czar" | "Player";
-
-/**
- * Who controls the player.
- */
-export type Control = "Human" | "Computer";
 
 /**
  * How many points the player has scored.
@@ -40,7 +33,6 @@ export type Score = number;
  * Produce a public version of the given player.
  */
 export const censor = (player: Player): Public => ({
-  control: player.control,
   score: player.score
 });
 

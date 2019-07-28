@@ -238,7 +238,7 @@ translate mdString =
             ]
 
         HouseRuleRandoCardrissianNumber ->
-            [ Text "Number of Randos" ]
+            [ Text "AI Players" ]
 
         HouseRuleRandoCardrissianNumberDescription ->
             [ Text "The number of AI players that will be in the game." ]
@@ -444,6 +444,12 @@ translate mdString =
         SpectatorsDescription ->
             [ Text "Users watching the game without playing." ]
 
+        Left ->
+            [ Text "Left" ]
+
+        LeftDescription ->
+            [ Text "Users who have left the game." ]
+
         Privileged ->
             [ Text "Owner" ]
 
@@ -494,6 +500,9 @@ translate mdString =
 
         Promote ->
             [ Text "Promote" ]
+
+        Demote ->
+            [ Text "Demote" ]
 
         -- Notifications
         UserConnected { username } ->
@@ -581,6 +590,9 @@ translate mdString =
 
         NeedAtLeastThreePlayers ->
             [ Text "You need at least three players to start the game." ]
+
+        AddAnAiPlayer ->
+            [ Text "Add an AI player to the game." ]
 
         PasswordShared ->
             [ Text "Anyone in the game can see the password! "

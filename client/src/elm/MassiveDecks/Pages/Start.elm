@@ -14,9 +14,10 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Http
-import MassiveDecks.Card as Card
-import MassiveDecks.Card.Model as Card exposing (Card)
+import MassiveDecks.Card.Call as Call
+import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
+import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
@@ -25,6 +26,7 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
+import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
@@ -146,10 +148,10 @@ view : Shared -> Model -> List (Html Global.Msg)
 view shared model =
     [ Html.div [ HtmlA.class "page start" ]
         [ Html.header [ HtmlA.class "title-card" ]
-            [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Card.viewUnknownCall [] ] ]
+            [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Call.viewUnknown [] ] ]
             , Html.div [ HtmlA.class "subtitle" ]
                 [ Html.div [ HtmlA.class "card-slicer" ]
-                    [ Card.view shared [] Card.Front [] (subtitleCard shared)
+                    [ Response.view Configure.fake Card.Front [] (subtitleCard shared)
                     ]
                 ]
             ]
@@ -233,9 +235,9 @@ loadingOrLoaded model =
     [ model.newLobbyRequest ] |> List.any HttpData.loadingOrLoaded
 
 
-subtitleCard : Shared -> Card
+subtitleCard : Shared -> Card.Response
 subtitleCard shared =
-    Card.response (Strings.ShortGameDescription |> Lang.string shared) "" Source.Fake |> Card.R
+    Card.response (Strings.ShortGameDescription |> Lang.string shared) "" Source.Fake
 
 
 gameCodeForRoute : Route -> Maybe GameCode
@@ -487,7 +489,7 @@ aboutContent shared =
         , Html.p [] [ Strings.RulesPlaying |> html ]
         , Html.p [] [ Strings.RulesJudging |> html ]
         , Html.figure [ HtmlA.class "example-card" ]
-            [ Card.view shared [] Card.Front [] examplePick2
+            [ Call.view shared Configure.fake Card.Front [] examplePick2
             , Html.figcaption []
                 [ Strings.ExamplePickDescription |> html ]
             ]
@@ -516,7 +518,7 @@ houseRule shared ( name, description ) =
         ]
 
 
-examplePick2 : Card
+examplePick2 : Card.Call
 examplePick2 =
     Card.call
         (Parts.unsafeFromList
@@ -526,4 +528,3 @@ examplePick2 =
         )
         ""
         Source.Fake
-        |> Card.C

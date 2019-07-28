@@ -1,17 +1,18 @@
 module MassiveDecks.Card.Model exposing
     ( Call
-    , Card(..)
     , Details
     , Id
     , Response
     , Side(..)
-    , Type
     , UnknownResponse
+    , ViewBody(..)
+    , ViewInstructions(..)
     , call
     , frontSide
     , response
     )
 
+import Html exposing (Html)
 import MassiveDecks.Card.Parts exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
 
@@ -40,17 +41,10 @@ frontSide isFront =
         Back
 
 
-{-| A general card.
--}
-type Card
-    = C Call
-    | R Response
-
-
 {-| A call card.
 -}
 type alias Call =
-    Type Parts
+    Card Parts
 
 
 {-| A simple constructor for a call card.
@@ -65,7 +59,7 @@ call parts id source =
 {-| A response card.
 -}
 type alias Response =
-    Type String
+    Card String
 
 
 {-| A simple constructor for a response card.
@@ -79,13 +73,13 @@ response text id source =
 
 {-| A response that isn't known to the user. Only the back can be displayed.
 -}
-type alias UnknownResponse =
-    Id
+type UnknownResponse
+    = UnknownResponse Id
 
 
 {-| The data for a type of card.
 -}
-type alias Type body =
+type alias Card body =
     { details : Details
     , body : body
     }
@@ -97,3 +91,15 @@ type alias Details =
     { source : Source
     , id : Id
     }
+
+
+{-| A function to render the body of a card.
+-}
+type ViewBody msg
+    = ViewBody (() -> List (Html msg))
+
+
+{-| A function to render the instructions for a card.
+-}
+type ViewInstructions msg
+    = ViewInstructions (() -> List (Html msg))

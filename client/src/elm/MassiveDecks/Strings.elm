@@ -122,6 +122,8 @@ type MdString
     | PlayersDescription -- A description of a group of users who are playing in the game.
     | Spectators -- A short term for a group of users who are only spectating the game.
     | SpectatorsDescription -- A description of a group of users who are only spectating the game.
+    | Left -- A short term for a group of users who have left the game.
+    | LeftDescription -- A description of a group of users who have left the game.
     | Privileged -- The short term for a player who has privileges over the game.
     | PrivilegedDescription --  A description of a player who has privileges over the game (e.g: can change settings)
     | Ai -- The short term for a player who is controlled by the computer.
@@ -138,6 +140,7 @@ type MdString
     | EndGameDescription -- A description of the action of ending the game early.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
     | Promote -- A short term for the action of allowing a user to edit the game configuration.
+    | Demote -- A short term for the action of no longer allowing a user to edit the game configuration.
       -- Notifications
     | UserJoined { username : String } -- A notification that a user has joined the game.
     | UserLeft { username : String } -- A notification that a user has left the game.
@@ -164,6 +167,7 @@ type MdString
     | ScoreLimitDescription -- The description of the above rule.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
+    | AddAnAiPlayer -- A description of adding an AI player to the game.
     | PasswordShared -- A warning that game passwords are visible to anyone else in the game.
     | PasswordNotSecured -- A warning that game passwords are not stored securely and should not be used elsewhere.
     | LobbyPassword -- A short label for the lobby password.

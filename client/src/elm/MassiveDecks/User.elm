@@ -1,5 +1,6 @@
 module MassiveDecks.User exposing
     ( Connection(..)
+    , Control(..)
     , Id
     , Presence(..)
     , Privilege(..)
@@ -59,6 +60,13 @@ type Connection
     | Disconnected
 
 
+{-| How the user is being controlled.
+-}
+type Control
+    = Human
+    | Computer
+
+
 {-| A request to register a new user in a lobby.
 -}
 type alias Registration =
@@ -75,4 +83,5 @@ type alias User =
     , connection : Connection
     , privilege : Privilege
     , role : Role
+    , control : Control
     }

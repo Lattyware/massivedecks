@@ -11,9 +11,11 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card as Card
-import MassiveDecks.Card.Model as Card exposing (Card)
+import MassiveDecks.Card.Call as Call
+import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Messages exposing (..)
@@ -101,7 +103,7 @@ view shared model =
             turns 1 / toFloat playCount
 
         slots =
-            Card.slotCount model.call
+            Call.slotCount model.call
 
         qr =
             Route.externalUrl shared.origin (Route.Start { section = Start.Join (Just model.route.lobby.gameCode) })
@@ -112,10 +114,9 @@ view shared model =
     [ Html.div
         [ HtmlA.class "spectate" ]
         [ Html.div [ HtmlA.class "middle" ]
-            [ Card.view shared [] Card.Front [] (Card.C model.call)
-
-            --, HtmlA.style "--play-count" (model.plays |> List.length |> String.fromInt)
-            , Html.ul [ HtmlA.class "plays" ] (viewPlays shared slots angle model.plays)
+            [ -- Call.view shared config Card.Front [] model.call
+              --, HtmlA.style "--play-count" (model.plays |> List.length |> String.fromInt)
+              Html.ul [ HtmlA.class "plays" ] (viewPlays shared slots angle model.plays)
             ]
         ]
     , Html.div [ HtmlA.class "join-info" ]
@@ -282,7 +283,7 @@ viewPlayingPlay slots play =
         Just p ->
             List.map
                 (\a ->
-                    Card.viewUnknownResponse [ rotated a ]
+                    Response.viewUnknown [ rotated a ]
                 )
                 (p.animation |> Maybe.withDefault (defaultedRotations slots p.animation))
 
@@ -292,7 +293,8 @@ viewPlayingPlay slots play =
 
 viewKnownPlay : Shared -> Play.Known -> Rotations -> List (Html msg)
 viewKnownPlay shared play rotations =
-    List.map2 (\c -> \a -> Card.view shared [] Card.Front [ rotated a ] (Card.R c)) play.responses rotations
+    --List.map2 (\c -> \a -> Response.view config Card.Front [ rotated a ] c) play.responses rotations
+    []
 
 
 defaultedRotations : Int -> Maybe Rotations -> Rotations

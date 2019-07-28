@@ -3,6 +3,7 @@ module MassiveDecks.Animated exposing
     , Msg(..)
     , State
     , animate
+    , defaultDuration
     , enterAfter
     , exitAfter
     , subscriptions
@@ -90,6 +91,13 @@ enterAfter milliseconds item =
 exitAfter : Int -> item -> Cmd (Msg item)
 exitAfter milliseconds item =
     Exit item |> Cmd.after milliseconds
+
+
+{-| If changed, sync to CSS.
+-}
+defaultDuration : Int
+defaultDuration =
+    200
 
 
 

@@ -32,6 +32,8 @@
         "allowTypedFunctionExpressions": true,
         "allowHigherOrderFunctions": true
       }
-    ]
+    ],
+
+    "@typescript-eslint/no-empty-interface": "off"
   }
 }

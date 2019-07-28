@@ -21,7 +21,7 @@ module MassiveDecks.Models.Decoders exposing
 
 import Dict exposing (Dict)
 import Json.Decode as Json
-import MassiveDecks.Card.Model as Card exposing (Card)
+import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
@@ -242,24 +242,23 @@ rando =
 
 player : Json.Decoder Player
 player =
-    Json.map2 Player
-        (Json.field "control" control)
+    Json.map Player
         (Json.field "score" score)
 
 
-control : Json.Decoder Player.Control
+control : Json.Decoder User.Control
 control =
     Json.string |> Json.andThen controlByName
 
 
-controlByName : String -> Json.Decoder Player.Control
+controlByName : String -> Json.Decoder User.Control
 controlByName name =
     case name of
         "Human" ->
-            Json.succeed Player.Human
+            Json.succeed User.Human
 
         "Computer" ->
-            Json.succeed Player.Computer
+            Json.succeed User.Computer
 
         _ ->
             unknownValue "user controller" name
@@ -277,12 +276,13 @@ users =
 
 user : Json.Decoder User
 user =
-    Json.map5 User
+    Json.map6 User
         (Json.field "name" Json.string)
         (Json.field "presence" userPresence)
         (Json.field "connection" userConnection)
         (Json.field "privilege" privilege)
         (Json.field "role" userRole)
+        (Json.field "control" control)
 
 
 userConnection : Json.Decoder User.Connection
@@ -423,8 +423,7 @@ eventByName name =
             connection User.Disconnected
 
         "Joined" ->
-            Json.field "name" Json.string
-                |> Json.andThen (\n -> Events.UserJoined { name = n } |> presence)
+            userJoined |> Json.andThen presence
 
         "Left" ->
             presence Events.UserLeft
@@ -606,6 +605,14 @@ presence state =
         (Json.field "user" userId)
 
 
+userJoined : Json.Decoder Events.PresenceState
+userJoined =
+    Json.map3 (\n -> \p -> \c -> Events.UserJoined { name = n, privilege = p, control = c })
+        (Json.field "name" Json.string)
+        (Json.maybe (Json.field "privilege" privilege) |> Json.map (Maybe.withDefault User.Unprivileged))
+        (Json.maybe (Json.field "control" control) |> Json.map (Maybe.withDefault User.Human))
+
+
 publicSet : Json.Decoder Events.ConfigChanged
 publicSet =
     Json.map (\public -> Events.PublicSet { public = public })
@@ -711,11 +718,6 @@ knownPlay =
 cardId : Json.Decoder Card.Id
 cardId =
     Json.string
-
-
-card : Json.Decoder Card
-card =
-    Json.oneOf [ call |> Json.map Card.C, response |> Json.map Card.R ]
 
 
 response : Json.Decoder Card.Response

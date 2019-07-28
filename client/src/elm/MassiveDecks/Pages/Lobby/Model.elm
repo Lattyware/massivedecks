@@ -28,7 +28,6 @@ type alias Model =
     , auth : Auth
     , lobby : Maybe Lobby
     , configure : Configure.Model
-    , selectedUser : Maybe User.Id
     , notificationId : NotificationId
     , notifications : List (Animated Notification)
     , inviteDialogOpen : Bool

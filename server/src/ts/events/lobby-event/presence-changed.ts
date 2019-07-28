@@ -1,3 +1,4 @@
+import { User } from "../../user";
 import * as user from "../../user";
 
 /**
@@ -15,12 +16,16 @@ interface Base {
 export interface Joined extends Base {
   event: "Joined";
   name: user.Name;
+  privilege?: user.Privilege;
+  control?: user.Control;
 }
 
-export const joined = (user: user.Id, name: user.Name): Joined => ({
+export const joined = (id: user.Id, user: User): Joined => ({
   event: "Joined",
-  user,
-  name
+  user: id,
+  name: user.name,
+  ...(user.privilege !== "Unprivileged" ? { privilege: user.privilege } : {}),
+  ...(user.control !== "Human" ? { control: user.control } : {})
 });
 
 /**

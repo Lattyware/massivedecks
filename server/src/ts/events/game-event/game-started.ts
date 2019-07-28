@@ -1,4 +1,5 @@
 import * as card from "../../games/cards/card";
+import * as round from "../../games/game/round";
 import * as publicRound from "../../games/game/round/public";
 
 /**
@@ -11,10 +12,10 @@ export interface GameStarted {
 }
 
 export const of = (
-  round: publicRound.Playing,
+  startedRound: round.Playing,
   hand?: card.Response[]
 ): GameStarted => ({
   event: "GameStarted",
-  round,
+  round: round.censor(startedRound),
   ...(hand !== undefined ? { hand } : {})
 });

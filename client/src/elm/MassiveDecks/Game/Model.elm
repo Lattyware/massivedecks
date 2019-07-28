@@ -25,7 +25,7 @@ type alias Model =
     { game : Game
     , hand : List Card.Response
     , playStyles : PlayStyles
-    , nextRound : Maybe Round.Playing
+    , completeRound : Maybe Round.Complete
     }
 
 
@@ -36,7 +36,7 @@ emptyModel game =
     { game = game
     , hand = []
     , playStyles = Dict.empty
-    , nextRound = Nothing
+    , completeRound = Nothing
     }
 
 

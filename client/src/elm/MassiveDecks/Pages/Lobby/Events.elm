@@ -33,7 +33,7 @@ type Event
 {-| The user's intentional presence in the lobby.
 -}
 type PresenceState
-    = UserJoined { name : String }
+    = UserJoined { name : String, privilege : User.Privilege, control : User.Control }
     | UserLeft
 
 

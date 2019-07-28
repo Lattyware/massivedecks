@@ -1,6 +1,6 @@
 import * as card from "../../games/cards/card";
+import { Round } from "../../games/game/round";
 import * as user from "../../user";
-import * as round from "../../games/game/round";
 
 /**
  * Indicates a new round has started.
@@ -14,17 +14,11 @@ export interface RoundStarted {
   drawn?: card.Response[];
 }
 
-export const of = (
-  id: round.Id,
-  czar: user.Id,
-  players: user.Id[],
-  call: card.Call,
-  drawn?: card.Response[]
-): RoundStarted => ({
+export const of = (round: Round, drawn?: card.Response[]): RoundStarted => ({
   event: "RoundStarted",
-  id: id.toString(),
-  czar,
-  players,
-  call,
+  id: round.id.toString(),
+  czar: round.czar,
+  players: Array.from(round.players.keys()),
+  call: round.call,
   ...(drawn === undefined ? {} : { drawn })
 });

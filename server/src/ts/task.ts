@@ -15,12 +15,16 @@ export abstract class TaskBase<T> implements Task {
   }
 
   protected abstract async begin(server: ServerState): Promise<T>;
-  protected abstract resolve(lobby: Lobby, work: T): Change;
+  protected abstract resolve(
+    lobby: Lobby,
+    work: T,
+    server: ServerState
+  ): Change;
 
   public async handle(server: ServerState): Promise<void> {
     const work = await this.begin(server);
     await change.apply(server, this.gameCode, lobby =>
-      this.resolve(lobby, work)
+      this.resolve(lobby, work, server)
     );
   }
 }

@@ -121,6 +121,10 @@
   li {
     margin-top: 0.5em;
   }
+
+  .left {
+    opacity: 0.3;
+  }
 }
 
 @media screen and (max-width: $users-width * 2) {

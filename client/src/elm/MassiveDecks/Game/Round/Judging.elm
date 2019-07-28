@@ -1,9 +1,9 @@
 module MassiveDecks.Game.Round.Judging exposing (view)
 
 import Html.Attributes as HtmlA
-import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
+import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (..)
@@ -11,8 +11,7 @@ import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
 import MassiveDecks.Messages as Global
-import MassiveDecks.Model exposing (..)
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure
+import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
@@ -20,8 +19,8 @@ import MassiveDecks.Util.Maybe as Maybe
 import Set exposing (Set)
 
 
-view : Shared -> Auth -> List Configure.Deck -> Round.Judging -> RoundView Global.Msg
-view shared auth decks round =
+view : Auth -> Config -> Round.Judging -> RoundView Global.Msg
+view auth config round =
     let
         role =
             Player.role (Round.J round) auth.claims.uid
@@ -42,7 +41,7 @@ view shared auth decks round =
                 |> Maybe.withDefault []
 
         details =
-            round.plays |> List.map (playDetails shared decks round.liked)
+            round.plays |> List.map (playDetails config round.liked)
     in
     { instruction = Just instruction
     , action = action
@@ -55,12 +54,12 @@ view shared auth decks round =
 {- Private -}
 
 
-playDetails : Shared -> List Configure.Deck -> Set Play.Id -> Play.Known -> Plays.Details Global.Msg
-playDetails shared decks liked { id, responses } =
+playDetails : Config -> Set Play.Id -> Play.Known -> Plays.Details Global.Msg
+playDetails config liked { id, responses } =
     let
         cards =
             responses
-                |> List.map (\r -> Card.view shared decks Card.Front [] (Card.R r))
+                |> List.map (\r -> Response.view config Card.Front [] r)
 
         attrs =
             [ HtmlA.class "liked" ] |> Maybe.justIf (Set.member id liked) |> Maybe.withDefault []

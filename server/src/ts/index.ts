@@ -126,7 +126,7 @@ async function main(): Promise<void> {
       return {
         change: {
           lobby,
-          events: [event.targetAll(presenceChanged.joined(id, newUser.name))],
+          events: [event.targetAll(presenceChanged.joined(id, newUser))],
           timeouts: [
             {
               timeout: userDisconnect.of(id),
