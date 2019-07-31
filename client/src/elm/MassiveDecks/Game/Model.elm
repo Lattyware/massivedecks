@@ -26,6 +26,7 @@ type alias Model =
     , hand : List Card.Response
     , playStyles : PlayStyles
     , completeRound : Maybe Round.Complete
+    , viewingHistory : Bool
     }
 
 
@@ -37,6 +38,7 @@ emptyModel game =
     , hand = []
     , playStyles = Dict.empty
     , completeRound = Nothing
+    , viewingHistory = False
     }
 
 

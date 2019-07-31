@@ -4,6 +4,7 @@
 @import "./game/judging";
 @import "./game/playing";
 @import "./game/plays";
+@import "./game/history";
 @import "./pages/lobby/variables";
 
 // The main game area.
@@ -47,9 +48,11 @@
   right: 0;
   z-index: 1;
   --card-padding: 0.5em;
+  margin: 1rem;
 
   #context-help-button {
     font-size: 1.2rem;
+    margin: 0;
   }
 
   wl-popover-card {
@@ -65,9 +68,11 @@
   flex-direction: column;
   transition: left 0.3s;
   z-index: 1;
+  margin: 1rem;
 
   wl-button {
     font-size: 1.2rem;
+    margin: 0;
   }
 }
 
@@ -113,7 +118,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-width: $card-width;
   padding: 1em 0;
 }
 
@@ -137,12 +141,31 @@ ul.cards {
   list-style: none;
   padding: 0;
   margin-top: 0.5em;
+
+  li {
+    min-width: $card-width;
+  }
 }
 
 // Multiple cards that are grouped together.
 ol.card-set {
   margin: 0.5em;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   list-style: none;
   padding: 0;
+
+  li {
+    height: $card-overlap;
+    overflow: visible;
+
+    &:hover {
+      z-index: 1;
+    }
+
+    &:last-child {
+      height: height($card-width, var(--card-aspect-ratio));
+    }
+  }
 }

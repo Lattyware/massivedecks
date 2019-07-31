@@ -98,18 +98,16 @@
   transition: width 0.3s;
 
   --list-item-padding: 0.5em;
+  --list-item-left-margin: 0.5em;
 
   .collapsible {
     padding: 1em;
   }
 
   .user {
-    position: relative;
-    display: flex;
-
-    .term {
-      margin-left: 0.5em;
-    }
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   ol {

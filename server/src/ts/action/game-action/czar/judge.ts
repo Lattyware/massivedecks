@@ -43,6 +43,7 @@ export const handle: gameAction.Handler<Judge> = (
       winner: play.playedBy
     };
     lobby.game.round = completedRound;
+    lobby.game.history.splice(0, 0, completedRound);
     return {
       lobby,
       events: [event.targetAll(roundFinished.of(completedRound))],

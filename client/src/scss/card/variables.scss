@@ -6,13 +6,17 @@ $response-background: $call-color;
 
 $card-width: 18em;
 $card-margin: 0.5em;
-$card-overlap: 2em;
+$card-overlap: 4em;
 
 $card-ratio: 5/7;
 $card-compact-ratio: 1;
 
 @mixin pad-to-aspect-ratio($ratio) {
   padding-top: #{calc(1 / #{$ratio} * 100%)};
+}
+
+@function height($width, $ratio) {
+  @return calc(#{$width} * 1 / #{$ratio});
 }
 
 @function strip-unit($value) {

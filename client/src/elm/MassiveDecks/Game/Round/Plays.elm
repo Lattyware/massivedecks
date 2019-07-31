@@ -1,10 +1,17 @@
-module MassiveDecks.Game.Round.Plays exposing (Details, view)
+module MassiveDecks.Game.Round.Plays exposing (Details, byLine, view)
 
+import Dict exposing (Dict)
+import FontAwesome.Icon as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import MassiveDecks.Card.Play as Play
+import MassiveDecks.Model exposing (Shared)
+import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.User as User exposing (User)
+import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 
 
@@ -23,6 +30,20 @@ type alias Details msg =
 view : String -> Maybe Play.Id -> List (Details msg) -> Html msg
 view class picked details =
     HtmlK.ul [ HtmlA.classList [ ( class, True ), ( "cards", True ), ( "plays", True ) ] ] (details |> List.map (viewPlay picked))
+
+
+{-| Create a byline.
+-}
+byLine : Shared -> Dict User.Id User -> User.Id -> Maybe Icon -> Html msg
+byLine shared users id icon =
+    let
+        name =
+            users |> Dict.get id |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
+    in
+    Html.span [ HtmlA.class "byline", HtmlA.title name ]
+        [ icon |> Maybe.map Icon.view |> Maybe.withDefault Html.nothing
+        , Html.text name
+        ]
 
 
 

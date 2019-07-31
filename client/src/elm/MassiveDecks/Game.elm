@@ -19,10 +19,10 @@ import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
-import MassiveDecks.Game.Action.Model as Action exposing (Action)
+import MassiveDecks.Game.Action.Model exposing (Action)
+import MassiveDecks.Game.History as History
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (..)
-import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Round.Complete as Complete
 import MassiveDecks.Game.Round.Judging as Judging
@@ -191,39 +191,52 @@ update msg model =
         Redraw ->
             ( model, Actions.redraw )
 
+        ToggleHistoryView ->
+            ( { model | viewingHistory = not model.viewingHistory }, Cmd.none )
+
 
 subscriptions : Model -> Sub Global.Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
-view : Shared -> Lobby.Auth -> Config -> Dict User.Id User -> Model -> Html Global.Msg
-view shared auth config users model =
+view : Shared -> Lobby.Auth -> String -> Config -> Dict User.Id User -> Model -> Html Global.Msg
+view shared auth name config users model =
     let
-        { instruction, action, content, fillCallWith } =
+        gameView =
+            if model.viewingHistory then
+                History.view shared config users name model.game.history
+
+            else
+                viewRound shared auth config users model
+    in
+    Html.div [ HtmlA.id "game" ] gameView
+
+
+viewRound : Shared -> Lobby.Auth -> Config -> Dict User.Id User -> Model -> List (Html Global.Msg)
+viewRound shared auth config users model =
+    let
+        ( call, { instruction, action, content, fillCallWith } ) =
             case model.completeRound of
                 Just completeRound ->
-                    Complete.view shared (Round.C completeRound /= game.round) config users completeRound
+                    ( completeRound.call, Complete.view shared True config users completeRound )
 
                 Nothing ->
                     case game.round of
                         Round.P round ->
-                            Playing.view auth config model round
+                            ( round.call, Playing.view auth config model round )
 
                         Round.R round ->
-                            Revealing.view auth config round
+                            ( round.call, Revealing.view auth config round )
 
                         Round.J round ->
-                            Judging.view auth config round
+                            ( round.call, Judging.view auth config round )
 
                         Round.C round ->
-                            Complete.view shared False config users round
+                            ( round.call, Complete.view shared False config users round )
 
         game =
             model.game
-
-        { call } =
-            Round.data game.round
 
         parts =
             fillCallWith |> List.map .body
@@ -257,27 +270,23 @@ view shared auth config users model =
             in
             Html.div [ HtmlA.id "context-help" ] helpContent
     in
-    Html.div [ HtmlA.id "game" ]
-        [ minorActions shared auth game
-        , help
-        , Html.div [ HtmlA.class "round" ]
-            [ renderedCall
-            , viewAction shared action
-            ]
-        , content
-        , Html.div [ HtmlA.class "scroll-top-spacer" ] []
+    [ minorActions shared auth game
+    , help
+    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction shared action ]
+    , content
+    , Html.div [ HtmlA.class "scroll-top-spacer" ] []
 
-        -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
-        , Html.div [ HtmlA.class "scroll-top" ]
-            [ Wl.button
-                [ WlA.flat
-                , WlA.fab
-                , WlA.inverted
-                , ScrollToTop |> lift |> HtmlE.onClick
-                ]
-                [ Icon.view Icon.arrowUp ]
+    -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
+    , Html.div [ HtmlA.class "scroll-top" ]
+        [ Wl.button
+            [ WlA.flat
+            , WlA.fab
+            , WlA.inverted
+            , ScrollToTop |> lift |> HtmlE.onClick
             ]
+            [ Icon.view Icon.arrowUp ]
         ]
+    ]
 
 
 minorActions : Shared -> Lobby.Auth -> Game -> Html Global.Msg
@@ -288,11 +297,22 @@ minorActions shared auth game =
     in
     Html.div [ HtmlA.id "minor-actions" ]
         (List.filterMap identity
-            [ Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
+            [ Just (historyButton shared)
+            , Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
                 (localPlayer |> Maybe.map .score)
                 game.rules.houseRules.reboot
             ]
         )
+
+
+historyButton : Shared -> Html Global.Msg
+historyButton shared =
+    Components.iconButton
+        [ HtmlA.id "history-button"
+        , Strings.ViewGameHistoryAction |> Lang.title shared
+        , ToggleHistoryView |> lift |> HtmlE.onClick
+        ]
+        Icon.history
 
 
 rebootButton : Shared -> Int -> Rules.Reboot -> Html Global.Msg
@@ -401,20 +421,23 @@ applyGameEvent auth gameEvent model =
                 newPlayers =
                     game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
 
-                newRound =
-                    case model.game.round of
+                ( newRound, history ) =
+                    case game.round of
                         Round.J r ->
                             let
                                 plays =
                                     r.plays |> List.filterMap (resolvePlayedBy playedBy) |> Dict.fromList
+
+                                complete =
+                                    Round.complete r.id r.czar r.players r.call plays winner
                             in
-                            Round.complete r.id r.czar r.players r.call plays winner |> Round.C
+                            ( complete |> Round.C, complete :: game.history )
 
                         _ ->
                             -- TODO: Error
-                            model.game.round
+                            ( game.round, game.history )
             in
-            ( { model | game = { game | round = newRound, players = newPlayers } }, Cmd.none )
+            ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, Cmd.none )
 
         Events.RoundStarted { id, czar, players, call, drawn } ->
             let

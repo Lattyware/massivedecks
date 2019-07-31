@@ -12,6 +12,7 @@ module MassiveDecks.Game.Round exposing
     , complete
     , data
     , idDecoder
+    , idString
     , judging
     , noPick
     , playing
@@ -38,6 +39,11 @@ type Id
 idDecoder : Json.Decoder Id
 idDecoder =
     Json.string |> Json.map Id
+
+
+idString : Id -> String
+idString (Id id) =
+    id
 
 
 {-| The stage of the round.

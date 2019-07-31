@@ -1,14 +1,20 @@
 // A play with the user's name.
-.play-with-byline {
+.with-byline {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0.5em;
 }
 
 // The user's name.
 .byline {
   font-size: 2em;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 
   svg {
     margin-right: 0.5em;

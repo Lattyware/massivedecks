@@ -17,3 +17,4 @@ type Msg
     | SetPlayStyles PlayStyles
     | AdvanceRound
     | Redraw
+    | ToggleHistoryView

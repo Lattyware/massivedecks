@@ -503,7 +503,7 @@ viewLobby shared configure auth lobby =
         [ viewUsers shared auth.claims.uid lobby.users game
         , Html.div [ HtmlA.id "scroll-frame" ]
             [ lobby.game
-                |> Maybe.map (Game.view shared auth lobby.config lobby.users)
+                |> Maybe.map (Game.view shared auth lobby.name lobby.config lobby.users)
                 |> Maybe.withDefault (Configure.view shared privileged configure auth.claims.gc lobby lobby.config)
             ]
         ]
@@ -624,10 +624,8 @@ viewUser shared player game ( userId, user ) =
             , clickable
             , HtmlA.id id
             ]
-            [ Html.div [ HtmlA.class "user compressed-terms" ]
-                (Html.span [ HtmlA.title user.name ] [ Html.text user.name ]
-                    :: secondary
-                )
+            [ Html.span [ HtmlA.class "user", HtmlA.title user.name ] [ Html.text user.name ]
+            , Html.div [ HtmlA.class "compressed-terms" ] secondary
             , Html.span [ WlA.listItemSlot WlA.AfterItem ] score
             ]
         , menu

@@ -650,6 +650,9 @@ translate mdString =
         Complete ->
             [ Text "Finished" ]
 
+        ViewGameHistoryAction ->
+            [ Text "View previous rounds from this game." ]
+
         -- Instructions
         WhatToDo ->
             [ Text "What should I be doing?" ]

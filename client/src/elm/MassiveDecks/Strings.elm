@@ -185,6 +185,7 @@ type MdString
     | Revealing -- A description of the stage of the round where the czar is revealing the plays.
     | Judging -- A description of the stage of the round where the czar is picking a winner.
     | Complete -- A description of the stage of the round where it is finished.
+    | ViewGameHistoryAction -- A description of the action of viewing the history of the game.
       -- Instructions
     | WhatToDo -- A description of the action of asking for help on what to do in the game at this time.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
