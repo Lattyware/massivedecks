@@ -54,27 +54,9 @@ view lobbyModel =
                                     ]
                                     [ text "Decks" ]
                                 ]
-                            , li []
-                                [ a
-                                    [ attribute "data-mui-toggle" "tab"
-                                    , attribute "data-mui-controls" "house-rules"
-                                    ]
-                                    [ text "House Rules" ]
-                                ]
-                            , li []
-                                [ a
-                                    [ attribute "data-mui-toggle" "tab"
-                                    , attribute "data-mui-controls" "lobby-settings"
-                                    ]
-                                    [ text "Lobby Settings" ]
-                                ]
                             ]
                         , div [ id "decks", class "mui-tabs__pane mui--is-active" ]
                             [ deckList canNotChangeConfig decks model.loadingDecks model.deckIdInput ]
-                        , div [ id "house-rules", class "mui-tabs__pane" ]
-                            ([ rando canNotChangeConfig ] ++ (List.map (\rule -> houseRule canNotChangeConfig (List.member rule.id lobbyModel.lobby.config.houseRules) rule) houseRules))
-                        , div [ id "lobby-settings", class "mui-tabs__pane" ]
-                            [ password model.passwordInput ]
                         , div [ class "mui-divider" ] []
                         , startGameButton canNotChangeConfig enoughPlayers enoughCards
                         ]
@@ -225,7 +207,7 @@ emptyDeckListInfo display =
                         [ class "link"
                         , attribute "tabindex" "0"
                         , attribute "role" "button"
-                        , onClick (ConfigureDecks (Request "CAHBS"))
+                        , onClick (ConfigureDecks (Request "33BEU"))
                         ]
                         [ text "clicking here to add the Cards Against Humanity base set" ]
                     , text "."

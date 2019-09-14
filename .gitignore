@@ -25,6 +25,3 @@
 /.sbtserver
 /project/.sbtserver
 /project/.sbtserver.lock
-
-# Compiled from elm.
-!/public/javascripts/MassiveDecks.js
