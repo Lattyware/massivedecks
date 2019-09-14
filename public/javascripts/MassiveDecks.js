@@ -12309,45 +12309,9 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model)
 								_1: {ctor: '[]'}
 							},
 							A2(
-								_elm_lang$core$Basics_ops['++'],
-								A2(
-									_Lattyware$massivedecks$MassiveDecks_Components_Tabs$view,
-									A3(_Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$renderTab, nameEntered, gameCodeEntered, model),
-									model.tabs),
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$a,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('about-link mui--divider-top link'),
-											_1: {
-												ctor: '::',
-												_0: A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
-												_1: {
-													ctor: '::',
-													_0: A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onClick(
-															_Lattyware$massivedecks$MassiveDecks_Scenes_Start_Messages$OverlayMessage(
-																_Lattyware$massivedecks$MassiveDecks_Components_About$show(model.init.version))),
-														_1: {ctor: '[]'}
-													}
-												}
-											}
-										},
-										{
-											ctor: '::',
-											_0: _Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('question-circle'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html$text(' About'),
-												_1: {ctor: '[]'}
-											}
-										}),
-									_1: {ctor: '[]'}
-								}))))),
+								_Lattyware$massivedecks$MassiveDecks_Components_Tabs$view,
+								A3(_Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$renderTab, nameEntered, gameCodeEntered, model),
+								model.tabs))))),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -12359,7 +12323,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model)
 							_elm_lang$html$Html$a,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$href('https://github.com/Lattyware/massivedecks'),
+								_0: _elm_lang$html$Html_Attributes$href('https://www.scoutingjanderooij.nl'),
 								_1: {ctor: '[]'}
 							},
 							{
@@ -12371,10 +12335,10 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Start_UI$view = function (model)
 										_0: _elm_lang$html$Html_Attributes$src('images/icon.svg'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$alt('The Massive Decks logo.'),
+											_0: _elm_lang$html$Html_Attributes$alt('Scouts Against Humanity Logo.'),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$title('Massive Decks'),
+												_0: _elm_lang$html$Html_Attributes$title('Scouts Against Humanity'),
 												_1: {ctor: '[]'}
 											}
 										}
@@ -17940,7 +17904,59 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$view = function (lobby
 														}),
 													_1: {ctor: '[]'}
 												}),
-											_1: {ctor: '[]'}
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$li,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$a,
+															{
+																ctor: '::',
+																_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-toggle', 'tab'),
+																_1: {
+																	ctor: '::',
+																	_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-controls', 'house-rules'),
+																	_1: {ctor: '[]'}
+																}
+															},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('House Rules'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$li,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$a,
+																{
+																	ctor: '::',
+																	_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-toggle', 'tab'),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-controls', 'lobby-settings'),
+																		_1: {ctor: '[]'}
+																	}
+																},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text('Lobby Settings'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
 										}),
 									_1: {
 										ctor: '::',
@@ -17966,14 +17982,64 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$view = function (lobby
 												_elm_lang$html$Html$div,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$class('mui-divider'),
-													_1: {ctor: '[]'}
+													_0: _elm_lang$html$Html_Attributes$id('house-rules'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$class('mui-tabs__pane'),
+														_1: {ctor: '[]'}
+													}
 												},
-												{ctor: '[]'}),
+												A2(
+													_elm_lang$core$Basics_ops['++'],
+													{
+														ctor: '::',
+														_0: _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$rando(canNotChangeConfig),
+														_1: {ctor: '[]'}
+													},
+													A2(
+														_elm_lang$core$List$map,
+														function (rule) {
+															return A3(
+																_Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$houseRule,
+																canNotChangeConfig,
+																A2(_elm_lang$core$List$member, rule.id, lobbyModel.lobby.config.houseRules),
+																rule);
+														},
+														_Lattyware$massivedecks$MassiveDecks_Scenes_Playing_HouseRule_Available$houseRules))),
 											_1: {
 												ctor: '::',
-												_0: A3(_Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$startGameButton, canNotChangeConfig, enoughPlayers, enoughCards),
-												_1: {ctor: '[]'}
+												_0: A2(
+													_elm_lang$html$Html$div,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$id('lobby-settings'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$class('mui-tabs__pane'),
+															_1: {ctor: '[]'}
+														}
+													},
+													{
+														ctor: '::',
+														_0: _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$password(model.passwordInput),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$div,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$class('mui-divider'),
+															_1: {ctor: '[]'}
+														},
+														{ctor: '[]'}),
+													_1: {
+														ctor: '::',
+														_0: A3(_Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$startGameButton, canNotChangeConfig, enoughPlayers, enoughCards),
+														_1: {ctor: '[]'}
+													}
+												}
 											}
 										}
 									}
