@@ -1,4 +1,4 @@
-module MassiveDecks.Scenes.Config.UI exposing (view, deckIdInputLabel, passwordInputLabel, addDeckButton, setPasswordButton)
+module MassiveDecks.Scenes.Config.UI exposing (view, deckId, deckIdInputLabel, passwordInputLabel, addDeckButton, setPasswordButton)
 
 import String
 import Html exposing (..)
@@ -58,6 +58,7 @@ view lobbyModel =
                                 [ a
                                     [ attribute "data-mui-toggle" "tab"
                                     , attribute "data-mui-controls" "house-rules"
+                                    , style [ ( "display", "none" ) ]
                                     ]
                                     [ text "House Rules" ]
                                 ]
@@ -65,6 +66,7 @@ view lobbyModel =
                                 [ a
                                     [ attribute "data-mui-toggle" "tab"
                                     , attribute "data-mui-controls" "lobby-settings"
+                                    , style [ ( "display", "none" ) ]
                                     ]
                                     [ text "Lobby Settings" ]
                                 ]
@@ -132,12 +134,14 @@ invite appUrl lobbyId =
             , p [] [ a [ href url ] [ text url ] ]
             ]
 
+deckId : String
+deckId = "33BEU"
 
 deckIdInputLabel : List (Html msg)
 deckIdInputLabel =
-    [ text " A "
+    [ text " Voer hier een "
     , a [ href "https://www.cardcastgame.com/browse", target "_blank", rel "noopener" ] [ text "Cardcast" ]
-    , text " Play Code"
+    , text " deckcode toe"
     ]
 
 
@@ -147,7 +151,7 @@ addDeckButton deckId =
         [ class "mui-btn mui-btn--small mui-btn--primary mui-btn--fab"
         , disabled (String.isEmpty deckId)
         , onClick (ConfigureDecks (Request deckId))
-        , title "Add deck to game."
+        , title "Deck toevoegen aan spel."
         ]
         [ Icon.icon "plus" ]
     ]
@@ -158,16 +162,16 @@ deckList canNotChangeConfig decks loadingDecks deckId =
     table [ class "decks mui-table" ]
         [ thead []
             [ tr []
-                [ th [] [ text "Id" ]
-                , th [] [ text "Name" ]
-                , th [ title "Calls" ] [ Icon.icon "square" ]
-                , th [ title "Responses" ] [ Icon.icon "square-o" ]
+                [ th [] [ text "Code" ]
+                , th [] [ text "Naam" ]
+                , th [ title "Vragen" ] [ Icon.icon "square" ]
+                , th [ title "Antwoorden" ] [ Icon.icon "square-o" ]
                 ]
             ]
         , Util.tbody []
             (List.concat
                 [ if (canNotChangeConfig && (List.isEmpty decks)) then
-                    [ ( "!!emptyInfo", tr [] [ td [ colspan 4 ] [ text "No decks have been added yet." ] ] ) ]
+                    [ ( "!!emptyInfo", tr [] [ td [ colspan 4 ] [ text "Er zijn nog geen decks toegevoegd." ] ] ) ]
                   else
                     []
                 , emptyDeckListInfo ((not canNotChangeConfig) && (List.isEmpty decks) && List.isEmpty loadingDecks)
@@ -217,18 +221,17 @@ emptyDeckListInfo display =
           , tr []
                 [ td [ colspan 4 ]
                     [ Icon.icon "info-circle"
-                    , text " You will need to add at least one "
-                    , a [ href "https://www.cardcastgame.com/browse", target "_blank", rel "noopener" ] [ text "Cardcast deck" ]
-                    , text " to the game."
-                    , text " Not sure? Try "
                     , a
                         [ class "link"
                         , attribute "tabindex" "0"
                         , attribute "role" "button"
                         , onClick (ConfigureDecks (Request "33BEU"))
                         ]
-                        [ text "clicking here to add the Cards Against Humanity base set" ]
+                        [ text " Klik hier om het ScoutingJDR basisdeck toe te voegen aan het spel" ]
                     , text "."
+                    , text " Je kunt ook een kijkje nemen op "
+                    , a [ href "https://www.cardcastgame.com/browse", target "_blank", rel "noopener" ] [ text "Cardcast" ]
+                    , text " om een extra deck te zoeken."
                     ]
                 ]
           )
@@ -277,7 +280,7 @@ startGameWarning canStart =
     if canStart then
         text ""
     else
-        span [] [ Icon.icon "info-circle", text " You will need at least two players to start the game." ]
+        span [] [ Icon.icon "info-circle", text " Je moet met minimaal 2 personen zijn om het spel te kunnen starten." ]
 
 
 startGameButton : Bool -> Bool -> Bool -> Html Message
@@ -289,5 +292,5 @@ startGameButton notOwner enoughPlayers enoughCards =
             , onClick StartGame
             , disabled ((not (enoughPlayers && enoughCards)) || notOwner)
             ]
-            [ text "Start Game" ]
+            [ text "Spel starten" ]
         ]

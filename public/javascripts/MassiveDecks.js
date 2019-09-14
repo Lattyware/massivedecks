@@ -17079,7 +17079,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$startGameWarning = fun
 			_0: _Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('info-circle'),
 			_1: {
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(' You will need at least two players to start the game.'),
+				_0: _elm_lang$html$Html$text(' Je moet met minimaal 2 personen zijn om het spel te kunnen starten.'),
 				_1: {ctor: '[]'}
 			}
 		});
@@ -17115,7 +17115,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$startGameButton = F3(
 						},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Start Game'),
+							_0: _elm_lang$html$Html$text('Spel starten'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
@@ -17246,68 +17246,64 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$emptyDeckListInfo = fu
 							_0: _Lattyware$massivedecks$MassiveDecks_Components_Icon$icon('info-circle'),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(' You will need to add at least one '),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$a,
-										{
+								_0: A2(
+									_elm_lang$html$Html$a,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('link'),
+										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/browse'),
+											_0: A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$target('_blank'),
+												_0: A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$rel('noopener'),
+													_0: _elm_lang$html$Html_Events$onClick(
+														_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$ConfigureDecks(
+															_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$Request('33BEU'))),
 													_1: {ctor: '[]'}
 												}
 											}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('Cardcast deck'),
-											_1: {ctor: '[]'}
-										}),
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(' Klik hier om het ScoutingJDR basisdeck toe te voegen aan het spel'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('.'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(' to the game.'),
+										_0: _elm_lang$html$Html$text(' Je kunt ook een kijkje nemen op '),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(' Not sure? Try '),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$a,
-													{
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('https://www.cardcastgame.com/browse'),
+													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$class('link'),
+														_0: _elm_lang$html$Html_Attributes$target('_blank'),
 														_1: {
 															ctor: '::',
-															_0: A2(_elm_lang$html$Html_Attributes$attribute, 'tabindex', '0'),
-															_1: {
-																ctor: '::',
-																_0: A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'button'),
-																_1: {
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Events$onClick(
-																		_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$ConfigureDecks(
-																			_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$Request('33BEU'))),
-																	_1: {ctor: '[]'}
-																}
-															}
+															_0: _elm_lang$html$Html_Attributes$rel('noopener'),
+															_1: {ctor: '[]'}
 														}
-													},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('clicking here to add the Cards Against Humanity base set'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
+													}
+												},
+												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('.'),
+													_0: _elm_lang$html$Html$text('Cardcast'),
 													_1: {ctor: '[]'}
-												}
+												}),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(' om een extra deck te zoeken.'),
+												_1: {ctor: '[]'}
 											}
 										}
 									}
@@ -17459,7 +17455,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckList = F4(
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text('Id'),
+										_0: _elm_lang$html$Html$text('Code'),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -17469,7 +17465,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckList = F4(
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text('Name'),
+											_0: _elm_lang$html$Html$text('Naam'),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -17478,7 +17474,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckList = F4(
 											_elm_lang$html$Html$th,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$title('Calls'),
+												_0: _elm_lang$html$Html_Attributes$title('Vragen'),
 												_1: {ctor: '[]'}
 											},
 											{
@@ -17492,7 +17488,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckList = F4(
 												_elm_lang$html$Html$th,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$title('Responses'),
+													_0: _elm_lang$html$Html_Attributes$title('Antwoorden'),
 													_1: {ctor: '[]'}
 												},
 												{
@@ -17534,7 +17530,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckList = F4(
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('No decks have been added yet.'),
+														_0: _elm_lang$html$Html$text('Er zijn nog geen decks toegevoegd.'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -17610,7 +17606,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$addDeckButton = functi
 								_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$Request(deckId))),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$title('Add deck to game.'),
+							_0: _elm_lang$html$Html_Attributes$title('Deck toevoegen aan spel.'),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -17626,7 +17622,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$addDeckButton = functi
 };
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckIdInputLabel = {
 	ctor: '::',
-	_0: _elm_lang$html$Html$text(' A '),
+	_0: _elm_lang$html$Html$text(' Voer hier een '),
 	_1: {
 		ctor: '::',
 		_0: A2(
@@ -17651,11 +17647,12 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckIdInputLabel = {
 			}),
 		_1: {
 			ctor: '::',
-			_0: _elm_lang$html$Html$text(' Play Code'),
+			_0: _elm_lang$html$Html$text(' deckcode toe'),
 			_1: {ctor: '[]'}
 		}
 	}
 };
+var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckId = '33BEU';
 var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$invite = F2(
 	function (appUrl, lobbyId) {
 		var url = A2(_Lattyware$massivedecks$MassiveDecks_Util$lobbyUrl, appUrl, lobbyId);
@@ -17919,7 +17916,16 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$view = function (lobby
 																_1: {
 																	ctor: '::',
 																	_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-controls', 'house-rules'),
-																	_1: {ctor: '[]'}
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Attributes$style(
+																			{
+																				ctor: '::',
+																				_0: {ctor: '_Tuple2', _0: 'display', _1: 'none'},
+																				_1: {ctor: '[]'}
+																			}),
+																		_1: {ctor: '[]'}
+																	}
 																}
 															},
 															{
@@ -17944,7 +17950,16 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$view = function (lobby
 																	_1: {
 																		ctor: '::',
 																		_0: A2(_elm_lang$html$Html_Attributes$attribute, 'data-mui-controls', 'lobby-settings'),
-																		_1: {ctor: '[]'}
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$html$Html_Attributes$style(
+																				{
+																					ctor: '::',
+																					_0: {ctor: '_Tuple2', _0: 'display', _1: 'none'},
+																					_1: {ctor: '[]'}
+																				}),
+																			_1: {ctor: '[]'}
+																		}
 																	}
 																},
 																{
@@ -18293,7 +18308,7 @@ var _Lattyware$massivedecks$MassiveDecks_Scenes_Config$init = F2(
 					'input-with-button',
 					_Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$deckIdInputLabel,
 					'',
-					'Play Code',
+					'Deck code',
 					_Lattyware$massivedecks$MassiveDecks_Scenes_Config_UI$addDeckButton,
 					_Lattyware$massivedecks$MassiveDecks_Util$cmd(_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$AddDeck),
 					_Lattyware$massivedecks$MassiveDecks_Scenes_Config_Messages$InputMessage),

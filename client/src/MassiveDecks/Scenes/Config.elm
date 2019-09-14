@@ -33,7 +33,7 @@ init lobby secret =
                 (\_ -> [])
     in
         { decks = []
-        , deckIdInput = Input.initWithExtra DeckId "input-with-button" UI.deckIdInputLabel "" "Play Code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
+        , deckIdInput = Input.initWithExtra DeckId "input-with-button" UI.deckIdInputLabel "" "Deck code" UI.addDeckButton (Util.cmd AddDeck) InputMessage
         , passwordInput = Input.initWithExtra Password "input-with-button" UI.passwordInputLabel (config.password |> Maybe.withDefault "") "Password" setPasswordButton (Util.cmd SetPassword) InputMessage
         , loadingDecks = []
         }
