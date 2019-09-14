@@ -67,18 +67,10 @@ view model =
                     ++ [ Input.view model.nameInput
                        ]
                     ++ (Tabs.view (renderTab nameEntered gameCodeEntered model) model.tabs)
-                    ++ [ a
-                            [ class "about-link mui--divider-top link"
-                            , attribute "tabindex" "0"
-                            , attribute "role" "button"
-                            , onClick (About.show model.init.version |> OverlayMessage)
-                            ]
-                            [ Icon.icon "question-circle", text " About" ]
-                       ]
                 )
             , footer []
-                [ a [ href "https://github.com/Lattyware/massivedecks" ]
-                    [ img [ src "images/icon.svg", alt "The Massive Decks logo.", title "Massive Decks" ] [] ]
+                [ a [ href "https://www.scoutingjanderooij.nl" ]
+                    [ img [ src "images/icon.svg", alt "Scouts Against Humanity Logo.", title "Scouts Against Humanity" ] [] ]
                 , p [] versionInfo
                 ]
             ]
