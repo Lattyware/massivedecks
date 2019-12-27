@@ -1,5 +1,5 @@
 import http, { AxiosRequestConfig } from "axios";
-import * as genericPool from "generic-pool";
+import genericPool from "generic-pool";
 import * as card from "../card";
 import { Slot } from "../card";
 import * as decks from "../decks";
@@ -50,7 +50,9 @@ const config: AxiosRequestConfig = {
 const connectionPool = genericPool.createPool(
   {
     create: async () => http.create(config),
-    destroy: async _ => {}
+    destroy: async _ => {
+      // Do nothing.
+    }
   },
   { max: 2 }
 );
@@ -83,14 +85,14 @@ const nextWordShouldBeCapitalized = (previously: string): boolean =>
  */
 // TODO: We probably want to offer some control over these heuristics.
 function* parts(call: CCCard): Iterable<card.Part> {
-  let upper: Slot = call.text.every(text => text === text.toUpperCase())
+  const upper: Slot = call.text.every(text => text === text.toUpperCase())
     ? { transform: "UpperCase" }
     : {};
   let first = true;
   let previous: string | null = null;
   for (const text of call.text) {
     if (previous !== null) {
-      let capitalize: Slot =
+      const capitalize: Slot =
         nextWordShouldBeCapitalized(previous) || first
           ? { transform: "Capitalize" }
           : {};

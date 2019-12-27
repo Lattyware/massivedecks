@@ -1,4 +1,4 @@
-port module MassiveDecks.Model exposing
+module MassiveDecks.Model exposing
     ( Flags
     , Shared
     )
@@ -6,7 +6,7 @@ port module MassiveDecks.Model exposing
 import Browser.Navigation as Navigation
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
-import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
+import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
 {-| Model shared by all pages.

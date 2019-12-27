@@ -1,12 +1,10 @@
-import { user } from "ts-postgres/dist/src/defaults";
+import wu from "wu";
 import * as event from "../event";
 import * as startRevealing from "../events/game-event/start-revealing";
 import * as card from "../games/cards/card";
-import { start } from "../games/game";
+import * as round from "../games/game/round";
 import * as timeout from "../timeout";
 import * as util from "../util";
-import * as round from "../games/game/round";
-import wu from "wu";
 
 /**
  * Indicates that the round should start the judging phase if it is appropriate
@@ -75,10 +73,7 @@ export const handle: timeout.Handler<FinishedPlaying> = (
     event.additionally(startRevealing.of(playsToBeRevealed), newCardsByPlayer)
   ];
 
-  game.round = {
-    ...round,
-    stage: "Revealing"
-  };
+  game.round = round.advance();
   return {
     lobby,
     events: events

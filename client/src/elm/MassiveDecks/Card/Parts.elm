@@ -13,7 +13,6 @@ module MassiveDecks.Card.Parts exposing
 
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Attributes.Aria as Aria
 import MassiveDecks.Util.String as String
 
 

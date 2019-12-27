@@ -110,14 +110,6 @@ export const parseTimeouts = (
     parseDuration(value)
   );
 
-export const parse = (config: Unparsed): Parsed =>
-  pullFromEnvironment({
-    ...config,
-    timeouts: parseTimeouts(config.timeouts),
-    storage: parseStorage(config.storage),
-    cache: parseCache(config.cache)
-  });
-
 export const pullFromEnvironment = (config: Parsed): Parsed => {
   for (const name of environmental) {
     const envName = `MD_${name
@@ -131,3 +123,11 @@ export const pullFromEnvironment = (config: Parsed): Parsed => {
   }
   return config;
 };
+
+export const parse = (config: Unparsed): Parsed =>
+  pullFromEnvironment({
+    ...config,
+    timeouts: parseTimeouts(config.timeouts),
+    storage: parseStorage(config.storage),
+    cache: parseCache(config.cache)
+  });

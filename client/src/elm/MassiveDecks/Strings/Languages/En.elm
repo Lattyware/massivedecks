@@ -775,6 +775,12 @@ translate mdString =
             , Text "Try typing it again and if it still doesn't work, ask the person who invited you again."
             ]
 
+        UsernameAlreadyInUseError { username } ->
+            [ Text "Someone is already using the username “"
+            , Text username
+            , Text "”—try a different name."
+            ]
+
         OutOfCardsError ->
             [ Text "There were not enough cards in the deck to deal everyone a hand! Try adding more decks in the game configuration." ]
 

@@ -4,16 +4,21 @@ import "express-async-errors";
 import expressWinston from "express-winston";
 import ws from "express-ws";
 import fs from "fs";
+import helmet from "helmet";
 import HttpStatus from "http-status-codes";
 import JSON5 from "json5";
 import sourceMapSupport from "source-map-support";
 import { promisify } from "util";
+import wu from "wu";
+import * as checkAlive from "./action/initial/check-alive";
 import * as createLobby from "./action/initial/create-lobby";
 import * as registerUser from "./action/initial/register-user";
 import * as serverConfig from "./config";
 import { MassiveDecksError } from "./errors";
 import { InvalidLobbyPasswordError } from "./errors/authentication";
+import { UsernameAlreadyInUseError } from "./errors/registration";
 import * as event from "./event";
+import * as presenceChanged from "./events/lobby-event/presence-changed";
 import * as change from "./lobby/change";
 import { GameCode } from "./lobby/game-code";
 import * as logging from "./logging";
@@ -22,9 +27,6 @@ import * as timeout from "./timeout";
 import * as userDisconnect from "./timeout/user-disconnect";
 import * as user from "./user";
 import * as token from "./user/token";
-import * as checkAlive from "./action/initial/check-alive";
-import * as presenceChanged from "./events/lobby-event/presence-changed";
-import helmet from "helmet";
 
 sourceMapSupport.install();
 
@@ -44,9 +46,11 @@ function getConfigFilePath(): string {
 }
 
 async function main(): Promise<void> {
-  const config = serverConfig.parse(JSON5.parse(
-    (await promisify(fs.readFile)(getConfigFilePath())).toString()
-  ) as serverConfig.Unparsed);
+  const config = serverConfig.parse(
+    JSON5.parse(
+      (await promisify(fs.readFile)(getConfigFilePath())).toString()
+    ) as serverConfig.Unparsed
+  );
 
   const { app } = ws(express());
 
@@ -119,6 +123,9 @@ async function main(): Promise<void> {
     const id = await change.applyAndReturn(state, gameCode, lobby => {
       if (lobby.config.password !== registration.password) {
         throw new InvalidLobbyPasswordError();
+      }
+      if (wu(lobby.users.values()).find(u => u.name === registration.name)) {
+        throw new UsernameAlreadyInUseError(registration.name);
       }
       const id = lobby.nextUserId.toString();
       lobby.nextUserId += 1;

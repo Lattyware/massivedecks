@@ -224,16 +224,6 @@ cardSize shared =
                 , Icon.viewStyled [ Slider.slot Slider.After ] Icon.searchPlus
                 ]
             ]
-         --            [ Wl.switch
-         --                [ HtmlA.checked settings.compactCards
-         --                , HtmlE.onCheck (ChangeCompactCards >> Global.SettingsMsg)
-         --                ]
-         --            , Html.label []
-         --                [ Icon.view Icon.searchMinus
-         --                , Html.text " "
-         --                , Strings.CompactCardsSetting |> Lang.html shared
-         --                ]
-         --            ]
         )
         [ Message.info Strings.CardSizeExplanation ]
 
@@ -242,13 +232,13 @@ cardSizeThumb : CardSize -> Html msg
 cardSizeThumb size =
     case size of
         Minimal ->
-            Icon.view Icon.minimalCardSize
+            Icon.viewIcon Icon.minimalCardSize
 
         Square ->
-            Icon.view Icon.squareCardSize
+            Icon.viewIcon Icon.squareCardSize
 
         Full ->
-            Icon.view Icon.callCard
+            Icon.viewIcon Icon.callCard
 
 
 speechSwitch : Shared -> Html Global.Msg
@@ -258,9 +248,9 @@ speechSwitch shared =
         "speech"
         (Html.div
             [ HtmlA.class "multipart" ]
-            [ Wl.switch []
+            [ Wl.switch [ WlA.disabled ]
             , Html.label []
-                [ Icon.view Icon.volumeUp
+                [ Icon.viewIcon Icon.volumeUp
                 , Html.text " "
                 , Strings.SpeechSetting |> Lang.html shared
                 ]
@@ -276,9 +266,9 @@ notificationsSwitch shared =
         "notifications"
         (Html.div
             [ HtmlA.class "multipart" ]
-            [ Wl.switch []
+            [ Wl.switch [ WlA.disabled ]
             , Html.label []
-                [ Icon.view Icon.bell
+                [ Icon.viewIcon Icon.bell
                 , Html.text " "
                 , Strings.NotificationsSetting |> Lang.html shared
                 ]

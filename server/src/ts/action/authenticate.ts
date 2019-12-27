@@ -1,13 +1,13 @@
+import { Action } from "../action";
 import { InvalidAuthenticationError } from "../errors/authentication";
 import * as event from "../event";
-import { ServerState } from "../server-state";
+import * as connectionChanged from "../events/lobby-event/connection-changed";
+import * as change from "../lobby/change";
 import { GameCode } from "../lobby/game-code";
+import { ServerState } from "../server-state";
 import { User } from "../user";
 import * as token from "../user/token";
 import { Token } from "../user/token";
-import { Action } from "../action";
-import * as change from "../lobby/change";
-import * as connectionChanged from "../events/lobby-event/connection-changed";
 
 /**
  * Authenticate with the game.

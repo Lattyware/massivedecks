@@ -1,8 +1,8 @@
 import wu from "wu";
-import { Game } from "../games/game";
 import * as game from "../games/game";
-import * as lobby from "../lobby";
+import { Game } from "../games/game";
 import { Playing } from "../games/game/round";
+import * as lobby from "../lobby";
 import * as timeout from "../timeout";
 
 /**
@@ -26,7 +26,7 @@ export const handle: timeout.Handler<RoundStart> = (
     const lobbyGame = inLobby.game;
     const gameRound = lobbyGame.round;
     if (gameRound.stage === "Complete") {
-      const czar = game.nextCzar(inLobby);
+      const czar = lobbyGame.nextCzar(inLobby.users);
       const [call] = lobbyGame.decks.calls.replace(gameRound.call);
       const roundId = gameRound.id + 1;
       const playersInRound = new Set(
@@ -35,17 +35,8 @@ export const handle: timeout.Handler<RoundStart> = (
       lobbyGame.decks.responses.discard(
         gameRound.plays.flatMap(play => play.play)
       );
-      const updatedGame: Game & { round: Playing } = {
-        ...lobbyGame,
-        round: {
-          stage: "Playing",
-          id: roundId,
-          czar: czar,
-          players: playersInRound,
-          call: call,
-          plays: []
-        }
-      };
+      lobbyGame.round = new Playing(roundId, czar, playersInRound, call);
+      const updatedGame = lobbyGame as Game & { round: Playing };
       const atStartOfRound = game.atStartOfRound(server, false, updatedGame);
       inLobby.game = atStartOfRound.game;
       return {

@@ -13,7 +13,7 @@ import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe

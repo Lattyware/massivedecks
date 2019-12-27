@@ -1,10 +1,10 @@
 {
   "type": "application",
   "source-directories": ["./src/elm"],
-  "elm-version": "0.19.0",
+  "elm-version": "0.19.1",
   "dependencies": {
     "direct": {
-      "elm/browser": "1.0.1",
+      "elm/browser": "1.0.2",
       "elm/core": "1.0.2",
       "elm/html": "1.0.0",
       "elm/http": "2.0.0",
@@ -14,9 +14,9 @@
       "elm/time": "1.0.0",
       "elm/url": "1.0.0",
       "elm-community/dict-extra": "2.4.0",
-      "elm-community/random-extra": "3.0.0",
+      "elm-community/random-extra": "3.1.0",
       "fapian/elm-html-aria": "1.4.0",
-      "lattyware/elm-fontawesome": "2.3.0",
+      "lattyware/elm-fontawesome": "4.0.0",
       "myrho/elm-round": "1.0.4",
       "pablohirafuji/elm-qrcode": "3.1.1",
       "truqu/elm-base64": "2.0.4"
@@ -26,7 +26,8 @@
       "elm/file": "1.0.5",
       "elm/regex": "1.0.0",
       "elm/virtual-dom": "1.0.2",
-      "elm-community/list-extra": "8.1.0"
+      "elm-community/list-extra": "8.2.2",
+      "owanturist/elm-union-find": "1.0.0"
     }
   },
   "test-dependencies": {

@@ -5,23 +5,32 @@ import {
 } from "../errors/action-execution-error";
 import { Game } from "../games/game";
 import * as player from "../games/player";
+import { Player } from "../games/player";
 import * as gameLobby from "../lobby";
 import * as token from "../user/token";
 import * as util from "../util";
 import * as czar from "./game-action/czar";
 import { Czar } from "./game-action/czar";
+import * as enforceTimeLimit from "./game-action/enforce-time-limit";
+import { EnforceTimeLimit } from "./game-action/enforce-time-limit";
 import * as playerAction from "./game-action/player";
 import { Player as PlayerAction } from "./game-action/player";
 import * as redraw from "./game-action/redraw";
 import { Redraw } from "./game-action/redraw";
+import * as setAway from "./game-action/set-away";
+import { SetAway } from "./game-action/set-away";
 import * as handler from "./handler";
-import { Handler } from "./handler";
-import wu = require("wu");
+import wu from "wu";
 
 /**
  * An action only a player can perform.
  */
-export type GameAction = PlayerAction | Czar | Redraw;
+export type GameAction =
+  | PlayerAction
+  | Czar
+  | Redraw
+  | EnforceTimeLimit
+  | SetAway;
 
 /**
  * A handler for game actions.
@@ -31,7 +40,13 @@ export type Handler<T extends GameAction> = handler.Custom<
   gameLobby.WithActiveGame
 >;
 
-const possible = new Set([playerAction.is, czar.is, redraw.is]);
+const possible = new Set([
+  playerAction.is,
+  czar.is,
+  redraw.is,
+  enforceTimeLimit.is,
+  setAway.is
+]);
 
 /**
  * Check if an action is a configure action.
@@ -40,7 +55,12 @@ const possible = new Set([playerAction.is, czar.is, redraw.is]);
 export const is = (action: Action): action is GameAction =>
   wu(possible).some(is => is(action));
 
-export const handle: Handler<GameAction> = (auth, lobby, action, server) => {
+export const handle: handler.Handler<GameAction> = (
+  auth,
+  lobby,
+  action,
+  server
+) => {
   if (gameLobby.hasActiveGame(lobby)) {
     if (czar.is(action)) {
       return czar.handle(auth, lobby, action, server);
@@ -48,6 +68,10 @@ export const handle: Handler<GameAction> = (auth, lobby, action, server) => {
       return playerAction.handle(auth, lobby, action, server);
     } else if (redraw.is(action)) {
       return redraw.handle(auth, lobby, action, server);
+    } else if (enforceTimeLimit.is(action)) {
+      return enforceTimeLimit.handle(auth, lobby, action, server);
+    } else if (setAway.is(action)) {
+      return setAway.handle(auth, lobby, action, server);
     } else {
       return util.assertNever(action);
     }
@@ -81,7 +105,7 @@ export function expectRole(
   game: Game,
   expected: player.Role
 ): void {
-  const playerRole = player.role(game, auth.uid);
+  const playerRole = Player.role(auth.uid, game);
   if (playerRole !== expected) {
     throw new IncorrectPlayerRoleError(action, playerRole, expected);
   }

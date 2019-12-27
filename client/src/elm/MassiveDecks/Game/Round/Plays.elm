@@ -41,7 +41,7 @@ byLine shared users id icon =
             users |> Dict.get id |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
     in
     Html.span [ HtmlA.class "byline", HtmlA.title name ]
-        [ icon |> Maybe.map Icon.view |> Maybe.withDefault Html.nothing
+        [ icon |> Maybe.map Icon.viewIcon |> Maybe.withDefault Html.nothing
         , Html.text name
         ]
 

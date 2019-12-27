@@ -1,3 +1,4 @@
+import wu from "wu";
 import { Action } from "../../action";
 import * as util from "../../util";
 import * as gameAction from "../game-action";
@@ -5,7 +6,6 @@ import * as submit from "./player/submit";
 import { Submit } from "./player/submit";
 import * as takeBack from "./player/take-back";
 import { TakeBack } from "./player/take-back";
-import wu from "wu";
 
 /**
  * An action only the czar can perform.
@@ -27,6 +27,7 @@ export const handle: gameAction.Handler<Player> = (
   action,
   server
 ) => {
+  gameAction.expectRole(auth, action, lobby.game, "Player");
   if (submit.is(action)) {
     return submit.handle(auth, lobby, action, server);
   } else if (takeBack.is(action)) {

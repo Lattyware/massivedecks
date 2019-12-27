@@ -3,18 +3,11 @@ import { Hand } from "./cards/hand";
 import { Game } from "./game";
 
 /**
- * A player in the game.
- */
-export interface Player {
-  hand: Hand;
-  score: Score;
-}
-
-/**
  * A player containing only state all users can see.
  */
 export interface Public {
   score: Score;
+  presence: Presence;
 }
 
 /**
@@ -30,16 +23,37 @@ export type Role = "Czar" | "Player";
 export type Score = number;
 
 /**
- * Produce a public version of the given player.
+ * If the player is active in the game or has been marked as away.
  */
-export const censor = (player: Player): Public => ({
-  score: player.score
-});
+export type Presence = "Active" | "Away";
 
 /**
- * Get the given player's role in the game.
- * @param game The game.
- * @param player The player's id.
+ * A player in the game.
  */
-export const role = (game: Game, player: user.Id): Role =>
-  game.round.czar === player ? "Czar" : "Player";
+export class Player {
+  public hand: Hand;
+  public score: Score;
+  public presence: Presence;
+
+  public constructor(hand: Hand) {
+    this.hand = hand;
+    this.score = 0;
+    this.presence = "Active";
+  }
+
+  public public(): Public {
+    return {
+      score: this.score,
+      presence: this.presence
+    };
+  }
+
+  /**
+   * Get the given player's role in the game.
+   * @param id The player's id.
+   * @param game The game.
+   */
+  public static role(id: user.Id, game: Game): Role {
+    return game.round.czar === id ? "Czar" : "Player";
+  }
+}

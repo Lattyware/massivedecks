@@ -4,6 +4,7 @@ module MassiveDecks.Models.MdError exposing
     , GameStateError(..)
     , LobbyNotFoundError(..)
     , MdError(..)
+    , RegistrationError(..)
     , describe
     )
 
@@ -18,6 +19,7 @@ type MdError
     = ActionExecution ActionExecutionError
     | Authentication AuthenticationError
     | LobbyNotFound { reason : LobbyNotFoundError, gameCode : GameCode }
+    | Registration RegistrationError
     | Game GameStateError
 
 
@@ -39,6 +41,10 @@ type AuthenticationError
 type LobbyNotFoundError
     = Closed
     | DoesNotExist
+
+
+type RegistrationError
+    = UsernameAlreadyInUseError { username : String }
 
 
 type GameStateError
@@ -86,6 +92,11 @@ describe error =
 
                 DoesNotExist ->
                     Strings.LobbyDoesNotExistError { gameCode = GameCode.toString gameCode }
+
+        Registration reason ->
+            case reason of
+                UsernameAlreadyInUseError { username } ->
+                    Strings.UsernameAlreadyInUseError { username = username }
 
         Game gse ->
             case gse of

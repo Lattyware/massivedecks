@@ -4,11 +4,11 @@ module MassiveDecks.Pages.Start.Model exposing
     )
 
 import MassiveDecks.Models.MdError exposing (LobbyNotFoundError, MdError)
-import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
+import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
 import MassiveDecks.Pages.Start.Route exposing (Route)
-import MassiveDecks.Requests.HttpData.Model as HttpData exposing (HttpData)
+import MassiveDecks.Requests.HttpData.Model exposing (HttpData)
 import MassiveDecks.User as User
 
 

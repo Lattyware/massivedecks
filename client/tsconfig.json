@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "esNext",
-    "target": "es5",
+    "module": "esnext",
+    "target": "es6",
     "noImplicitAny": true,
     "preserveConstEnums": true,
     "outDir": "dist",

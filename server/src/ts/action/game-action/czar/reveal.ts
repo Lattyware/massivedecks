@@ -3,8 +3,8 @@ import { InvalidActionError } from "../../../errors/validation";
 import * as event from "../../../event";
 import * as playRevealed from "../../../events/game-event/play-revealed";
 import * as play from "../../../games/cards/play";
-import * as gameAction from "../../game-action";
 import * as round from "../../../games/game/round";
+import * as gameAction from "../../game-action";
 
 /**
  * A user judges the winning play for a round.
@@ -31,7 +31,7 @@ export const is = (action: Action): action is Reveal => action.action === name;
  */
 export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
   const lobbyRound = lobby.game.round;
-  if (round.verifyStage<round.Revealing>(action, lobbyRound, "Revealing")) {
+  if (lobbyRound.verifyStage<round.Revealing>(action, "Revealing")) {
     const play = lobbyRound.plays.find(play => play.id === action.play);
     if (play === undefined) {
       throw new InvalidActionError("Given play doesn't exist.");
@@ -40,11 +40,9 @@ export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
       throw new InvalidActionError("Given play is already revealed.");
     }
     play.revealed = true;
-    if (round.allStoredPlaysAreRevealed(lobbyRound)) {
-      lobby.game.round = {
-        ...lobbyRound,
-        stage: "Judging"
-      };
+    const advancedRound = lobbyRound.advance();
+    if (advancedRound !== null) {
+      lobby.game.round = advancedRound;
     }
     return {
       lobby,

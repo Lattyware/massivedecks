@@ -7,6 +7,7 @@ module MassiveDecks.Pages.Lobby exposing
     , view
     )
 
+import Browser.Navigation as Navigation
 import Dict exposing (Dict)
 import FontAwesome.Attributes as Icon
 import FontAwesome.Brands as Icon
@@ -19,7 +20,6 @@ import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import MassiveDecks.Animated as Animated exposing (Animated)
 import MassiveDecks.Card.Model as Card
-import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Menu as Menu
@@ -31,7 +31,7 @@ import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Models.MdError as MdError
+import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.Configure as Configure
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
@@ -108,8 +108,8 @@ subscriptions model =
         ]
 
 
-update : Msg -> Model -> ( Model, Cmd Global.Msg )
-update msg model =
+update : Navigation.Key -> Msg -> Model -> ( Model, Cmd Global.Msg )
+update key msg model =
     case msg of
         GameMsg gameMsg ->
             case model.lobby of
@@ -213,7 +213,11 @@ update msg model =
         ErrorReceived error ->
             case error of
                 MdError.Authentication reason ->
-                    ( model, Cmd.none )
+                    let
+                        redirectTo =
+                            Route.Start { section = Start.Join (Just model.auth.claims.gc) }
+                    in
+                    ( model, redirectTo |> Route.url |> Navigation.pushUrl key )
 
                 _ ->
                     ( model, Cmd.none )
@@ -447,22 +451,22 @@ viewNotification shared users animationState notification =
         ( icon, message ) =
             case notification.message of
                 UserConnected id ->
-                    ( Icon.view Icon.plug
+                    ( Icon.viewIcon Icon.plug
                     , Strings.UserConnected { username = username shared users id } |> Lang.html shared
                     )
 
                 UserDisconnected id ->
-                    ( Icon.layers [] [ Icon.view Icon.plug, Icon.view Icon.slash ]
+                    ( Icon.layers [] [ Icon.viewIcon Icon.plug, Icon.viewIcon Icon.slash ]
                     , Strings.UserDisconnected { username = username shared users id } |> Lang.html shared
                     )
 
                 UserJoined id ->
-                    ( Icon.view Icon.signInAlt
+                    ( Icon.viewIcon Icon.signInAlt
                     , Strings.UserJoined { username = username shared users id } |> Lang.html shared
                     )
 
                 UserLeft id ->
-                    ( Icon.view Icon.signOutAlt
+                    ( Icon.viewIcon Icon.signOutAlt
                     , Strings.UserLeft { username = username shared users id } |> Lang.html shared
                     )
     in

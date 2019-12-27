@@ -5,7 +5,7 @@ import * as judge from "./czar/judge";
 import { Judge } from "./czar/judge";
 import * as reveal from "./czar/reveal";
 import { Reveal } from "./czar/reveal";
-import wu = require("wu");
+import wu from "wu";
 
 /**
  * An action only the czar can perform.

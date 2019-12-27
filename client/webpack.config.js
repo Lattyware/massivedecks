@@ -23,7 +23,8 @@ module.exports = (env, argv) => {
       loader: "file-loader",
       options: {
         name: "[name].[hash].css",
-        outputPath: "assets/styles"
+        outputPath: "assets/styles",
+        esModule: false
       }
     },
     {
@@ -52,9 +53,11 @@ module.exports = (env, argv) => {
       loader: "sass-loader",
       options: {
         sourceMap: dev,
-        includePaths: ["node_modules"],
-        functions: {
-          "inline-svg": inliner("./", { encodingFormat: "uri" })
+        sassOptions: {
+          includePaths: ["node_modules"],
+          functions: {
+            "inline-svg": inliner("./", { encodingFormat: "uri" })
+          }
         }
       }
     }
@@ -134,7 +137,7 @@ module.exports = (env, argv) => {
       cast: "./src/ts/cast.ts"
     },
     // Source maps only in development.
-    devtool: prod ? "none" : "inline-source-map",
+    devtool: prod ? undefined : "eval-source-map",
     output: {
       path: dist,
       publicPath: "/",
@@ -180,7 +183,8 @@ module.exports = (env, argv) => {
           test: /\.(jpg|png|svg)$/,
           loader: "file-loader",
           options: {
-            name: "assets/images/[name].[hash].[ext]"
+            name: "assets/images/[name].[hash].[ext]",
+            esModule: false
           }
         },
         // Font assets.
@@ -189,18 +193,21 @@ module.exports = (env, argv) => {
           loader: "file-loader",
           options: {
             name: "assets/fonts/[name].[hash].[ext]",
-            publicPath: "/"
+            publicPath: "/",
+            esModule: false
           }
         },
         // App manifest.
         {
           test: /\.webmanifest$/,
+          exclude: [/elm-stuff/, /node_modules/, /dist/],
           use: [
             {
               loader: "file-loader",
               options: {
                 name: "assets/[name].[hash].[ext]",
-                publicPath: "/"
+                publicPath: "/",
+                esModule: false
               }
             },
             {
@@ -219,7 +226,7 @@ module.exports = (env, argv) => {
       runtimeChunk: "single",
       splitChunks: {
         cacheGroups: {
-          vendor: {
+          vendors: {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
             chunks: "all"

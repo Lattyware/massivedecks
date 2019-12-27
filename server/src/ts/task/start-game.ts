@@ -3,6 +3,7 @@ import * as decks from "../games/cards/decks";
 import * as source from "../games/cards/source";
 import * as sources from "../games/cards/sources";
 import * as game from "../games/game";
+import { Game } from "../games/game";
 import { Lobby } from "../lobby";
 import { Change } from "../lobby/change";
 import { GameCode } from "../lobby/game-code";
@@ -33,7 +34,7 @@ export class StartGame extends task.TaskBase<decks.Templates[]> {
     if (lobby.game !== undefined) {
       return {};
     }
-    const lobbyGame = game.start(work, lobby.users.keys(), lobby.config.rules);
+    const lobbyGame = Game.start(work, lobby.users, lobby.config.rules);
 
     const atStartOfRound = game.atStartOfRound(server, true, lobbyGame);
     lobby.game = atStartOfRound.game;

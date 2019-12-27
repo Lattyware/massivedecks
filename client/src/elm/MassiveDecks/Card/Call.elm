@@ -7,7 +7,7 @@ import MassiveDecks.Card.Model exposing (..)
 import MassiveDecks.Card.Parts as Parts exposing (Parts)
 import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe

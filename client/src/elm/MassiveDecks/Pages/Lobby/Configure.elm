@@ -478,7 +478,7 @@ type alias ViewHouseRuleSettings houseRule =
 
 
 houseRule : Shared -> String -> Rules.HouseRule a -> Bool -> Model -> Config -> ViewHouseRuleSettings a -> Html Global.Msg
-houseRule shared id { default, change, title, description, extract, insert } canEdit model config viewSettings =
+houseRule shared id { default, change, title, description, extract } canEdit model config viewSettings =
     let
         localValue =
             model.houseRules |> extract
@@ -610,7 +610,7 @@ configureDecks shared canEdit model config =
                 [ Html.tr [ HtmlA.class "empty-info" ]
                     [ Html.td [ HtmlA.colspan 3 ]
                         [ Html.p []
-                            [ Icon.view Icon.ghost
+                            [ Icon.viewIcon Icon.ghost
                             , Html.text " "
                             , Strings.NoDecks |> Lang.html shared
                             ]

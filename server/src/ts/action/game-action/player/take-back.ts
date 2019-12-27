@@ -2,8 +2,8 @@ import { Action } from "../../../action";
 import { InvalidActionError } from "../../../errors/validation";
 import * as event from "../../../event";
 import * as playTakenBack from "../../../events/game-event/play-taken-back";
-import * as gameAction from "../../game-action";
 import * as round from "../../../games/game/round";
+import * as gameAction from "../../game-action";
 
 /**
  * A player plays a white card into a round.
@@ -23,7 +23,7 @@ export const is = (action: Action): action is TakeBack =>
   action.action === name;
 
 export const handle: gameAction.Handler<TakeBack> = (auth, lobby, action) => {
-  if (round.verifyStage<round.Playing>(action, lobby.game.round, "Playing")) {
+  if (lobby.game.round.verifyStage<round.Playing>(action, "Playing")) {
     const plays = lobby.game.round.plays;
     const playIndex = plays.findIndex(play => play.playedBy === auth.uid);
     if (playIndex < 0) {

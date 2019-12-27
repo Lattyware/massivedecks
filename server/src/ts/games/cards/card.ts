@@ -1,6 +1,6 @@
-import { v4 as uuid } from "uuid";
+import uuid from "uuid/v4";
 import { Source } from "./source";
-import wu = require("wu");
+import wu from "wu";
 
 /**
  * A game card.

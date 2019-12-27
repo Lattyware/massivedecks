@@ -1,4 +1,4 @@
-import * as winston from "winston";
+import winston from "winston";
 
 const logFormat = winston.format.printf(info => {
   const stringRest = JSON.stringify(

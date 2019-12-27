@@ -1,5 +1,5 @@
-import { HouseRules } from "./rules/houseRules";
 import * as houseRules from "./rules/houseRules";
+import { HouseRules } from "./rules/houseRules";
 import * as rando from "./rules/rando";
 
 /** The rules for a standard game.
@@ -21,13 +21,62 @@ export interface Rules {
    */
   scoreLimit?: number;
   houseRules: HouseRules;
+  timeLimits?: RoundTimeLimits;
 }
 
 export interface Public {
   handSize: number;
   scoreLimit?: number;
   houseRules: houseRules.Public;
+  roundTimeLimits?: RoundTimeLimits;
 }
+
+/**
+ * Indicated what happens when the time limit runs out.
+ * "Hard": Non-ready players are automatically set to away.
+ * "Soft": Ready players are given the option to set non-ready players to away.
+ */
+export type TimeLimitMode = "Hard" | "Soft";
+
+/**
+ * The amount of time in seconds to limit to.
+ * @TJS-type integer
+ * @minimum 0
+ * @maximum 300
+ */
+export type TimeLimit = number;
+
+/**
+ * The time limits for the stages of a round.
+ */
+export interface RoundTimeLimits {
+  mode: TimeLimitMode;
+  /**
+   * The time limit for players to make their play.
+   */
+  playing: TimeLimit;
+  /**
+   * The time limit for the judge  to reveal the plays.
+   */
+  revealing: TimeLimit;
+  /**
+   * The time limit for the judge to pick a winner.
+   */
+  judging: TimeLimit;
+  /**
+   * The amount of time in seconds after one round completes the next one
+   * starts.
+   */
+  complete: TimeLimit;
+}
+
+export const defaultTimeLimits = (): RoundTimeLimits => ({
+  mode: "Soft",
+  playing: 60,
+  revealing: 30,
+  judging: 30,
+  complete: 10
+});
 
 /**
  * Create a default set of rules.

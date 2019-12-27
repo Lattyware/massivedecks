@@ -6,7 +6,6 @@ module MassiveDecks.Pages.Start.Route exposing
     )
 
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
-import MassiveDecks.Util.Maybe as Maybe
 
 
 {-| A route for the start page.
@@ -46,8 +45,7 @@ route givenParts fragment =
                                 Join Nothing
 
                             else
-                                Join
-                                    (frag |> GameCode.fromString)
+                                frag |> GameCode.fromString |> Join
 
                         Nothing ->
                             New

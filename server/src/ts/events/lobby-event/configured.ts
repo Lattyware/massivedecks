@@ -4,6 +4,7 @@ import { HouseRuleChanged } from "./configured/house-rule-changed";
 import { PasswordSet } from "./configured/password-set";
 import { PublicSet } from "./configured/public-set";
 import { ScoreLimitSet } from "./configured/score-limit-set";
+import { TimeLimitsChanged } from "./configured/time-limits-changed";
 
 /**
  * An event for when connection state for a user changes.
@@ -14,7 +15,8 @@ export type Configured =
   | ScoreLimitSet
   | DecksChanged
   | HouseRuleChanged
-  | PublicSet;
+  | PublicSet
+  | TimeLimitsChanged;
 
 export interface Base {
   event: string;

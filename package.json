@@ -7,11 +7,15 @@
     "private": true,
     "repository": "github:Lattyware/massivedecks",
     "engines": {
-        "node": ">=11 <12"
+        "node": ">=13 <14"
     },
     "scripts": {
-        "build": "npm run build-client && npm run build-server",
-        "build-client": "(cd client && npm ci && npm install --only=dev && npm run build)",
-        "build-server": "(cd server && npm ci && npm install --only=dev && npm run build && cp package*.json dist && (cd dist && npm ci --only=prod))"
+        "build": "npm run buildServer && npm run buildClient",
+        "buildServer": "npm explore @massivedecks/server -- npm run build",
+        "buildClient": "npm explore @massivedecks/client -- npm run build"
+    },
+    "dependencies": {
+        "@massivedecks/server": "file:./server",
+        "@massivedecks/client": "file:./client"
     }
 }

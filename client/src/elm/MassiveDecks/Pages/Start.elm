@@ -126,22 +126,30 @@ update msg model =
         PasswordChanged newPassword ->
             ( { model | password = Just newPassword }, Cmd.none )
 
-        PasswordWrong ->
-            if Maybe.isJust model.password then
-                let
-                    jlr =
-                        model.joinLobbyRequest
+        JoinFailure error ->
+            let
+                jlr =
+                    model.joinLobbyRequest
 
-                    newJlr =
-                        { jlr
-                            | error = MdError.InvalidLobbyPassword |> MdError.Authentication |> Just
-                            , loading = False
-                        }
-                in
-                ( { model | joinLobbyRequest = newJlr }, Cmd.none )
+                newJlr =
+                    { jlr
+                        | error = Just error
+                        , loading = False
+                    }
 
-            else
-                ( { model | password = Just "", joinLobbyRequest = HttpData.initLazy }, Cmd.none )
+                showError =
+                    ( { model | joinLobbyRequest = newJlr }, Cmd.none )
+            in
+            case error of
+                MdError.Authentication MdError.InvalidLobbyPassword ->
+                    if Maybe.isJust model.password then
+                        showError
+
+                    else
+                        ( { model | password = Just "", joinLobbyRequest = HttpData.initLazy }, Cmd.none )
+
+                _ ->
+                    showError
 
 
 view : Shared -> Model -> List (Html Global.Msg)
@@ -217,17 +225,7 @@ joinGameRequest gameCode name password =
 
 onJoinError : MdError -> Maybe Global.Msg
 onJoinError error =
-    case error of
-        MdError.Authentication ae ->
-            case ae of
-                MdError.InvalidLobbyPassword ->
-                    PasswordWrong |> Global.StartMsg |> Just
-
-                _ ->
-                    Nothing
-
-        _ ->
-            Nothing
+    error |> JoinFailure |> Global.StartMsg |> Just
 
 
 loadingOrLoaded : Model -> Bool
@@ -263,7 +261,7 @@ tab shared targetSection model icon title =
             , [ WlA.checked ] |> Maybe.justIf (sectionsMatch r.section targetSection) |> Maybe.withDefault []
             ]
         )
-        [ Icon.view icon
+        [ Icon.viewIcon icon
         , title |> Lang.html shared
         ]
 
@@ -317,7 +315,7 @@ newContent shared model =
                 Icon.viewStyled [ Icon.spin ] Icon.circleNotch
 
             else
-                Icon.view Icon.play
+                Icon.viewIcon Icon.play
 
         error =
             model.newLobbyRequest.generalError
@@ -355,7 +353,7 @@ joinContent shared model =
                 Icon.viewStyled [ Icon.spin ] Icon.circleNotch
 
             else
-                Icon.view Icon.play
+                Icon.viewIcon Icon.play
 
         error =
             model.joinLobbyRequest.generalError

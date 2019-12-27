@@ -5,6 +5,8 @@ import { GameCode } from "./lobby/game-code";
 import { ServerState } from "./server-state";
 import * as finishedPlaying from "./timeout/finished-playing";
 import { FinishedPlaying } from "./timeout/finished-playing";
+import * as roundStageTimerDone from "./timeout/round-stage-timer-done";
+import { RoundStageTimerDone } from "./timeout/round-stage-timer-done";
 import * as roundStart from "./timeout/round-start";
 import { RoundStart } from "./timeout/round-start";
 import * as userDisconnect from "./timeout/user-disconnect";
@@ -13,7 +15,11 @@ import { UserDisconnect } from "./timeout/user-disconnect";
 /**
  * A timeout represents something that must happen after a delay in-game.
  */
-export type Timeout = UserDisconnect | RoundStart | FinishedPlaying;
+export type Timeout =
+  | UserDisconnect
+  | RoundStart
+  | FinishedPlaying
+  | RoundStageTimerDone;
 
 export type Id = string;
 
@@ -36,6 +42,8 @@ export const handler: Handler<Timeout> = (server, timeout, gameCode, lobby) => {
       return roundStart.handle(server, timeout, gameCode, lobby);
     case "FinishedPlaying":
       return finishedPlaying.handle(server, timeout, gameCode, lobby);
+    case "RoundStageTimerDone":
+      return roundStageTimerDone.handle(server, timeout, gameCode, lobby);
   }
 };
 

@@ -205,7 +205,7 @@ update msg model =
         LobbyMsg lobbyMsg ->
             case model.page of
                 Pages.Lobby lobbyModel ->
-                    Lobby.update lobbyMsg lobbyModel
+                    Lobby.update model.shared.key lobbyMsg lobbyModel
                         |> Util.modelLift (\newLobbyModel -> { model | page = Pages.Lobby newLobbyModel })
 
                 _ ->

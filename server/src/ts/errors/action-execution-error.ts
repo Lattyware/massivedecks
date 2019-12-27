@@ -148,6 +148,7 @@ interface ConfigEditConflictDetails extends errors.Details {
 
 // Could happen if two users edit the configuration at the same time.
 export class ConfigEditConflictError extends ActionExecutionError {
+  public readonly status: number = HttpStatus.CONFLICT;
   public readonly version: string;
   public readonly expected: string;
 

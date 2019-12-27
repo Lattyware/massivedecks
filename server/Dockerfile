@@ -1,4 +1,4 @@
-FROM node:11-alpine
+FROM node:13-alpine
 
 WORKDIR /md
 
@@ -9,7 +9,7 @@ COPY ["./src", "./src"]
 COPY ["./tsconfig.json", "./config.json5", "./"]
 RUN ["npm", "run", "build"]
 
-FROM node:11-alpine
+FROM node:13-alpine
 LABEL maintainer="team@rereadgames.com"
 
 ARG BUILD_DATE
@@ -37,4 +37,4 @@ COPY ["./config.json5", "./"]
 COPY --from=0 ["/md/dist", "./"]
 
 EXPOSE 8081
-CMD ["node", "./index.js"]
+CMD ["node", "--es-module-specifier-resolution=node", "./index.js"]

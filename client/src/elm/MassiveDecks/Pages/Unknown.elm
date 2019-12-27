@@ -39,7 +39,7 @@ view : Shared -> Model -> List (Html Msg)
 view shared _ =
     [ Html.div [ HtmlA.class "page unknown-page" ]
         [ Weightless.card []
-            [ Html.h1 [] [ Icon.view Icon.exclamationCircle, Lang.html shared UnknownPageTitle ]
+            [ Html.h1 [] [ Icon.viewIcon Icon.exclamationCircle, Lang.html shared UnknownPageTitle ]
             , Html.p []
                 [ Html.a [ Route.url (Route.Start { section = Start.New }) |> HtmlA.href ]
                     [ Lang.html shared GoBackHome

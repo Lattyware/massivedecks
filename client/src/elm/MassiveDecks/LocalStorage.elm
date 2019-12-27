@@ -6,7 +6,7 @@ module MassiveDecks.LocalStorage exposing
 import Json.Decode as Json
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.Ports as Ports
-import MassiveDecks.Settings.Model as Settings exposing (Settings)
+import MassiveDecks.Settings.Model exposing (Settings)
 
 
 {-| The type for an outbound port for storing user settings in local storage.

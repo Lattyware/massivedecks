@@ -22,6 +22,11 @@ export const handle: Handler<StartGame> = (auth, lobby, action) => {
     return {};
   }
   return {
-    tasks: [new StartGameTask(auth.gc, lobby.config.decks.map(s => s.source))]
+    tasks: [
+      new StartGameTask(
+        auth.gc,
+        lobby.config.decks.map(s => s.source)
+      )
+    ]
   };
 };

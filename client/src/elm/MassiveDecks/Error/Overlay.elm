@@ -1,6 +1,5 @@
 module MassiveDecks.Error.Overlay exposing (init, update, view)
 
-import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -11,11 +10,10 @@ import MassiveDecks.Error.Messages exposing (..)
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Route as Route exposing (Route)
+import MassiveDecks.Pages.Route exposing (Route)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 init : Error.Overlay

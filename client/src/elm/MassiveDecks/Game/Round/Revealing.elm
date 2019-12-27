@@ -2,7 +2,7 @@ module MassiveDecks.Game.Round.Revealing exposing (view)
 
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
-import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Play exposing (Play)
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (RoundView)
@@ -10,7 +10,7 @@ import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
 import MassiveDecks.Messages as Global
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings

@@ -9,12 +9,6 @@ const channel = "urn:x-cast:com.rereadgames.massivedecks";
 
 declare const cast: any;
 
-declare global {
-  interface Window {
-    __onGCastApiAvailable: any;
-  }
-}
-
 let whenAvailable: (() => void)[] | null = [];
 
 window["__onGCastApiAvailable"] = function(isAvailable: Boolean) {

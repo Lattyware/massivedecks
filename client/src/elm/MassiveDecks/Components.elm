@@ -42,4 +42,4 @@ Only one of these should exist on screen at any time.
 -}
 floatingActionButton : List (Html.Attribute msg) -> Icon -> Html msg
 floatingActionButton attrs icon =
-    Wl.button (List.concat [ [ WlA.fab ], attrs ]) [ Icon.view icon ]
+    Wl.button (List.concat [ [ WlA.fab ], attrs ]) [ Icon.viewIcon icon ]

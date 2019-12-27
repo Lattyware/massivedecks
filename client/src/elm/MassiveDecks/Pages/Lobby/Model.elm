@@ -16,7 +16,7 @@ import Json.Decode as Json
 import MassiveDecks.Animated exposing (Animated)
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
-import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
+import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
 import MassiveDecks.User as User exposing (User)
 

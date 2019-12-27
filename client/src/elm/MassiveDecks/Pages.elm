@@ -51,8 +51,8 @@ fromRoute shared oldModel route =
                         Route.Continue ( lobby, cmd ) ->
                             ( Lobby lobby, cmd )
 
-                        Route.Redirect redirect ->
-                            fromRoute shared oldModel redirect
+                        Route.Redirect redirectRoute ->
+                            fromRoute shared oldModel redirectRoute
 
         Route.Spectate r ->
             (case oldModel of

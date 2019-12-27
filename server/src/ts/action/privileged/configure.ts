@@ -2,18 +2,20 @@ import wu from "wu";
 import { Action } from "../../action";
 import { ConfigEditConflictError } from "../../errors/action-execution-error";
 import { Handler } from "../handler";
-import { ChangeDecks } from "./configure/change-decks";
 import * as changeDecks from "./configure/change-decks";
+import { ChangeDecks } from "./configure/change-decks";
+import * as changeHouseRule from "./configure/change-house-rule";
+import { ChangeHouseRule } from "./configure/change-house-rule";
+import * as changeTimeLimit from "./configure/change-time-limit";
+import { ChangeTimeLimit } from "./configure/change-time-limit";
 import * as setHandSize from "./configure/set-hand-size";
 import { SetHandSize } from "./configure/set-hand-size";
 import * as setPassword from "./configure/set-password";
 import { SetPassword } from "./configure/set-password";
+import * as setPublic from "./configure/set-public";
 import { SetPublic } from "./configure/set-public";
 import * as setScoreLimit from "./configure/set-score-limit";
 import { SetScoreLimit } from "./configure/set-score-limit";
-import * as changeHouseRule from "./configure/change-house-rule";
-import { ChangeHouseRule } from "./configure/change-house-rule";
-import * as setPublic from "./configure/set-public";
 
 /**
  * An action to change the configuration of the lobby.
@@ -24,7 +26,8 @@ export type Configure =
   | SetScoreLimit
   | ChangeDecks
   | ChangeHouseRule
-  | SetPublic;
+  | SetPublic
+  | ChangeTimeLimit;
 
 const possible = new Set([
   setPassword.is,
@@ -32,7 +35,8 @@ const possible = new Set([
   setScoreLimit.is,
   changeDecks.is,
   changeHouseRule.is,
-  setPublic.is
+  setPublic.is,
+  changeTimeLimit.is
 ]);
 
 /**
@@ -71,5 +75,7 @@ export const handle: Handler<Configure> = (auth, lobby, action, config) => {
       return changeHouseRule.handle(auth, lobby, action, config);
     case "SetPublic":
       return setPublic.handle(auth, lobby, action, config);
+    case "ChangeTimeLimit":
+      return changeTimeLimit.handle(auth, lobby, action, config);
   }
 };

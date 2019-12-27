@@ -19,7 +19,7 @@ import Url.Builder
 
 
 {-| A route in the application represents a navigable subsection of it.
-These can be transformed to and from URLs.
+These can be transformed to and from URLs losslessly.
 -}
 type Route
     = Start Start.Route
@@ -28,10 +28,11 @@ type Route
     | Unknown Unknown.Route
 
 
-{-| Either some data, or a redirect to a new route.
+{-| A situation where either an operation continues as expected with some data, or the application is redirected to a
+new route.
 -}
-type Fork a
-    = Continue a
+type Fork continue
+    = Continue continue
     | Redirect Route
 
 

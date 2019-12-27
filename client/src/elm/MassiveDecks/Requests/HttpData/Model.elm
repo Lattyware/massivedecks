@@ -3,7 +3,7 @@ module MassiveDecks.Requests.HttpData.Model exposing
     , Pull
     )
 
-import MassiveDecks.Error.Model as Error exposing (Error)
+import MassiveDecks.Error.Model exposing (Error)
 
 
 {-| Some data that is requested and received via an HTTP request.

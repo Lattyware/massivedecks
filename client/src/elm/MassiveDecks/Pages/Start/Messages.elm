@@ -13,4 +13,4 @@ type Msg
     | JoinGame (HttpData.Msg MdError Lobby.Auth)
     | LobbyBrowserMsg LobbyBrowser.Msg
     | PasswordChanged String
-    | PasswordWrong
+    | JoinFailure MdError

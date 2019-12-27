@@ -914,6 +914,9 @@ mdErrorByName name =
                 (Json.field "reason" lobbyError)
                 (Json.field "gameCode" gameCode)
 
+        "Registration" ->
+            registrationError |> Json.map MdError.Registration
+
         "OutOfCardsError" ->
             Json.succeed MdError.OutOfCardsError |> Json.map MdError.Game
 
@@ -992,6 +995,22 @@ authenticationErrorByName name =
 
         _ ->
             unknownValue "authentication failure reason" name
+
+
+registrationError : Json.Decoder MdError.RegistrationError
+registrationError =
+    Json.field "reason" Json.string |> Json.andThen registrationErrorByName
+
+
+registrationErrorByName : String -> Json.Decoder MdError.RegistrationError
+registrationErrorByName name =
+    case name of
+        "UsernameAlreadyInUse" ->
+            Json.map (\u -> MdError.UsernameAlreadyInUseError { username = u })
+                (Json.field "username" Json.string)
+
+        _ ->
+            unknownValue "registration error" name
 
 
 lobbyError : Json.Decoder MdError.LobbyNotFoundError

@@ -6,7 +6,7 @@ import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Strings exposing (..)
-import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
+import MassiveDecks.Strings.Languages.Model exposing (Language)
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Util.Html as Html
 
@@ -201,12 +201,12 @@ enhanceHtml context mdString unenhanced =
 
 prefixed : List (Html msg) -> Icon -> List (Html msg)
 prefixed base prefix =
-    Html.span [ HtmlA.class "icon-prefix" ] [ Icon.view prefix, Html.text " " ] :: base
+    Html.span [ HtmlA.class "icon-prefix" ] [ Icon.viewIcon prefix, Html.text " " ] :: base
 
 
 suffixed : List (Html msg) -> Icon -> List (Html msg)
 suffixed base suffix =
-    base ++ [ Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.view suffix ] ]
+    base ++ [ Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.viewIcon suffix ] ]
 
 
 term : Context -> MdString -> Icon -> List (Html msg) -> List (Html msg)
@@ -214,6 +214,6 @@ term context description icon unenhanced =
     [ Html.span
         [ HtmlA.class "term", description |> asString context |> HtmlA.title ]
         [ Html.span [ HtmlA.class "full" ] unenhanced
-        , Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.view icon ]
+        , Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.viewIcon icon ]
         ]
     ]

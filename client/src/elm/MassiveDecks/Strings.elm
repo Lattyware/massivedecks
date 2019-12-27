@@ -224,6 +224,7 @@ type MdString
     | InvalidLobbyPasswordError -- An error where the user tries to join a game with the wrong lobby password.
     | LobbyClosedError { gameCode : String } -- An error where the user tries to join a game that has finished.
     | LobbyDoesNotExistError { gameCode : String } -- An error where the user tries to join a game that never existed.
+    | UsernameAlreadyInUseError { username : String } -- An error when the user tries to join a game with the same name as a user already in the game.
     | OutOfCardsError -- An error where there weren't enough cards in the deck to deal cards that were needed, even after shuffling discards.
       -- Language Names
     | English -- The name of the English language (no specific dialect).

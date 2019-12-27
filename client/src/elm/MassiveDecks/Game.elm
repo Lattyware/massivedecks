@@ -32,7 +32,7 @@ import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Actions as Actions
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
@@ -101,7 +101,15 @@ update msg model =
                 newRound =
                     case game.round of
                         Round.J judging ->
-                            { judging | pick = Just id } |> Round.J
+                            let
+                                pick =
+                                    if judging.pick == Just id then
+                                        Nothing
+
+                                    else
+                                        Just id
+                            in
+                            { judging | pick = pick } |> Round.J
 
                         _ ->
                             game.round
@@ -284,7 +292,7 @@ viewRound shared auth config users model =
             , WlA.inverted
             , ScrollToTop |> lift |> HtmlE.onClick
             ]
-            [ Icon.view Icon.arrowUp ]
+            [ Icon.viewIcon Icon.arrowUp ]
         ]
     ]
 

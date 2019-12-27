@@ -26,7 +26,7 @@ const hashIds = new Hashids(
  * Decode a game code to a lobby id.
  */
 export const decode = (gameCode: GameCode): LobbyId =>
-  hashIds.decode(gameCode)[0];
+  Number(hashIds.decode(gameCode)[0]);
 
 /**
  * Decode a lobby id to a game code.

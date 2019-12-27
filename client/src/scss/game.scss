@@ -18,9 +18,7 @@
   // A button that allows the user to perform the main action in the game for them at this moment.
   .action {
     position: fixed;
-    // TODO: Remove Hack (here because the debugger covers it up).
-    bottom: 5rem;
-    //bottom: 1em;
+    bottom: 1em;
     right: 1rem;
 
     z-index: 100;

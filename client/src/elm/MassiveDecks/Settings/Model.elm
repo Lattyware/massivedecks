@@ -10,7 +10,7 @@ module MassiveDecks.Settings.Model exposing
 import Dict exposing (Dict)
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Pages.Lobby.Model as Lobby
-import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
+import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
 {-| The model for the settings panel.

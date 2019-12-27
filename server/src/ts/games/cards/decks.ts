@@ -2,7 +2,7 @@ import * as cache from "../../cache";
 import { OutOfCardsError } from "../../errors/game-state-error";
 import * as card from "./card";
 import * as util from "../../util";
-import wu = require("wu");
+import wu from "wu";
 
 const union = <T>(sets: Iterable<Set<T>>): Set<T> => {
   const result = new Set<T>();

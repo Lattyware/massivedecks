@@ -132,7 +132,7 @@ export const censor = (lobby: Lobby): Public => ({
   users: usersObj(lobby),
   owner: lobby.owner,
   config: config.censor(lobby.config),
-  ...(lobby.game === undefined ? {} : { game: game.censor(lobby.game) })
+  ...(lobby.game === undefined ? {} : { game: lobby.game.public() })
 });
 
 export const addUser = (

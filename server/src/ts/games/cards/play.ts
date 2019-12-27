@@ -1,4 +1,4 @@
-import { v4 as uuid } from "uuid";
+import uuid from "uuid/v4";
 import { Response } from "./card";
 
 /** A series of cards played into a round.*/

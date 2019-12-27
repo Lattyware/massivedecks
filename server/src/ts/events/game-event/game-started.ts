@@ -16,6 +16,6 @@ export const of = (
   hand?: card.Response[]
 ): GameStarted => ({
   event: "GameStarted",
-  round: round.censor(startedRound),
+  round: startedRound.public(),
   ...(hand !== undefined ? { hand } : {})
 });

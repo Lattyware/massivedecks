@@ -10,7 +10,6 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import MassiveDecks.Card as Card
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
@@ -288,7 +287,7 @@ viewPlayingPlay slots play =
                 (p.animation |> Maybe.withDefault (defaultedRotations slots p.animation))
 
         Nothing ->
-            [ Icon.view Icon.clock ]
+            [ Icon.viewIcon Icon.clock ]
 
 
 viewKnownPlay : Shared -> Play.Known -> Rotations -> List (Html msg)

@@ -11,7 +11,7 @@ import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
 import MassiveDecks.Messages as Global
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings

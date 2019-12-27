@@ -88,7 +88,7 @@ lobbyList : Shared -> List Summary -> Html Global.Msg
 lobbyList shared summaries =
     if List.isEmpty summaries then
         Html.div [ HtmlA.class "empty-info" ]
-            [ Icon.view Icon.ghost
+            [ Icon.viewIcon Icon.ghost
             , NoPublicGames |> Lang.html shared
             , Html.text " "
             , Html.a [ Route.Start { section = Start.New } |> Route.href ] [ StartYourOwn |> Lang.html shared ]

@@ -1,4 +1,3 @@
-import wu from "wu";
 import { Action } from "../../../action";
 import { IncorrectUserRoleError } from "../../../errors/action-execution-error";
 import { InvalidActionError } from "../../../errors/validation";
@@ -7,9 +6,9 @@ import * as playSubmitted from "../../../events/game-event/play-submitted";
 import * as card from "../../../games/cards/card";
 import * as play from "../../../games/cards/play";
 import { Play } from "../../../games/cards/play";
+import * as round from "../../../games/game/round";
 import * as finishedPlaying from "../../../timeout/finished-playing";
 import * as gameAction from "../../game-action";
-import * as round from "../../../games/game/round";
 
 /**
  * A player plays a white card into a round.
@@ -35,7 +34,7 @@ export const handle: gameAction.Handler<Submit> = (
   server
 ) => {
   const lobbyRound = lobby.game.round;
-  if (round.verifyStage<round.Playing>(action, lobbyRound, "Playing")) {
+  if (lobbyRound.verifyStage<round.Playing>(action, "Playing")) {
     const playId = play.id();
     const plays = lobbyRound.plays;
     if (plays.find(play => play.playedBy === auth.uid)) {

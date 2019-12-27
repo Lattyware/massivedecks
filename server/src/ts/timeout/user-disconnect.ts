@@ -2,7 +2,6 @@ import * as event from "../event";
 import * as connectionChanged from "../events/lobby-event/connection-changed";
 import * as timeout from "../timeout";
 import * as user from "../user";
-import { GameCode } from "../lobby/game-code";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
