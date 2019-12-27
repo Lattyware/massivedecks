@@ -1,15 +1,42 @@
-# Massive Decks [![Build Status](https://travis-ci.com/Lattyware/massivedecks.svg?branch=v2)](https://travis-ci.com/Lattyware/massivedecks)
+# [Massive Decks ![Massive Decks](https://raw.githubusercontent.com/Lattyware/massivedecks/v2/client/assets/images/icon.png)][hosted]
 
-Massive Decks is a comedy party game based on [Cards against Humanity][cah]. The game is open source software available 
-under [the AGPLv3 license][license].
+[![Build Status](https://img.shields.io/github/workflow/status/Lattyware/massivedecks/Build%20and%20publish%20docker%20images./v2)](https://github.com/Lattyware/massivedecks/actions)
+![License](https://img.shields.io/github/license/Lattyware/massivedecks)
 
+Massive Decks is a comedy party game based on [Cards against Humanity][cah]. Play with friends! It works great with a 
+bunch of people in the same room on phones, or on voice chat online.
+
+**[Play Massive Decks][hosted]**
+
+[hosted]: http://massivedecks.rereadgames.com/
 [cah]: https://cardsagainsthumanity.com/
-[license]: https://github.com/Lattyware/massivedecks/blob/master/LICENSE
 
 ## About
 
-This is a bleeding-edge development version of the game, a complete rewrite from the old version. It is not currently 
-ready for release, and unless you are interested in developing the game, you should stick with v1 for now.
+The game is open source software available under [the AGPLv3 license][license].
+
+The web client for the game is written in [Elm][elm], while the back-end is written in [Typescript][typescript].
+
+[elm]: https://elm-lang.org/
+[typescript]: https://www.typescriptlang.org/
+[license]: https://github.com/Lattyware/massivedecks/blob/master/LICENSE
+
+## Deploying
+
+If you would like to run an instance of Massive Decks, there are a couple of options.
+
+### Docker
+
+[Server](https://hub.docker.com/repository/docker/massivedecks) / [Client](https://hub.docker.com/repository/docker/massivedecks/client/general)
+
+Also see [`docker-compose.yml`](https://github.com/Lattyware/massivedecks/blob/v2/docker-compose.yml). The client image 
+is an nginx server that both serves the static web client and acts as a proxy for the server. As such, the server should 
+not be exposed publicly directly.
+
+### Heroku
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Lattyware/massivedecks/tree/v2) 
+
 
 ## Contributing
 
@@ -35,7 +62,7 @@ by [Cards against Humanity][cah].
 [cah-license]: https://creativecommons.org/licenses/by-nc-sa/2.0/
 
 Massive Decks is also inspired by:
-* [CardCast][cardcast] - an app you to play on a ChromeCast.
+* [CardCast][cardcast] - an app you to play on a Chromecast.
 * [Pretend You're Xyzzy][xyzzy] - a web game where you can jump in with people you don't know.
 
 [cardcast]: https://www.cardcastgame.com/

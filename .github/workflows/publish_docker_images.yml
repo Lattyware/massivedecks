@@ -1,0 +1,69 @@
+name: Build and publish docker images.
+
+on:
+    push:
+      branches:
+        - v2
+      tags:
+        - v*.*.*
+
+env:
+  COMMIT_VERSION: "${{ github.sha }}-dev"
+
+jobs:
+
+  build:
+    name: Build docker images.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: ["server", "client"]
+    env:
+      COMPONENT: ${{ matrix.component }}
+    steps:
+      - name: Checkout repository.
+        uses: actions/checkout@v2
+      - name: Get version from tag.
+        uses: olegtarasov/get-tag@v1
+      - name: Build image.
+        run:
+          cd "${COMPONENT}" &&
+          docker build -t "massivedecks/${COMPONENT}:${COMMIT_VERSION}"
+            --build-arg VCS_REF="${GITHUB_SHA}"
+            --build-arg BUILD_DATE="$(date --rfc-3339=seconds)"
+            --build-arg VERSION="${GITHUB_TAG_NAME:-${COMMIT_VERSION}}"
+            .
+      - name: Save image.
+        run: docker save "massivedecks/${COMPONENT}:${COMMIT_VERSION}" | gzip > "image.tar.gz"
+      - name: Store image for publish job.
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ matrix.component }}
+          path: image.tar.gz
+
+  publish:
+    name: Publish docker images.
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        COMPONENT: ["server", "client"]
+    env:
+      COMPONENT: ${{ matrix.component }}
+    steps:
+      - name: Retrieve image from build job.
+        uses: actions/download-artifact@v1
+        with:
+          name: ${{ matrix.component }}
+      - name: Load image.
+        run: docker load < "${COMPONENT}/image.tar.gz"
+      - name: Get version from tag.
+        uses: olegtarasov/get-tag@v1
+      - name: Publish image.
+        uses: lattyware/push-docker-image-to-version-tags@v1
+        with:
+            image: "massivedecks/${{ matrix.component }}"
+            tag: ${{ env.COMMIT_VERSION }}
+            version: ${{ env.GITHUB_TAG_NAME }}
+            user: "latty"
+            token: ${{ secrets.DOCKER_HUB_TOKEN }}

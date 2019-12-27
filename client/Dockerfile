@@ -1,5 +1,8 @@
 FROM node:11-alpine
 
+ARG VERSION=dev
+ENV MD_VERSION $VERSION
+
 WORKDIR /md
 
 COPY ["./package.json", "./package-lock.json", "./"]
@@ -11,14 +14,14 @@ COPY ["./assets", "./assets"]
 RUN ["npm", "run", "build"]
 
 FROM nginx:mainline-alpine
-LABEL maintainer="team@rereadgames.com"
 
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION
+ARG VERSION=dev
 
 EXPOSE 8080
 
+LABEL maintainer="team@rereadgames.com"
 LABEL org.label-schema.name="massivedecks/client"
 LABEL org.label-schema.description="The web client for Massive Decks, a comedy party game."
 LABEL org.label-schema.url="https://github.com/Lattyware/massivedecks"
