@@ -55,7 +55,7 @@ export const mapToObject = <T>(map: Map<string, T>): { [key: string]: T } =>
  */
 export function counts<T, U>(
   iterable: Iterable<T>,
-  predicates: { [P in keyof U]: ((value: T) => boolean) }
+  predicates: { [P in keyof U]: (value: T) => boolean }
 ): { [P in keyof U]: number } {
   const keys = Object.keys(predicates) as (keyof U)[];
   const amounts = mapObjectValues(predicates, () => 0);

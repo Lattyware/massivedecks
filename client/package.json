@@ -8,8 +8,7 @@
   "repository": "github:Lattyware/massivedecks",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "prebuild": "sed -i \"s/\\\"dev\\\"/\\\"${MD_VERSION:-dev}\\\"/g\" src/elm/MassiveDecks/Version.elm",
-    "heroku-prebuild": "sed -i \"s/\\\"dev\\\"/\\\"${HEROKU_SLUG_COMMIT:-dev}\\\"/g\" src/elm/MassiveDecks/Version.elm",
+    "prebuild": "sed -i \"s/\\\"dev\\\"/\\\"${MD_VERSION:-${HEROKU_SLUG_COMMIT:-dev}}\\\"/g\" src/elm/MassiveDecks/Version.elm",
     "build": "npx webpack --mode=production",
     "dev": "npx webpack-dev-server --mode=development"
   },
@@ -58,7 +57,7 @@
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.4",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.41.4",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
   }
