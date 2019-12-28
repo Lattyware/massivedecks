@@ -8,7 +8,7 @@
   "repository": "github:Lattyware/massivedecks",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "prebuild": "sed -i \"s/\\\"dev\\\"/\\\"${MD_VERSION:-${HEROKU_SLUG_COMMIT:-dev}}\\\"/g\" src/elm/MassiveDecks/Version.elm",
+    "prebuild": "sed -i \"s/\\\"dev\\\"/\\\"${MD_VERSION:-${HEROKU_SLUG_COMMIT-dev:-dev}}\\\"/g\" src/elm/MassiveDecks/Version.elm",
     "build": "npx webpack --mode=production",
     "dev": "npx webpack-dev-server --mode=development"
   },
