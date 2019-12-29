@@ -1,4 +1,4 @@
-FROM node:11-alpine
+FROM node:13-alpine
 
 ARG VERSION=dev
 ENV MD_VERSION $VERSION
@@ -6,6 +6,9 @@ ENV MD_VERSION $VERSION
 WORKDIR /md
 
 COPY ["./package.json", "./package-lock.json", "./"]
+
+
+RUN ["apk", "add", "--no-cache", "--virtual", ".gyp", "python", "make", "g++"]
 RUN ["npm", "ci"]
 
 COPY ["./tsconfig.json", "./webpack.config.js", "./elm.json", "./"]
