@@ -7,7 +7,6 @@ WORKDIR /md
 
 COPY ["./package.json", "./package-lock.json", "./"]
 
-
 RUN ["apk", "add", "--no-cache", "--virtual", ".gyp", "python", "make", "g++"]
 RUN ["npm", "ci"]
 

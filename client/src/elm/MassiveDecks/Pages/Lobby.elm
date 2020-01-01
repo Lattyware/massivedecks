@@ -46,7 +46,7 @@ import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Settings.Messages as Settings
-import MassiveDecks.Settings.Model as Settings
+import MassiveDecks.Settings.Model as Settings exposing (Settings)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
@@ -108,15 +108,19 @@ subscriptions model =
         ]
 
 
-update : Navigation.Key -> Msg -> Model -> ( Model, Cmd Global.Msg )
-update key msg model =
+update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
+update shared msg model =
+    let
+        key =
+            shared.key
+    in
     case msg of
         GameMsg gameMsg ->
             case model.lobby of
                 Just l ->
                     l.game
                         |> Maybe.map
-                            (Game.update gameMsg
+                            (Game.update shared gameMsg
                                 >> Util.modelLift (\newGame -> { model | lobby = Just { l | game = Just newGame } })
                             )
                         |> Maybe.withDefault ( model, Cmd.none )
@@ -149,7 +153,7 @@ update key msg model =
                                     (\game ->
                                         Util.modelLift
                                             (\g -> { model | lobby = Just { lobby | game = Just g } })
-                                            (Game.applyGameEvent model.auth gameEvent game)
+                                            (Game.applyGameEvent model.auth shared gameEvent game)
                                     )
                                 |> Maybe.withDefault ( model, Cmd.none )
 

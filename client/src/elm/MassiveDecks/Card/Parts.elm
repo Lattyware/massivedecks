@@ -8,7 +8,7 @@ module MassiveDecks.Card.Parts exposing
     , unsafeFromList
     , view
     , viewFilled
-    , viewSingleLine
+    , viewFilledString
     )
 
 import Html exposing (Html)
@@ -94,54 +94,76 @@ view parts =
     viewFilled [] parts
 
 
-viewSingleLine : Parts -> List (Html msg)
-viewSingleLine (Parts lines) =
-    lines |> List.concat |> viewParts []
+{-| Render the `Parts` to a string.
+-}
+viewFilledString : String -> List String -> Parts -> String
+viewFilledString blankString play (Parts lines) =
+    viewLinesString blankString play lines |> String.join "\n"
 
 
 {-| Render the `Parts` with slots filled with the given values.
 -}
 viewFilled : List String -> Parts -> List (Html msg)
 viewFilled play (Parts lines) =
-    viewLines play lines
+    viewLinesHtml play lines
 
 
 
 {- Private -}
 
 
-viewLines : List String -> List Line -> List (Html msg)
-viewLines play lines =
+viewLines : (List String -> List Part -> a) -> List String -> List Line -> List a
+viewLines renderParts play lines =
     case lines of
         firstLine :: restLines ->
             let
                 slots =
                     firstLine |> List.filter isSlot |> List.length
             in
-            (viewParts (List.take slots play) firstLine |> Html.p []) :: viewLines (List.drop slots play) restLines
+            renderParts (List.take slots play) firstLine :: viewLines renderParts (List.drop slots play) restLines
 
         [] ->
             []
 
 
-viewParts : List String -> List Part -> List (Html msg)
-viewParts play parts =
+viewLinesHtml : List String -> List Line -> List (Html msg)
+viewLinesHtml =
+    viewLines (\s -> \p -> viewPartsHtml s p |> Html.p [])
+
+
+viewLinesString : String -> List String -> List Line -> List String
+viewLinesString blankPhrase =
+    viewLines (\s -> \p -> viewPartsString blankPhrase s p |> String.join "")
+
+
+viewParts : (Bool -> String -> List a) -> a -> List String -> List Part -> List a
+viewParts viewText emptySlot play parts =
     case parts of
         firstPart :: restParts ->
             case firstPart of
                 Text string ->
-                    viewText False string ++ viewParts play restParts
+                    viewText False string ++ viewParts viewText emptySlot play restParts
 
                 Slot transform ->
                     case play of
                         firstPlay :: restPlay ->
-                            viewText True (applyTransform transform firstPlay) ++ viewParts restPlay restParts
+                            viewText True (applyTransform transform firstPlay) ++ viewParts viewText emptySlot restPlay restParts
 
                         [] ->
-                            Html.span [ HtmlA.class "slot" ] [] :: viewParts [] restParts
+                            emptySlot :: viewParts viewText emptySlot [] restParts
 
         [] ->
             []
+
+
+viewPartsHtml : List String -> List Part -> List (Html msg)
+viewPartsHtml =
+    viewParts viewTextHtml (Html.span [ HtmlA.class "slot" ] [])
+
+
+viewPartsString : String -> List String -> List Part -> List String
+viewPartsString blankPhrase =
+    viewParts (\_ -> \s -> [ s ]) blankPhrase
 
 
 applyTransform : Transform -> String -> String
@@ -157,8 +179,8 @@ applyTransform transform value =
             value
 
 
-viewText : Bool -> String -> List (Html msg)
-viewText slot string =
+viewTextHtml : Bool -> String -> List (Html msg)
+viewTextHtml slot string =
     let
         words =
             string |> splitWords |> List.map (\word -> Html.span [] [ Html.text word ])

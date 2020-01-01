@@ -10,6 +10,7 @@ module MassiveDecks.Settings.Model exposing
 import Dict exposing (Dict)
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Pages.Lobby.Model as Lobby
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
@@ -18,6 +19,7 @@ import MassiveDecks.Strings.Languages.Model exposing (Language)
 type alias Model =
     { settings : Settings
     , open : Bool
+    , speech : Speech.Model
     }
 
 
@@ -31,6 +33,7 @@ type alias Settings =
     , recentDecks : List Source.External
     , chosenLanguage : Maybe Language
     , cardSize : CardSize
+    , speech : Speech.Settings
     }
 
 

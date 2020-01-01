@@ -3,6 +3,8 @@ port module MassiveDecks.Ports exposing
     , copyText
     , serverRecv
     , serverSend
+    , speechCommands
+    , speechVoices
     , storeSettings
     , tryCast
     )
@@ -26,3 +28,9 @@ port serverRecv : (String -> msg) -> Sub msg
 
 
 port copyText : String -> Cmd msg
+
+
+port speechCommands : Json.Value -> Cmd msg
+
+
+port speechVoices : (Json.Value -> msg) -> Sub msg

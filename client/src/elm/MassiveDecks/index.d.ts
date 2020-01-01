@@ -1,3 +1,5 @@
+import { Say, Voice } from "../../ts/speech";
+
 type Token = string;
 
 interface Settings {
@@ -46,6 +48,8 @@ export namespace Elm {
   namespace MassiveDecks {
     export interface App {
       ports: {
+        speechCommands: InboundPort<Say>;
+        speechVoices: OutboundPort<Array<Voice>>;
         storeSettings: InboundPort<Settings>;
         tryCast: InboundPort<CastFlags>;
         castStatus: OutboundPort<CastStatus>;

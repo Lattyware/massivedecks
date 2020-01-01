@@ -3,6 +3,7 @@ import "./weightless";
 import { Client as CastClient } from "./chromecast";
 import { OutboundPort, Settings, Token } from "../elm/MassiveDecks";
 import { ServerConnection } from "./server-connection";
+import { Speech } from "./speech";
 
 /**
  * Settings storage/retrieval in local storage.
@@ -52,6 +53,10 @@ import(/* webpackChunkName: "massive-decks" */ "../elm/MassiveDecks").then(
     app.ports.storeSettings.subscribe((settings: Settings) =>
       SettingsStorage.save(settings)
     );
+
+    if ("speechSynthesis" in window) {
+      new Speech(app.ports.speechVoices, app.ports.speechCommands);
+    }
 
     new ServerConnection(app.ports.serverRecv, app.ports.serverSend);
 

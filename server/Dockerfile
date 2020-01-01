@@ -37,4 +37,5 @@ COPY ["./config.json5", "./"]
 COPY --from=0 ["/md/dist", "./"]
 
 EXPOSE 8081
+USER node
 CMD ["node", "--es-module-specifier-resolution=node", "./index.js"]

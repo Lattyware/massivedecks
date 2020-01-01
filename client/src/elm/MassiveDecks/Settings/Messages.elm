@@ -3,6 +3,7 @@ module MassiveDecks.Settings.Messages exposing (Msg(..))
 import Dict exposing (Dict)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Settings.Model exposing (..)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
@@ -12,3 +13,6 @@ type Msg
     | ChangeOpenUserList Bool
     | ToggleOpen
     | RemoveInvalid (Dict Lobby.Token Bool)
+    | ToggleSpeech Bool
+    | ChangeSpeech String
+    | SpeechMsg Speech.Msg

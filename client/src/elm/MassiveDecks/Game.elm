@@ -15,7 +15,8 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Card.Call as Call
-import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Model as Card exposing (Call)
+import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
@@ -36,6 +37,8 @@ import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
+import MassiveDecks.Settings.Model exposing (Settings)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
@@ -64,8 +67,8 @@ init game hand pick =
     ( { model | hand = hand, game = { game | round = round } }, cmd )
 
 
-update : Msg -> Model -> ( Model, Cmd Global.Msg )
-update msg model =
+update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
+update shared msg model =
     let
         game =
             model.game
@@ -189,8 +192,15 @@ update msg model =
         AdvanceRound ->
             case model.completeRound of
                 Just _ ->
+                    let
+                        round =
+                            model.game.round
+
+                        tts =
+                            speak shared (round |> Round.data |> .call) Nothing
+                    in
                     ( { model | completeRound = Nothing }
-                    , Cmd.none
+                    , tts
                     )
 
                 Nothing ->
@@ -340,8 +350,8 @@ viewAction shared visible =
     Html.div [] (Action.actions |> List.map (Action.view shared visible))
 
 
-applyGameEvent : Lobby.Auth -> Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
-applyGameEvent auth gameEvent model =
+applyGameEvent : Lobby.Auth -> Shared -> Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
+applyGameEvent auth shared gameEvent model =
     case gameEvent of
         Events.HandRedrawn { player, hand } ->
             let
@@ -369,7 +379,7 @@ applyGameEvent auth gameEvent model =
                 game =
                     model.game
 
-                newRound =
+                ( newRound, speech ) =
                     case model.game.round of
                         Round.R r ->
                             let
@@ -378,18 +388,24 @@ applyGameEvent auth gameEvent model =
 
                                 known =
                                     plays |> List.filterMap Play.asKnown
-                            in
-                            if List.length known == List.length plays then
-                                Round.judging r.id r.czar r.players r.call known |> Round.J
 
-                            else
-                                { r | plays = plays } |> Round.R
+                                round =
+                                    if List.length known == List.length plays then
+                                        Round.judging r.id r.czar r.players r.call known |> Round.J
+
+                                    else
+                                        { r | plays = plays } |> Round.R
+
+                                tts =
+                                    speak shared r.call (Just play)
+                            in
+                            ( round, tts )
 
                         _ ->
                             -- TODO: Error
-                            model.game.round
+                            ( model.game.round, Cmd.none )
             in
-            ( { model | game = { game | round = newRound } }, Cmd.none )
+            ( { model | game = { game | round = newRound } }, speech )
 
         Events.PlaySubmitted { by } ->
             case model.game.round of
@@ -429,7 +445,7 @@ applyGameEvent auth gameEvent model =
                 newPlayers =
                     game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
 
-                ( newRound, history ) =
+                ( newRound, history, speech ) =
                     case game.round of
                         Round.J r ->
                             let
@@ -438,14 +454,19 @@ applyGameEvent auth gameEvent model =
 
                                 complete =
                                     Round.complete r.id r.czar r.players r.call plays winner
+
+                                tts =
+                                    Dict.get winner plays
+                                        |> Maybe.map (\p -> speak shared r.call (Just p))
+                                        |> Maybe.withDefault Cmd.none
                             in
-                            ( complete |> Round.C, complete :: game.history )
+                            ( complete |> Round.C, complete :: game.history, tts )
 
                         _ ->
                             -- TODO: Error
-                            ( game.round, game.history )
+                            ( game.round, game.history, Cmd.none )
             in
-            ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, Cmd.none )
+            ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, speech )
 
         Events.RoundStarted { id, czar, players, call, drawn } ->
             let
@@ -527,6 +548,16 @@ applyGameStarted lobby round hand =
 
 
 {- Private -}
+
+
+speak : Shared -> Card.Call -> Maybe (List Card.Response) -> Cmd msg
+speak shared call play =
+    Speech.speak shared.settings.settings.speech
+        (Parts.viewFilledString
+            (Strings.Blank |> Lang.string shared)
+            (play |> Maybe.map (List.map .body) |> Maybe.withDefault [])
+            call.body
+        )
 
 
 reveal : Play.Id -> List Card.Response -> Play -> Play

@@ -39,6 +39,7 @@ import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User exposing (User)
@@ -91,13 +92,21 @@ flags =
 
 settings : Json.Decoder Settings
 settings =
-    Json.map6 Settings
+    Json.map7 Settings
         (Json.field "tokens" (Json.dict lobbyToken))
         (Json.field "openUserList" Json.bool)
         (Json.maybe (Json.field "lastUsedName" Json.string))
         (Json.field "recentDecks" (Json.list externalSource))
         (Json.maybe (Json.field "chosenLanguage" language))
         (Json.field "compactCards" cardSize)
+        (Json.maybe (Json.field "speech" speech) |> Json.map (Maybe.withDefault Speech.default))
+
+
+speech : Json.Decoder Speech.Settings
+speech =
+    Json.map2 Speech.Settings
+        (Json.field "enabled" Json.bool)
+        (Json.maybe (Json.field "selectedVoice" Json.string))
 
 
 cardSize : Json.Decoder Settings.CardSize

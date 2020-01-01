@@ -73,6 +73,8 @@ type MdString
     | CardSizeExplanation -- An explanation of what the card size does (changes the size of the card).
     | SpeechSetting -- The label for the speech setting.
     | SpeechExplanation -- An explanation of what the speech setting does (enables TTS on cards).
+    | SpeechNotSupportedExplanation -- An explanation that speech can't be enabled because the user's browser doesn't support it.
+    | VoiceSetting -- The label for the voice setting.
     | NotificationsSetting -- The label for the notifications setting.
     | NotificationsExplanation -- An explanation of what the notifications setting does (enables browser notifications).
     | NotificationsBrowserPermissions -- An explanation that the user will need to give the game permission for notifications.
@@ -186,6 +188,7 @@ type MdString
     | Judging -- A description of the stage of the round where the czar is picking a winner.
     | Complete -- A description of the stage of the round where it is finished.
     | ViewGameHistoryAction -- A description of the action of viewing the history of the game.
+    | Blank -- A term used in speech to denote a blank "slot" on a card the player will give a value to fill.
       -- Instructions
     | WhatToDo -- A description of the action of asking for help on what to do in the game at this time.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.

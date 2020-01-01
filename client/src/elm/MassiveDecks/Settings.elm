@@ -4,6 +4,7 @@ module MassiveDecks.Settings exposing
     , init
     , onJoinLobby
     , onTokenUpdate
+    , subscriptions
     , update
     , view
     )
@@ -20,6 +21,7 @@ import Http
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
+import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Icon as Icon
 import MassiveDecks.LocalStorage as LocalStorage
 import MassiveDecks.Messages as Global
@@ -31,6 +33,7 @@ import MassiveDecks.Requests.Api as Api
 import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Settings.Messages exposing (..)
 import MassiveDecks.Settings.Model exposing (..)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
@@ -51,11 +54,15 @@ init settings =
                     |> Dict.values
                     |> Api.checkAlive (Request.map ignore ignore (RemoveInvalid >> Global.SettingsMsg))
                     |> Http.request
+
+        ( speech, speechCmd ) =
+            Speech.init
     in
     ( { settings = settings
       , open = False
+      , speech = speech
       }
-    , cmd
+    , Cmd.batch [ cmd, speechCmd ]
     )
 
 
@@ -67,7 +74,13 @@ defaults =
     , recentDecks = []
     , chosenLanguage = Nothing
     , cardSize = Full
+    , speech = Speech.default
     }
+
+
+subscriptions : (Error -> msg) -> (Msg -> msg) -> Sub msg
+subscriptions wrapError wrapMsg =
+    Speech.subscriptions (Error.Json >> wrapError) (SpeechMsg >> wrapMsg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,6 +105,23 @@ update msg model =
                         |> Dict.filter (\_ -> \t -> Dict.get t tokenValidity |> Maybe.withDefault True)
             in
             changeSettings (\s -> { s | tokens = newTokens }) model
+
+        ToggleSpeech enabled ->
+            let
+                newSpeechSettings =
+                    model.settings.speech |> Speech.toggle enabled
+            in
+            changeSettings (\s -> { s | speech = newSpeechSettings }) model
+
+        ChangeSpeech voice ->
+            let
+                newSpeechSettings =
+                    model.settings.speech |> Speech.selectVoice voice
+            in
+            changeSettings (\s -> { s | speech = newSpeechSettings }) model
+
+        SpeechMsg speechMsg ->
+            ( { model | speech = model.speech |> Speech.update speechMsg }, Cmd.none )
 
 
 view : Shared -> Html Global.Msg
@@ -121,7 +151,7 @@ view shared =
                 , Html.div [ HtmlA.class "body" ]
                     [ languageSelector shared
                     , cardSize shared
-                    , speechSwitch shared
+                    , speechVoiceSelector shared
                     , notificationsSwitch shared
                     ]
                 ]
@@ -193,11 +223,8 @@ changeSettings f model =
 cardSize : Shared -> Html Global.Msg
 cardSize shared =
     let
-        model =
-            shared.settings
-
         settings =
-            model.settings
+            shared.settings.settings
     in
     Form.section shared
         "card-size"
@@ -217,10 +244,10 @@ cardSize shared =
                     >> ChangeCardSize
                     >> Global.SettingsMsg
                     |> HtmlE.onInput
-                , model.settings.cardSize |> cardSizeToValue |> String.fromInt |> WlA.value
+                , settings.cardSize |> cardSizeToValue |> String.fromInt |> WlA.value
                 ]
                 [ Icon.viewStyled [ Slider.slot Slider.Before ] Icon.searchMinus
-                , [ model.settings.cardSize |> cardSizeThumb ] |> Html.span [ Slider.slot Slider.ThumbLabel ]
+                , [ settings.cardSize |> cardSizeThumb ] |> Html.span [ Slider.slot Slider.ThumbLabel ]
                 , Icon.viewStyled [ Slider.slot Slider.After ] Icon.searchPlus
                 ]
             ]
@@ -241,22 +268,85 @@ cardSizeThumb size =
             Icon.viewIcon Icon.callCard
 
 
-speechSwitch : Shared -> Html Global.Msg
-speechSwitch shared =
-    -- TODO: Impl
-    Form.section shared
-        "speech"
-        (Html.div
-            [ HtmlA.class "multipart" ]
-            [ Wl.switch [ WlA.disabled ]
-            , Html.label []
-                [ Icon.viewIcon Icon.volumeUp
-                , Html.text " "
-                , Strings.SpeechSetting |> Lang.html shared
+speechVoiceSelector : Shared -> Html Global.Msg
+speechVoiceSelector shared =
+    let
+        selectedVoice =
+            shared.settings.settings.speech.selectedVoice
+
+        voices =
+            shared.settings.speech.voices
+
+        enabled =
+            shared.settings.settings.speech.enabled
+
+        isDisabled =
+            List.isEmpty voices
+
+        notPossibleWarning =
+            if isDisabled then
+                Message.warning Strings.SpeechNotSupportedExplanation
+
+            else
+                Message.none
+    in
+    Html.div []
+        [ Form.section shared
+            "speech"
+            (Html.div []
+                [ Html.div
+                    [ HtmlA.class "multipart" ]
+                    [ Wl.switch
+                        [ HtmlE.onCheck (ToggleSpeech >> Global.SettingsMsg)
+                        , HtmlA.disabled isDisabled
+                        , HtmlA.checked enabled
+                        ]
+                    , Html.label []
+                        [ Icon.viewIcon Icon.commentDots
+                        , Html.text " "
+                        , Strings.SpeechSetting |> Lang.html shared
+                        ]
+                    ]
+                , Wl.select
+                    [ HtmlE.onInput (ChangeSpeech >> Global.SettingsMsg)
+                    , Strings.VoiceSetting |> Lang.string shared |> WlA.label
+                    , WlA.outlined
+                    , HtmlA.disabled (not enabled || isDisabled)
+                    ]
+                    (voices |> List.sortWith defaultFirst |> List.map (speechVoiceOption selectedVoice))
                 ]
+            )
+            [ Message.info Strings.SpeechExplanation
+            , notPossibleWarning
             ]
-        )
-        [ Message.info Strings.SpeechExplanation ]
+        ]
+
+
+defaultFirst : Speech.Voice -> Speech.Voice -> Order
+defaultFirst a b =
+    if a.default && b.default then
+        EQ
+
+    else if a.default then
+        LT
+
+    else
+        GT
+
+
+speechVoiceOption : Maybe String -> Speech.Voice -> Html Global.Msg
+speechVoiceOption selectedVoice voice =
+    let
+        selected =
+            if selectedVoice == Just voice.name then
+                [ WlA.selected ]
+
+            else
+                []
+    in
+    Html.option
+        (HtmlA.value voice.name :: selected)
+        [ Html.text (voice.name ++ " (" ++ voice.lang ++ ")") ]
 
 
 notificationsSwitch : Shared -> Html Global.Msg

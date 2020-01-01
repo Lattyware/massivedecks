@@ -270,6 +270,12 @@ translate mdString =
         SpeechExplanation ->
             [ Text "Read out cards using text to speech." ]
 
+        SpeechNotSupportedExplanation ->
+            [ Text "Your browser does not support text to speech, or has no voices installed." ]
+
+        VoiceSetting ->
+            [ Text "Speech Voice" ]
+
         NotificationsSetting ->
             [ Text "Browser Notifications" ]
 
@@ -652,6 +658,9 @@ translate mdString =
 
         ViewGameHistoryAction ->
             [ Text "View previous rounds from this game." ]
+
+        Blank ->
+            [ Text "Blank" ]
 
         -- Instructions
         WhatToDo ->

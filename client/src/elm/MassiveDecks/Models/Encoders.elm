@@ -19,6 +19,7 @@ import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.Model as Start
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
@@ -44,12 +45,28 @@ settings s =
                   , ( "openUserList", Json.bool s.openUserList )
                   , ( "recentDecks", Json.list source s.recentDecks )
                   , ( "compactCards", s.cardSize |> cardSize )
+                  , ( "speech", s.speech |> speech )
                   ]
                 , lun
                 , cl
                 ]
     in
     Json.object fields
+
+
+speech : Speech.Settings -> Json.Value
+speech speechSettings =
+    let
+        enabledField =
+            [ ( "enabled", speechSettings.enabled |> Json.bool ) ]
+
+        selectedVoiceField =
+            speechSettings.selectedVoice
+                |> Maybe.map (\sv -> [ ( "selectedVoice", Json.string sv ) ])
+                |> Maybe.withDefault []
+    in
+    Json.object
+        (List.concat [ enabledField, selectedVoiceField ])
 
 
 cardSize : Settings.CardSize -> Json.Value

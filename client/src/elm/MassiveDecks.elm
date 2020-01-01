@@ -7,6 +7,7 @@ import Html.Attributes as HtmlA
 import Json.Decode as Json
 import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
+import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Error.Model as Error
 import MassiveDecks.Error.Overlay as Overlay
 import MassiveDecks.Messages exposing (..)
@@ -82,6 +83,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Cast.subscriptions
+        , Settings.subscriptions (Error.Add >> ErrorMsg) SettingsMsg
         , model.page |> Pages.subscriptions
         ]
 
@@ -205,7 +207,7 @@ update msg model =
         LobbyMsg lobbyMsg ->
             case model.page of
                 Pages.Lobby lobbyModel ->
-                    Lobby.update model.shared.key lobbyMsg lobbyModel
+                    Lobby.update model.shared lobbyMsg lobbyModel
                         |> Util.modelLift (\newLobbyModel -> { model | page = Pages.Lobby newLobbyModel })
 
                 _ ->
