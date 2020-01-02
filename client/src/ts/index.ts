@@ -54,10 +54,6 @@ import(/* webpackChunkName: "massive-decks" */ "../elm/MassiveDecks").then(
       SettingsStorage.save(settings)
     );
 
-    if ("speechSynthesis" in window) {
-      new Speech(app.ports.speechVoices, app.ports.speechCommands);
-    }
-
     new ServerConnection(app.ports.serverRecv, app.ports.serverSend);
 
     new CastClient(app.ports.tryCast, app.ports.castStatus);
@@ -75,5 +71,9 @@ import(/* webpackChunkName: "massive-decks" */ "../elm/MassiveDecks").then(
         }
       }
     });
+
+    if ("speechSynthesis" in window) {
+      new Speech(app.ports.speechVoices, app.ports.speechCommands);
+    }
   }
 );

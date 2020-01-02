@@ -1,10 +1,14 @@
-module MassiveDecks.Error exposing (view)
+module MassiveDecks.Error exposing
+    ( view
+    , viewSpecific
+    )
 
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Json.Decode as Json
 import MassiveDecks.Error.Model exposing (..)
 import MassiveDecks.Model exposing (Shared)
+import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Strings as Strings exposing (MdString)
@@ -42,6 +46,17 @@ view shared route error =
             :: Html.span [ WlA.expansionSlot WlA.EDescription ] [ model.description |> Lang.html shared ]
             :: reportView
         )
+
+
+{-| A view of an MdError.
+-}
+viewSpecific : Shared -> MdError -> Html msg
+viewSpecific shared error =
+    Wl.expansion
+        [ WlA.name "errors", HtmlA.class "error" ]
+        [ Html.span [ WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
+        , Html.span [ WlA.expansionSlot WlA.EDescription ] [ error |> MdError.describe |> Lang.html shared ]
+        ]
 
 
 

@@ -360,6 +360,11 @@ joinContent shared model =
                 |> Maybe.map (Error.view shared (Route.Start model.route))
                 |> Maybe.withDefault Html.nothing
 
+        specificError =
+            model.joinLobbyRequest.error
+                |> Maybe.map (Error.viewSpecific shared)
+                |> Maybe.withDefault Html.nothing
+
         maybePasswordField =
             model.password
                 |> Maybe.map (passwordField shared model.joinLobbyRequest.error)
@@ -367,7 +372,7 @@ joinContent shared model =
     in
     Html.div [ HtmlA.class "join-game start-tab" ]
         (List.concat
-            [ [ error ]
+            [ [ error, specificError ]
             , rejoinSection shared model
             , nameField shared model
             , [ Form.section shared

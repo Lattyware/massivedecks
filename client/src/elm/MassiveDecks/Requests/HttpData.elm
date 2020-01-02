@@ -86,8 +86,8 @@ update req msg model =
 {-| A view over the data with any error received trying to load (or refresh) if it isn't there (or prefixed if during a
 refresh).
 -}
-view : Shared -> Route -> (Msg error result -> msg) -> (result -> Html msg) -> HttpData error result -> Html msg
-view shared route wrap viewResult model =
+view : Shared -> Route -> List (Html msg) -> (result -> Html msg) -> HttpData error result -> Html msg
+view shared route emptyContent viewResult model =
     let
         generalError =
             model.generalError |> Maybe.map (Error.view shared route)
@@ -100,7 +100,7 @@ view shared route wrap viewResult model =
 
         contentOrSpinner =
             if List.isEmpty content then
-                [ Html.div [ HtmlA.class "info" ] [ refreshButton shared model |> Html.map wrap ] ]
+                emptyContent
 
             else
                 content

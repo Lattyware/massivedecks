@@ -50,7 +50,7 @@ view shared route summaries =
             [ Html.h2 [] [ LobbyBrowserTitle |> Lang.html shared ]
             , HttpData.refreshButton shared summaries |> Html.map (SummaryUpdate >> lift)
             ]
-        , HttpData.view shared route (SummaryUpdate >> lift) (lobbyList shared) summaries
+        , HttpData.view shared route [ emptyContent shared ] (lobbyList shared) summaries
         ]
 
 
@@ -87,12 +87,7 @@ lift =
 lobbyList : Shared -> List Summary -> Html Global.Msg
 lobbyList shared summaries =
     if List.isEmpty summaries then
-        Html.div [ HtmlA.class "empty-info" ]
-            [ Icon.viewIcon Icon.ghost
-            , NoPublicGames |> Lang.html shared
-            , Html.text " "
-            , Html.a [ Route.Start { section = Start.New } |> Route.href ] [ StartYourOwn |> Lang.html shared ]
-            ]
+        emptyContent shared
 
     else
         HtmlK.ul []
@@ -102,6 +97,16 @@ lobbyList shared summaries =
                 |> List.map (stateGroup shared)
                 |> List.mappedIntersperse sep
             )
+
+
+emptyContent : Shared -> Html Global.Msg
+emptyContent shared =
+    Html.div [ HtmlA.class "empty-info" ]
+        [ Icon.viewIcon Icon.ghost
+        , NoPublicGames |> Lang.html shared
+        , Html.text " "
+        , Html.a [ Route.Start { section = Start.New } |> Route.href ] [ StartYourOwn |> Lang.html shared ]
+        ]
 
 
 states : List Lobby.State
