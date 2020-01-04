@@ -37,7 +37,7 @@ export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
       throw new InvalidActionError("Given play doesn't exist.");
     }
     if (play.revealed) {
-      throw new InvalidActionError("Given play is already revealed.");
+      return {};
     }
     play.revealed = true;
     const advancedRound = lobbyRound.advance();

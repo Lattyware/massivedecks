@@ -118,7 +118,7 @@ playing id czar players call played =
 
 
 type alias Revealing =
-    Data { plays : List Play }
+    Data { plays : List Play, lastRevealed : Maybe Play.Id }
 
 
 revealing : Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Revealing
@@ -128,6 +128,7 @@ revealing id czar players call plays =
     , players = players
     , call = call
     , plays = plays
+    , lastRevealed = Nothing
     }
 
 

@@ -37,14 +37,18 @@ view auth config round =
         plays =
             round.plays |> List.map (playDetails config slots (role == Player.RCzar))
 
-        -- TODO: Last revealed.
         lastRevealed =
-            []
+            case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
+                play :: [] ->
+                    play.responses
+
+                _ ->
+                    Nothing
     in
     { instruction = Just instruction
     , action = Nothing
     , content = plays |> Plays.view "revealing" Nothing
-    , fillCallWith = lastRevealed
+    , fillCallWith = lastRevealed |> Maybe.withDefault []
     }
 
 

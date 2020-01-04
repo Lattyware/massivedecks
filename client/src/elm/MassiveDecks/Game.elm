@@ -397,7 +397,7 @@ applyGameEvent auth shared gameEvent model =
                                         Round.judging r.id r.czar r.players r.call known |> Round.J
 
                                     else
-                                        { r | plays = plays } |> Round.R
+                                        { r | plays = plays, lastRevealed = Just id } |> Round.R
 
                                 tts =
                                     speak shared r.call (Just play)
