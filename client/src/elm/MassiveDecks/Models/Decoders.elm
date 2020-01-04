@@ -33,6 +33,8 @@ import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Rules as Rules exposing (Rules)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
+import MassiveDecks.Notifications as Notifications
+import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -92,7 +94,7 @@ flags =
 
 settings : Json.Decoder Settings
 settings =
-    Json.map7 Settings
+    Json.map8 Settings
         (Json.field "tokens" (Json.dict lobbyToken))
         (Json.field "openUserList" Json.bool)
         (Json.maybe (Json.field "lastUsedName" Json.string))
@@ -100,6 +102,14 @@ settings =
         (Json.maybe (Json.field "chosenLanguage" language))
         (Json.field "compactCards" cardSize)
         (Json.maybe (Json.field "speech" speech) |> Json.map (Maybe.withDefault Speech.default))
+        (Json.maybe (Json.field "notifications" notifications) |> Json.map (Maybe.withDefault Notifications.default))
+
+
+notifications : Json.Decoder Notifications.Settings
+notifications =
+    Json.map2 Notifications.Settings
+        (Json.field "enabled" Json.bool)
+        (Json.field "requireNotVisible" Json.bool)
 
 
 speech : Json.Decoder Speech.Settings

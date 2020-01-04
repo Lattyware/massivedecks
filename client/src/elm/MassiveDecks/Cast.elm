@@ -12,10 +12,12 @@ import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
+import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Spectate.Model as Spectate
 import MassiveDecks.Settings as Settings
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util as Util
@@ -69,6 +71,9 @@ init flags url key =
         ( settings, _ ) =
             Settings.init Settings.defaults
 
+        ( speech, speechCmd ) =
+            Speech.init
+
         shared =
             { language = castFlags |> Maybe.map .language |> Maybe.withDefault Lang.defaultLanguage
             , key = key
@@ -76,9 +81,11 @@ init flags url key =
             , settings = settings
             , browserLanguage = Nothing
             , castStatus = Cast.NoDevicesAvailable
+            , notifications = Notifications.init
+            , speech = speech
             }
     in
-    ( { shared = shared, spectate = spectate }, cmd )
+    ( { shared = shared, spectate = spectate }, Cmd.batch [ cmd, speechCmd ] )
 
 
 subscriptions : Model -> Sub Msg

@@ -1,6 +1,8 @@
 port module MassiveDecks.Ports exposing
     ( castStatus
     , copyText
+    , notificationCommands
+    , notificationState
     , serverRecv
     , serverSend
     , speechCommands
@@ -34,3 +36,9 @@ port speechCommands : Json.Value -> Cmd msg
 
 
 port speechVoices : (Json.Value -> msg) -> Sub msg
+
+
+port notificationCommands : Json.Value -> Cmd msg
+
+
+port notificationState : (Json.Value -> msg) -> Sub msg

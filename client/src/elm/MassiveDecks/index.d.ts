@@ -1,4 +1,8 @@
 import { Say, Voice } from "../../ts/speech";
+import {
+  State as NotificationState,
+  Command as NotificationCommand
+} from "../../ts/notification-manager";
 
 type Token = string;
 
@@ -48,6 +52,8 @@ export namespace Elm {
   namespace MassiveDecks {
     export interface App {
       ports: {
+        notificationState: OutboundPort<NotificationState>;
+        notificationCommands: InboundPort<NotificationCommand>;
         speechCommands: InboundPort<Say>;
         speechVoices: OutboundPort<Array<Voice>>;
         storeSettings: InboundPort<Settings>;

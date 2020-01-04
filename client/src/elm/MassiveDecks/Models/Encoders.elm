@@ -16,6 +16,7 @@ import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.Model as Start
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
@@ -46,12 +47,21 @@ settings s =
                   , ( "recentDecks", Json.list source s.recentDecks )
                   , ( "compactCards", s.cardSize |> cardSize )
                   , ( "speech", s.speech |> speech )
+                  , ( "notifications", s.notifications |> notifications )
                   ]
                 , lun
                 , cl
                 ]
     in
     Json.object fields
+
+
+notifications : Notifications.Settings -> Json.Value
+notifications notificationSettings =
+    Json.object
+        [ ( "enabled", notificationSettings.enabled |> Json.bool )
+        , ( "requireNotVisible", notificationSettings.requireNotVisible |> Json.bool )
+        ]
 
 
 speech : Speech.Settings -> Json.Value

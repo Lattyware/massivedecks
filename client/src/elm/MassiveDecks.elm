@@ -13,6 +13,7 @@ import MassiveDecks.Error.Overlay as Overlay
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
+import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Lobby as Lobby
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
@@ -24,6 +25,7 @@ import MassiveDecks.Pages.Unknown as Unknown
 import MassiveDecks.Ports as Ports
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util as Util
@@ -64,6 +66,9 @@ init flags url key =
         ( initialisedSettings, settingsCmd ) =
             Settings.init settings
 
+        ( speech, speechCmd ) =
+            Speech.init
+
         shared =
             { language = Lang.defaultLanguage
             , key = key
@@ -71,19 +76,24 @@ init flags url key =
             , settings = initialisedSettings
             , browserLanguage = Lang.findBestMatch browserLanguages
             , castStatus = Cast.NoDevicesAvailable
+            , speech = speech
+            , notifications = Notifications.init
             }
 
         ( page, pageCmd ) =
             Pages.fromRoute shared Nothing route |> changePage shared
     in
-    ( { page = page, shared = shared, errorOverlay = Overlay.init }, Cmd.batch [ pageCmd, settingsCmd ] )
+    ( { page = page, shared = shared, errorOverlay = Overlay.init }
+    , Cmd.batch [ pageCmd, settingsCmd, speechCmd ]
+    )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Cast.subscriptions
-        , Settings.subscriptions (Error.Add >> ErrorMsg) SettingsMsg
+        , Speech.subscriptions (Error.Json >> Error.Add >> ErrorMsg) SpeechMsg
+        , Notifications.subscriptions (Error.Json >> Error.Add >> ErrorMsg) NotificationMsg
         , model.page |> Pages.subscriptions
         ]
 
@@ -201,7 +211,7 @@ update msg model =
                 shared =
                     model.shared
             in
-            Settings.update settingsMsg shared.settings
+            Settings.update shared settingsMsg
                 |> Util.lift (\s -> { model | shared = { shared | settings = s } }) SettingsMsg
 
         LobbyMsg lobbyMsg ->
@@ -226,6 +236,25 @@ update msg model =
         ErrorMsg errorMsg ->
             Overlay.update errorMsg model.errorOverlay
                 |> Util.modelLift (\o -> { model | errorOverlay = o })
+
+        SpeechMsg speechMsg ->
+            let
+                oldShared =
+                    model.shared
+            in
+            ( { model | shared = { oldShared | speech = Speech.update speechMsg model.shared.speech } }
+            , Cmd.none
+            )
+
+        NotificationMsg notifcationMsg ->
+            let
+                oldShared =
+                    model.shared
+
+                ( notifications, notificationsCmd ) =
+                    Notifications.update model.shared.settings.settings.notifications notifcationMsg model.shared.notifications
+            in
+            ( { model | shared = { oldShared | notifications = notifications } }, notificationsCmd )
 
         Refresh ->
             ( model, Navigation.reload )

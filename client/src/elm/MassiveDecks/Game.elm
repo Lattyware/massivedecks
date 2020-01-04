@@ -24,6 +24,7 @@ import MassiveDecks.Game.Action.Model exposing (Action)
 import MassiveDecks.Game.History as History
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (..)
+import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Round.Complete as Complete
 import MassiveDecks.Game.Round.Judging as Judging
@@ -32,6 +33,7 @@ import MassiveDecks.Game.Round.Revealing as Revealing
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
@@ -481,13 +483,23 @@ applyGameEvent auth shared gameEvent model =
 
                         ( newRound, cmd ) =
                             Playing.init (Round.playing id czar players call Set.empty) Round.noPick
+
+                        notification =
+                            if Set.member auth.claims.uid players then
+                                Notifications.notify shared
+                                    { title = Strings.RoundStarted
+                                    , body = Strings.PlayInstruction { numberOfCards = Call.slotCount call }
+                                    }
+
+                            else
+                                Cmd.none
                     in
                     ( { model
                         | game = { game | round = Round.P newRound }
                         , completeRound = Just c
                         , hand = model.hand ++ drawnAsList
                       }
-                    , cmd
+                    , Cmd.batch [ cmd, notification ]
                     )
 
                 _ ->
@@ -514,8 +526,21 @@ applyGameEvent auth shared gameEvent model =
                             model.hand
                                 |> List.filter (\c -> not (List.member c.details.id r.pick.cards))
                                 |> (\h -> h ++ (drawn |> Maybe.withDefault []))
+
+                        role =
+                            Player.role newRound auth.claims.uid
+
+                        notification =
+                            if role == Player.RCzar then
+                                Notifications.notify shared
+                                    { title = Strings.JudgingStarted
+                                    , body = Strings.RevealPlaysInstruction
+                                    }
+
+                            else
+                                Cmd.none
                     in
-                    ( { model | game = { oldGame | round = newRound }, hand = newHand }, Cmd.none )
+                    ( { model | game = { oldGame | round = newRound }, hand = newHand }, notification )
 
                 _ ->
                     -- TODO: Error

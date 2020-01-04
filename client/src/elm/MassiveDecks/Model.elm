@@ -5,7 +5,9 @@ module MassiveDecks.Model exposing
 
 import Browser.Navigation as Navigation
 import MassiveDecks.Cast.Model as Cast
+import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
+import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
@@ -18,6 +20,8 @@ type alias Shared =
     , settings : Settings.Model
     , browserLanguage : Maybe Language
     , castStatus : Cast.Status
+    , speech : Speech.Model
+    , notifications : Notifications.Model
     }
 
 

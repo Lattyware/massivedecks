@@ -78,6 +78,10 @@ type MdString
     | NotificationsSetting -- The label for the notifications setting.
     | NotificationsExplanation -- An explanation of what the notifications setting does (enables browser notifications).
     | NotificationsBrowserPermissions -- An explanation that the user will need to give the game permission for notifications.
+    | NotificationsUnsupportedExplanation -- An explanation that notifications are not supported by the user's browser.
+    | NotificationOnlyWhenHiddenSetting -- The label for the only when hidden setting.
+    | NotificationsOnlyWhenHiddenExplanation -- An explanation of what the only when hidden setting does (only sends notifications when on another tab or minimised).
+    | NotificationsOnlyWhenHiddenUnsupportedExplanation -- An explanation that page visibility checking is not supported by the user's browser.
       -- Terms
     | Czar -- The name for the "Card Czar" (the player that judges the round).
     | CzarDescription -- A short description of what the czar does.
@@ -189,6 +193,8 @@ type MdString
     | Complete -- A description of the stage of the round where it is finished.
     | ViewGameHistoryAction -- A description of the action of viewing the history of the game.
     | Blank -- A term used in speech to denote a blank "slot" on a card the player will give a value to fill.
+    | RoundStarted -- A title for the round having started.
+    | JudgingStarted -- A title for judging having started.
       -- Instructions
     | WhatToDo -- A description of the action of asking for help on what to do in the game at this time.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.

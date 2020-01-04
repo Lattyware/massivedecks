@@ -175,14 +175,21 @@ a,
     display: flex;
     align-items: center;
 
+    gap: 0.5em;
+
     min-height: 2em;
 
     .primary {
       flex-grow: 1;
     }
+  }
 
-    label {
-      margin-left: 0.5em;
+  .children {
+    font-size: 0.9em;
+    margin-left: 0.5em;
+
+    &.inactive {
+      opacity: 0.6;
     }
   }
 }

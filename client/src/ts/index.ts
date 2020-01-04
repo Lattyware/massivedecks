@@ -1,9 +1,9 @@
-//import "../html/index.html";
 import "./weightless";
 import { Client as CastClient } from "./chromecast";
-import { OutboundPort, Settings, Token } from "../elm/MassiveDecks";
+import { Settings } from "../elm/MassiveDecks";
 import { ServerConnection } from "./server-connection";
 import { Speech } from "./speech";
+import { NotificationManager } from "./notification-manager";
 
 /**
  * Settings storage/retrieval in local storage.
@@ -75,5 +75,10 @@ import(/* webpackChunkName: "massive-decks" */ "../elm/MassiveDecks").then(
     if ("speechSynthesis" in window) {
       new Speech(app.ports.speechVoices, app.ports.speechCommands);
     }
+
+    new NotificationManager(
+      app.ports.notificationState,
+      app.ports.notificationCommands
+    );
   }
 );

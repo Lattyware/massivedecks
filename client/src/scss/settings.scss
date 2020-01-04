@@ -37,7 +37,11 @@
   }
 
   .body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     padding: 0 0.5em;
+    gap: 0.1em;
   }
 
   &.open {
@@ -46,5 +50,11 @@
 
   .setting-help {
     font-size: 0.8em;
+  }
+
+  hr {
+    border: none;
+    border-top: 3px double #cccccc;
+    margin: 0;
   }
 }

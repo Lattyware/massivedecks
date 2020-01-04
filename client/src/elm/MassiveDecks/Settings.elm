@@ -4,7 +4,6 @@ module MassiveDecks.Settings exposing
     , init
     , onJoinLobby
     , onTokenUpdate
-    , subscriptions
     , update
     , view
     )
@@ -21,11 +20,11 @@ import Http
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
-import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Icon as Icon
 import MassiveDecks.LocalStorage as LocalStorage
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
@@ -54,15 +53,11 @@ init settings =
                     |> Dict.values
                     |> Api.checkAlive (Request.map ignore ignore (RemoveInvalid >> Global.SettingsMsg))
                     |> Http.request
-
-        ( speech, speechCmd ) =
-            Speech.init
     in
     ( { settings = settings
       , open = False
-      , speech = speech
       }
-    , Cmd.batch [ cmd, speechCmd ]
+    , cmd
     )
 
 
@@ -75,16 +70,16 @@ defaults =
     , chosenLanguage = Nothing
     , cardSize = Full
     , speech = Speech.default
+    , notifications = Notifications.default
     }
 
 
-subscriptions : (Error -> msg) -> (Msg -> msg) -> Sub msg
-subscriptions wrapError wrapMsg =
-    Speech.subscriptions (Error.Json >> wrapError) (SpeechMsg >> wrapMsg)
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Shared -> Msg -> ( Model, Cmd Msg )
+update shared msg =
+    let
+        model =
+            shared.settings
+    in
     case msg of
         ToggleOpen ->
             ( { model | open = not model.open }, Cmd.none )
@@ -120,8 +115,18 @@ update msg model =
             in
             changeSettings (\s -> { s | speech = newSpeechSettings }) model
 
-        SpeechMsg speechMsg ->
-            ( { model | speech = model.speech |> Speech.update speechMsg }, Cmd.none )
+        ToggleNotifications enabled ->
+            let
+                ( notificationSettings, notificationsCmd ) =
+                    model.settings.notifications |> Notifications.setEnabled shared.notifications enabled
+
+                ( settings, settingsCmd ) =
+                    changeSettings (\s -> { s | notifications = notificationSettings }) model
+            in
+            ( settings, Cmd.batch [ notificationsCmd, settingsCmd ] )
+
+        ToggleOnlyWhenHidden enabled ->
+            changeSettings (\s -> { s | notifications = Notifications.requireNotVisible enabled s.notifications }) model
 
 
 view : Shared -> Html Global.Msg
@@ -149,11 +154,13 @@ view shared =
             Wl.card [ HtmlA.classList [ ( "settings-panel", True ), ( "open", model.open ) ] ]
                 [ Html.h3 [] [ Strings.SettingsTitle |> Lang.html shared ]
                 , Html.div [ HtmlA.class "body" ]
-                    [ languageSelector shared
-                    , cardSize shared
-                    , speechVoiceSelector shared
-                    , notificationsSwitch shared
-                    ]
+                    (List.intersperse (Html.hr [] [])
+                        [ languageSelector shared
+                        , cardSize shared
+                        , speechVoiceSelector shared
+                        , notificationsSwitch shared
+                        ]
+                    )
                 ]
     in
     Html.div [] [ button, panel ]
@@ -275,7 +282,7 @@ speechVoiceSelector shared =
             shared.settings.settings.speech.selectedVoice
 
         voices =
-            shared.settings.speech.voices
+            shared.speech.voices
 
         enabled =
             shared.settings.settings.speech.enabled
@@ -351,21 +358,73 @@ speechVoiceOption selectedVoice voice =
 
 notificationsSwitch : Shared -> Html Global.Msg
 notificationsSwitch shared =
-    -- TODO: Impl
+    let
+        settings =
+            shared.settings.settings.notifications
+
+        unsupported =
+            not (Notifications.supportsNotifications shared.notifications)
+
+        enabled =
+            not unsupported && settings.enabled
+
+        visibilityUnsupported =
+            not (Notifications.supportsVisibility shared.notifications)
+
+        visibilityDisabled =
+            visibilityUnsupported || unsupported || not settings.enabled
+    in
     Form.section shared
         "notifications"
-        (Html.div
-            [ HtmlA.class "multipart" ]
-            [ Wl.switch [ WlA.disabled ]
-            , Html.label []
-                [ Icon.viewIcon Icon.bell
-                , Html.text " "
-                , Strings.NotificationsSetting |> Lang.html shared
+        (Html.div []
+            [ Html.div
+                [ HtmlA.class "multipart" ]
+                [ Wl.switch
+                    [ HtmlE.onCheck (ToggleNotifications >> Global.SettingsMsg)
+                    , HtmlA.disabled unsupported
+                    , HtmlA.checked enabled
+                    ]
+                , Html.label []
+                    [ Icon.viewIcon Icon.bell
+                    , Html.text " "
+                    , Strings.NotificationsSetting |> Lang.html shared
+                    ]
+                ]
+            , Html.div [ HtmlA.classList [ ( "children", True ), ( "inactive", not enabled ) ] ]
+                [ Form.section
+                    shared
+                    "only-when-hidden"
+                    (Html.div
+                        [ HtmlA.class "multipart" ]
+                        [ Wl.switch
+                            [ HtmlE.onCheck (ToggleOnlyWhenHidden >> Global.SettingsMsg)
+                            , HtmlA.disabled visibilityDisabled
+                            , HtmlA.checked settings.requireNotVisible
+                            ]
+                        , Html.label []
+                            [ Icon.viewIcon Icon.eyeSlash
+                            , Html.text " "
+                            , Strings.NotificationOnlyWhenHiddenSetting |> Lang.html shared
+                            ]
+                        ]
+                    )
+                    [ Message.info Strings.NotificationsOnlyWhenHiddenExplanation
+                    , if visibilityUnsupported then
+                        Message.warning Strings.NotificationsUnsupportedExplanation
+
+                      else
+                        Message.none
+                    ]
                 ]
             ]
         )
         [ Message.info Strings.NotificationsExplanation
         , Message.info Strings.NotificationsBrowserPermissions
+        , if unsupported then
+            Message.warning Strings.NotificationsUnsupportedExplanation
+
+          else
+            Message.none
         ]
 
 

@@ -40,7 +40,6 @@
     "json5": "^2.1.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
-    "redux": "^4.0.5",
     "source-map-support": "^0.5.13",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",

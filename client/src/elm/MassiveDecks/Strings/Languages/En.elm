@@ -280,15 +280,26 @@ translate mdString =
             [ Text "Browser Notifications" ]
 
         NotificationsExplanation ->
-            [ Text "Alert you when you need to do something in the game using browser notifications. "
-            , Text "Useful when you need to be tabbed out of the game."
+            [ Text "Alert you when you need to do something in the game using browser notifications."
             ]
+
+        NotificationsUnsupportedExplanation ->
+            [ Text "Your browser doesn't support notifications." ]
 
         NotificationsBrowserPermissions ->
             [ Text "You will need to give permission for "
             , Ref MassiveDecks
             , Text " to notify you. This will only be used while the game is open and while you have this enabled."
             ]
+
+        NotificationOnlyWhenHiddenSetting ->
+            [ Text "Only When Hidden" ]
+
+        NotificationsOnlyWhenHiddenExplanation ->
+            [ Text "Only send notifications when you are not looking at the page (e.g: on another tab or minimised)." ]
+
+        NotificationsOnlyWhenHiddenUnsupportedExplanation ->
+            [ Text "Your browser doesn't support checking for page visibility." ]
 
         -- Terms
         Czar ->
@@ -661,6 +672,12 @@ translate mdString =
 
         Blank ->
             [ Text "Blank" ]
+
+        RoundStarted ->
+            [ Text "Round Started" ]
+
+        JudgingStarted ->
+            [ Text "Judging Started" ]
 
         -- Instructions
         WhatToDo ->
