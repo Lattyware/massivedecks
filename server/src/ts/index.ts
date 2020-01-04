@@ -19,6 +19,7 @@ import { InvalidLobbyPasswordError } from "./errors/authentication";
 import { UsernameAlreadyInUseError } from "./errors/registration";
 import * as event from "./event";
 import * as presenceChanged from "./events/lobby-event/presence-changed";
+import { Player } from "./games/player";
 import * as change from "./lobby/change";
 import { GameCode } from "./lobby/game-code";
 import * as logging from "./logging";
@@ -130,6 +131,14 @@ async function main(): Promise<void> {
       const id = lobby.nextUserId.toString();
       lobby.nextUserId += 1;
       lobby.users.set(id, newUser);
+      const game = lobby.game;
+      if (game !== undefined && newUser.role === "Player") {
+        game.playerOrder.push(id);
+        game.players.set(
+          id,
+          new Player(game.decks.responses.draw(game.rules.handSize))
+        );
+      }
       return {
         change: {
           lobby,

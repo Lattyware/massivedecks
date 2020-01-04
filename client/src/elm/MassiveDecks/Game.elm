@@ -1,6 +1,7 @@
 module MassiveDecks.Game exposing
     ( applyGameEvent
     , applyGameStarted
+    , hotJoinPlayer
     , init
     , subscriptions
     , update
@@ -569,6 +570,21 @@ applyGameStarted lobby round hand =
             }
     in
     init game hand Round.noPick
+
+
+hotJoinPlayer : User.Id -> Model -> Model
+hotJoinPlayer player model =
+    let
+        oldGame =
+            model.game
+
+        game =
+            { oldGame
+                | players = oldGame.players |> Dict.insert player { score = 0 }
+                , playerOrder = oldGame.playerOrder ++ [ player ]
+            }
+    in
+    { model | game = game }
 
 
 

@@ -83,7 +83,10 @@ export class Game {
     rules: Rules
   ): Game & { round: round.Playing } {
     const gameDecks = decks.decks(templates);
-    const playerOrder = Array.from(users.keys());
+    const playerOrder = wu(users.entries())
+      .filter(([id, user]) => user.role === "Player")
+      .map(([id, _]) => id)
+      .toArray();
     const czar = playerOrder[0];
     const playerMap = new Map(
       wu(playerOrder).map(id => [

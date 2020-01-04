@@ -171,10 +171,10 @@ update shared msg model =
 
                         Events.Presence { user, state } ->
                             let
-                                newUsers =
+                                ( newUsers, game ) =
                                     case state of
                                         Events.UserJoined { name, privilege, control } ->
-                                            Dict.insert
+                                            ( Dict.insert
                                                 user
                                                 { name = name
                                                 , presence = User.Joined
@@ -184,10 +184,14 @@ update shared msg model =
                                                 , control = control
                                                 }
                                                 lobby.users
+                                            , lobby.game |> Maybe.map (Game.hotJoinPlayer user)
+                                            )
 
                                         Events.UserLeft ->
-                                            lobby.users
+                                            ( lobby.users
                                                 |> Dict.update user (Maybe.map (\u -> { u | presence = User.Left }))
+                                            , lobby.game
+                                            )
 
                                 message =
                                     case state of
@@ -197,7 +201,8 @@ update shared msg model =
                                         Events.UserLeft ->
                                             UserLeft user
                             in
-                            addNotification message { model | lobby = Just { lobby | users = newUsers } }
+                            addNotification message
+                                { model | lobby = Just { lobby | users = newUsers, game = game } }
 
                         Events.PrivilegeSet { user, privilege } ->
                             let
