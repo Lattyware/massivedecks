@@ -14,3 +14,4 @@ import "weightless/tab-group";
 import "weightless/textfield";
 import "weightless/textarea";
 import "weightless/tooltip";
+import "weightless/progress-bar";

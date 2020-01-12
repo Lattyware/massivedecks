@@ -3,7 +3,6 @@ import { InvalidActionError } from "../../../errors/validation";
 import * as event from "../../../event";
 import * as timeLimitsChanged from "../../../events/lobby-event/configured/time-limits-changed";
 import * as round from "../../../games/game/round";
-import * as rules from "../../../games/rules";
 import { TimeLimit, TimeLimitMode } from "../../../games/rules";
 import { Handler } from "../../handler";
 import * as configure from "../configure";
@@ -16,7 +15,7 @@ export type ChangeTimeLimit = ChangeTimeLimitForStage | ChangeTimeLimitMode;
 export interface ChangeTimeLimitForStage extends configure.Base {
   action: NameType;
   stage: round.Stage;
-  timeLimit: TimeLimit;
+  timeLimit?: TimeLimit;
 }
 
 /**
@@ -24,7 +23,7 @@ export interface ChangeTimeLimitForStage extends configure.Base {
  */
 export interface ChangeTimeLimitMode extends configure.Base {
   action: NameType;
-  mode: TimeLimitMode | null;
+  mode: TimeLimitMode;
 }
 
 type NameType = "ChangeTimeLimit";
@@ -45,9 +44,6 @@ export const handle: Handler<ChangeTimeLimit> = (auth, lobby, action) => {
   const lobbyRules = lobby.config.rules;
   const timeLimits = lobbyRules.timeLimits;
   if (isStageChange(action)) {
-    if (timeLimits === undefined) {
-      throw new InvalidActionError("Time limits must be enabled to set one.");
-    }
     switch (action.stage) {
       case "Playing":
         timeLimits.playing = action.timeLimit;
@@ -59,6 +55,11 @@ export const handle: Handler<ChangeTimeLimit> = (auth, lobby, action) => {
         timeLimits.judging = action.timeLimit;
         break;
       case "Complete":
+        if (action.timeLimit === undefined) {
+          throw new InvalidActionError(
+            "The complete stage must have a time limit."
+          );
+        }
         timeLimits.complete = action.timeLimit;
         break;
     }
@@ -76,22 +77,15 @@ export const handle: Handler<ChangeTimeLimit> = (auth, lobby, action) => {
       ]
     };
   } else {
-    if (action.mode === null) {
-      delete lobbyRules.timeLimits;
-    } else {
-      lobbyRules.timeLimits = {
-        ...(timeLimits === undefined ? rules.defaultTimeLimits() : timeLimits),
-        mode: action.mode
-      };
-    }
+    lobbyRules.timeLimits.mode = action.mode;
+    lobby.config.version += 1;
+    return {
+      lobby,
+      events: [
+        event.targetAll(
+          timeLimitsChanged.mode(lobby.config.version.toString(), action.mode)
+        )
+      ]
+    };
   }
-  lobby.config.version += 1;
-  return {
-    lobby,
-    events: [
-      event.targetAll(
-        timeLimitsChanged.mode(lobby.config.version.toString(), action.mode)
-      )
-    ]
-  };
 };

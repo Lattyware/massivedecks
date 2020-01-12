@@ -9,6 +9,7 @@ import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
 import MassiveDecks.Pages.Start.Route exposing (Route)
 import MassiveDecks.Requests.HttpData.Model exposing (HttpData)
+import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.User as User
 
 
@@ -22,6 +23,7 @@ type alias Model =
     , newLobbyRequest : HttpData () Lobby.Auth
     , joinLobbyRequest : HttpData MdError Lobby.Auth
     , password : Maybe String
+    , overlay : Maybe MdString
     }
 
 

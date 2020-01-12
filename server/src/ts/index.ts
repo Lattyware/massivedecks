@@ -139,15 +139,25 @@ async function main(): Promise<void> {
           new Player(game.decks.responses.draw(game.rules.handSize))
         );
       }
+      const unpause =
+        game !== undefined
+          ? game.paused
+            ? game.startNewRound(state, lobby)
+            : {}
+          : {};
       return {
         change: {
           lobby,
-          events: [event.targetAll(presenceChanged.joined(id, newUser))],
+          events: [
+            event.targetAll(presenceChanged.joined(id, newUser)),
+            ...(unpause.events !== undefined ? unpause.events : [])
+          ],
           timeouts: [
             {
               timeout: userDisconnect.of(id),
               after: config.timeouts.disconnectionGracePeriod
-            }
+            },
+            ...(unpause.timeouts !== undefined ? unpause.timeouts : [])
           ]
         },
         returnValue: id
@@ -155,8 +165,7 @@ async function main(): Promise<void> {
     });
     const claims: token.Claims = {
       gc: gameCode,
-      uid: id,
-      pvg: "Unprivileged"
+      uid: id
     };
     res.json(token.create(claims, await state.store.id(), config.secret));
   });

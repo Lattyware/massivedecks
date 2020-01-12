@@ -1,6 +1,7 @@
 module MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..), Target(..))
 
 import MassiveDecks.Card.Source.Model as Source
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
 
@@ -17,6 +18,8 @@ type Msg
     | HouseRuleChange Target Rules.HouseRuleChange
     | PublicChange Target Bool
     | TogglePasswordVisibility
+    | TimeLimitChangeMode Target Rules.TimeLimitMode
+    | TimeLimitChange Target Round.Stage (Maybe Float)
 
 
 {-| We don't want to push every tiny change to the server. Instead we only push some changes.

@@ -6,7 +6,8 @@ export type Reason =
   | "NotAuthenticated"
   | "AlreadyAuthenticated"
   | "InvalidAuthentication"
-  | "InvalidLobbyPassword";
+  | "InvalidLobbyPassword"
+  | "AlreadyLeftError";
 
 export interface Details extends errors.Details {
   error: "AuthenticationFailure";
@@ -68,6 +69,16 @@ export class InvalidAuthenticationError extends AuthenticationFailureError {
   public constructor(reason: string) {
     super(`the given authentication was not valid (${reason})`);
     Error.captureStackTrace(this, InvalidAuthenticationError);
+  }
+}
+
+// If the user already left the game.
+export class AlreadyLeftError extends AuthenticationFailureError {
+  public readonly reason = "AlreadyLeftError";
+
+  public constructor() {
+    super("the user has already left the game");
+    Error.captureStackTrace(this, AlreadyLeftError);
   }
 }
 

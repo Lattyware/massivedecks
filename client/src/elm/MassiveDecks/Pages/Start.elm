@@ -1,11 +1,13 @@
 module MassiveDecks.Pages.Start exposing
     ( changeRoute
     , init
+    , initWithAuthError
     , route
     , update
     , view
     )
 
+import Browser.Navigation as Navigation
 import Dict
 import FontAwesome.Attributes as Icon
 import FontAwesome.Icon as Icon exposing (Icon)
@@ -19,6 +21,7 @@ import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
+import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Error as Error
@@ -84,9 +87,22 @@ init shared r =
       , newLobbyRequest = HttpData.initLazy
       , joinLobbyRequest = HttpData.initLazy
       , password = Nothing
+      , overlay = Nothing
       }
     , lobbiesCmd
     )
+
+
+initWithAuthError : Shared -> GameCode -> MdError.AuthenticationError -> ( Model, Cmd Global.Msg )
+initWithAuthError shared gameCode authenticationError =
+    let
+        ( model, cmd ) =
+            init shared { section = Join (Just gameCode) }
+
+        jlr =
+            model.joinLobbyRequest
+    in
+    ( { model | joinLobbyRequest = { jlr | error = authenticationError |> MdError.Authentication |> Just } }, cmd )
 
 
 route : Model -> Route
@@ -94,11 +110,17 @@ route model =
     model.route
 
 
-update : Msg -> Model -> ( Model, Cmd Global.Msg )
-update msg model =
+update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
+update shared msg model =
     case msg of
         GameCodeChanged gameCode ->
-            ( { model | gameCode = gameCode |> GameCode.fromString }, Cmd.none )
+            let
+                gc =
+                    gameCode |> GameCode.fromString
+            in
+            ( { model | gameCode = gc }
+            , { section = Join gc } |> Route.Start |> Route.url |> Navigation.replaceUrl shared.key
+            )
 
         NameChanged name ->
             ( { model | name = name }, Cmd.none )
@@ -151,11 +173,15 @@ update msg model =
                 _ ->
                     showError
 
+        HideOverlay ->
+            ( { model | overlay = Nothing }, Cmd.none )
+
 
 view : Shared -> Model -> List (Html Global.Msg)
 view shared model =
     [ Html.div [ HtmlA.class "page start" ]
-        [ Html.header [ HtmlA.class "title-card" ]
+        [ overlay shared model.overlay
+        , Html.header [ HtmlA.class "title-card" ]
             [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Call.viewUnknown [] ] ]
             , Html.div [ HtmlA.class "subtitle" ]
                 [ Html.div [ HtmlA.class "card-slicer" ]
@@ -200,6 +226,26 @@ view shared model =
 
 
 {- Private -}
+
+
+overlay : Shared -> Maybe MdString -> Html Global.Msg
+overlay shared content =
+    case content of
+        Just text ->
+            Html.div [ HtmlA.id "overlay" ]
+                [ Components.iconButton
+                    [ HtmlA.class "close"
+                    , HideOverlay |> Global.StartMsg |> HtmlE.onClick
+                    , Strings.Close |> Lang.title shared
+                    ]
+                    Icon.times
+                , Wl.card []
+                    [ text |> Lang.html shared
+                    ]
+                ]
+
+        Nothing ->
+            Html.nothing
 
 
 startGameRequest : String -> HttpData.Pull Global.Msg
@@ -323,16 +369,18 @@ newContent shared model =
                 |> Maybe.withDefault Html.nothing
     in
     Html.div [ HtmlA.class "new-game start-tab" ]
-        (List.concat
-            [ [ error ]
-            , nameField shared model
-            , [ Wl.button
-                    [ buttonAttr
-                    ]
-                    [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
-              ]
-            ]
-        )
+        [ error
+        , Html.div [ HtmlA.class "restrict" ]
+            (List.concat
+                [ nameField shared model
+                , [ Wl.button
+                        [ buttonAttr
+                        ]
+                        [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
+                  ]
+                ]
+            )
+        ]
 
 
 joinContent : Shared -> Model -> Html Global.Msg
@@ -360,42 +408,49 @@ joinContent shared model =
                 |> Maybe.map (Error.view shared (Route.Start model.route))
                 |> Maybe.withDefault Html.nothing
 
-        specificError =
-            model.joinLobbyRequest.error
-                |> Maybe.map (Error.viewSpecific shared)
-                |> Maybe.withDefault Html.nothing
+        ( gameError, passwordError ) =
+            case model.joinLobbyRequest.error of
+                Just (MdError.Authentication MdError.InvalidLobbyPassword) ->
+                    ( Nothing, model.joinLobbyRequest.error )
+
+                _ ->
+                    ( model.joinLobbyRequest.error, Nothing )
 
         maybePasswordField =
             model.password
-                |> Maybe.map (passwordField shared model.joinLobbyRequest.error)
+                |> Maybe.map (passwordField shared passwordError)
                 |> Maybe.withDefault []
     in
     Html.div [ HtmlA.class "join-game start-tab" ]
-        (List.concat
-            [ [ error, specificError ]
-            , rejoinSection shared model
-            , nameField shared model
-            , [ Form.section shared
-                    "game-code-input"
-                    (Wl.textField
-                        [ HtmlA.class "game-code-input"
-                        , GameCodeChanged >> Global.StartMsg |> HtmlE.onInput
-                        , WlA.value (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
-                        , WlA.outlined
-                        , Strings.GameCodeTerm |> Lang.label shared
+        [ error
+        , Html.div [ HtmlA.class "restrict" ]
+            (List.concat
+                [ rejoinSection shared model
+                , nameField shared model
+                , [ Form.section shared
+                        "game-code-input"
+                        (Wl.textField
+                            [ HtmlA.class "game-code-input"
+                            , GameCodeChanged >> Global.StartMsg |> HtmlE.onInput
+                            , WlA.value (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
+                            , WlA.outlined
+                            , Strings.GameCodeTerm |> Lang.label shared
+                            ]
+                            []
+                        )
+                        [ Message.info Strings.GameCodeHowToAcquire
+                        , gameError |> Maybe.map Message.mdError |> Maybe.withDefault Message.none
                         ]
-                        []
-                    )
-                    [ Message.info Strings.GameCodeHowToAcquire ]
-              ]
-            , maybePasswordField
-            , [ Wl.button
-                    [ buttonAttr
-                    ]
-                    [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
-              ]
-            ]
-        )
+                  ]
+                , maybePasswordField
+                , [ Wl.button
+                        [ buttonAttr
+                        ]
+                        [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
+                  ]
+                ]
+            )
+        ]
 
 
 passwordField : Shared -> Maybe MdError -> String -> List (Html Global.Msg)
@@ -525,8 +580,8 @@ examplePick2 : Card.Call
 examplePick2 =
     Card.call
         (Parts.unsafeFromList
-            [ [ Parts.Slot Parts.None, Parts.Text " + ", Parts.Slot Parts.None ]
-            , [ Parts.Text " = ", Parts.Slot Parts.None ]
+            [ [ Parts.Slot Parts.Stay, Parts.Text " + ", Parts.Slot Parts.Stay ]
+            , [ Parts.Text " = ", Parts.Slot Parts.Stay ]
             ]
         )
         ""

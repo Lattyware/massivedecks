@@ -5,8 +5,13 @@ module MassiveDecks.Models.Encoders exposing
     , language
     , lobbyCreation
     , lobbyToken
+    , playerPresence
+    , privilege
+    , roundId
     , settings
     , source
+    , stage
+    , timeLimitMode
     , userRegistration
     )
 
@@ -15,6 +20,8 @@ import Json.Encode as Json
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
+import MassiveDecks.Game.Player as Player
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Model as Lobby
@@ -26,9 +33,55 @@ import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
 
 
+timeLimitMode : Rules.TimeLimitMode -> Json.Value
+timeLimitMode mode =
+    Json.string
+        (case mode of
+            Rules.Hard ->
+                "Hard"
+
+            Rules.Soft ->
+                "Soft"
+        )
+
+
+roundId : Round.Id -> Json.Value
+roundId =
+    Round.idString >> Json.string
+
+
+stage : Round.Stage -> Json.Value
+stage =
+    Round.stageToName >> Json.string
+
+
 checkAlive : List Lobby.Token -> Json.Value
 checkAlive tokens =
     [ ( "tokens", Json.list lobbyToken tokens ) ] |> Json.object
+
+
+playerPresence : Player.Presence -> Json.Value
+playerPresence presence =
+    Json.string
+        (case presence of
+            Player.Active ->
+                "Active"
+
+            Player.Away ->
+                "Away"
+        )
+
+
+privilege : User.Privilege -> Json.Value
+privilege p =
+    Json.string
+        (case p of
+            User.Privileged ->
+                "Privileged"
+
+            User.Unprivileged ->
+                "Unprivileged"
+        )
 
 
 settings : Settings -> Json.Value

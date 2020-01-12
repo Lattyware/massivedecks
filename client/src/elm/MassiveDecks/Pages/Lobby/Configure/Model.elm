@@ -14,6 +14,7 @@ import MassiveDecks.Game.Rules as Rules exposing (Rules)
 type Tab
     = Decks
     | Rules
+    | TimeLimits
     | Privacy
 
 
@@ -33,6 +34,7 @@ type alias Model =
     , tab : Tab
     , houseRules : Rules.HouseRules
     , public : Bool
+    , timeLimits : Rules.TimeLimits
     }
 
 
@@ -64,6 +66,13 @@ fake =
             { rando = Nothing
             , packingHeat = Nothing
             , reboot = Nothing
+            }
+        , timeLimits =
+            { mode = Rules.Soft
+            , playing = Nothing
+            , revealing = Nothing
+            , judging = Nothing
+            , complete = 0
             }
         }
     , decks = []

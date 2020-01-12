@@ -17,10 +17,13 @@ import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Lobby as Lobby
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
+import MassiveDecks.Pages.Lobby.Messages as Lobby
+import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Model as Pages exposing (Page)
 import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Start as Start
+import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown as Unknown
 import MassiveDecks.Ports as Ports
 import MassiveDecks.ServerConnection as ServerConnection
@@ -28,6 +31,7 @@ import MassiveDecks.Settings as Settings
 import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.User as User
 import MassiveDecks.Util as Util
 import MassiveDecks.Util.Url as Url
 import Url exposing (Url)
@@ -192,7 +196,7 @@ update msg model =
             case model.page of
                 Pages.Start startModel ->
                     Util.modelLift (\newStartModel -> { model | page = Pages.Start newStartModel })
-                        (Start.update startMsg startModel)
+                        (Start.update model.shared startMsg startModel)
 
                 _ ->
                     ( model, Cmd.none )
@@ -217,8 +221,7 @@ update msg model =
         LobbyMsg lobbyMsg ->
             case model.page of
                 Pages.Lobby lobbyModel ->
-                    Lobby.update model.shared lobbyMsg lobbyModel
-                        |> Util.modelLift (\newLobbyModel -> { model | page = Pages.Lobby newLobbyModel })
+                    handleLobbyMsg model lobbyMsg lobbyModel
 
                 _ ->
                     ( model, Cmd.none )
@@ -269,9 +272,6 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        Batch messages ->
-            Util.batchUpdate messages model update
-
 
 view : Model -> Browser.Document Msg
 view model =
@@ -319,6 +319,58 @@ view model =
 
 
 {- Private -}
+
+
+handleLobbyMsg : Model -> Lobby.Msg -> Lobby.Model -> ( Model, Cmd Msg )
+handleLobbyMsg model lobbyMsg lobbyModel =
+    let
+        shared =
+            model.shared
+
+        ( change, lobbyCmd ) =
+            Lobby.update shared lobbyMsg lobbyModel
+    in
+    case change of
+        Lobby.Stay newLobbyModel ->
+            ( { model | page = Pages.Lobby newLobbyModel }, lobbyCmd )
+
+        Lobby.AuthError gc authenticationError ->
+            let
+                ( page, changePageCmd ) =
+                    Start.initWithAuthError shared gc authenticationError
+
+                urlCommand =
+                    page |> .route |> Route.Start |> Route.url |> Navigation.pushUrl shared.key
+
+                ( settings, settingsCmd ) =
+                    Settings.removeToken gc shared.settings
+            in
+            ( { model | page = Pages.Start page, shared = { shared | settings = settings } }
+            , Cmd.batch [ lobbyCmd, settingsCmd, changePageCmd, urlCommand ]
+            )
+
+        Lobby.LeftGame gc leaveReason ->
+            let
+                ( initialPage, changePageCmd ) =
+                    Start.init shared { section = Start.New }
+
+                page =
+                    case leaveReason of
+                        User.Kicked ->
+                            { initialPage | overlay = Just Strings.YouWereKicked }
+
+                        _ ->
+                            initialPage
+
+                urlCommand =
+                    page |> .route |> Route.Start |> Route.url |> Navigation.pushUrl shared.key
+
+                ( settings, settingsCmd ) =
+                    Settings.removeToken gc shared.settings
+            in
+            ( { model | page = Pages.Start page, shared = { shared | settings = settings } }
+            , Cmd.batch [ lobbyCmd, settingsCmd, changePageCmd, urlCommand ]
+            )
 
 
 changePageFromRoute : Shared -> Route -> Page -> ( Page, Cmd Msg )

@@ -24,6 +24,21 @@
     display: flex;
   }
 
+  #overlay {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    background-color: transparentize(#cccccc, 0.3);
+    font-size: 2em;
+  }
+
   header {
     display: flex;
     flex-wrap: wrap;
@@ -66,14 +81,18 @@
   .start-tab {
     margin: 0.5em auto 0 auto;
     width: 100%;
-    max-width: 25em;
     display: flex;
     flex-direction: column;
     align-items: stretch;
   }
 
-  .rejoin {
-    align-self: stretch;
+  .restrict {
+    align-self: center;
+    max-width: 25em;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .example-card {

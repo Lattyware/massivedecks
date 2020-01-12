@@ -5,6 +5,7 @@ import * as card from "../games/cards/card";
 import * as round from "../games/game/round";
 import * as timeout from "../timeout";
 import * as util from "../util";
+import * as roundStageTimerDone from "./round-stage-timer-done";
 
 /**
  * Indicates that the round should start the judging phase if it is appropriate
@@ -50,7 +51,7 @@ export const handle: timeout.Handler<FinishedPlaying> = (
   }
 
   const slotCount = card.slotCount(round.call);
-  let extraCards =
+  const extraCards =
     slotCount > 2 ||
     (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
       ? slotCount - 1
@@ -74,8 +75,19 @@ export const handle: timeout.Handler<FinishedPlaying> = (
   ];
 
   game.round = round.advance();
+
+  const timeouts = [];
+  const timer = roundStageTimerDone.ifEnabled(
+    game.round,
+    game.rules.timeLimits
+  );
+  if (timer !== undefined) {
+    timeouts.push(timer);
+  }
+
   return {
     lobby,
-    events: events
+    events: events,
+    timeouts: timeouts
   };
 };

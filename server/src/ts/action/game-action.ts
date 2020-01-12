@@ -17,8 +17,8 @@ import * as playerAction from "./game-action/player";
 import { Player as PlayerAction } from "./game-action/player";
 import * as redraw from "./game-action/redraw";
 import { Redraw } from "./game-action/redraw";
-import * as setAway from "./game-action/set-away";
-import { SetAway } from "./game-action/set-away";
+import * as setPresence from "./game-action/set-presence";
+import { SetPresence } from "./game-action/set-presence";
 import * as handler from "./handler";
 import wu from "wu";
 
@@ -30,7 +30,7 @@ export type GameAction =
   | Czar
   | Redraw
   | EnforceTimeLimit
-  | SetAway;
+  | SetPresence;
 
 /**
  * A handler for game actions.
@@ -45,7 +45,7 @@ const possible = new Set([
   czar.is,
   redraw.is,
   enforceTimeLimit.is,
-  setAway.is
+  setPresence.is
 ]);
 
 /**
@@ -70,8 +70,8 @@ export const handle: handler.Handler<GameAction> = (
       return redraw.handle(auth, lobby, action, server);
     } else if (enforceTimeLimit.is(action)) {
       return enforceTimeLimit.handle(auth, lobby, action, server);
-    } else if (setAway.is(action)) {
-      return setAway.handle(auth, lobby, action, server);
+    } else if (setPresence.is(action)) {
+      return setPresence.handle(auth, lobby, action, server);
     } else {
       return util.assertNever(action);
     }

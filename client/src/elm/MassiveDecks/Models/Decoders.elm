@@ -14,6 +14,8 @@ module MassiveDecks.Models.Decoders exposing
     , privilege
     , revealingRound
     , settings
+    , timeLimitChangedForStage
+    , timeLimitModeChanged
     , tokenValidity
     , userId
     , userSummary
@@ -31,6 +33,7 @@ import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Rules as Rules exposing (Rules)
+import MassiveDecks.Game.Time as Time
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Notifications as Notifications
@@ -185,13 +188,14 @@ lobby =
 
 game : Json.Decoder Game
 game =
-    Json.map6 Game
+    Json.map7 Game
         (Json.field "round" round)
         (Json.field "history" (Json.list completeRound))
         (Json.field "playerOrder" (Json.list userId))
         (Json.field "players" (Json.dict player))
         (Json.field "rules" rules)
         (Json.maybe (Json.field "winner" userId))
+        (Json.maybe (Json.field "paused" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 config : Json.Decoder Configure.Config
@@ -228,10 +232,39 @@ details =
 
 rules : Json.Decoder Rules
 rules =
-    Json.map3 Rules
+    Json.map4 Rules
         (Json.field "handSize" Json.int)
         (Json.maybe (Json.field "scoreLimit" score))
         (Json.field "houseRules" houseRules)
+        (Json.field "timeLimits" timeLimits)
+
+
+timeLimits : Json.Decoder Rules.TimeLimits
+timeLimits =
+    Json.map5 Rules.TimeLimits
+        (Json.field "mode" timeLimitMode)
+        (Json.maybe (Json.field "playing" Json.float))
+        (Json.maybe (Json.field "revealing" Json.float))
+        (Json.maybe (Json.field "judging" Json.float))
+        (Json.field "complete" Json.float)
+
+
+timeLimitMode : Json.Decoder Rules.TimeLimitMode
+timeLimitMode =
+    Json.string |> Json.andThen timeLimitModeByName
+
+
+timeLimitModeByName : String -> Json.Decoder Rules.TimeLimitMode
+timeLimitModeByName name =
+    case name of
+        "Hard" ->
+            Json.succeed Rules.Hard
+
+        "Soft" ->
+            Json.succeed Rules.Soft
+
+        _ ->
+            unknownValue "time limit mode" name
 
 
 houseRules : Json.Decoder Rules.HouseRules
@@ -261,8 +294,27 @@ rando =
 
 player : Json.Decoder Player
 player =
-    Json.map Player
+    Json.map2 Player
         (Json.field "score" score)
+        (Json.field "presence" playerPresence)
+
+
+playerPresence : Json.Decoder Player.Presence
+playerPresence =
+    Json.string |> Json.andThen playerPresenceByName
+
+
+playerPresenceByName : String -> Json.Decoder Player.Presence
+playerPresenceByName name =
+    case name of
+        "Active" ->
+            Json.succeed Player.Active
+
+        "Away" ->
+            Json.succeed Player.Away
+
+        _ ->
+            unknownValue "player presence" name
 
 
 control : Json.Decoder User.Control
@@ -445,7 +497,7 @@ eventByName name =
             userJoined |> Json.andThen presence
 
         "Left" ->
-            presence Events.UserLeft
+            userLeft |> Json.andThen presence
 
         "DecksChanged" ->
             configured decksChanged
@@ -465,11 +517,14 @@ eventByName name =
         "PublicSet" ->
             configured publicSet
 
+        "TimeLimitsChanged" ->
+            configured timeLimitsChanged
+
         "GameStarted" ->
             gameStarted
 
         "RoundStarted" ->
-            gameEvent roundStarted
+            timedGameEvent roundStarted
 
         "PlaySubmitted" ->
             gameEvent playSubmitted
@@ -478,30 +533,56 @@ eventByName name =
             gameEvent playTakenBack
 
         "StartRevealing" ->
-            gameEvent startRevealing
+            timedGameEvent startRevealing
 
         "PlayRevealed" ->
-            gameEvent playRevealed
+            timedGameEvent playRevealed
 
         "RoundFinished" ->
-            gameEvent roundFinished
+            timedGameEvent roundFinished
 
         "HandRedrawn" ->
             gameEvent handRedrawn
 
-        "PrivilegeSet" ->
-            privilegeSet
+        "Away" ->
+            gameEvent playerAway
+
+        "Back" ->
+            gameEvent playerBack
+
+        "PrivilegeChanged" ->
+            privilegeChanged
+
+        "Paused" ->
+            gameEvent (Json.succeed Events.Paused)
+
+        "Continued" ->
+            gameEvent (Json.succeed Events.Continued)
+
+        "StageTimerDone" ->
+            gameEvent stageTimerDone
 
         _ ->
             unknownValue "event" name
 
 
-privilegeSet : Json.Decoder Events.Event
-privilegeSet =
-    Json.map3 (\u -> \p -> \t -> Events.PrivilegeSet { user = u, privilege = p, token = t })
-        (Json.field "user" userId)
-        (Json.field "privilege" privilege)
-        (Json.maybe (Json.field "token" lobbyToken))
+stageTimerDone : Json.Decoder Events.GameEvent
+stageTimerDone =
+    Json.map2 (\r -> \s -> Events.StageTimerDone { round = r, stage = s })
+        (Json.field "round" Round.idDecoder)
+        (Json.field "stage" stage)
+
+
+playerAway : Json.Decoder Events.GameEvent
+playerAway =
+    Json.map (\p -> Events.PlayerAway { player = p })
+        (Json.field "player" userId)
+
+
+playerBack : Json.Decoder Events.GameEvent
+playerBack =
+    Json.map (\p -> Events.PlayerBack { player = p })
+        (Json.field "player" userId)
 
 
 handRedrawn : Json.Decoder Events.GameEvent
@@ -511,21 +592,21 @@ handRedrawn =
         (Json.maybe (Json.field "hand" (Json.list response)))
 
 
-roundFinished : Json.Decoder Events.GameEvent
+roundFinished : Json.Decoder Events.TimedGameEvent
 roundFinished =
     Json.map2 (\wi -> \pb -> Events.RoundFinished { winner = wi, playedBy = pb })
         (Json.field "winner" userId)
         (Json.field "playedBy" (Json.dict userId))
 
 
-playRevealed : Json.Decoder Events.GameEvent
+playRevealed : Json.Decoder Events.TimedGameEvent
 playRevealed =
     Json.map2 (\id -> \pl -> Events.PlayRevealed { id = id, play = pl })
         (Json.field "id" playId)
         (Json.field "play" (Json.list response))
 
 
-startRevealing : Json.Decoder Events.GameEvent
+startRevealing : Json.Decoder Events.TimedGameEvent
 startRevealing =
     Json.map2 (\ps -> \dr -> Events.StartRevealing { plays = ps, drawn = dr })
         (Json.field "plays" (Json.list playId))
@@ -535,6 +616,11 @@ startRevealing =
 gameEvent : Json.Decoder Events.GameEvent -> Json.Decoder Event
 gameEvent =
     Json.map Events.Game
+
+
+timedGameEvent : Json.Decoder Events.TimedGameEvent -> Json.Decoder Event
+timedGameEvent =
+    Json.map (\e -> Events.NoTime { event = e } |> Events.Timed) >> gameEvent
 
 
 playSubmitted : Json.Decoder Events.GameEvent
@@ -587,7 +673,7 @@ maybeHouseRuleChange parseSettings wrapSettings wrapChange =
         (Json.maybe (Json.field "settings" parseSettings))
 
 
-roundStarted : Json.Decoder Events.GameEvent
+roundStarted : Json.Decoder Events.TimedGameEvent
 roundStarted =
     Json.map5 (\id -> \ca -> \cz -> \pl -> \d -> { id = id, call = ca, czar = cz, players = pl, drawn = d } |> Events.RoundStarted)
         (Json.field "id" Round.idDecoder)
@@ -595,6 +681,13 @@ roundStarted =
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.maybe (Json.field "drawn" (Json.list response)))
+
+
+privilegeChanged : Json.Decoder Events.Event
+privilegeChanged =
+    Json.map2 (\u -> \p -> Events.PrivilegeChanged { user = u, privilege = p })
+        (Json.field "user" userId)
+        (Json.field "privilege" privilege)
 
 
 gameStarted : Json.Decoder Events.Event
@@ -606,10 +699,11 @@ gameStarted =
 
 sync : Json.Decoder Event
 sync =
-    Json.map3 (\ls -> \h -> \p -> Events.Sync { state = ls, hand = h, play = p })
+    Json.map4 (\ls -> \h -> \p -> \pa -> Events.Sync { state = ls, hand = h, play = p, partialTimeAnchor = pa })
         (Json.field "state" lobby)
         (Json.maybe (Json.field "hand" (Json.list response)))
         (Json.maybe (Json.field "play" (Json.list cardId)))
+        (Json.field "gameTime" Time.partialAnchorDecoder)
 
 
 connection : User.Connection -> Json.Decoder Event
@@ -630,6 +724,48 @@ userJoined =
         (Json.field "name" Json.string)
         (Json.maybe (Json.field "privilege" privilege) |> Json.map (Maybe.withDefault User.Unprivileged))
         (Json.maybe (Json.field "control" control) |> Json.map (Maybe.withDefault User.Human))
+
+
+userLeft : Json.Decoder Events.PresenceState
+userLeft =
+    Json.map (\r -> Events.UserLeft { reason = r })
+        (Json.maybe (Json.field "reason" leaveReason) |> Json.map (Maybe.withDefault User.LeftNormally))
+
+
+leaveReason : Json.Decoder User.LeaveReason
+leaveReason =
+    Json.string |> Json.andThen leaveReasonByName
+
+
+leaveReasonByName : String -> Json.Decoder User.LeaveReason
+leaveReasonByName name =
+    case name of
+        "Left" ->
+            Json.succeed User.LeftNormally
+
+        "Kicked" ->
+            Json.succeed User.Kicked
+
+        _ ->
+            unknownValue "leaving reason" name
+
+
+timeLimitsChanged : Json.Decoder Events.ConfigChanged
+timeLimitsChanged =
+    Json.oneOf [ timeLimitModeChanged, timeLimitChangedForStage ]
+
+
+timeLimitChangedForStage : Json.Decoder Events.ConfigChanged
+timeLimitChangedForStage =
+    Json.map2 (\s -> \tl -> Events.ChangeTimeLimitForStage { stage = s, timeLimit = tl })
+        (Json.field "stage" stage)
+        (Json.maybe (Json.field "timeLimit" Json.float))
+
+
+timeLimitModeChanged : Json.Decoder Events.ConfigChanged
+timeLimitModeChanged =
+    Json.map (\m -> Events.ChangeTimeLimitMode { mode = m })
+        (Json.field "mode" timeLimitMode)
 
 
 publicSet : Json.Decoder Events.ConfigChanged
@@ -779,7 +915,7 @@ transformByName : Maybe String -> Json.Decoder Parts.Transform
 transformByName maybeName =
     case maybeName of
         Nothing ->
-            Json.succeed Parts.None
+            Json.succeed Parts.Stay
 
         Just name ->
             case name of
@@ -824,43 +960,50 @@ playerSet =
 
 playingRound : Json.Decoder Round.Playing
 playingRound =
-    Json.map5 Round.playing
+    Json.map7 Round.playing
         (Json.field "id" Round.idDecoder)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
         (Json.field "played" playerSet)
+        (Json.field "startedAt" Time.timeDecoder)
+        (Json.maybe (Json.field "timedOut" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 revealingRound : Json.Decoder Round.Revealing
 revealingRound =
-    Json.map5 Round.revealing
+    Json.map7 Round.revealing
         (Json.field "id" Round.idDecoder)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
         (Json.field "plays" (Json.list play))
+        (Json.field "startedAt" Time.timeDecoder)
+        (Json.maybe (Json.field "timedOut" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 judgingRound : Json.Decoder Round.Judging
 judgingRound =
-    Json.map5 Round.judging
+    Json.map7 Round.judging
         (Json.field "id" Round.idDecoder)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
         (Json.field "plays" (Json.list knownPlay))
+        (Json.field "startedAt" Time.timeDecoder)
+        (Json.maybe (Json.field "timedOut" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 completeRound : Json.Decoder Round.Complete
 completeRound =
-    Json.map6 Round.complete
+    Json.map7 Round.complete
         (Json.field "id" Round.idDecoder)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
         (Json.field "plays" (Json.dict (Json.list response)))
         (Json.field "winner" userId)
+        (Json.field "startedAt" Time.timeDecoder)
 
 
 playerRole : Json.Decoder Player.Role
@@ -1011,6 +1154,9 @@ authenticationErrorByName name =
 
         "InvalidLobbyPassword" ->
             Json.succeed MdError.InvalidLobbyPassword
+
+        "AlreadyLeftError" ->
+            Json.succeed MdError.AlreadyLeftError
 
         _ ->
             unknownValue "authentication failure reason" name

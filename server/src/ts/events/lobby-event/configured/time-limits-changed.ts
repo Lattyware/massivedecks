@@ -16,30 +16,30 @@ interface Base extends configured.Base {
  */
 export interface TimeLimitForStageChanged extends Base {
   stage: round.Stage;
-  timeLimit: TimeLimit;
+  timeLimit?: TimeLimit;
 }
 
 export const forStage = (
   version: string,
   stage: round.Stage,
-  timeLimit: TimeLimit
+  timeLimit?: TimeLimit
 ): TimeLimitForStageChanged => ({
   event: "TimeLimitsChanged",
   version,
   stage,
-  timeLimit
+  ...(timeLimit !== undefined ? { timeLimit } : {})
 });
 
 /**
  * The time limit mode if changed.
  */
 export interface TimeLimitModeChanged extends Base {
-  mode: TimeLimitMode | null;
+  mode: TimeLimitMode;
 }
 
 export const mode = (
   version: string,
-  mode: TimeLimitMode | null
+  mode: TimeLimitMode
 ): TimeLimitModeChanged => ({
   event: "TimeLimitsChanged",
   version,

@@ -74,8 +74,7 @@ export class InMemoryStore extends Store {
       token: token.create(
         {
           gc: gameCode,
-          uid: lobby.owner,
-          pvg: "Privileged"
+          uid: lobby.owner
         },
         this._id,
         secret

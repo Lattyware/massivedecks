@@ -26,12 +26,15 @@ import MassiveDecks.Components.Menu as Menu
 import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Error.Model as Error
 import MassiveDecks.Game as Game
+import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Game.Time as Time
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
+import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure as Configure
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events
@@ -40,7 +43,6 @@ import MassiveDecks.Pages.Lobby.Invite as Invite
 import MassiveDecks.Pages.Lobby.Messages exposing (..)
 import MassiveDecks.Pages.Lobby.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
-import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.ServerConnection as ServerConnection
@@ -54,7 +56,6 @@ import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.Result as Result
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
@@ -84,6 +85,7 @@ init shared r auth =
                       , notificationId = 0
                       , notifications = []
                       , inviteDialogOpen = False
+                      , timeAnchor = Nothing
                       }
                     , ServerConnection.connect a.claims.gc a.token
                     )
@@ -99,16 +101,19 @@ route model =
 subscriptions : Model -> Sub Global.Msg
 subscriptions model =
     Sub.batch
-        [ model.lobby |> Maybe.andThen .game |> Maybe.map Game.subscriptions |> Maybe.withDefault Sub.none
+        [ Maybe.map2 Game.subscriptions
+            model.timeAnchor
+            (model.lobby |> Maybe.andThen .game)
+            |> Maybe.withDefault Sub.none
         , model.notifications |> Animated.subscriptions |> Sub.map (NotificationMsg >> Global.LobbyMsg)
         , ServerConnection.notifications
-            eventPreprocess
+            (EventReceived >> Global.LobbyMsg)
             (ErrorReceived >> Global.LobbyMsg)
             (Error.Json >> Error.Add >> Global.ErrorMsg)
         ]
 
 
-update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
+update : Shared -> Msg -> Model -> ( Change, Cmd Global.Msg )
 update shared msg model =
     let
         key =
@@ -118,33 +123,39 @@ update shared msg model =
         GameMsg gameMsg ->
             case model.lobby of
                 Just l ->
-                    l.game
-                        |> Maybe.map
-                            (Game.update shared gameMsg
-                                >> Util.modelLift (\newGame -> { model | lobby = Just { l | game = Just newGame } })
-                            )
-                        |> Maybe.withDefault ( model, Cmd.none )
+                    case l.game of
+                        Just g ->
+                            let
+                                ( updatedGame, gameCmd ) =
+                                    Game.update shared gameMsg g
+                            in
+                            ( Stay { model | lobby = Just { l | game = Just updatedGame } }, gameCmd )
+
+                        Nothing ->
+                            ( Stay model, Cmd.none )
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    ( Stay model, Cmd.none )
 
         EventReceived event ->
             case model.lobby of
                 Just lobby ->
                     case event of
-                        Events.Sync { state, hand, play } ->
-                            applySync model state hand play
+                        Events.Sync { state, hand, play, partialTimeAnchor } ->
+                            applySync model state hand play partialTimeAnchor
 
                         Events.Configured configured ->
-                            ( model.lobby
-                                |> Maybe.map (\l -> applyConfigured configured l model)
-                                |> Maybe.withDefault model
+                            ( Stay
+                                (model.lobby
+                                    |> Maybe.map (\l -> applyConfigured configured l model)
+                                    |> Maybe.withDefault model
+                                )
                             , Cmd.none
                             )
 
                         Events.GameStarted { round, hand } ->
                             Util.modelLift
-                                (\g -> { model | lobby = Just { lobby | game = Just g } })
+                                (\g -> Stay { model | lobby = Just { lobby | game = Just g } })
                                 (Game.applyGameStarted lobby round hand)
 
                         Events.Game gameEvent ->
@@ -152,102 +163,118 @@ update shared msg model =
                                 |> Maybe.map
                                     (\game ->
                                         Util.modelLift
-                                            (\g -> { model | lobby = Just { lobby | game = Just g } })
+                                            (\g -> Stay { model | lobby = Just { lobby | game = Just g } })
                                             (Game.applyGameEvent model.auth shared gameEvent game)
                                     )
-                                |> Maybe.withDefault ( model, Cmd.none )
+                                |> Maybe.withDefault ( Stay model, Cmd.none )
 
                         Events.Connection { user, state } ->
                             let
-                                message =
+                                ( newUsers, message ) =
                                     case state of
                                         User.Connected ->
-                                            UserConnected user
+                                            ( lobby.users |> Dict.update user (Maybe.map (\u -> { u | connection = User.Connected }))
+                                            , UserConnected user
+                                            )
 
                                         User.Disconnected ->
-                                            UserDisconnected user
+                                            ( lobby.users |> Dict.update user (Maybe.map (\u -> { u | connection = User.Disconnected }))
+                                            , UserDisconnected user
+                                            )
                             in
-                            addNotification message model
+                            addNotification message { model | lobby = Just { lobby | users = newUsers } }
 
                         Events.Presence { user, state } ->
-                            let
-                                ( newUsers, game ) =
-                                    case state of
-                                        Events.UserJoined { name, privilege, control } ->
-                                            ( Dict.insert
-                                                user
-                                                { name = name
-                                                , presence = User.Joined
-                                                , connection = User.Connected
-                                                , privilege = privilege
-                                                , role = User.Player
-                                                , control = control
-                                                }
-                                                lobby.users
-                                            , lobby.game |> Maybe.map (Game.hotJoinPlayer user)
-                                            )
+                            case ( state, user == model.auth.claims.uid ) of
+                                ( Events.UserLeft { reason }, True ) ->
+                                    ( LeftGame model.auth.claims.gc reason, Cmd.none )
 
-                                        Events.UserLeft ->
-                                            ( lobby.users
-                                                |> Dict.update user (Maybe.map (\u -> { u | presence = User.Left }))
-                                            , lobby.game
-                                            )
+                                _ ->
+                                    let
+                                        { newUsers, game, message } =
+                                            case state of
+                                                Events.UserJoined { name, privilege, control } ->
+                                                    { newUsers =
+                                                        Dict.insert
+                                                            user
+                                                            { name = name
+                                                            , presence = User.Joined
+                                                            , connection = User.Connected
+                                                            , privilege = privilege
+                                                            , role = User.Player
+                                                            , control = control
+                                                            }
+                                                            lobby.users
+                                                    , game = lobby.game |> Maybe.map (Game.hotJoinPlayer user)
+                                                    , message = UserJoined user
+                                                    }
 
-                                message =
-                                    case state of
-                                        Events.UserJoined _ ->
-                                            UserJoined user
+                                                Events.UserLeft { reason } ->
+                                                    { newUsers =
+                                                        lobby.users
+                                                            |> Dict.update user (Maybe.map (\u -> { u | presence = User.Left }))
+                                                    , game = lobby.game
+                                                    , message = UserLeft user reason
+                                                    }
+                                    in
+                                    addNotification message
+                                        { model | lobby = Just { lobby | users = newUsers, game = game } }
 
-                                        Events.UserLeft ->
-                                            UserLeft user
-                            in
-                            addNotification message
-                                { model | lobby = Just { lobby | users = newUsers, game = game } }
-
-                        Events.PrivilegeSet { user, privilege } ->
+                        Events.PrivilegeChanged { user, privilege } ->
                             let
                                 users =
                                     lobby.users |> Dict.update user (Maybe.map (\u -> { u | privilege = privilege }))
                             in
-                            ( { model | lobby = Just { lobby | users = users } }, Cmd.none )
+                            ( Stay { model | lobby = Just { lobby | users = users } }, Cmd.none )
 
                 Nothing ->
                     case event of
-                        Events.Sync { state, hand, play } ->
-                            applySync model state hand play
+                        Events.Sync { state, hand, play, partialTimeAnchor } ->
+                            applySync model state hand play partialTimeAnchor
 
                         _ ->
-                            ( model, Cmd.none )
+                            ( Stay model, Cmd.none )
 
         ErrorReceived error ->
             case error of
                 MdError.Authentication reason ->
-                    let
-                        redirectTo =
-                            Route.Start { section = Start.Join (Just model.auth.claims.gc) }
-                    in
-                    ( model, redirectTo |> Route.url |> Navigation.pushUrl key )
+                    ( AuthError model.auth.claims.gc reason, Cmd.none )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( Stay model, Cmd.none )
 
         ConfigureMsg configureMsg ->
             case model.lobby of
                 Just l ->
-                    Util.modelLift (\c -> { model | configure = c })
+                    Util.modelLift (\c -> Stay { model | configure = c })
                         (Configure.update configureMsg model.configure l.config)
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    ( Stay model, Cmd.none )
 
         NotificationMsg notificationMsg ->
             Util.lift
-                (\notifications -> { model | notifications = notifications })
+                (\notifications -> Stay { model | notifications = notifications })
                 (NotificationMsg >> Global.LobbyMsg)
                 (Animated.update { removeDone = Just Animated.defaultDuration } notificationMsg model.notifications)
 
         ToggleInviteDialog ->
-            ( { model | inviteDialogOpen = not model.inviteDialogOpen }, Cmd.none )
+            ( Stay { model | inviteDialogOpen = not model.inviteDialogOpen }, Cmd.none )
+
+        Leave ->
+            ( Stay model, Actions.leave )
+
+        Kick id ->
+            ( Stay model, Actions.kick id )
+
+        SetAway id ->
+            ( Stay model, Actions.setPlayerAway id )
+
+        SetPrivilege id privilege ->
+            ( Stay model, Actions.setPrivilege id privilege )
+
+        SetTimeAnchor anchor ->
+            ( Stay { model | timeAnchor = Just anchor }, Cmd.none )
 
 
 view : Shared -> Model -> List (Html Global.Msg)
@@ -284,6 +311,12 @@ view shared model =
 
         notifications =
             model.notifications |> List.map (keyedViewNotification shared model.lobby)
+
+        localUser =
+            model.lobby |> Maybe.andThen (.users >> Dict.get model.auth.claims.uid)
+
+        localPlayer =
+            model.lobby |> Maybe.andThen .game |> Maybe.andThen (.game >> .players >> Dict.get model.auth.claims.uid)
     in
     [ Html.div
         [ HtmlA.id "lobby"
@@ -298,7 +331,7 @@ view shared model =
                             , Strings.ToggleUserList |> Lang.title shared
                             ]
                             ( [ Icon.lg ], usersIcon )
-                      , lobbyMenu shared model.auth
+                      , lobbyMenu shared localUser localPlayer
                       ]
                     , castButton
                     ]
@@ -307,7 +340,7 @@ view shared model =
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
             :: (model.lobby
-                    |> Maybe.map (viewLobby shared model.configure model.auth)
+                    |> Maybe.map2 (viewLobby shared model.configure model.auth) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
                             [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
@@ -338,23 +371,8 @@ cardSizeToAttr cardSize =
             HtmlA.nothing
 
 
-eventPreprocess : Events.Event -> Global.Msg
-eventPreprocess event =
-    case event of
-        Events.PrivilegeSet { token } ->
-            Global.Batch
-                [ token
-                    |> Maybe.map (Token.decode >> Result.unifiedMap (Error.Token >> Error.Add >> Global.ErrorMsg) Global.UpdateToken)
-                    |> Maybe.withDefault Global.NoOp
-                , event |> EventReceived |> Global.LobbyMsg
-                ]
-
-        _ ->
-            event |> EventReceived |> Global.LobbyMsg
-
-
-lobbyMenu : Shared -> Auth -> Html Global.Msg
-lobbyMenu shared auth =
+lobbyMenu : Shared -> Maybe User -> Maybe Player -> Html Global.Msg
+lobbyMenu shared user player =
     let
         id =
             "lobby-menu-button"
@@ -362,9 +380,12 @@ lobbyMenu shared auth =
         lobbyMenuItems =
             [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers (ToggleInviteDialog |> Global.LobbyMsg |> Just) ]
 
+        setPresence =
+            setPresenceMenuItem player
+
         userLobbyMenuItems =
-            [ Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
-            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame Nothing
+            [ setPresence
+            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame (Leave |> Global.LobbyMsg |> Just)
             ]
 
         privilegedLobbyMenuItems =
@@ -379,7 +400,7 @@ lobbyMenu shared auth =
         menuItems =
             [ lobbyMenuItems |> Just
             , userLobbyMenuItems |> Just
-            , privilegedLobbyMenuItems |> Maybe.justIf (auth.claims.pvg == User.Privileged)
+            , privilegedLobbyMenuItems |> Maybe.justIf ((user |> Maybe.map .privilege) == Just User.Privileged)
             , mdMenuItems |> Just
             ]
 
@@ -389,7 +410,7 @@ lobbyMenu shared auth =
     Html.div []
         [ Components.iconButtonStyled [ HtmlA.id id, Strings.GameMenu |> Lang.title shared ]
             ( [ Icon.lg ], Icon.bars )
-        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XLeft, WlA.YTop ) separatedMenuItems
+        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XCenter, WlA.YTop ) separatedMenuItems
         ]
 
 
@@ -410,29 +431,33 @@ notificationDuration =
     3500
 
 
-applySync : Model -> Lobby -> Maybe (List Card.Response) -> Maybe (List Card.Id) -> ( Model, Cmd Global.Msg )
-applySync model state hand pick =
+applySync : Model -> Lobby -> Maybe (List Card.Response) -> Maybe (List Card.Id) -> Time.PartialAnchor -> ( Change, Cmd Global.Msg )
+applySync model state hand pick partialTimeAnchor =
     let
         play =
             pick |> Maybe.map (\cards -> { state = Round.Submitted, cards = cards }) |> Maybe.withDefault Round.noPick
 
-        ( game, cmd ) =
+        ( game, gameCmd ) =
             case state.game of
                 Just g ->
                     Util.modelLift Just (Game.init g.game (hand |> Maybe.withDefault []) play)
 
                 Nothing ->
                     ( Nothing, Cmd.none )
+
+        timeCmd =
+            Time.anchor (SetTimeAnchor >> Global.LobbyMsg) partialTimeAnchor
     in
-    ( { model
-        | lobby = Just { state | game = game }
-        , configure = Configure.updateFromConfig state.config model.configure
-      }
-    , cmd
+    ( Stay
+        { model
+            | lobby = Just { state | game = game }
+            , configure = Configure.updateFromConfig state.config model.configure
+        }
+    , Cmd.batch [ timeCmd, gameCmd ]
     )
 
 
-addNotification : NotificationMessage -> Model -> ( Model, Cmd Global.Msg )
+addNotification : NotificationMessage -> Model -> ( Change, Cmd Global.Msg )
 addNotification message model =
     let
         notification =
@@ -441,7 +466,7 @@ addNotification message model =
         notifications =
             model.notifications ++ [ Animated.animate notification ]
     in
-    ( { model | notifications = notifications, notificationId = model.notificationId + 1 }
+    ( Stay { model | notifications = notifications, notificationId = model.notificationId + 1 }
     , Animated.exitAfter notificationDuration notification
         |> Cmd.map (NotificationMsg >> Global.LobbyMsg)
     )
@@ -474,9 +499,14 @@ viewNotification shared users animationState notification =
                     , Strings.UserJoined { username = username shared users id } |> Lang.html shared
                     )
 
-                UserLeft id ->
+                UserLeft id leaveReason ->
                     ( Icon.viewIcon Icon.signOutAlt
-                    , Strings.UserLeft { username = username shared users id } |> Lang.html shared
+                    , case leaveReason of
+                        User.LeftNormally ->
+                            Strings.UserLeft { username = username shared users id } |> Lang.html shared
+
+                        User.Kicked ->
+                            Strings.UserKicked { username = username shared users id } |> Lang.html shared
                     )
     in
     Wl.card
@@ -503,20 +533,20 @@ username shared users id =
         |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
 
 
-viewLobby : Shared -> Configure.Model -> Auth -> Lobby -> List (Html Global.Msg)
-viewLobby shared configure auth lobby =
+viewLobby : Shared -> Configure.Model -> Auth -> Time.Anchor -> Lobby -> List (Html Global.Msg)
+viewLobby shared configure auth timeAnchor lobby =
     let
         game =
             lobby.game |> Maybe.map .game
 
         privileged =
-            auth.claims.pvg == User.Privileged
+            (lobby.users |> Dict.get auth.claims.uid |> Maybe.map .privilege) == Just User.Privileged
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
         [ viewUsers shared auth.claims.uid lobby.users game
         , Html.div [ HtmlA.id "scroll-frame" ]
             [ lobby.game
-                |> Maybe.map (Game.view shared auth lobby.name lobby.config lobby.users)
+                |> Maybe.map (Game.view shared auth timeAnchor lobby.name lobby.config lobby.users)
                 |> Maybe.withDefault (Configure.view shared privileged configure auth.claims.gc lobby lobby.config)
             ]
         ]
@@ -524,20 +554,23 @@ viewLobby shared configure auth lobby =
 
 
 viewUsers : Shared -> User.Id -> Dict User.Id User -> Maybe Game -> Html Global.Msg
-viewUsers shared player users game =
+viewUsers shared localUserId users game =
     let
+        localUserPrivilege =
+            users |> Dict.get localUserId |> Maybe.map .privilege |> Maybe.withDefault User.Unprivileged
+
         ( active, inactive ) =
             users |> Dict.toList |> List.partition (\( _, user ) -> user.presence == User.Joined)
 
         activeGroups =
-            active |> byRole |> List.map (viewRoleGroup shared player game)
+            active |> byRole |> List.map (viewRoleGroup shared localUserId localUserPrivilege game)
 
         inactiveGroup =
             if List.isEmpty inactive then
                 []
 
             else
-                [ viewUserListGroup shared player game ( ( "left", Strings.Left ), inactive ) ]
+                [ viewUserListGroup shared localUserId localUserPrivilege game ( ( "left", Strings.Left ), inactive ) ]
 
         groups =
             List.concat [ activeGroups, inactiveGroup ]
@@ -546,8 +579,8 @@ viewUsers shared player users game =
         [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
 
 
-viewRoleGroup : Shared -> User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html Global.Msg )
-viewRoleGroup shared player game ( role, users ) =
+viewRoleGroup : Shared -> User.Id -> User.Privilege -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html Global.Msg )
+viewRoleGroup shared localUserId localUserPrivilege game ( role, users ) =
     let
         idAndDescription =
             case role of
@@ -557,15 +590,15 @@ viewRoleGroup shared player game ( role, users ) =
                 User.Spectator ->
                     ( "spectators", Strings.Spectators )
     in
-    viewUserListGroup shared player game ( idAndDescription, users )
+    viewUserListGroup shared localUserId localUserPrivilege game ( idAndDescription, users )
 
 
-viewUserListGroup : Shared -> User.Id -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html Global.Msg )
-viewUserListGroup shared player game ( ( id, description ), users ) =
+viewUserListGroup : Shared -> User.Id -> User.Privilege -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html Global.Msg )
+viewUserListGroup shared localUserId localUserPrivilege game ( ( id, description ), users ) =
     ( id
     , Html.li [ HtmlA.class id ]
         [ Html.span [] [ description |> Lang.html shared ]
-        , HtmlK.ol [] (users |> List.map (viewUser shared player game))
+        , HtmlK.ol [] (users |> List.map (viewUser shared localUserId localUserPrivilege game))
         ]
     )
 
@@ -582,8 +615,8 @@ byRole users =
         |> List.filter (\( _, us ) -> not (List.isEmpty us))
 
 
-viewUser : Shared -> User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html Global.Msg )
-viewUser shared player game ( userId, user ) =
+viewUser : Shared -> User.Id -> User.Privilege -> Maybe Game -> ( User.Id, User ) -> ( String, Html Global.Msg )
+viewUser shared localUserId localUserPrivilege game ( userId, user ) =
     let
         ( secondary, score ) =
             userDetails shared game userId user
@@ -591,30 +624,73 @@ viewUser shared player game ( userId, user ) =
         id =
             "user-" ++ userId
 
+        player =
+            game |> Maybe.map .players |> Maybe.andThen (Dict.get userId)
+
+        isAway =
+            player |> Maybe.map (.presence >> (==) Player.Away) |> Maybe.withDefault False
+
         menuItems =
             if user.control == User.Human then
                 let
                     privilegeMenuItems =
-                        case user.privilege of
-                            User.Unprivileged ->
-                                Just [ Menu.button Icon.userPlus Strings.Promote Strings.Promote Nothing ]
-
+                        case localUserPrivilege of
                             User.Privileged ->
-                                Just [ Menu.button Icon.userMinus Strings.Demote Strings.Demote Nothing ]
+                                if localUserId /= userId then
+                                    case user.privilege of
+                                        User.Unprivileged ->
+                                            [ Menu.button Icon.userPlus Strings.Promote Strings.Promote (SetPrivilege userId User.Privileged |> Global.LobbyMsg |> Just) |> Just ]
+
+                                        User.Privileged ->
+                                            [ Menu.button Icon.userMinus Strings.Demote Strings.Demote (SetPrivilege userId User.Unprivileged |> Global.LobbyMsg |> Just) |> Just ]
+
+                                else
+                                    []
+
+                            User.Unprivileged ->
+                                []
 
                     presenceMenuItems =
                         case user.presence of
                             User.Joined ->
-                                Just
-                                    [ Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
-                                    , Menu.button Icon.ban Strings.KickUser Strings.KickUser Nothing
-                                    ]
+                                let
+                                    kickOrLeave =
+                                        if userId == localUserId then
+                                            Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame (Leave |> Global.LobbyMsg |> Just) |> Just
+
+                                        else
+                                            case localUserPrivilege of
+                                                User.Privileged ->
+                                                    Menu.button Icon.ban Strings.KickUser Strings.KickUser (userId |> Kick |> Global.LobbyMsg |> Just) |> Just
+
+                                                User.Unprivileged ->
+                                                    Nothing
+                                in
+                                let
+                                    setAway =
+                                        if userId == localUserId then
+                                            setPresenceMenuItem player |> Just
+
+                                        else if not isAway then
+                                            case localUserPrivilege of
+                                                User.Privileged ->
+                                                    Menu.button Icon.userClock Strings.SetAway Strings.SetAway (userId |> SetAway |> Global.LobbyMsg |> Just) |> Just
+
+                                                User.Unprivileged ->
+                                                    Nothing
+
+                                        else
+                                            Nothing
+                                in
+                                [ setAway
+                                , kickOrLeave
+                                ]
 
                             User.Left ->
-                                Nothing
+                                []
                 in
                 [ privilegeMenuItems, presenceMenuItems ]
-                    |> List.filterMap identity
+                    |> List.filterMap (\part -> part |> List.filterMap identity |> (\l -> l |> Maybe.justIf (l |> List.isEmpty >> not)))
                     |> List.intersperse [ Menu.Separator ]
                     |> List.concat
 
@@ -622,18 +698,18 @@ viewUser shared player game ( userId, user ) =
                 []
 
         ( menu, clickable ) =
-            if List.isEmpty menuItems then
+            if user.presence == User.Left || List.isEmpty menuItems then
                 ( Html.nothing, HtmlA.nothing )
 
             else
-                ( menuItems |> Menu.view shared id ( WlA.XRight, WlA.YCenter ) ( WlA.XLeft, WlA.YCenter )
+                ( menuItems |> Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XCenter, WlA.YTop )
                 , WlA.clickable
                 )
     in
     ( userId
     , Html.li []
         [ Wl.listItem
-            [ HtmlA.classList [ ( "you", player == userId ) ]
+            [ HtmlA.classList [ ( "you", localUserId == userId ), ( "away", isAway ) ]
             , clickable
             , HtmlA.id id
             ]
@@ -644,6 +720,19 @@ viewUser shared player game ( userId, user ) =
         , menu
         ]
     )
+
+
+setPresenceMenuItem : Maybe Player -> Menu.Part Global.Msg
+setPresenceMenuItem player =
+    case player |> Maybe.map .presence of
+        Just Player.Active ->
+            Menu.button Icon.userClock Strings.SetAway Strings.SetAway (Player.Away |> Game.SetPresence |> GameMsg |> Global.LobbyMsg |> Just)
+
+        Just Player.Away ->
+            Menu.button Icon.userCheck Strings.SetBack Strings.SetBack (Player.Active |> Game.SetPresence |> GameMsg |> Global.LobbyMsg |> Just)
+
+        Nothing ->
+            Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
 
 
 userDetails : Shared -> Maybe Game -> User.Id -> User -> ( List (Html Global.Msg), List (Html Global.Msg) )
@@ -659,6 +748,8 @@ userDetails shared game userId user =
             [ Strings.Privileged |> Maybe.justIf (user.privilege == User.Privileged)
             , Strings.Ai |> Maybe.justIf (user.control == User.Computer)
             , round |> Maybe.andThen (\r -> Strings.Czar |> Maybe.justIf (Player.isCzar r userId))
+            , Strings.Disconnected |> Maybe.justIf (user.connection == User.Disconnected && user.presence /= User.Left)
+            , Strings.Away |> Maybe.justIf ((player |> Maybe.map .presence) == Just Player.Away)
             , playStateDetail round userId
             ]
 

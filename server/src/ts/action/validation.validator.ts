@@ -23,13 +23,16 @@ export const Schema = {
     Action: {
       anyOf: [
         {
-          $ref: "#/definitions/Authenticate"
+          $ref: "#/definitions/SetPresence"
         },
         {
           $ref: "#/definitions/Judge"
         },
         {
           $ref: "#/definitions/Reveal"
+        },
+        {
+          $ref: "#/definitions/EnforceTimeLimit"
         },
         {
           $ref: "#/definitions/Submit"
@@ -44,6 +47,15 @@ export const Schema = {
           $ref: "#/definitions/ChangeDecks"
         },
         {
+          $ref: "#/definitions/ChangeHouseRule"
+        },
+        {
+          $ref: "#/definitions/ChangeTimeLimitForStage"
+        },
+        {
+          $ref: "#/definitions/ChangeTimeLimitMode"
+        },
+        {
           $ref: "#/definitions/SetHandSize"
         },
         {
@@ -56,10 +68,22 @@ export const Schema = {
           $ref: "#/definitions/SetScoreLimit"
         },
         {
-          $ref: "#/definitions/ChangeHouseRule"
+          $ref: "#/definitions/Kick"
+        },
+        {
+          $ref: "#/definitions/SetPlayerAway"
+        },
+        {
+          $ref: "#/definitions/SetPrivilege"
         },
         {
           $ref: "#/definitions/StartGame"
+        },
+        {
+          $ref: "#/definitions/Authenticate"
+        },
+        {
+          $ref: "#/definitions/Leave"
         }
       ]
     },
@@ -69,7 +93,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType"
+          $ref: "#/definitions/NameType_10"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -97,13 +121,13 @@ export const Schema = {
     Change: {
       anyOf: [
         {
-          $ref: "#/definitions/ChangeBasePackingHeat"
+          $ref: "#/definitions/ChangePackingHeat"
         },
         {
-          $ref: "#/definitions/ChangeBaseRando"
+          $ref: "#/definitions/ChangeRando"
         },
         {
-          $ref: "#/definitions/ChangeBaseReboot"
+          $ref: "#/definitions/ChangeReboot"
         }
       ]
     },
@@ -111,7 +135,7 @@ export const Schema = {
       $ref: "#/definitions/PackingHeat"
     },
     "ChangeBase.HouseRule_1": {
-      $ref: "#/definitions/Rando"
+      $ref: "#/definitions/Public"
     },
     "ChangeBase.HouseRule_2": {
       $ref: "#/definitions/Reboot"
@@ -128,55 +152,13 @@ export const Schema = {
       enum: ["Reboot"],
       type: "string"
     },
-    ChangeBasePackingHeat: {
-      additionalProperties: false,
-      defaultProperties: [],
-      properties: {
-        houseRule: {
-          $ref: "#/definitions/ChangeBase.Name"
-        },
-        settings: {
-          $ref: "#/definitions/ChangeBase.HouseRule"
-        }
-      },
-      required: ["houseRule"],
-      type: "object"
-    },
-    ChangeBaseRando: {
-      additionalProperties: false,
-      defaultProperties: [],
-      properties: {
-        houseRule: {
-          $ref: "#/definitions/ChangeBase.Name_1"
-        },
-        settings: {
-          $ref: "#/definitions/ChangeBase.HouseRule_1"
-        }
-      },
-      required: ["houseRule"],
-      type: "object"
-    },
-    ChangeBaseReboot: {
-      additionalProperties: false,
-      defaultProperties: [],
-      properties: {
-        houseRule: {
-          $ref: "#/definitions/ChangeBase.Name_2"
-        },
-        settings: {
-          $ref: "#/definitions/ChangeBase.HouseRule_2"
-        }
-      },
-      required: ["houseRule"],
-      type: "object"
-    },
     ChangeDecks: {
       additionalProperties: false,
       defaultProperties: [],
       description: "Make a change to the configuration of decks for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_3"
+          $ref: "#/definitions/NameType_2"
         },
         change: {
           $ref: "#/definitions/PlayerDriven"
@@ -199,7 +181,7 @@ export const Schema = {
       description: "Set the hand size for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_8"
+          $ref: "#/definitions/NameType_3"
         },
         change: {
           $ref: "#/definitions/Change"
@@ -211,6 +193,92 @@ export const Schema = {
         }
       },
       required: ["action", "change", "if"],
+      type: "object"
+    },
+    ChangePackingHeat: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        houseRule: {
+          $ref: "#/definitions/ChangeBase.Name"
+        },
+        settings: {
+          $ref: "#/definitions/ChangeBase.HouseRule"
+        }
+      },
+      required: ["houseRule"],
+      type: "object"
+    },
+    ChangeRando: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        houseRule: {
+          $ref: "#/definitions/ChangeBase.Name_1"
+        },
+        settings: {
+          $ref: "#/definitions/ChangeBase.HouseRule_1"
+        }
+      },
+      required: ["houseRule"],
+      type: "object"
+    },
+    ChangeReboot: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        houseRule: {
+          $ref: "#/definitions/ChangeBase.Name_2"
+        },
+        settings: {
+          $ref: "#/definitions/ChangeBase.HouseRule_2"
+        }
+      },
+      required: ["houseRule"],
+      type: "object"
+    },
+    ChangeTimeLimitForStage: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "Change the time limit for a given stage.",
+      properties: {
+        action: {
+          $ref: "#/definitions/NameType_4"
+        },
+        if: {
+          description:
+            "If the config version doesn't match this, the operation will be rejected.\nThis avoids users accidentally overwriting each other's changes.",
+          type: "string"
+        },
+        stage: {
+          $ref: "#/definitions/Stage"
+        },
+        timeLimit: {
+          $ref: "#/definitions/TimeLimit"
+        }
+      },
+      required: ["action", "if", "stage"],
+      type: "object"
+    },
+    ChangeTimeLimitMode: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        "Change the time limit mode, or disable the time limits completely.",
+      properties: {
+        action: {
+          $ref: "#/definitions/NameType_4"
+        },
+        if: {
+          description:
+            "If the config version doesn't match this, the operation will be rejected.\nThis avoids users accidentally overwriting each other's changes.",
+          type: "string"
+        },
+        mode: {
+          $ref: "#/definitions/TimeLimitMode"
+        }
+      },
+      required: ["action", "if", "mode"],
       type: "object"
     },
     CheckAlive: {
@@ -246,13 +314,31 @@ export const Schema = {
       required: ["owner"],
       type: "object"
     },
+    EnforceTimeLimit: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player asks to enforce the soft time limit for the game.",
+      properties: {
+        action: {
+          enum: ["EnforceTimeLimit"],
+          type: "string"
+        },
+        round: {
+          type: "string"
+        },
+        stage: {
+          $ref: "#/definitions/Stage"
+        }
+      },
+      required: ["action", "round", "stage"],
+      type: "object"
+    },
     External: {
       $ref: "#/definitions/Cardcast",
       description: "A source for Cardcast."
     },
     Id: {
       description: "A unique id for a play.",
-      format: "uuid",
       type: "string"
     },
     Judge: {
@@ -261,13 +347,42 @@ export const Schema = {
       description: "A user declares the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_1"
+          $ref: "#/definitions/NameType"
         },
         winner: {
           $ref: "#/definitions/Id"
         }
       },
       required: ["action", "winner"],
+      type: "object"
+    },
+    Kick: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player asks to leave the game.",
+      properties: {
+        action: {
+          enum: ["Kick"],
+          type: "string"
+        },
+        user: {
+          $ref: "#/definitions/Id"
+        }
+      },
+      required: ["action", "user"],
+      type: "object"
+    },
+    Leave: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player asks to leave the game.",
+      properties: {
+        action: {
+          enum: ["Leave"],
+          type: "string"
+        }
+      },
+      required: ["action"],
       type: "object"
     },
     Name: {
@@ -277,39 +392,43 @@ export const Schema = {
       type: "string"
     },
     NameType: {
-      enum: ["Authenticate"],
-      type: "string"
-    },
-    NameType_1: {
       enum: ["Judge"],
       type: "string"
     },
-    NameType_2: {
+    NameType_1: {
       enum: ["Reveal"],
       type: "string"
     },
-    NameType_3: {
+    NameType_10: {
+      enum: ["Authenticate"],
+      type: "string"
+    },
+    NameType_2: {
       enum: ["ChangeDecks"],
       type: "string"
     },
+    NameType_3: {
+      enum: ["ChangeHouseRule"],
+      type: "string"
+    },
     NameType_4: {
-      enum: ["SetHandSize"],
+      enum: ["ChangeTimeLimit"],
       type: "string"
     },
     NameType_5: {
-      enum: ["SetPassword"],
+      enum: ["SetHandSize"],
       type: "string"
     },
     NameType_6: {
-      enum: ["SetPublic"],
+      enum: ["SetPassword"],
       type: "string"
     },
     NameType_7: {
-      enum: ["SetScoreLimit"],
+      enum: ["SetPublic"],
       type: "string"
     },
     NameType_8: {
-      enum: ["ChangeHouseRule"],
+      enum: ["SetScoreLimit"],
       type: "string"
     },
     NameType_9: {
@@ -330,15 +449,27 @@ export const Schema = {
       enum: ["Add", "Remove"],
       type: "string"
     },
-    Rando: {
+    Presence: {
+      description:
+        "If the player is active in the game or has been marked as away.",
+      enum: ["Active", "Away"],
+      type: "string"
+    },
+    Privilege: {
+      description: "The level of privilege a user has.",
+      enum: ["Privileged", "Unprivileged"],
+      type: "string"
+    },
+    Public: {
       additionalProperties: false,
       defaultProperties: [],
+      description: "The public view of the Rando house rule.",
       properties: {
         number: {
           description: "The number of AI players to add to the game.",
           maximum: 10,
           minimum: 1,
-          type: "integer"
+          type: "number"
         }
       },
       required: ["number"],
@@ -354,7 +485,7 @@ export const Schema = {
           description: "The cost to redrawing.",
           maximum: 50,
           minimum: 1,
-          type: "integer"
+          type: "number"
         }
       },
       required: ["cost"],
@@ -397,7 +528,7 @@ export const Schema = {
       description: "A user judges the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_2"
+          $ref: "#/definitions/NameType_1"
         },
         play: {
           $ref: "#/definitions/Id"
@@ -412,12 +543,12 @@ export const Schema = {
       description: "Set the hand size for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_4"
+          $ref: "#/definitions/NameType_5"
         },
         handSize: {
           description: "The number of cards in each player's hand.",
           minimum: 3,
-          type: "integer"
+          type: "number"
         },
         if: {
           description:
@@ -434,7 +565,7 @@ export const Schema = {
       description: "Set (or unset) the password for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_5"
+          $ref: "#/definitions/NameType_6"
         },
         if: {
           description:
@@ -450,13 +581,65 @@ export const Schema = {
       required: ["action", "if"],
       type: "object"
     },
+    SetPlayerAway: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A privileged user asks to set a given player as away.",
+      properties: {
+        action: {
+          enum: ["SetPlayerAway"],
+          type: "string"
+        },
+        player: {
+          $ref: "#/definitions/Id"
+        }
+      },
+      required: ["action", "player"],
+      type: "object"
+    },
+    SetPresence: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player asks to set themself as away.",
+      properties: {
+        action: {
+          enum: ["SetPresence"],
+          type: "string"
+        },
+        presence: {
+          $ref: "#/definitions/Presence"
+        }
+      },
+      required: ["action", "presence"],
+      type: "object"
+    },
+    SetPrivilege: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        "A privileged user asks to change the privilege of another user.",
+      properties: {
+        action: {
+          enum: ["SetPrivilege"],
+          type: "string"
+        },
+        privilege: {
+          $ref: "#/definitions/Privilege"
+        },
+        user: {
+          $ref: "#/definitions/Id"
+        }
+      },
+      required: ["action", "privilege", "user"],
+      type: "object"
+    },
     SetPublic: {
       additionalProperties: false,
       defaultProperties: [],
       description: "Set (or unset) the password for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_6"
+          $ref: "#/definitions/NameType_7"
         },
         if: {
           description:
@@ -476,7 +659,7 @@ export const Schema = {
       description: "(Un)Set the score limit for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_7"
+          $ref: "#/definitions/NameType_8"
         },
         if: {
           description:
@@ -487,11 +670,15 @@ export const Schema = {
           description:
             "The score threshold for the game - when a player hits this they win.\nIf not set, then there is end - the game goes on infinitely.",
           minimum: 1,
-          type: "integer"
+          type: "number"
         }
       },
       required: ["action", "if"],
       type: "object"
+    },
+    Stage: {
+      enum: ["Complete", "Judging", "Playing", "Revealing"],
+      type: "string"
     },
     StartGame: {
       additionalProperties: false,
@@ -537,6 +724,18 @@ export const Schema = {
       required: ["action"],
       type: "object"
     },
+    TimeLimit: {
+      description: "The amount of time in seconds to limit to.",
+      maximum: 900,
+      minimum: 0,
+      type: "number"
+    },
+    TimeLimitMode: {
+      description:
+        'Indicated what happens when the time limit runs out.\n"Hard": Non-ready players are automatically set to away.\n"Soft": Ready players are given the option to set non-ready players to away.',
+      enum: ["Hard", "Soft"],
+      type: "string"
+    },
     Token: {
       description: "A token that contains the encoded claims of a user.",
       type: "string"
@@ -570,7 +769,10 @@ export function validate(typeName: string): (value: unknown) => any {
         "Invalid " +
           typeName +
           ": " +
-          ajv.errorsText(validator.errors, { dataVar: typeName })
+          ajv.errorsText(
+            validator.errors!.filter((e: any) => e.keyword !== "if"),
+            { dataVar: typeName }
+          )
       );
     }
 

@@ -22,37 +22,21 @@
     // How long to wait in between checking timeouts.
     // Note that this will effectively determine the resolution of all other timeouts, so should be kept low.
     // Increasing the value will decrease server load, however.
-    // Zero-durations will result in instant execution, regardless of frequency here.
+    // Zero-durations elsewhere will result in instant execution, regardless of frequency here.
     timeoutCheckFrequency: "PT1S",
 
     // How long to wait before marking a player as disconnected.
-    disconnectionGracePeriod: "PT5S",
+    disconnectionGracePeriod: "PT2S",
 
     // How long to wait after everyone has played to begin the revealing phase. Having this as a non-zero value lets
     // the last person playing
-    finishedPlayingDelay: "PT2S",
-
-    // How long to wait after a winner for the round is decided to move to the next round.
-    // Note the client will let users look at the winner for longer than this, this just means users can't advance and
-    // the round timer won't start for this long after a winner is picked, as such zero is a perfectly valid setting
-    // here.
-    nextRoundDelay: "PT5S"
+    finishedPlayingDelay: "PT2S"
   },
 
   // How to store game data.
   storage: {
     // Example of a configuration using in-memory storage. Note this means server restart wipes all data.
     type: "InMemory",
-
-    //    type: "PostgreSQL",
-    //    connection: {
-    //      host: "localhost",
-    //      port: 5432,
-    //      user: "postgres",
-    //      database: "postgres",
-    //      password: "md",
-    //      keepAlive: false
-    //    },
 
     //// Example of a configuration using a postgres database.
     // type: "PostgreSQL",

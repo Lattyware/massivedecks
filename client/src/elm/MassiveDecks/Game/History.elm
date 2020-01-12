@@ -25,13 +25,15 @@ import MassiveDecks.Util.Maybe as Maybe
 
 view : Shared -> Config -> Dict User.Id User -> String -> List Round.Complete -> List (Html Global.Msg)
 view shared config users name history =
-    [ Html.div [ HtmlA.id "minor-actions" ]
-        [ Components.iconButton
-            [ HtmlA.id "return-to-game-button"
-            , Strings.ViewGameHistoryAction |> Lang.title shared
-            , ToggleHistoryView |> lift |> HtmlE.onClick
+    [ Html.div [ HtmlA.id "top-content" ]
+        [ Html.div [ HtmlA.id "minor-actions" ]
+            [ Components.iconButton
+                [ HtmlA.id "return-to-game-button"
+                , Strings.ViewGameHistoryAction |> Lang.title shared
+                , ToggleHistoryView |> lift |> HtmlE.onClick
+                ]
+                Icon.arrowLeft
             ]
-            Icon.arrowLeft
         ]
     , Html.div [ HtmlA.id "history" ]
         [ Html.h2 [] [ Html.text name ]

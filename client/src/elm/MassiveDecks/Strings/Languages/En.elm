@@ -111,6 +111,9 @@ translate mdString =
         LobbyRequiresPassword ->
             [ Text "You need a password to join this game. Try asking the person that invited you." ]
 
+        YouWereKicked ->
+            [ Text "You were kicked from the game." ]
+
         -- Rules
         CardsAgainstHumanity ->
             [ Text "Cards Against Humanity" ]
@@ -467,6 +470,18 @@ translate mdString =
         LeftDescription ->
             [ Text "Users who have left the game." ]
 
+        Away ->
+            [ Text "Away" ]
+
+        AwayDescription ->
+            [ Text "This user is temporarily away from the game." ]
+
+        Disconnected ->
+            [ Text "Disconnected" ]
+
+        DisconnectedDescription ->
+            [ Text "This user is not connected to the game." ]
+
         Privileged ->
             [ Text "Owner" ]
 
@@ -501,7 +516,10 @@ translate mdString =
             [ Text "Invite Players" ]
 
         SetAway ->
-            [ Text "Set Away" ]
+            [ Text "Mark As Away" ]
+
+        SetBack ->
+            [ Text "Mark As Back" ]
 
         LeaveGame ->
             [ Text "Leave Game" ]
@@ -533,6 +551,9 @@ translate mdString =
 
         UserLeft { username } ->
             [ Text username, Text " has left the game." ]
+
+        UserKicked { username } ->
+            [ Text username, Text " has been kicked from the game." ]
 
         Dismiss ->
             [ Text "Dismiss" ]
@@ -579,6 +600,9 @@ translate mdString =
 
         ConfigureRules ->
             [ Text "Rules" ]
+
+        ConfigureTimeLimits ->
+            [ Text "Time Limits" ]
 
         ConfigurePrivacy ->
             [ Text "Privacy" ]
@@ -639,6 +663,38 @@ translate mdString =
         PublicDescription ->
             [ Text "If enabled, the game will show up in the public game list for anyone to find." ]
 
+        ApplyConfiguration ->
+            [ Text "Apply this change." ]
+
+        AppliedConfiguration ->
+            [ Text "Saved." ]
+
+        InvalidConfiguration ->
+            [ Text "This configuration value isn't valid." ]
+
+        Automatic ->
+            [ Text "Automatically Mark Players As Away" ]
+
+        AutomaticDescription ->
+            [ Text "If enabled, when the time limit runs out players will automatically be marked as away. "
+            , Text "Otherwise someone will need to press the button to do so."
+            ]
+
+        TimeLimit { stage } ->
+            [ Ref stage, Text " Time Limit" ]
+
+        PlayingTimeLimitDescription ->
+            [ Text "How long (in seconds) the ", Ref Players, Text " have to make their plays." ]
+
+        RevealingTimeLimitDescription ->
+            [ Text "How long (in seconds) the ", Ref Czar, Text " has to reveal the plays." ]
+
+        JudgingTimeLimitDescription ->
+            [ Text "How long (in seconds) the ", Ref Czar, Text " has to judge the plays." ]
+
+        CompleteTimeLimitDescription ->
+            [ Text "How much time (in seconds) to wait after one round ends before starting the next one." ]
+
         -- Game
         SubmitPlay ->
             [ Text "Give these cards to the ", Ref Czar, Text " as your play for the round." ]
@@ -670,6 +726,12 @@ translate mdString =
         ViewGameHistoryAction ->
             [ Text "View previous rounds from this game." ]
 
+        ViewHelpAction ->
+            [ Text "Help" ]
+
+        EnforceTimeLimitAction ->
+            [ Text "Set all players the game is waiting on to away and skip them until they return." ]
+
         Blank ->
             [ Text "Blank" ]
 
@@ -679,10 +741,15 @@ translate mdString =
         JudgingStarted ->
             [ Text "Judging Started" ]
 
-        -- Instructions
-        WhatToDo ->
-            [ Text "What should I be doing?" ]
+        Paused ->
+            [ Text "The game has been paused because there are not enough active players to continue."
+            , Text "When someone joins or returns it will continue automatically."
+            ]
 
+        ClientAway ->
+            [ Text "You are currently set as away from the game, and are not playing." ]
+
+        -- Instructions
         PlayInstruction { numberOfCards } ->
             [ Text "You need to choose "
             , Text (asWord numberOfCards)
@@ -704,6 +771,9 @@ translate mdString =
             , Ref (Plural { singular = Response, amount = Nothing })
             , Text ". Instead you choose the winner once everyone else has submitted theirs."
             ]
+
+        NotInRoundInstruction ->
+            [ Text "You are not in this round. You will play in the next one unless you are set to away." ]
 
         RevealPlaysInstruction ->
             [ Text "Click on the plays to flip them, then pick the one you think is best." ]
@@ -764,6 +834,9 @@ translate mdString =
         CastError ->
             [ Text "Sorry, something went wrong trying to connect to the game." ]
 
+        ActionExecutionError ->
+            [ Text "You can't perform that action." ]
+
         IncorrectPlayerRoleError { role, expected } ->
             [ Text "You need to be a ", Ref expected, Text " to do that, but you are a ", Ref role, Text "." ]
 
@@ -782,6 +855,9 @@ translate mdString =
         GameNotStartedError ->
             [ Text "The game needs to started to do that." ]
 
+        AuthenticationError ->
+            [ Text "You can't join that game." ]
+
         IncorrectIssuerError ->
             [ Text "Your credentials to join this game are out of date, the game no longer exists." ]
 
@@ -790,6 +866,12 @@ translate mdString =
 
         InvalidLobbyPasswordError ->
             [ Text "The game password you gave was wrong. Try typing it again and if it still doesn't work, ask the person who invited you again." ]
+
+        AlreadyLeftError ->
+            [ Text "You have already left this game." ]
+
+        LobbyNotFoundError ->
+            [ Text "That game doesn't exist." ]
 
         LobbyClosedError { gameCode } ->
             [ Text "The game you wish to join (", Ref (GameCode { code = gameCode }), Text ") has ended." ]
@@ -801,11 +883,17 @@ translate mdString =
             , Text "Try typing it again and if it still doesn't work, ask the person who invited you again."
             ]
 
+        RegistrationError ->
+            [ Text "Problem while joining the game." ]
+
         UsernameAlreadyInUseError { username } ->
             [ Text "Someone is already using the username “"
             , Text username
             , Text "”—try a different name."
             ]
+
+        GameError ->
+            [ Text "Something has gone wrong in the game." ]
 
         OutOfCardsError ->
             [ Text "There were not enough cards in the deck to deal everyone a hand! Try adding more decks in the game configuration." ]

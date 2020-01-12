@@ -4,6 +4,7 @@ module MassiveDecks.Settings exposing
     , init
     , onJoinLobby
     , onTokenUpdate
+    , removeToken
     , update
     , view
     )
@@ -195,6 +196,22 @@ onTokenUpdate auth model =
         updatedSettings =
             { settings
                 | tokens = Dict.insert (auth.claims.gc |> GameCode.toString) auth.token settings.tokens
+            }
+    in
+    ( { model | settings = updatedSettings }, LocalStorage.store updatedSettings )
+
+
+{-| Remove any token in the settings for the given game code.
+-}
+removeToken : GameCode -> Model -> ( Model, Cmd msg )
+removeToken gc model =
+    let
+        settings =
+            model.settings
+
+        updatedSettings =
+            { settings
+                | tokens = Dict.filter (\k -> \_ -> k /= (gc |> GameCode.toString)) settings.tokens
             }
     in
     ( { model | settings = updatedSettings }, LocalStorage.store updatedSettings )

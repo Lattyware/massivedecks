@@ -141,6 +141,12 @@ enhanceHtml context mdString unenhanced =
         Left ->
             term context LeftDescription Icon.signOutAlt unenhanced
 
+        Away ->
+            term context AwayDescription Icon.userClock unenhanced
+
+        Disconnected ->
+            term context DisconnectedDescription Icon.ghost unenhanced
+
         Privileged ->
             term context PrivilegedDescription Icon.userCog unenhanced
 

@@ -34,6 +34,7 @@ module Weightless.Attributes exposing
     , minLength
     , name
     , navSlot
+    , noRipple
     , outlined
     , readonly
     , selected
@@ -126,6 +127,11 @@ navSlot slot =
 type ExpansionSlot
     = ETitle
     | EDescription
+
+
+noRipple : Bool -> Html.Attribute msg
+noRipple enabled =
+    HtmlA.property "noRipple" (Json.bool enabled)
 
 
 expansionSlot : ExpansionSlot -> Html.Attribute msg

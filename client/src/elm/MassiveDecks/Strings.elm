@@ -36,6 +36,7 @@ type MdString
     | RejoinTitle -- A title for a list of games the user was previously in and might be able to rejoin.
     | RejoinGame { code : String } -- A description of the action of attempting to rejoin a game the user was previously in.
     | LobbyRequiresPassword -- An explanation that the given lobby requires a password to join.
+    | YouWereKicked -- An explanation that the player was kicked from the lobby they were in.
       -- Rules
     | CardsAgainstHumanity -- The name of "Cards Against Humanity" (https://cardsagainsthumanity.com/).
     | Rules -- The title for a DESCRIPTION of the rules.
@@ -130,6 +131,10 @@ type MdString
     | SpectatorsDescription -- A description of a group of users who are only spectating the game.
     | Left -- A short term for a group of users who have left the game.
     | LeftDescription -- A description of a group of users who have left the game.
+    | Away -- A short term for a player who is temporarily away from the game.
+    | AwayDescription -- A description for a player who is temporarily away from the game.
+    | Disconnected -- A short term for a player who is temporarily disconnected from the game.
+    | DisconnectedDescription -- A description of a player who is temporarily disconnected from the game.
     | Privileged -- The short term for a player who has privileges over the game.
     | PrivilegedDescription --  A description of a player who has privileges over the game (e.g: can change settings)
     | Ai -- The short term for a player who is controlled by the computer.
@@ -141,6 +146,7 @@ type MdString
     | UnknownUser -- A name for a user that doesn't have a known name.
     | InvitePlayers -- A short term for inviting players to the game.
     | SetAway -- A short term for leaving the game temporarily.
+    | SetBack -- A short term for returning to the game after being away.
     | LeaveGame -- A short term for the action of leaving the game permanently.
     | EndGame -- A short term for the action of ending the game early.
     | EndGameDescription -- A description of the action of ending the game early.
@@ -150,6 +156,7 @@ type MdString
       -- Notifications
     | UserJoined { username : String } -- A notification that a user has joined the game.
     | UserLeft { username : String } -- A notification that a user has left the game.
+    | UserKicked { username : String } -- A notification that a user was kicked from the game.
     | UserConnected { username : String } -- A notification that a user has reconnected to the game.
     | UserDisconnected { username : String } -- A notification that a user has disconnected from the game.
     | Dismiss -- The action of dismissing a notification.
@@ -166,6 +173,7 @@ type MdString
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.
     | ConfigureDecks -- A name for the section of the configuration screen for changing the decks for the game.
     | ConfigureRules -- A name for the section of the configuration screen for changing the rules for the game.
+    | ConfigureTimeLimits -- A name for the section of the configuration screen for changing the time limits for the game.
     | ConfigurePrivacy -- A name for the section of the configuration screen for changing the settings for the game.
     | HandSize -- The name of the rule defining how many cards a player can hold in their hand.
     | HandSizeDescription -- The description of the above rule.
@@ -181,6 +189,16 @@ type MdString
     | StartGame -- A short description of the action of starting the game.
     | Public -- The name of the setting for making the lobby public.
     | PublicDescription -- A description of what the public setting does (makes the game visible in the lobby browser).
+    | ApplyConfiguration -- A description of applying a configuration change to the game.
+    | AppliedConfiguration -- A description of the fact that a configuration value is applied to the game.
+    | InvalidConfiguration -- A description of the fact that a configuration value is invalid and can't be applied.
+    | Automatic -- A name of the setting for setting players as away automatically if they don't act in the time limit.
+    | AutomaticDescription -- A description of what the automatic setting does (sets players as away automatically if they don't act in the time limit).
+    | TimeLimit { stage : MdString } -- A name of the setting for the time limit on a given stage.
+    | PlayingTimeLimitDescription -- A description of the setting for the time limit on the playing stage.
+    | RevealingTimeLimitDescription -- A description of the setting for the time limit on the revealing stage.
+    | JudgingTimeLimitDescription -- A description of the setting for the time limit on the judging stage.
+    | CompleteTimeLimitDescription -- A description of the setting for the time limit on the complete stage.
       -- Game
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
@@ -192,15 +210,19 @@ type MdString
     | Judging -- A description of the stage of the round where the czar is picking a winner.
     | Complete -- A description of the stage of the round where it is finished.
     | ViewGameHistoryAction -- A description of the action of viewing the history of the game.
+    | ViewHelpAction -- A description of the action of viewing contextual help on what is happening in the game.
+    | EnforceTimeLimitAction -- A description of the action of enforcing the lime limit, skipping players who are slow.
     | Blank -- A term used in speech to denote a blank "slot" on a card the player will give a value to fill.
     | RoundStarted -- A title for the round having started.
     | JudgingStarted -- A title for judging having started.
+    | Paused -- A message explaining that the game has been paused due to too few active players.
+    | ClientAway -- A message explaining that the player is set to "away" from the game.
       -- Instructions
-    | WhatToDo -- A description of the action of asking for help on what to do in the game at this time.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
     | SubmitInstruction -- Instruction to the player on how to submit their play.
     | WaitingForPlaysInstruction -- Instruction to the player that they need to wait for other players to play.
     | CzarsDontPlayInstruction -- Instruction to the player that as Czar they don't play into the round.
+    | NotInRoundInstruction -- Instruction to the player that they aren't in the round and so won't make a play.
     | RevealPlaysInstruction -- Instruction to reveal plays for the round.
     | WaitingForCzarInstruction -- Instruction to wait for the czar to reveal plays and pick a winner.
     | AdvanceRoundInstruction -- Instruction that the next round is ready and they can advance.
@@ -222,18 +244,24 @@ type MdString
     | BadStatusError -- An error where the server gave a response we didn't expect.
     | BadPayloadError -- An error where the server gave a response we didn't understand.
     | CastError -- An error where we the cast device couldn't connect to the game.
+    | ActionExecutionError -- A short title for an error where the user can't do the thing they asked to do.
     | IncorrectPlayerRoleError { role : MdString, expected : MdString } -- An error where the player tries to do something when they don't have the right role (czar/player).
     | IncorrectUserRoleError { role : MdString, expected : MdString } -- An error where the user tries to do something when they don't have the right role (player/spectator).
     | IncorrectRoundStageError { stage : MdString, expected : MdString } -- An error where the user tries to do something when it doesn't make sense given the stage of the game.
     | ConfigEditConflictError -- An error where the user tries to make a change to the configuration, but someone else changed it first.
     | UnprivilegedError -- An error where the user doesn't have the privileges to perform the action they are trying to do.
     | GameNotStartedError -- An error where the game hasn't started and the user tries to do something that needs to be done in a game.
+    | AuthenticationError -- A short title for an error where the user can't authenticate.
     | IncorrectIssuerError -- An error where the user tries to authenticate using credentials that are out of date.
     | InvalidAuthenticationError -- An error where the user tries to authenticate using credentials that are corrupted.
     | InvalidLobbyPasswordError -- An error where the user tries to join a game with the wrong lobby password.
+    | AlreadyLeftError -- An error where the user tries to join a game they have already left.
+    | LobbyNotFoundError -- A short title for an error where the user tries to join a lobby that doesn't exist.
     | LobbyClosedError { gameCode : String } -- An error where the user tries to join a game that has finished.
     | LobbyDoesNotExistError { gameCode : String } -- An error where the user tries to join a game that never existed.
+    | RegistrationError -- A short title for an error where the user can't join the game as they asked.
     | UsernameAlreadyInUseError { username : String } -- An error when the user tries to join a game with the same name as a user already in the game.
+    | GameError -- A short title for an error where the something has gone wrong in the game.
     | OutOfCardsError -- An error where there weren't enough cards in the deck to deal cards that were needed, even after shuffling discards.
       -- Language Names
     | English -- The name of the English language (no specific dialect).

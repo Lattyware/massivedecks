@@ -16,13 +16,14 @@ export type Stage = "Playing" | "Revealing" | "Judging" | "Complete";
 
 export type Id = number;
 
-abstract class Base<TStage extends Stage> {
+export abstract class Base<TStage extends Stage> {
   public abstract readonly stage: TStage;
   public abstract readonly id: Id;
   public abstract readonly czar: user.Id;
   public abstract readonly players: Set<user.Id>;
   public abstract readonly call: card.Call;
   public abstract readonly plays: StoredPlay[];
+  public readonly startedAt: number = Date.now();
 
   /**
    * The players that need to do something before this stage can advance.
@@ -49,6 +50,14 @@ abstract class Base<TStage extends Stage> {
     return true;
   }
 }
+
+export interface Timed {
+  timedOut: boolean;
+}
+
+export const isTimed = <TStage extends Stage>(
+  round: Base<TStage>
+): round is Base<TStage> & Timed => round.hasOwnProperty("timedOut");
 
 export class Complete extends Base<"Complete"> {
   public get stage(): "Complete" {
@@ -93,7 +102,8 @@ export class Complete extends Base<"Complete"> {
       players: Array.from(this.players),
       call: this.call,
       winner: this.winner,
-      plays: this.playsObj()
+      plays: this.playsObj(),
+      startedAt: this.startedAt
     };
   }
 
@@ -114,7 +124,7 @@ export class Complete extends Base<"Complete"> {
   }
 }
 
-export class Judging extends Base<"Judging"> {
+export class Judging extends Base<"Judging"> implements Timed {
   public get stage(): "Judging" {
     return "Judging";
   }
@@ -128,6 +138,7 @@ export class Judging extends Base<"Judging"> {
 
   public readonly call: card.Call;
   public readonly plays: storedPlay.Revealed[];
+  public timedOut = false;
 
   public constructor(
     id: Id,
@@ -157,7 +168,9 @@ export class Judging extends Base<"Judging"> {
       czar: this.czar,
       players: Array.from(this.players),
       call: this.call,
-      plays: Array.from(this.revealedPlays())
+      plays: Array.from(this.revealedPlays()),
+      ...(this.timedOut ? { timedOut: true } : {}),
+      startedAt: this.startedAt
     };
   }
 
@@ -168,7 +181,7 @@ export class Judging extends Base<"Judging"> {
   }
 }
 
-export class Revealing extends Base<"Revealing"> {
+export class Revealing extends Base<"Revealing"> implements Timed {
   public get stage(): "Revealing" {
     return "Revealing";
   }
@@ -182,6 +195,7 @@ export class Revealing extends Base<"Revealing"> {
 
   public readonly call: card.Call;
   public readonly plays: StoredPlay[];
+  public timedOut = false;
 
   public constructor(
     id: Id,
@@ -205,9 +219,7 @@ export class Revealing extends Base<"Revealing"> {
   }
 
   public waitingFor(): Set<user.Id> | null {
-    return wu(this.plays).find(p => !p.revealed) === undefined
-      ? null
-      : new Set(this.czar);
+    return new Set(this.czar);
   }
 
   public public(): publicRound.Revealing {
@@ -217,7 +229,9 @@ export class Revealing extends Base<"Revealing"> {
       czar: this.czar,
       players: Array.from(this.players),
       call: this.call,
-      plays: Array.from(this.potentiallyRevealedPlays())
+      plays: Array.from(this.potentiallyRevealedPlays()),
+      ...(this.timedOut ? { timedOut: true } : {}),
+      startedAt: this.startedAt
     };
   }
 
@@ -234,7 +248,7 @@ export class Revealing extends Base<"Revealing"> {
   }
 }
 
-export class Playing extends Base<"Playing"> {
+export class Playing extends Base<"Playing"> implements Timed {
   public get stage(): "Playing" {
     return "Playing";
   }
@@ -244,6 +258,7 @@ export class Playing extends Base<"Playing"> {
   public readonly players: Set<user.Id>;
   public readonly call: card.Call;
   public readonly plays: storedPlay.Unrevealed[];
+  public timedOut = false;
 
   public constructor(
     id: Id,
@@ -281,7 +296,9 @@ export class Playing extends Base<"Playing"> {
       czar: this.czar,
       players: Array.from(this.players),
       call: this.call,
-      played: this.plays.map(play => play.playedBy)
+      played: this.plays.map(play => play.playedBy),
+      ...(this.timedOut ? { timedOut: true } : {}),
+      startedAt: this.startedAt
     };
   }
 }

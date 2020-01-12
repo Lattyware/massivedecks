@@ -33,4 +33,3 @@ type Msg
     | BlockedExternalUrl
     | Copy String
     | NoOp
-    | Batch (List Msg)

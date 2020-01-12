@@ -50,11 +50,11 @@ view auth config model round =
         missingFromPick =
             slots - (round.pick.cards |> List.length)
 
-        ( action, instruction, notPlaying ) =
-            if Player.isCzar (Round.P round) auth.claims.uid then
-                ( Nothing, Strings.CzarsDontPlayInstruction, True )
+        self =
+            auth.claims.uid
 
-            else
+        ( action, instruction, notPlaying ) =
+            if round.players |> Set.member self then
                 case round.pick.state of
                     Round.Selected ->
                         if missingFromPick > 0 then
@@ -65,6 +65,12 @@ view auth config model round =
 
                     Round.Submitted ->
                         ( Just Action.TakeBack, Strings.WaitingForPlaysInstruction, True )
+
+            else if Player.isCzar (Round.P round) self then
+                ( Nothing, Strings.CzarsDontPlayInstruction, True )
+
+            else
+                ( Nothing, Strings.NotInRoundInstruction, True )
 
         hand =
             HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]

@@ -11,19 +11,24 @@ interface Base {
   czar: user.Id;
   players: user.Id[];
   call: card.Call;
+  startedAt: number;
 }
 
-export interface Playing extends Base {
+interface Timed {
+  timedOut?: boolean;
+}
+
+export interface Playing extends Base, Timed {
   stage: "Playing";
   played: user.Id[];
 }
 
-export interface Revealing extends Base {
+export interface Revealing extends Base, Timed {
   stage: "Revealing";
   plays: play.PotentiallyRevealed[];
 }
 
-export interface Judging extends Base {
+export interface Judging extends Base, Timed {
   stage: "Judging";
   plays: play.Revealed[];
 }

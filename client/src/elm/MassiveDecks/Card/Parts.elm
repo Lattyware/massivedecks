@@ -21,7 +21,7 @@ import MassiveDecks.Util.String as String
 type Transform
     = UpperCase
     | Capitalize
-    | None
+    | Stay
 
 
 {-| A part of a call's text. This is either just text or a position for a call to be inserted in-game.
@@ -175,7 +175,7 @@ applyTransform transform value =
         Capitalize ->
             String.capitalise value
 
-        None ->
+        Stay ->
             value
 
 

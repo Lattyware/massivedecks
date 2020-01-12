@@ -141,7 +141,7 @@ export function* change(
     for (const ai of removed) {
       const user = inLobby.users.get(ai) as User;
       user.presence = "Left";
-      eventsCollection.push(event.targetAll(presenceChanged.left(ai)));
+      eventsCollection.push(event.targetAll(presenceChanged.left(ai, "Left")));
     }
     config.unused.splice(0, 0, ...removed);
   }

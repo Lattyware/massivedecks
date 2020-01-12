@@ -1,10 +1,12 @@
 module Weightless.Internal exposing
     ( boolProp
+    , floatProp
     , numberAttr
     , numberProp
     , presentAttribute
     , stringArrayProperty
     , stringAttr
+    , stringProp
     )
 
 import Html
@@ -37,6 +39,16 @@ numberProp property intValue =
     intValue |> Json.int |> HtmlA.property property
 
 
+floatProp : String -> Float -> Html.Attribute msg
+floatProp property floatValue =
+    floatValue |> Json.float |> HtmlA.property property
+
+
 boolProp : String -> Bool -> Html.Attribute msg
 boolProp property boolValue =
     boolValue |> Json.bool |> HtmlA.property property
+
+
+stringProp : String -> String -> Html.Attribute msg
+stringProp property stringValue =
+    stringValue |> Json.string |> HtmlA.property property

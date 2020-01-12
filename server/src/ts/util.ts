@@ -75,7 +75,7 @@ export function counts<T, U>(
  * @param value The impossible value.
  */
 export function assertNever(value: never): never {
-  throw new Error(`Unexpected value: ${value}.`);
+  throw new Error(`Unexpected value: ${JSON.stringify(value)}.`);
 }
 
 /**

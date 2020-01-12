@@ -19,6 +19,7 @@ import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
@@ -56,6 +57,7 @@ init =
         , reboot = Nothing
         }
     , public = False
+    , timeLimits = Rules.defaultTimeLimits
     }
 
 
@@ -70,6 +72,7 @@ updateFromConfig config model =
     , passwordVisible = model.passwordVisible
     , houseRules = config.rules.houseRules
     , public = config.public
+    , timeLimits = config.rules.timeLimits
     }
 
 
@@ -129,6 +132,26 @@ update msg model config =
             in
             ( { model | public = value }, send )
 
+        TimeLimitChangeMode target value ->
+            let
+                timeLimits =
+                    model.timeLimits
+
+                send =
+                    ifRemote (Actions.changeTimeLimitMode value config.version) target
+            in
+            ( { model | timeLimits = { timeLimits | mode = value } }, send )
+
+        TimeLimitChange target stage value ->
+            let
+                timeLimits =
+                    model.timeLimits
+
+                send =
+                    ifRemote (Actions.changeTimeLimitForStage stage value config.version) target
+            in
+            ( { model | timeLimits = Rules.setTimeLimitByStage stage value timeLimits }, send )
+
 
 view : Shared -> Bool -> Model -> GameCode -> Lobby -> Config -> Html Global.Msg
 view shared canEdit model gameCode lobby config =
@@ -155,6 +178,12 @@ applyChange configChange oldConfig oldConfigure =
     let
         oldRules =
             oldConfig.rules
+
+        oldTimeLimits =
+            oldRules.timeLimits
+
+        oldConfigureTimeLimits =
+            oldConfigure.timeLimits
     in
     case configChange of
         Events.DecksChanged decksChanged ->
@@ -179,6 +208,16 @@ applyChange configChange oldConfig oldConfigure =
         Events.PublicSet { public } ->
             ( { oldConfig | public = public }
             , { oldConfigure | public = public }
+            )
+
+        Events.ChangeTimeLimitForStage { stage, timeLimit } ->
+            ( { oldConfig | rules = { oldRules | timeLimits = Rules.setTimeLimitByStage stage timeLimit oldTimeLimits } }
+            , { oldConfigure | timeLimits = Rules.setTimeLimitByStage stage timeLimit oldConfigureTimeLimits }
+            )
+
+        Events.ChangeTimeLimitMode { mode } ->
+            ( { oldConfig | rules = { oldRules | timeLimits = { oldTimeLimits | mode = mode } } }
+            , { oldConfigure | timeLimits = { oldConfigureTimeLimits | mode = mode } }
             )
 
 
@@ -330,7 +369,7 @@ ifRemote cmd target =
 
 tabs : List Tab
 tabs =
-    [ Decks, Rules, Privacy ]
+    [ Decks, Rules, TimeLimits, Privacy ]
 
 
 tab : Shared -> Tab -> Tab -> Html Global.Msg
@@ -351,6 +390,9 @@ tabName target =
         Rules ->
             Strings.ConfigureRules
 
+        TimeLimits ->
+            Strings.ConfigureTimeLimits
+
         Privacy ->
             Strings.ConfigurePrivacy
 
@@ -366,101 +408,71 @@ tabContent shared canEdit model config =
                 Rules ->
                     configureRules
 
+                TimeLimits ->
+                    configureTimeLimits
+
                 Privacy ->
-                    configureGameSettings
+                    configurePrivacy
     in
     viewTab shared canEdit model config
 
 
 configureRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
 configureRules shared canEdit model config =
-    Html.div [ HtmlA.class "rules" ]
+    let
+        viewOpt =
+            viewOption shared model config Global.NoOp canEdit
+    in
+    Html.div [ HtmlA.id "rules-tab" ]
         [ Html.div [ HtmlA.class "core-rules" ]
             [ Html.h3 [] [ Strings.GameRulesTitle |> Lang.html shared ]
-            , handSize shared canEdit model config
-            , scoreLimit shared canEdit model config
+            , viewOpt handSizeOption
+            , viewOpt scoreLimitOption
             ]
         , houseRules shared canEdit model config
         ]
 
 
-handSize : Shared -> Bool -> Model -> Config -> Html Global.Msg
-handSize shared canEdit model config =
-    let
-        change =
-            \t -> \s -> s |> String.toInt |> Maybe.withDefault 10 |> HandSizeChange t |> lift
-
-        value =
-            model.handSize
-    in
-    Form.section shared
-        "hand-size"
-        (Html.div
-            [ HtmlA.class "multipart" ]
-            [ Wl.textField
-                [ WlA.type_ WlA.Number
-                , value |> String.fromInt |> WlA.value
-                , Strings.HandSize |> Lang.string shared |> WlA.label
-                , 3 |> WlA.min
-                , 50 |> WlA.max
-                , change Local |> HtmlE.onInput
-                , HandSizeChange Remote value |> lift |> HtmlE.onBlur
-                , HtmlA.class "primary"
-                , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
-                , WlA.outlined
-                ]
-                []
-            , Components.iconButton
-                [ WlA.disabled
-                    |> Maybe.justIf (not canEdit || config.rules.handSize == value)
-                    |> Maybe.withDefault (value |> HandSizeChange Remote |> lift |> HtmlE.onClick)
-                ]
-                (Icon.save |> Maybe.justIf (config.rules.handSize /= value) |> Maybe.withDefault Icon.check)
-            ]
-        )
-        [ Message.info Strings.HandSizeDescription ]
+handSizeOption : ConfigOption Int Global.Msg
+handSizeOption =
+    { id = "hand-size-option"
+    , toggleable = Nothing
+    , primaryEditor =
+        TextField
+            { placeholder = Strings.HandSize
+            , inputType = Nothing
+            , toString = String.fromInt >> Just
+            , fromString = String.toInt
+            , attrs = [ 3 |> WlA.min, 50 |> WlA.max ]
+            }
+    , extraEditor = Nothing
+    , getRemoteValue = .rules >> .handSize
+    , getLocalValue = .handSize
+    , set = \t -> \v -> HandSizeChange t v |> lift
+    , validate = \v -> v >= 3 && v <= 50
+    , messages = [ Message.info Strings.HandSizeDescription ]
+    }
 
 
-scoreLimit : Shared -> Bool -> Model -> Config -> Html Global.Msg
-scoreLimit shared canEdit model config =
-    let
-        change =
-            \t -> \s -> s |> String.toInt |> ScoreLimitChange t |> lift
-
-        value =
-            model.scoreLimit
-    in
-    Form.section shared
-        "score-limit"
-        (Html.div
-            [ HtmlA.class "multipart" ]
-            [ Wl.switch
-                [ (\on -> 25 |> Maybe.justIf on |> ScoreLimitChange Remote |> lift) |> HtmlE.onCheck
-                , WlA.checked |> Maybe.justIf (value /= Nothing) |> Maybe.withDefault HtmlA.nothing
-                , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
-                ]
-            , Wl.textField
-                [ HtmlA.class "primary"
-                , WlA.type_ WlA.Number
-                , value |> Maybe.map String.fromInt |> Maybe.withDefault "" |> WlA.value
-                , Strings.ScoreLimit |> Lang.string shared |> WlA.label
-                , 1 |> WlA.min
-                , 10000 |> WlA.max
-                , change Local |> HtmlE.onInput
-                , ScoreLimitChange Remote value |> lift |> HtmlE.onBlur
-                , WlA.disabled |> Maybe.justIf (not canEdit || value == Nothing) |> Maybe.withDefault HtmlA.nothing
-                , WlA.outlined
-                ]
-                []
-            , Components.iconButton
-                [ WlA.disabled
-                    |> Maybe.justIf (not canEdit || config.rules.scoreLimit == value)
-                    |> Maybe.withDefault (value |> ScoreLimitChange Remote |> lift |> HtmlE.onClick)
-                ]
-                (Icon.save |> Maybe.justIf (config.rules.scoreLimit /= value) |> Maybe.withDefault Icon.check)
-            ]
-        )
-        [ Message.info Strings.ScoreLimitDescription ]
+scoreLimitOption : ConfigOption (Maybe Int) Global.Msg
+scoreLimitOption =
+    { id = "score-limit-option"
+    , toggleable = Just { off = Nothing, on = Just 25 }
+    , primaryEditor =
+        TextField
+            { placeholder = Strings.ScoreLimit
+            , inputType = Nothing
+            , toString = Maybe.map String.fromInt
+            , fromString = String.toInt >> Maybe.map Just
+            , attrs = [ 1 |> WlA.min, 10000 |> WlA.max ]
+            }
+    , extraEditor = Nothing
+    , getRemoteValue = .rules >> .scoreLimit
+    , getLocalValue = .scoreLimit
+    , set = \t -> \v -> ScoreLimitChange t v |> lift
+    , validate = Maybe.map (\v -> v >= 1 && v <= 10000) >> Maybe.withDefault True
+    , messages = [ Message.info Strings.ScoreLimitDescription ]
+    }
 
 
 houseRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
@@ -478,7 +490,7 @@ type alias ViewHouseRuleSettings houseRule =
 
 
 houseRule : Shared -> String -> Rules.HouseRule a -> Bool -> Model -> Config -> ViewHouseRuleSettings a -> Html Global.Msg
-houseRule shared id { default, change, title, description, extract } canEdit model config viewSettings =
+houseRule shared id { default, change, title, description, extract, validate } canEdit model config viewSettings =
     let
         localValue =
             model.houseRules |> extract
@@ -500,10 +512,23 @@ houseRule shared id { default, change, title, description, extract } canEdit mod
         saved =
             localValue == (config.rules.houseRules |> extract)
 
+        validated =
+            localValue |> Maybe.map validate |> Maybe.withDefault True
+
         settings =
             localValue
                 |> Maybe.map (\v -> viewSettings shared canEdit v (Just >> change >> HouseRuleChange Local >> lift))
                 |> Maybe.withDefault []
+
+        ( saveIcon, message ) =
+            if saved then
+                ( Icon.check, Strings.AppliedConfiguration )
+
+            else if validated then
+                ( Icon.save, Strings.ApplyConfiguration )
+
+            else
+                ( Icon.times, Strings.InvalidConfiguration )
     in
     Html.div [ HtmlA.classList [ ( "house-rule", True ), ( "enabled", enabled ) ] ]
         [ Form.section
@@ -515,8 +540,12 @@ houseRule shared id { default, change, title, description, extract } canEdit mod
                     , WlA.checked |> Maybe.justIf enabled |> Maybe.withDefault HtmlA.nothing
                     ]
                 , Html.h4 [ HtmlA.class "primary" ] [ Lang.html shared title ]
-                , Components.iconButton [ save, WlA.disabled |> Maybe.justIf saved |> Maybe.withDefault HtmlA.nothing ]
-                    (Icon.check |> Maybe.justIf saved |> Maybe.withDefault Icon.save)
+                , Components.iconButton
+                    [ save
+                    , WlA.disabled |> Maybe.justIf (saved || not validated) |> Maybe.withDefault HtmlA.nothing
+                    , Lang.title shared message
+                    ]
+                    saveIcon
                 ]
             )
             [ Message.info (localValue |> description) ]
@@ -630,9 +659,10 @@ configureDecks shared canEdit model config =
             else
                 []
     in
-    Html.div [ HtmlA.class "decks", HtmlA.class "compressed-terms" ]
+    Html.div [ HtmlA.id "decks-tab", HtmlA.class "compressed-terms" ]
         (List.concat
-            [ [ Html.table []
+            [ [ Html.h3 [] [ Strings.ConfigureDecks |> Lang.html shared ]
+              , Html.table []
                     [ Html.colgroup []
                         [ Html.col [ HtmlA.class "deck-name" ] []
                         , Html.col [ HtmlA.class "count" ] []
@@ -653,91 +683,17 @@ configureDecks shared canEdit model config =
         )
 
 
-configureGameSettings : Shared -> Bool -> Model -> Config -> Html Global.Msg
-configureGameSettings shared canEdit model config =
+configurePrivacy : Shared -> Bool -> Model -> Config -> Html Global.Msg
+configurePrivacy shared canEdit model config =
     let
-        passwordAttrs =
-            List.concat
-                [ case model.password of
-                    Just value ->
-                        [ value |> WlA.value ]
-
-                    Nothing ->
-                        [ "" |> WlA.value, WlA.disabled ]
-                , [ Strings.LobbyPassword |> Lang.string shared |> WlA.label
-                  , WlA.minLength 1
-                  , WlA.outlined
-                  , HtmlA.class "primary"
-                  ]
-                , [ WlA.readonly ]
-                    |> Maybe.justIf (not canEdit)
-                    |> Maybe.withDefault
-                        [ HtmlE.onInput (Just >> PasswordChange Local >> lift)
-                        , HtmlE.onBlur (model.password |> PasswordChange Remote |> lift)
-                        ]
-                , [ WlA.Password |> WlA.type_ ] |> Maybe.justIf (not model.passwordVisible) |> Maybe.withDefault []
-                ]
-
-        passwordSwitchAttrs =
-            List.concat
-                [ [ WlA.disabled ]
-                    |> Maybe.justIf (not canEdit)
-                    |> Maybe.withDefault [ HtmlE.onCheck (defaultPassword >> PasswordChange Remote >> lift) ]
-                , case model.password of
-                    Just _ ->
-                        [ WlA.checked ]
-
-                    Nothing ->
-                        []
-                ]
-
-        password =
-            Form.section
-                shared
-                "password"
-                (Html.div [ HtmlA.class "multipart" ]
-                    [ Wl.switch passwordSwitchAttrs
-                    , Wl.textField passwordAttrs []
-                    , Components.iconButton
-                        [ TogglePasswordVisibility |> lift |> HtmlE.onClick
-                        , WlA.disabled |> Maybe.justIf (Maybe.isNothing model.password) |> Maybe.withDefault HtmlA.nothing
-                        ]
-                        (Icon.eyeSlash |> Maybe.justIf model.passwordVisible |> Maybe.withDefault Icon.eye)
-                    , Components.iconButton
-                        [ WlA.disabled
-                            |> Maybe.justIf (not canEdit || config.password == model.password)
-                            |> Maybe.withDefault (model.password |> PasswordChange Remote |> lift |> HtmlE.onClick)
-                        ]
-                        (Icon.save |> Maybe.justIf (config.password /= model.password) |> Maybe.withDefault Icon.check)
-                    ]
-                )
-                [ Message.info Strings.LobbyPasswordDescription
-                , Message.warning Strings.PasswordShared
-                , Message.warning Strings.PasswordNotSecured
-                ]
-
-        public =
-            Form.section shared
-                "public"
-                (Html.div [ HtmlA.class "multipart" ]
-                    [ Wl.switch
-                        [ WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault (PublicChange Remote >> lift |> HtmlE.onCheck)
-                        , WlA.checked |> Maybe.justIf model.public |> Maybe.withDefault HtmlA.nothing
-                        ]
-                    , Html.span [ HtmlA.class "primary" ] [ Strings.Public |> Lang.html shared ]
-                    ]
-                )
-                [ Message.info Strings.PublicDescription ]
+        viewOpt =
+            viewOption shared model config Global.NoOp canEdit
     in
-    Html.div [ HtmlA.class "game-settings" ]
-        [ public
-        , password
+    Html.div [ HtmlA.id "privacy-tab" ]
+        [ Html.h3 [] [ Strings.ConfigurePrivacy |> Lang.html shared ]
+        , viewOpt publicGameOption
+        , viewOpt (gamePasswordOption model)
         ]
-
-
-defaultPassword : Bool -> Maybe String
-defaultPassword enabled =
-    "" |> Maybe.justIf enabled
 
 
 addDeckWidget : Shared -> List Deck -> Source.External -> Html Global.Msg
@@ -862,3 +818,217 @@ name shared canEdit source loading details =
 makeLink : Html msg -> String -> Html msg
 makeLink text url =
     Html.blankA [ HtmlA.href url ] [ text ]
+
+
+configureTimeLimits : Shared -> Bool -> Model -> Config -> Html Global.Msg
+configureTimeLimits shared canEdit model config =
+    let
+        viewOpt =
+            viewOption shared model config Global.NoOp canEdit
+
+        stageLimit =
+            \s -> \d -> \t -> stageLimitOption s d t |> viewOpt
+    in
+    Html.div [ HtmlA.id "time-limits-tab" ]
+        [ Html.h3 [] [ Strings.ConfigureTimeLimits |> Lang.html shared ]
+        , viewOpt timeLimitModeOption
+        , stageLimit Round.SPlaying Strings.PlayingTimeLimitDescription True
+        , stageLimit Round.SRevealing Strings.RevealingTimeLimitDescription True
+        , stageLimit Round.SJudging Strings.JudgingTimeLimitDescription True
+        , stageLimit Round.SComplete Strings.CompleteTimeLimitDescription False
+        ]
+
+
+timeLimitModeOption : ConfigOption Rules.TimeLimitMode Global.Msg
+timeLimitModeOption =
+    { id = "time-limit-mode"
+    , toggleable = Just { off = Rules.Soft, on = Rules.Hard }
+    , primaryEditor = Label { text = Strings.Automatic }
+    , extraEditor = Nothing
+    , getRemoteValue = .rules >> .timeLimits >> .mode
+    , getLocalValue = .timeLimits >> .mode
+    , set = \t -> \v -> TimeLimitChangeMode t v |> lift
+    , validate = always True
+    , messages = [ Message.info Strings.AutomaticDescription ]
+    }
+
+
+stageLimitOption : Round.Stage -> MdString -> Bool -> ConfigOption (Maybe Float) Global.Msg
+stageLimitOption stage description toggleable =
+    { id = "stage-limit-" ++ (stage |> Round.stageToName)
+    , toggleable =
+        { off = Nothing
+        , on = Rules.defaultTimeLimits |> Rules.getTimeLimitByStage stage
+        }
+            |> Maybe.justIf toggleable
+    , primaryEditor =
+        TextField
+            { placeholder = Strings.TimeLimit { stage = stage |> Round.stageDescription }
+            , inputType = Just WlA.Number
+            , toString = Maybe.map String.fromFloat
+            , fromString = String.toFloat >> Maybe.map Just
+            , attrs = [ WlA.min 0, WlA.max 900 ]
+            }
+    , extraEditor = Nothing
+    , getRemoteValue = .rules >> .timeLimits >> Rules.getTimeLimitByStage stage
+    , getLocalValue = .timeLimits >> Rules.getTimeLimitByStage stage
+    , set = \t -> \v -> TimeLimitChange t stage v |> lift
+    , validate = Maybe.map (\v -> v >= 0 && v <= 900) >> Maybe.withDefault True
+    , messages =
+        [ Message.info description ]
+    }
+
+
+publicGameOption : ConfigOption Bool Global.Msg
+publicGameOption =
+    { id = "public-option"
+    , toggleable = Just { off = False, on = True }
+    , primaryEditor = Label { text = Strings.Public }
+    , extraEditor = Nothing
+    , getRemoteValue = .public
+    , getLocalValue = .public
+    , set = \t -> \v -> PublicChange t v |> lift
+    , validate = always True
+    , messages = [ Message.info Strings.PublicDescription ]
+    }
+
+
+gamePasswordOption : Model -> ConfigOption (Maybe String) Global.Msg
+gamePasswordOption model =
+    { id = "game-password-option"
+    , toggleable = Just { off = Nothing, on = Just "" }
+    , primaryEditor =
+        TextField
+            { placeholder = Strings.LobbyPassword
+            , inputType = WlA.Password |> Maybe.justIf (not model.passwordVisible)
+            , toString = identity
+            , fromString = Just >> Just
+            , attrs = [ WlA.minLength 1 ]
+            }
+    , extraEditor =
+        Just
+            (Components.iconButton
+                [ TogglePasswordVisibility |> lift |> HtmlE.onClick
+                , WlA.disabled |> Maybe.justIf (Maybe.isNothing model.password) |> Maybe.withDefault HtmlA.nothing
+                ]
+                (Icon.eyeSlash |> Maybe.justIf model.passwordVisible |> Maybe.withDefault Icon.eye)
+            )
+    , getRemoteValue = .password
+    , getLocalValue = .password
+    , set = \t -> \v -> PasswordChange t v |> lift
+    , validate = Maybe.map (String.isEmpty >> not) >> Maybe.withDefault True
+    , messages =
+        [ Message.info Strings.LobbyPasswordDescription
+        , Message.warning Strings.PasswordShared
+        , Message.warning Strings.PasswordNotSecured
+        ]
+    }
+
+
+type alias ConfigOption value msg =
+    { id : String
+    , toggleable : Maybe (Toggleable value)
+    , primaryEditor : PrimaryEditor value msg
+    , extraEditor : Maybe (Html msg)
+    , getRemoteValue : Config -> value
+    , getLocalValue : Model -> value
+    , set : Target -> value -> msg
+    , validate : value -> Bool
+    , messages : List (Message msg)
+    }
+
+
+type alias Toggleable value =
+    { off : value
+    , on : value
+    }
+
+
+type PrimaryEditor value msg
+    = TextField
+        { placeholder : MdString
+        , inputType : Maybe WlA.InputType
+        , toString : value -> Maybe String
+        , fromString : String -> Maybe value
+        , attrs : List (Html.Attribute msg)
+        }
+    | Label { text : MdString }
+
+
+viewOption : Shared -> Model -> Config -> msg -> Bool -> ConfigOption value msg -> Html msg
+viewOption shared model config noOp canEdit opt =
+    let
+        localValue =
+            opt.getLocalValue model
+
+        remoteValue =
+            opt.getRemoteValue config
+
+        saved =
+            localValue == remoteValue
+
+        validated =
+            localValue |> opt.validate
+
+        ( saveIcon, message ) =
+            if saved then
+                ( Icon.check, Strings.AppliedConfiguration )
+
+            else if validated then
+                ( Icon.save, Strings.ApplyConfiguration )
+
+            else
+                ( Icon.times, Strings.InvalidConfiguration )
+
+        saveState =
+            Components.iconButton
+                [ WlA.disabled
+                    |> Maybe.justIf (saved || not validated || not canEdit)
+                    |> Maybe.withDefault (HtmlE.onClick (opt.set Remote localValue))
+                , Lang.title shared message
+                ]
+                saveIcon
+
+        primaryEditor =
+            case opt.primaryEditor of
+                TextField { placeholder, inputType, toString, fromString, attrs } ->
+                    Wl.textField
+                        ([ placeholder |> Lang.label shared
+                         , WlA.outlined
+                         , inputType |> Maybe.map WlA.type_ |> Maybe.withDefault HtmlA.nothing
+                         , HtmlA.class "primary"
+                         , localValue |> toString |> Maybe.map WlA.value |> Maybe.withDefault HtmlA.nothing
+                         , fromString
+                            >> Maybe.map (opt.set Local)
+                            >> Maybe.withDefault noOp
+                            |> HtmlE.onInput
+                         , opt.set Remote localValue |> HtmlE.onBlur
+                         , opt.toggleable
+                            |> Maybe.andThen (\t -> Maybe.justIf (t.off == localValue) WlA.disabled)
+                            |> Maybe.withDefault HtmlA.nothing
+                         , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
+                         ]
+                            ++ attrs
+                        )
+                        []
+
+                Label { text } ->
+                    Html.span [ HtmlA.class "primary" ] [ text |> Lang.html shared ]
+
+        switch =
+            case opt.toggleable of
+                Just { off, on } ->
+                    Wl.switch
+                        [ WlA.checked |> Maybe.justIf (localValue /= off) |> Maybe.withDefault HtmlA.nothing
+                        , HtmlE.onCheck (\c -> Maybe.justIf c on |> Maybe.withDefault off |> opt.set Remote)
+                        , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
+                        ]
+                        |> Just
+
+                Nothing ->
+                    Nothing
+
+        contents =
+            [ switch, Just primaryEditor, opt.extraEditor, Just saveState ] |> List.filterMap identity
+    in
+    Form.section shared opt.id (Html.div [ HtmlA.class "multipart" ] contents) opt.messages

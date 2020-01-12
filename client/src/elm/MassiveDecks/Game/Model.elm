@@ -15,6 +15,7 @@ import MassiveDecks.Game.Action.Model exposing (Action)
 import MassiveDecks.Game.Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Rules exposing (Rules)
+import MassiveDecks.Game.Time exposing (Time)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.User as User
 
@@ -27,6 +28,7 @@ type alias Model =
     , playStyles : PlayStyles
     , completeRound : Maybe Round.Complete
     , viewingHistory : Bool
+    , time : Maybe Time
     }
 
 
@@ -39,6 +41,7 @@ emptyModel game =
     , playStyles = Dict.empty
     , completeRound = Nothing
     , viewingHistory = False
+    , time = Nothing
     }
 
 
@@ -51,6 +54,7 @@ type alias Game =
     , players : Dict User.Id Player
     , rules : Rules
     , winner : Maybe User.Id
+    , paused : Bool
     }
 
 

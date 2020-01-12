@@ -2,18 +2,22 @@ import WebSocket from "ws";
 import * as action from "./action";
 import * as authenticate from "./action/authenticate";
 import { MassiveDecksError } from "./errors";
-import { NotAuthenticatedError } from "./errors/authentication";
+import {
+  AlreadyLeftError,
+  NotAuthenticatedError
+} from "./errors/authentication";
 import { InvalidActionError } from "./errors/validation";
 import * as event from "./event";
+import * as sync from "./events/user-event/sync";
 import * as gameLobby from "./lobby";
 import * as change from "./lobby/change";
 import { GameCode } from "./lobby/game-code";
 import * as logging from "./logging";
 import { ServerState } from "./server-state";
 import * as userDisconnect from "./timeout/user-disconnect";
+import { User } from "./user";
 import * as user from "./user";
 import * as token from "./user/token";
-import * as sync from "./events/user-event/sync";
 
 const parseJson = (raw: string): object => {
   try {
@@ -69,12 +73,7 @@ export class SocketManager {
         const validated = action.validate(parseJson(data));
         if (auth === null) {
           if (validated.action === "Authenticate") {
-            const knownAuth = await authenticate.handle(
-              server,
-              validated,
-              gameCode
-            );
-            auth = knownAuth;
+            auth = await authenticate.handle(server, validated, gameCode);
             const uid = auth.uid;
             sockets.set(auth.gc, uid, socket);
             await change.apply(server, auth.gc, lobby => {
@@ -92,12 +91,8 @@ export class SocketManager {
                   play = potentialPlay.play.map(card => card.id);
                 }
               }
-              const user = lobby.users.get(uid);
-              if (user === undefined) {
-                throw new Error(
-                  "User doesn't exist, but we have a socket and auth?"
-                );
-              }
+
+              const user = lobby.users.get(uid) as User;
               user.connection = "Connected";
               return {
                 lobby,

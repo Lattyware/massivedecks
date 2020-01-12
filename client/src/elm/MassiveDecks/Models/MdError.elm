@@ -6,6 +6,7 @@ module MassiveDecks.Models.MdError exposing
     , MdError(..)
     , RegistrationError(..)
     , describe
+    , shortDescribe
     )
 
 import MassiveDecks.Game.Player as Player
@@ -36,6 +37,7 @@ type AuthenticationError
     = IncorrectIssuer
     | InvalidAuthentication
     | InvalidLobbyPassword
+    | AlreadyLeftError
 
 
 type LobbyNotFoundError
@@ -49,6 +51,25 @@ type RegistrationError
 
 type GameStateError
     = OutOfCardsError
+
+
+shortDescribe : MdError -> MdString
+shortDescribe error =
+    case error of
+        ActionExecution _ ->
+            Strings.ActionExecutionError
+
+        Authentication _ ->
+            Strings.AuthenticationError
+
+        LobbyNotFound _ ->
+            Strings.LobbyNotFoundError
+
+        Registration _ ->
+            Strings.RegistrationError
+
+        Game _ ->
+            Strings.GameError
 
 
 describe : MdError -> MdString
@@ -84,6 +105,9 @@ describe error =
 
                 InvalidLobbyPassword ->
                     Strings.InvalidLobbyPasswordError
+
+                AlreadyLeftError ->
+                    Strings.AlreadyLeftError
 
         LobbyNotFound { reason, gameCode } ->
             case reason of

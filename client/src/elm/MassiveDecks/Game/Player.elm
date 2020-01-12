@@ -1,8 +1,10 @@
 module MassiveDecks.Game.Player exposing
     ( PlayState(..)
     , Player
+    , Presence(..)
     , Role(..)
     , Score
+    , default
     , isCzar
     , playState
     , role
@@ -19,6 +21,14 @@ import Set
 -}
 type alias Player =
     { score : Score
+    , presence : Presence
+    }
+
+
+default : Player
+default =
+    { score = 0
+    , presence = Active
     }
 
 
@@ -26,6 +36,13 @@ type alias Player =
 -}
 type alias Score =
     Int
+
+
+{-| If the user is temporarily away from the game.
+-}
+type Presence
+    = Active
+    | Away
 
 
 {-| The role the player currently has in the game.

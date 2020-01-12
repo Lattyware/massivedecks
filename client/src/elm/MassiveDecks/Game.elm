@@ -25,13 +25,14 @@ import MassiveDecks.Game.Action.Model exposing (Action)
 import MassiveDecks.Game.History as History
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (..)
-import MassiveDecks.Game.Player as Player
+import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Round.Complete as Complete
 import MassiveDecks.Game.Round.Judging as Judging
 import MassiveDecks.Game.Round.Playing as Playing
 import MassiveDecks.Game.Round.Revealing as Revealing
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
@@ -46,11 +47,13 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
+import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import Set
 import Task
 import Weightless as Wl
 import Weightless.Attributes as WlA
+import Weightless.ProgressBar as ProgressBar
 
 
 init : Game -> List Card.Response -> Round.Pick -> ( Model, Cmd Global.Msg )
@@ -59,15 +62,18 @@ init game hand pick =
         model =
             emptyModel game
 
-        ( round, cmd ) =
+        ( round, roundCmd ) =
             case game.round of
                 Round.P r ->
                     Util.modelLift Round.P (Playing.init r pick)
 
                 _ ->
                     ( game.round, Cmd.none )
+
+        timeCmd =
+            Time.now (UpdateTimer >> lift)
     in
-    ( { model | hand = hand, game = { game | round = round } }, cmd )
+    ( { model | hand = hand, game = { game | round = round } }, Cmd.batch [ roundCmd, timeCmd ] )
 
 
 update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
@@ -215,142 +221,74 @@ update shared msg model =
         ToggleHistoryView ->
             ( { model | viewingHistory = not model.viewingHistory }, Cmd.none )
 
+        SetPresence presence ->
+            ( model, Actions.setPresence presence )
 
-subscriptions : Model -> Sub Global.Msg
-subscriptions _ =
-    Sub.none
+        SetPlayerAway player ->
+            ( model, Actions.setPlayerAway player )
+
+        UpdateTimer time ->
+            ( { model | time = Just time }, Cmd.none )
+
+        EnforceTimeLimit ->
+            ( model, Actions.enforceTimeLimit (model.game.round |> Round.data |> .id) (model.game.round |> Round.stage) )
 
 
-view : Shared -> Lobby.Auth -> String -> Config -> Dict User.Id User -> Model -> Html Global.Msg
-view shared auth name config users model =
+subscriptions : Time.Anchor -> Model -> Sub Global.Msg
+subscriptions anchor model =
     let
+        ( startedAt, maybeLimitSeconds, timedOut ) =
+            roundTimeDetails model.game
+    in
+    if timedOut then
+        Sub.none
+
+    else
+        case maybeLimitSeconds of
+            Nothing ->
+                Sub.none
+
+            Just limitSeconds ->
+                case model.time of
+                    Just time ->
+                        let
+                            left =
+                                timeLeft anchor startedAt time limitSeconds
+                        in
+                        if left < 0 then
+                            Sub.none
+
+                        else if left > showProgressBarForLast then
+                            Time.every 500 (UpdateTimer >> lift)
+
+                        else
+                            Time.animate (UpdateTimer >> lift)
+
+                    Nothing ->
+                        Time.animate (UpdateTimer >> lift)
+
+
+view : Shared -> Lobby.Auth -> Time.Anchor -> String -> Config -> Dict User.Id User -> Model -> Html Global.Msg
+view shared auth timeAnchor name config users model =
+    let
+        overlay =
+            if model.game.players |> Dict.get auth.claims.uid |> Maybe.map (\p -> p.presence == Player.Away) |> Maybe.withDefault False then
+                gameOverlay shared Strings.ClientAway (Just ( Strings.SetBack, Player.Active |> SetPresence |> lift ))
+
+            else if model.game.paused then
+                gameOverlay shared Strings.Paused Nothing
+
+            else
+                []
+
         gameView =
             if model.viewingHistory then
                 History.view shared config users name model.game.history
 
             else
-                viewRound shared auth config users model
+                viewRound shared auth timeAnchor config users model
     in
-    Html.div [ HtmlA.id "game" ] gameView
-
-
-viewRound : Shared -> Lobby.Auth -> Config -> Dict User.Id User -> Model -> List (Html Global.Msg)
-viewRound shared auth config users model =
-    let
-        ( call, { instruction, action, content, fillCallWith } ) =
-            case model.completeRound of
-                Just completeRound ->
-                    ( completeRound.call, Complete.view shared True config users completeRound )
-
-                Nothing ->
-                    case game.round of
-                        Round.P round ->
-                            ( round.call, Playing.view auth config model round )
-
-                        Round.R round ->
-                            ( round.call, Revealing.view auth config round )
-
-                        Round.J round ->
-                            ( round.call, Judging.view auth config round )
-
-                        Round.C round ->
-                            ( round.call, Complete.view shared False config users round )
-
-        game =
-            model.game
-
-        parts =
-            fillCallWith |> List.map .body
-
-        renderedCall =
-            call |> Call.viewFilled shared config Card.Front [] parts
-
-        help =
-            let
-                id =
-                    "context-help-button"
-
-                helpContent =
-                    case instruction of
-                        Just i ->
-                            [ Components.iconButton
-                                [ HtmlA.id id, Strings.WhatToDo |> Lang.title shared ]
-                                Icon.question
-                            , Wl.popover
-                                (List.concat
-                                    [ WlA.anchorOrigin WlA.XCenter WlA.YBottom
-                                    , WlA.transformOrigin WlA.XRight WlA.YTop
-                                    , [ WlA.anchor id, WlA.fixed, WlA.anchorOpenEvents [ "click" ] ]
-                                    ]
-                                )
-                                [ Wl.popoverCard [] [ i |> Lang.html shared ] ]
-                            ]
-
-                        Nothing ->
-                            []
-            in
-            Html.div [ HtmlA.id "context-help" ] helpContent
-    in
-    [ minorActions shared auth game
-    , help
-    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction shared action ]
-    , content
-    , Html.div [ HtmlA.class "scroll-top-spacer" ] []
-
-    -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
-    , Html.div [ HtmlA.class "scroll-top" ]
-        [ Wl.button
-            [ WlA.flat
-            , WlA.fab
-            , WlA.inverted
-            , ScrollToTop |> lift |> HtmlE.onClick
-            ]
-            [ Icon.viewIcon Icon.arrowUp ]
-        ]
-    ]
-
-
-minorActions : Shared -> Lobby.Auth -> Game -> Html Global.Msg
-minorActions shared auth game =
-    let
-        localPlayer =
-            game.players |> Dict.get auth.claims.uid
-    in
-    Html.div [ HtmlA.id "minor-actions" ]
-        (List.filterMap identity
-            [ Just (historyButton shared)
-            , Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
-                (localPlayer |> Maybe.map .score)
-                game.rules.houseRules.reboot
-            ]
-        )
-
-
-historyButton : Shared -> Html Global.Msg
-historyButton shared =
-    Components.iconButton
-        [ HtmlA.id "history-button"
-        , Strings.ViewGameHistoryAction |> Lang.title shared
-        , ToggleHistoryView |> lift |> HtmlE.onClick
-        ]
-        Icon.history
-
-
-rebootButton : Shared -> Int -> Rules.Reboot -> Html Global.Msg
-rebootButton shared score reboot =
-    Components.iconButton
-        [ HtmlA.id "redraw"
-        , { cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.title shared
-        , WlA.disabled
-            |> Maybe.justIf (score < reboot.cost)
-            |> Maybe.withDefault (Redraw |> lift |> HtmlE.onClick)
-        ]
-        Icon.random
-
-
-viewAction : Shared -> Maybe Action -> Html Global.Msg
-viewAction shared visible =
-    Html.div [] (Action.actions |> List.map (Action.view shared visible))
+    Html.div [ HtmlA.id "game" ] (overlay ++ gameView)
 
 
 applyGameEvent : Lobby.Auth -> Shared -> Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
@@ -376,39 +314,6 @@ applyGameEvent auth shared gameEvent model =
                     game.players |> Dict.map updatePlayer
             in
             ( { model | game = { game | players = players }, hand = newHand }, Cmd.none )
-
-        Events.PlayRevealed { id, play } ->
-            let
-                game =
-                    model.game
-
-                ( newRound, speech ) =
-                    case model.game.round of
-                        Round.R r ->
-                            let
-                                plays =
-                                    r.plays |> List.map (reveal id play)
-
-                                known =
-                                    plays |> List.filterMap Play.asKnown
-
-                                round =
-                                    if List.length known == List.length plays then
-                                        Round.judging r.id r.czar r.players r.call known |> Round.J
-
-                                    else
-                                        { r | plays = plays, lastRevealed = Just id } |> Round.R
-
-                                tts =
-                                    speak shared r.call (Just play)
-                            in
-                            ( round, tts )
-
-                        _ ->
-                            -- TODO: Error
-                            ( model.game.round, Cmd.none )
-            in
-            ( { model | game = { game | round = newRound } }, speech )
 
         Events.PlaySubmitted { by } ->
             case model.game.round of
@@ -440,50 +345,103 @@ applyGameEvent auth shared gameEvent model =
                     -- TODO: Error
                     ( model, Cmd.none )
 
-        Events.RoundFinished { winner, playedBy } ->
-            let
-                game =
-                    model.game
+        Events.Timed (Events.NoTime { event }) ->
+            ( model
+            , Time.now
+                (\time ->
+                    Events.WithTime { event = event, time = time }
+                        |> Events.Timed
+                        |> Events.Game
+                        |> Lobby.EventReceived
+                        |> Global.LobbyMsg
+                )
+            )
 
-                newPlayers =
-                    game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
-
-                ( newRound, history, speech ) =
-                    case game.round of
-                        Round.J r ->
+        Events.Timed (Events.WithTime { event, time }) ->
+            case event of
+                Events.StartRevealing { plays, drawn } ->
+                    case model.game.round of
+                        Round.P r ->
                             let
-                                plays =
-                                    r.plays |> List.filterMap (resolvePlayedBy playedBy) |> Dict.fromList
+                                oldGame =
+                                    model.game
 
-                                complete =
-                                    Round.complete r.id r.czar r.players r.call plays winner
+                                newRound =
+                                    Round.revealing
+                                        r.id
+                                        r.czar
+                                        r.players
+                                        r.call
+                                        (plays |> List.map (\id -> Play id Nothing))
+                                        time
+                                        False
+                                        |> Round.R
 
-                                tts =
-                                    Dict.get winner plays
-                                        |> Maybe.map (\p -> speak shared r.call (Just p))
-                                        |> Maybe.withDefault Cmd.none
+                                newHand =
+                                    model.hand
+                                        |> List.filter (\c -> not (List.member c.details.id r.pick.cards))
+                                        |> (\h -> h ++ (drawn |> Maybe.withDefault []))
+
+                                role =
+                                    Player.role newRound auth.claims.uid
+
+                                notification =
+                                    if role == Player.RCzar then
+                                        Notifications.notify shared
+                                            { title = Strings.JudgingStarted
+                                            , body = Strings.RevealPlaysInstruction
+                                            }
+
+                                    else
+                                        Cmd.none
                             in
-                            ( complete |> Round.C, complete :: game.history, tts )
+                            ( { model | game = { oldGame | round = newRound }, hand = newHand }, notification )
 
                         _ ->
                             -- TODO: Error
-                            ( game.round, game.history, Cmd.none )
-            in
-            ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, speech )
+                            ( model, Cmd.none )
 
-        Events.RoundStarted { id, czar, players, call, drawn } ->
-            let
-                game =
-                    model.game
-            in
-            case model.game.round of
-                Round.C c ->
+                Events.RoundFinished { winner, playedBy } ->
                     let
+                        game =
+                            model.game
+
+                        newPlayers =
+                            game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
+
+                        ( newRound, history, speech ) =
+                            case game.round of
+                                Round.J r ->
+                                    let
+                                        plays =
+                                            r.plays |> List.filterMap (resolvePlayedBy playedBy) |> Dict.fromList
+
+                                        complete =
+                                            Round.complete r.id r.czar r.players r.call plays winner time
+
+                                        tts =
+                                            Dict.get winner plays
+                                                |> Maybe.map (\p -> speak shared r.call (Just p))
+                                                |> Maybe.withDefault Cmd.none
+                                    in
+                                    ( complete |> Round.C, complete :: game.history, tts )
+
+                                _ ->
+                                    -- TODO: Error
+                                    ( game.round, game.history, Cmd.none )
+                    in
+                    ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, speech )
+
+                Events.RoundStarted { id, czar, players, call, drawn } ->
+                    let
+                        game =
+                            model.game
+
                         drawnAsList =
                             drawn |> Maybe.withDefault []
 
                         ( newRound, cmd ) =
-                            Playing.init (Round.playing id czar players call Set.empty) Round.noPick
+                            Playing.init (Round.playing id czar players call Set.empty time False) Round.noPick
 
                         notification =
                             if Set.member auth.claims.uid players then
@@ -494,58 +452,115 @@ applyGameEvent auth shared gameEvent model =
 
                             else
                                 Cmd.none
+
+                        completeRound =
+                            case model.game.round of
+                                Round.C c ->
+                                    Just c
+
+                                _ ->
+                                    Nothing
                     in
                     ( { model
                         | game = { game | round = Round.P newRound }
-                        , completeRound = Just c
+                        , completeRound = completeRound
                         , hand = model.hand ++ drawnAsList
                       }
                     , Cmd.batch [ cmd, notification ]
                     )
 
-                _ ->
-                    -- TODO: Error
-                    ( model, Cmd.none )
-
-        Events.StartRevealing { plays, drawn } ->
-            case model.game.round of
-                Round.P r ->
+                Events.PlayRevealed { id, play } ->
                     let
-                        oldGame =
+                        game =
                             model.game
 
-                        newRound =
-                            Round.revealing
-                                r.id
-                                r.czar
-                                r.players
-                                r.call
-                                (plays |> List.map (\id -> Play id Nothing))
-                                |> Round.R
+                        ( newRound, speech ) =
+                            case model.game.round of
+                                Round.R r ->
+                                    let
+                                        plays =
+                                            r.plays |> List.map (reveal id play)
 
-                        newHand =
-                            model.hand
-                                |> List.filter (\c -> not (List.member c.details.id r.pick.cards))
-                                |> (\h -> h ++ (drawn |> Maybe.withDefault []))
+                                        known =
+                                            plays |> List.filterMap Play.asKnown
 
-                        role =
-                            Player.role newRound auth.claims.uid
+                                        round =
+                                            if List.length known == List.length plays then
+                                                Round.judging r.id r.czar r.players r.call known time False |> Round.J
 
-                        notification =
-                            if role == Player.RCzar then
-                                Notifications.notify shared
-                                    { title = Strings.JudgingStarted
-                                    , body = Strings.RevealPlaysInstruction
-                                    }
+                                            else
+                                                { r | plays = plays, lastRevealed = Just id } |> Round.R
 
-                            else
-                                Cmd.none
+                                        tts =
+                                            speak shared r.call (Just play)
+                                    in
+                                    ( round, tts )
+
+                                _ ->
+                                    -- TODO: Error
+                                    ( model.game.round, Cmd.none )
                     in
-                    ( { model | game = { oldGame | round = newRound }, hand = newHand }, notification )
+                    ( { model | game = { game | round = newRound } }, speech )
 
-                _ ->
-                    -- TODO: Error
-                    ( model, Cmd.none )
+        Events.PlayerAway { player } ->
+            let
+                game =
+                    model.game
+
+                players =
+                    game.players |> Dict.map (setPresence player Player.Away)
+            in
+            ( { model | game = { game | players = players } }, Cmd.none )
+
+        Events.PlayerBack { player } ->
+            let
+                game =
+                    model.game
+
+                players =
+                    game.players |> Dict.map (setPresence player Player.Active)
+            in
+            ( { model | game = { game | players = players } }, Cmd.none )
+
+        Events.Paused ->
+            let
+                game =
+                    model.game
+            in
+            ( { model | game = { game | paused = True } }, Cmd.none )
+
+        Events.Continued ->
+            let
+                game =
+                    model.game
+            in
+            ( { model | game = { game | paused = False } }, Cmd.none )
+
+        Events.StageTimerDone { round, stage } ->
+            let
+                game =
+                    model.game
+            in
+            if (game.round |> Round.data |> .id) == round && Round.stage game.round == stage then
+                let
+                    newRound =
+                        case game.round of
+                            Round.P playing ->
+                                Round.P { playing | timedOut = True }
+
+                            Round.R revealing ->
+                                Round.R { revealing | timedOut = True }
+
+                            Round.J judging ->
+                                Round.J { judging | timedOut = True }
+
+                            Round.C complete ->
+                                Round.C complete
+                in
+                ( { model | game = { game | round = newRound } }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
 
 applyGameStarted : Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd Global.Msg )
@@ -554,19 +569,17 @@ applyGameStarted lobby round hand =
         users =
             lobby.users |> Dict.toList |> List.map (\( id, _ ) -> id)
 
-        defaultPlayer =
-            { score = 0 }
-
         game =
             { round = Round.P round
             , history = []
             , playerOrder = users
             , players =
                 users
-                    |> List.map (\id -> ( id, defaultPlayer ))
+                    |> List.map (\id -> ( id, Player.default ))
                     |> Dict.fromList
             , rules = lobby.config.rules
             , winner = Nothing
+            , paused = False
             }
     in
     init game hand Round.noPick
@@ -580,7 +593,7 @@ hotJoinPlayer player model =
 
         game =
             { oldGame
-                | players = oldGame.players |> Dict.insert player { score = 0 }
+                | players = oldGame.players |> Dict.insert player Player.default
                 , playerOrder = oldGame.playerOrder ++ [ player ]
             }
     in
@@ -589,6 +602,244 @@ hotJoinPlayer player model =
 
 
 {- Private -}
+
+
+viewRound : Shared -> Lobby.Auth -> Time.Anchor -> Config -> Dict User.Id User -> Model -> List (Html Global.Msg)
+viewRound shared auth timeAnchor config users model =
+    let
+        ( call, { instruction, action, content, fillCallWith } ) =
+            case model.completeRound of
+                Just completeRound ->
+                    ( completeRound.call, Complete.view shared True config users completeRound )
+
+                Nothing ->
+                    case game.round of
+                        Round.P round ->
+                            ( round.call, Playing.view auth config model round )
+
+                        Round.R round ->
+                            ( round.call, Revealing.view auth config round )
+
+                        Round.J round ->
+                            ( round.call, Judging.view auth config round )
+
+                        Round.C round ->
+                            ( round.call, Complete.view shared False config users round )
+
+        game =
+            model.game
+
+        parts =
+            fillCallWith |> List.map .body
+
+        renderedCall =
+            call |> Call.viewFilled shared config Card.Front [] parts
+
+        { bar, countdown } =
+            timer timeAnchor model
+    in
+    [ Html.div [ HtmlA.id "top-content" ]
+        [ bar |> Maybe.withDefault Html.nothing
+        , Html.div [ HtmlA.class "top-row" ]
+            [ minorActions shared auth game instruction
+            , countdown |> Maybe.withDefault Html.nothing
+            ]
+        ]
+    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction shared action ]
+    , content
+    , Html.div [ HtmlA.class "scroll-top-spacer" ] []
+
+    -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
+    , Html.div [ HtmlA.class "scroll-top" ]
+        [ Wl.button
+            [ WlA.flat
+            , WlA.fab
+            , WlA.inverted
+            , ScrollToTop |> lift |> HtmlE.onClick
+            ]
+            [ Icon.viewIcon Icon.arrowUp ]
+        ]
+    ]
+
+
+help : Shared -> MdString -> Html msg
+help shared instruction =
+    let
+        id =
+            "context-help-button"
+
+        helpContent =
+            [ Components.iconButton
+                [ HtmlA.id id, Strings.ViewHelpAction |> Lang.title shared ]
+                Icon.question
+            , Wl.popover
+                (List.concat
+                    [ WlA.anchorOrigin WlA.XLeft WlA.YBottom
+                    , WlA.transformOrigin WlA.XLeft WlA.YTop
+                    , [ WlA.anchor id, WlA.fixed, WlA.anchorOpenEvents [ "click" ] ]
+                    ]
+                )
+                [ Wl.popoverCard [] [ instruction |> Lang.html shared ] ]
+            ]
+    in
+    Html.div [ HtmlA.id "context-help" ] helpContent
+
+
+timer : Time.Anchor -> Model -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
+timer timeAnchor model =
+    let
+        ( startedAt, limit, timedOut ) =
+            roundTimeDetails model.game
+
+        left =
+            if timedOut then
+                Just 0
+
+            else
+                Maybe.map2 (timeLeft timeAnchor startedAt) model.time limit
+    in
+    left |> Maybe.map timerInternal |> Maybe.withDefault { bar = Nothing, countdown = Nothing }
+
+
+timerInternal : Float -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
+timerInternal left =
+    let
+        progressBar =
+            (1 - (showProgressBarForLast - left) / showProgressBarForLast)
+                |> timerProgressBar
+    in
+    { bar = progressBar
+    , countdown = Just (Html.div [ HtmlA.id "time-left" ] [ max 0 left / 1000 |> ceiling |> String.fromInt |> Html.text ])
+    }
+
+
+timerProgressBar : Float -> Maybe (Html msg)
+timerProgressBar proportion =
+    if proportion < 1 then
+        ProgressBar.determinate (min 1 (max 0 proportion)) [ HtmlA.id "timer" ] |> Just
+
+    else
+        Nothing
+
+
+showProgressBarForLast : Float
+showProgressBarForLast =
+    20000
+
+
+timeLeft : Time.Anchor -> Time -> Time -> Float -> Float
+timeLeft anchor startedAt currentTime limit =
+    let
+        limitInMillis =
+            limit * 1000
+
+        timePassed =
+            Time.millisecondsSince anchor startedAt currentTime |> toFloat
+    in
+    limitInMillis - timePassed
+
+
+roundTimeDetails : Game -> ( Time, Maybe Float, Bool )
+roundTimeDetails game =
+    let
+        timeLimits =
+            game.rules.timeLimits
+    in
+    case game.round of
+        Round.P playing ->
+            ( playing.startedAt, timeLimits.playing, playing.timedOut )
+
+        Round.R revealing ->
+            ( revealing.startedAt, timeLimits.revealing, revealing.timedOut )
+
+        Round.J judging ->
+            ( judging.startedAt, timeLimits.judging, judging.timedOut )
+
+        Round.C complete ->
+            ( complete.startedAt, Nothing, False )
+
+
+minorActions : Shared -> Lobby.Auth -> Game -> Maybe MdString -> Html Global.Msg
+minorActions shared auth game instruction =
+    let
+        localPlayer =
+            game.players |> Dict.get auth.claims.uid
+
+        ( _, _, timedOut ) =
+            roundTimeDetails game
+
+        enforceTimeLimit =
+            if timedOut && game.rules.timeLimits.mode == Rules.Soft then
+                Components.iconButton
+                    [ Strings.EnforceTimeLimitAction |> Lang.title shared
+                    , EnforceTimeLimit |> lift |> HtmlE.onClick
+                    ]
+                    Icon.forward
+                    |> Just
+
+            else
+                Nothing
+    in
+    Html.div [ HtmlA.id "minor-actions" ]
+        (List.filterMap identity
+            [ Just (historyButton shared)
+            , instruction |> Maybe.map (help shared)
+            , Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
+                (localPlayer |> Maybe.map .score)
+                game.rules.houseRules.reboot
+            , enforceTimeLimit
+            ]
+        )
+
+
+historyButton : Shared -> Html Global.Msg
+historyButton shared =
+    Components.iconButton
+        [ HtmlA.id "history-button"
+        , Strings.ViewGameHistoryAction |> Lang.title shared
+        , ToggleHistoryView |> lift |> HtmlE.onClick
+        ]
+        Icon.history
+
+
+rebootButton : Shared -> Int -> Rules.Reboot -> Html Global.Msg
+rebootButton shared score reboot =
+    Components.iconButton
+        [ HtmlA.id "redraw"
+        , { cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.title shared
+        , WlA.disabled
+            |> Maybe.justIf (score < reboot.cost)
+            |> Maybe.withDefault (Redraw |> lift |> HtmlE.onClick)
+        ]
+        Icon.random
+
+
+viewAction : Shared -> Maybe Action -> Html Global.Msg
+viewAction shared visible =
+    Html.div [] (Action.actions |> List.map (Action.view shared visible))
+
+
+gameOverlay : Shared -> MdString -> Maybe ( MdString, Global.Msg ) -> List (Html Global.Msg)
+gameOverlay shared message action =
+    [ Html.div [ HtmlA.id "game-overlay" ]
+        [ Html.p [] [ message |> Lang.html shared ]
+        , Html.p [] [ action |> Maybe.map (gameOverlayAction shared) |> Maybe.withDefault Html.nothing ]
+        ]
+    ]
+
+
+gameOverlayAction : Shared -> ( MdString, Global.Msg ) -> Html Global.Msg
+gameOverlayAction shared ( description, action ) =
+    Components.linkButton [ action |> HtmlE.onClick ] [ description |> Lang.html shared ]
+
+
+setPresence : User.Id -> Player.Presence -> User.Id -> Player -> Player
+setPresence targetPlayer presence playerId player =
+    if playerId == targetPlayer then
+        { player | presence = presence }
+
+    else
+        player
 
 
 speak : Shared -> Card.Call -> Maybe (List Card.Response) -> Cmd msg

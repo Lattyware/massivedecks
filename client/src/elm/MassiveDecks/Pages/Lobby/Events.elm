@@ -4,6 +4,8 @@ module MassiveDecks.Pages.Lobby.Events exposing
     , Event(..)
     , GameEvent(..)
     , PresenceState(..)
+    , TimedGameEvent(..)
+    , TimedState(..)
     )
 
 import Dict exposing (Dict)
@@ -12,6 +14,7 @@ import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.User as User
 import Set exposing (Set)
@@ -20,21 +23,26 @@ import Set exposing (Set)
 {-| An event from the server.
 -}
 type Event
-    = Sync { state : Lobby, hand : Maybe (List Card.Response), play : Maybe (List Card.Id) }
+    = Sync
+        { state : Lobby
+        , hand : Maybe (List Card.Response)
+        , play : Maybe (List Card.Id)
+        , partialTimeAnchor : Time.PartialAnchor
+        }
     | Connection { user : User.Id, state : User.Connection }
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : ConfigChanged, version : String }
       -- Not a game event because we don't need to be in a game
     | GameStarted { round : Round.Playing, hand : List Card.Response }
     | Game GameEvent
-    | PrivilegeSet { user : User.Id, privilege : User.Privilege, token : Maybe Lobby.Token }
+    | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
 
 
 {-| The user's intentional presence in the lobby.
 -}
 type PresenceState
     = UserJoined { name : String, privilege : User.Privilege, control : User.Control }
-    | UserLeft
+    | UserLeft { reason : User.LeaveReason }
 
 
 type ConfigChanged
@@ -44,6 +52,8 @@ type ConfigChanged
     | PasswordSet { password : Maybe String }
     | HouseRuleChanged { change : Rules.HouseRuleChange }
     | PublicSet { public : Bool }
+    | ChangeTimeLimitForStage { stage : Round.Stage, timeLimit : Maybe Float }
+    | ChangeTimeLimitMode { mode : Rules.TimeLimitMode }
 
 
 type DeckChange
@@ -55,11 +65,23 @@ type DeckChange
 
 type GameEvent
     = HandRedrawn { player : User.Id, hand : Maybe (List Card.Response) }
-    | PlayRevealed { id : Play.Id, play : List Card.Response }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }
-    | RoundFinished { winner : User.Id, playedBy : Dict Play.Id User.Id }
-    | RoundStarted
+    | PlayerAway { player : User.Id }
+    | PlayerBack { player : User.Id }
+    | Timed TimedState
+    | StageTimerDone { round : Round.Id, stage : Round.Stage }
+    | Paused
+    | Continued
+
+
+type TimedState
+    = NoTime { event : TimedGameEvent }
+    | WithTime { event : TimedGameEvent, time : Time }
+
+
+type TimedGameEvent
+    = RoundStarted
         { id : Round.Id
         , czar : User.Id
         , players : Set User.Id
@@ -67,3 +89,5 @@ type GameEvent
         , drawn : Maybe (List Card.Response)
         }
     | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.Response) }
+    | RoundFinished { winner : User.Id, playedBy : Dict Play.Id User.Id }
+    | PlayRevealed { id : Play.Id, play : List Card.Response }

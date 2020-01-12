@@ -1,5 +1,5 @@
-import { User } from "../../user";
 import * as user from "../../user";
+import { User } from "../../user";
 
 /**
  * An event for when connection state for a user changes.
@@ -28,14 +28,18 @@ export const joined = (id: user.Id, user: User): Joined => ({
   ...(user.control !== "Human" ? { control: user.control } : {})
 });
 
+export type LeaveReason = "Left" | "Kicked";
+
 /**
  * A user disconnects from the lobby.
  */
 export interface Left extends Base {
   event: "Left";
+  reason?: LeaveReason;
 }
 
-export const left = (user: user.Id): Left => ({
+export const left = (user: user.Id, reason: LeaveReason): Left => ({
   event: "Left",
-  user
+  user,
+  ...(reason !== "Left" ? { reason } : {})
 });

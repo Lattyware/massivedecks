@@ -21,14 +21,14 @@ export interface Rules {
    */
   scoreLimit?: number;
   houseRules: HouseRules;
-  timeLimits?: RoundTimeLimits;
+  timeLimits: RoundTimeLimits;
 }
 
 export interface Public {
   handSize: number;
   scoreLimit?: number;
   houseRules: houseRules.Public;
-  roundTimeLimits?: RoundTimeLimits;
+  timeLimits: RoundTimeLimits;
 }
 
 /**
@@ -42,7 +42,7 @@ export type TimeLimitMode = "Hard" | "Soft";
  * The amount of time in seconds to limit to.
  * @TJS-type integer
  * @minimum 0
- * @maximum 300
+ * @maximum 900
  */
 export type TimeLimit = number;
 
@@ -54,15 +54,15 @@ export interface RoundTimeLimits {
   /**
    * The time limit for players to make their play.
    */
-  playing: TimeLimit;
+  playing?: TimeLimit;
   /**
    * The time limit for the judge  to reveal the plays.
    */
-  revealing: TimeLimit;
+  revealing?: TimeLimit;
   /**
    * The time limit for the judge to pick a winner.
    */
-  judging: TimeLimit;
+  judging?: TimeLimit;
   /**
    * The amount of time in seconds after one round completes the next one
    * starts.
@@ -75,7 +75,7 @@ export const defaultTimeLimits = (): RoundTimeLimits => ({
   playing: 60,
   revealing: 30,
   judging: 30,
-  complete: 10
+  complete: 2
 });
 
 /**
@@ -84,7 +84,8 @@ export const defaultTimeLimits = (): RoundTimeLimits => ({
 export const create = (): Rules => ({
   handSize: 10,
   scoreLimit: 25,
-  houseRules: houseRules.create()
+  houseRules: houseRules.create(),
+  timeLimits: defaultTimeLimits()
 });
 
 /**

@@ -12,10 +12,53 @@ export interface Change {
   tasks?: Iterable<Task>;
 }
 
+export type ConstrainedChange<L extends Lobby> = Change & { lobby?: L };
+
 export type Handler = (lobby: Lobby) => Change;
 export type HandlerWithReturnValue<T> = (
   lobby: Lobby
 ) => { change: Change; returnValue: T };
+
+/**
+ * Reduce a list of items to a single change by applying a function to each one
+ * in turn.
+ * @param items the items.
+ * @param lobby the lobby.
+ * @param toChange a function taking the lobby after the last change, and the item.
+ */
+export function reduce<T, L extends Lobby>(
+  items: Iterable<T>,
+  lobby: L,
+  toChange: (lobby: L, item: T) => ConstrainedChange<L>
+): ConstrainedChange<L> {
+  let currentLobby = lobby;
+  let lobbyUnchanged = true;
+  const events: event.Distributor[] = [];
+  const timeouts: timeout.TimeoutAfter[] = [];
+  const tasks: Task[] = [];
+  for (const item of items) {
+    const result = toChange(currentLobby, item);
+    if (result.lobby !== undefined) {
+      lobbyUnchanged = false;
+      currentLobby = result.lobby;
+    }
+    if (result.events !== undefined) {
+      events.push(...result.events);
+    }
+    if (result.timeouts !== undefined) {
+      timeouts.push(...result.timeouts);
+    }
+    if (result.tasks !== undefined) {
+      tasks.push(...result.tasks);
+    }
+  }
+  return {
+    ...(lobbyUnchanged ? { lobby: currentLobby } : {}),
+    ...(events.length > 0 ? { events } : {}),
+    ...(timeouts.length > 0 ? { timeouts } : {}),
+    ...(tasks.length > 0 ? { tasks } : {})
+  };
+}
 
 function internalApply(
   server: ServerState,

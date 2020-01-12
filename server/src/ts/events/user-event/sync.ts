@@ -10,6 +10,7 @@ export interface Sync {
   state: lobby.Public;
   hand?: Hand;
   play?: card.Id[];
+  gameTime: number;
 }
 
 export const of = (
@@ -20,5 +21,6 @@ export const of = (
   event: "Sync",
   state,
   ...(hand !== undefined ? { hand } : {}),
-  ...(play !== undefined ? { play } : {})
+  ...(play !== undefined ? { play } : {}),
+  gameTime: Date.now()
 });

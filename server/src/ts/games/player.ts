@@ -49,11 +49,18 @@ export class Player {
   }
 
   /**
-   * Get the given player's role in the game.
+   * Get the given player's role in the current round, or null if they are not
+   * in the round.
    * @param id The player's id.
    * @param game The game.
    */
-  public static role(id: user.Id, game: Game): Role {
-    return game.round.czar === id ? "Czar" : "Player";
+  public static role(id: user.Id, game: Game): Role | null {
+    if (game.round.czar === id) {
+      return "Czar";
+    } else if (game.round.players.has(id)) {
+      return "Player";
+    } else {
+      return null;
+    }
   }
 }

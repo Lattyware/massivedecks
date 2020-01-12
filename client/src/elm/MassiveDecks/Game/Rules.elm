@@ -6,15 +6,21 @@ module MassiveDecks.Game.Rules exposing
     , Rando
     , Reboot
     , Rules
+    , TimeLimitMode(..)
+    , TimeLimits
     , apply
+    , defaultTimeLimits
+    , getTimeLimitByStage
     , packingHeat
     , rando
     , reboot
+    , setTimeLimitByStage
     )
 
 {-| Game rules.
 -}
 
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Strings as Strings exposing (MdString)
 
 
@@ -24,6 +30,7 @@ type alias Rules =
     { handSize : Int
     , scoreLimit : Maybe Int
     , houseRules : HouseRules
+    , timeLimits : TimeLimits
     }
 
 
@@ -32,6 +39,62 @@ type alias HouseRules =
     , packingHeat : Maybe PackingHeat
     , reboot : Maybe Reboot
     }
+
+
+type TimeLimitMode
+    = Hard
+    | Soft
+
+
+type alias TimeLimits =
+    { mode : TimeLimitMode
+    , playing : Maybe Float
+    , revealing : Maybe Float
+    , judging : Maybe Float
+    , complete : Float
+    }
+
+
+defaultTimeLimits : TimeLimits
+defaultTimeLimits =
+    { mode = Soft
+    , playing = Just 60
+    , revealing = Just 30
+    , judging = Just 30
+    , complete = 2
+    }
+
+
+setTimeLimitByStage : Round.Stage -> Maybe Float -> TimeLimits -> TimeLimits
+setTimeLimitByStage stage timeLimit timeLimits =
+    case stage of
+        Round.SPlaying ->
+            { timeLimits | playing = timeLimit }
+
+        Round.SRevealing ->
+            { timeLimits | revealing = timeLimit }
+
+        Round.SJudging ->
+            { timeLimits | judging = timeLimit }
+
+        Round.SComplete ->
+            { timeLimits | complete = timeLimit |> Maybe.withDefault timeLimits.complete }
+
+
+getTimeLimitByStage : Round.Stage -> TimeLimits -> Maybe Float
+getTimeLimitByStage stage timeLimits =
+    case stage of
+        Round.SPlaying ->
+            timeLimits.playing
+
+        Round.SRevealing ->
+            timeLimits.revealing
+
+        Round.SJudging ->
+            timeLimits.judging
+
+        Round.SComplete ->
+            Just timeLimits.complete
 
 
 type alias PackingHeat =
@@ -72,6 +135,7 @@ type alias HouseRule a =
     , description : Maybe a -> MdString
     , extract : HouseRules -> Maybe a
     , insert : Maybe a -> HouseRules -> HouseRules
+    , validate : a -> Bool
     }
 
 
@@ -83,6 +147,7 @@ rando =
     , description = always Strings.HouseRuleRandoCardrissianDescription
     , extract = .rando
     , insert = \r -> \hr -> { hr | rando = r }
+    , validate = \r -> r.number >= 1 && r.number <= 10
     }
 
 
@@ -101,6 +166,7 @@ reboot =
     , description = description
     , extract = .reboot
     , insert = \r -> \hr -> { hr | reboot = r }
+    , validate = \r -> r.cost >= 1 && r.cost <= 50
     }
 
 
@@ -112,4 +178,5 @@ packingHeat =
     , description = always Strings.HouseRulePackingHeatDescription
     , extract = .packingHeat
     , insert = \ph -> \hr -> { hr | packingHeat = ph }
+    , validate = \_ -> True
     }

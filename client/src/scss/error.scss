@@ -39,6 +39,11 @@
 
   padding: 0.25em;
 
+  .description {
+    white-space: normal;
+    flex-basis: 100%;
+  }
+
   .report {
     .body {
       margin: 0 1em;

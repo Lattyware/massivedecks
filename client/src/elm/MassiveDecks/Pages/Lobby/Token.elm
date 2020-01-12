@@ -35,7 +35,6 @@ decodeJson token json =
 
 decodeClaims : Json.Decoder Claims
 decodeClaims =
-    Json.map3 Claims
+    Json.map2 Claims
         (Json.field "gc" Decoders.gameCode)
         (Json.field "uid" Decoders.userId)
-        (Json.field "pvg" Decoders.privilege)

@@ -15,7 +15,6 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.Util.Html as Html
-import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Version exposing (version)
 import Url.Builder
 import Weightless as Wl
@@ -37,13 +36,13 @@ view shared route error =
             report |> Maybe.map (viewReport shared) |> Maybe.withDefault []
     in
     Wl.expansion
-        (List.concat
-            [ [ WlA.name "errors", HtmlA.class "error" ]
-            , [ WlA.disabled ] |> Maybe.justIf (report == Nothing) |> Maybe.withDefault []
-            ]
-        )
-        (Html.span [ WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
-            :: Html.span [ WlA.expansionSlot WlA.EDescription ] [ model.description |> Lang.html shared ]
+        [ WlA.name "errors"
+        , HtmlA.class "error"
+        , HtmlA.disabled (report == Nothing)
+        , WlA.noRipple (report == Nothing)
+        ]
+        (Html.span [ HtmlA.class "title", WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
+            :: Html.span [ HtmlA.class "description", WlA.expansionSlot WlA.EDescription ] [ model.description |> Lang.html shared ]
             :: reportView
         )
 
@@ -53,9 +52,10 @@ view shared route error =
 viewSpecific : Shared -> MdError -> Html msg
 viewSpecific shared error =
     Wl.expansion
-        [ WlA.name "errors", HtmlA.class "error" ]
-        [ Html.span [ WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
-        , Html.span [ WlA.expansionSlot WlA.EDescription ] [ error |> MdError.describe |> Lang.html shared ]
+        [ WlA.name "errors", HtmlA.class "error", HtmlA.attribute "open" "open" ]
+        [ Html.span [ HtmlA.class "title", WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
+        , Html.span [ WlA.expansionSlot WlA.EDescription ] [ error |> MdError.shortDescribe |> Lang.html shared ]
+        , Html.p [] [ error |> MdError.describe |> Lang.html shared ]
         ]
 
 

@@ -1,11 +1,13 @@
 import { Action } from "../action";
-import { InvalidAuthenticationError } from "../errors/authentication";
+import {
+  AlreadyLeftError,
+  InvalidAuthenticationError
+} from "../errors/authentication";
 import * as event from "../event";
 import * as connectionChanged from "../events/lobby-event/connection-changed";
 import * as change from "../lobby/change";
 import { GameCode } from "../lobby/game-code";
 import { ServerState } from "../server-state";
-import { User } from "../user";
 import * as token from "../user/token";
 import { Token } from "../user/token";
 
@@ -47,7 +49,13 @@ export async function handle(
     throw new InvalidAuthenticationError("wrong game code");
   }
   await change.apply(server, gameCode, lobby => {
-    const user = lobby.users.get(claims.uid) as User;
+    const user = lobby.users.get(claims.uid);
+    if (user === undefined) {
+      throw new InvalidAuthenticationError("no such user");
+    }
+    if (user.presence === "Left") {
+      throw new AlreadyLeftError();
+    }
     if (user.connection !== "Connected") {
       user.connection = "Connected";
       return {

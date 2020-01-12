@@ -20,7 +20,7 @@ export type Event = LobbyEvent | UserEvent | GameEvent;
  */
 export type Distributor = (
   lobby: Lobby,
-  send: (target: user.Id, payload: string) => void
+  send: (target: user.Id, payload: string, close: boolean) => void
 ) => void;
 
 /**
@@ -30,7 +30,7 @@ export type Distributor = (
 export const targetAll = (event: Event): Distributor => (lobby, send) => {
   const rendered = JSON.stringify(event);
   for (const id of lobby.users.keys()) {
-    send(id, rendered);
+    send(id, rendered, false);
   }
 };
 
@@ -47,7 +47,7 @@ export const targetOnly = (
   const targetSet = new Set(targets);
   for (const id of lobby.users.keys()) {
     if (targetSet.has(id)) {
-      send(id, rendered);
+      send(id, rendered, false);
     }
   }
 };
@@ -67,15 +67,15 @@ export const additionally = <T extends Event>(
     const addition = additions.get(id);
     if (addition !== undefined) {
       const full: T = { ...event, ...addition };
-      send(id, JSON.stringify(full));
+      send(id, JSON.stringify(full), false);
     } else {
-      send(id, basicRendered);
+      send(id, basicRendered, false);
     }
   }
 };
 
 /**
- * Send an event to every user in the lobby, sending some edditional element if
+ * Send an event to every user in the lobby, sending some additional element if
  * the user fulfills the given condition.
  * @param event The event to send.
  * @param condition The condition to apply.
@@ -90,7 +90,7 @@ export const conditionally = <T extends Event>(
   const full: T = { ...event, ...addition };
   const fullRendered = JSON.stringify(full);
   for (const [id, user] of lobby.users.entries()) {
-    send(id, condition(id, user) ? fullRendered : basicRendered);
+    send(id, condition(id, user) ? fullRendered : basicRendered, false);
   }
 };
 
@@ -108,7 +108,7 @@ export const playerSpecificAddition = <T extends Event, U extends Partial<T>>(
   const game = lobby.game;
   if (game === undefined) {
     for (const id of lobby.users.keys()) {
-      send(id, basicRendered);
+      send(id, basicRendered, false);
     }
   } else {
     for (const [id, user] of lobby.users.entries()) {
@@ -116,18 +116,37 @@ export const playerSpecificAddition = <T extends Event, U extends Partial<T>>(
       if (player !== undefined) {
         const toAdd = addition(id, user, player);
         const full: T = { ...event, ...toAdd };
-        send(id, JSON.stringify(full));
+        send(id, JSON.stringify(full), false);
+      } else {
+        send(id, basicRendered, false);
       }
     }
+  }
+};
+
+/**
+ * Send the event to every user in the lobby, closing the connection of anyone
+ * matching the given predicate.
+ * @param event The event to send.
+ * @param close The predicate to decide if the connection should close.
+ */
+export const targetAllAndPotentiallyClose = (
+  event: Event,
+  close: (userId: user.Id) => boolean
+): Distributor => (lobby, send) => {
+  const rendered = JSON.stringify(event);
+  for (const id of lobby.users.keys()) {
+    send(id, rendered, close(id));
   }
 };
 
 const sendHelper = (
   sockets: socketManager.Sockets,
   gameCode: GameCode
-): ((user: user.Id, serializedEvent: string) => void) => (
+): ((user: user.Id, serializedEvent: string, close: boolean) => void) => (
   user,
-  serializedEvent
+  serializedEvent,
+  close
 ) => {
   try {
     const socket = sockets.get(gameCode, user);
@@ -137,6 +156,9 @@ const sendHelper = (
         user: user,
         event: serializedEvent
       });
+      if (close) {
+        socket.close(1000, "User no longer in game.");
+      }
     }
   } catch (error) {
     logging.logException("Exception sending to WebSocket", error);

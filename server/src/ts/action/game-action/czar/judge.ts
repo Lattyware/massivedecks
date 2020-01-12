@@ -39,13 +39,14 @@ export const handle: gameAction.Handler<Judge> = (
     const completedRound = lobbyRound.advance(play.playedBy);
     lobby.game.round = completedRound;
     lobby.game.history.splice(0, 0, completedRound.public());
+
     return {
       lobby,
       events: [event.targetAll(roundFinished.of(completedRound))],
       timeouts: [
         {
           timeout: roundStart.of(),
-          after: server.config.timeouts.nextRoundDelay
+          after: lobby.game.rules.timeLimits.complete * 1000
         }
       ]
     };

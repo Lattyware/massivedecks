@@ -1,12 +1,20 @@
 module MassiveDecks.Pages.Lobby.Actions exposing
     ( addDeck
     , changeHouseRule
+    , changeTimeLimitForStage
+    , changeTimeLimitMode
+    , enforceTimeLimit
     , judge
+    , kick
+    , leave
     , redraw
     , removeDeck
     , reveal
     , setHandSize
     , setPassword
+    , setPlayerAway
+    , setPresence
+    , setPrivilege
     , setPublic
     , setScoreLimit
     , startGame
@@ -18,9 +26,12 @@ import Json.Encode as Json
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Game.Player as Player
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.ServerConnection as ServerConnection
+import MassiveDecks.User as User
 
 
 addDeck : String -> Source.External -> Cmd msg
@@ -86,6 +97,58 @@ judge play =
 redraw : Cmd msg
 redraw =
     action "Redraw" []
+
+
+setPresence : Player.Presence -> Cmd msg
+setPresence presence =
+    action "SetPresence" [ ( "presence", presence |> Encoders.playerPresence ) ]
+
+
+setPlayerAway : User.Id -> Cmd msg
+setPlayerAway player =
+    action "SetPlayerAway" [ ( "player", player |> Json.string ) ]
+
+
+setPrivilege : User.Id -> User.Privilege -> Cmd msg
+setPrivilege player privilege =
+    action "SetPrivilege" [ ( "player", player |> Json.string ), ( "privilege", privilege |> Encoders.privilege ) ]
+
+
+kick : User.Id -> Cmd msg
+kick user =
+    action "Kick" [ ( "user", user |> Json.string ) ]
+
+
+leave : Cmd msg
+leave =
+    action "Leave" []
+
+
+enforceTimeLimit : Round.Id -> Round.Stage -> Cmd msg
+enforceTimeLimit round stage =
+    action "EnforceTimeLimit"
+        [ ( "round", Encoders.roundId round )
+        , ( "stage", Encoders.stage stage )
+        ]
+
+
+changeTimeLimitMode : Rules.TimeLimitMode -> String -> Cmd msg
+changeTimeLimitMode mode version =
+    configAction "ChangeTimeLimit" [ ( "mode", Encoders.timeLimitMode mode ) ] version
+
+
+changeTimeLimitForStage : Round.Stage -> Maybe Float -> String -> Cmd msg
+changeTimeLimitForStage stage timeLimit version =
+    let
+        timeLimitField =
+            case timeLimit of
+                Just duration ->
+                    [ ( "timeLimit", duration |> Json.float ) ]
+
+                Nothing ->
+                    []
+    in
+    configAction "ChangeTimeLimit" (( "stage", Encoders.stage stage ) :: timeLimitField) version
 
 
 

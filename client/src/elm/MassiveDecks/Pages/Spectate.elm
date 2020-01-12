@@ -45,7 +45,7 @@ init r =
     let
         call =
             Card.call
-                ([ [ Parts.Slot Parts.None ] ] |> Parts.unsafeFromList)
+                ([ [ Parts.Slot Parts.Stay ] ] |> Parts.unsafeFromList)
                 "test"
                 ("B80VA" |> Cardcast.playCode |> Source.Cardcast |> Source.Ex)
 

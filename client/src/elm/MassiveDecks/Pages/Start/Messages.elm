@@ -14,3 +14,4 @@ type Msg
     | LobbyBrowserMsg LobbyBrowser.Msg
     | PasswordChanged String
     | JoinFailure MdError
+    | HideOverlay

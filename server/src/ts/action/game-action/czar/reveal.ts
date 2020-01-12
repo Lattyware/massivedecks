@@ -4,6 +4,7 @@ import * as event from "../../../event";
 import * as playRevealed from "../../../events/game-event/play-revealed";
 import * as play from "../../../games/cards/play";
 import * as round from "../../../games/game/round";
+import * as roundStageTimerDone from "../../../timeout/round-stage-timer-done";
 import * as gameAction from "../../game-action";
 
 /**
@@ -40,13 +41,22 @@ export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
       return {};
     }
     play.revealed = true;
+    const timeouts = [];
     const advancedRound = lobbyRound.advance();
     if (advancedRound !== null) {
       lobby.game.round = advancedRound;
+      const timer = roundStageTimerDone.ifEnabled(
+        lobbyRound,
+        lobby.game.rules.timeLimits
+      );
+      if (timer !== undefined) {
+        timeouts.push(timer);
+      }
     }
     return {
       lobby,
-      events: [event.targetAll(playRevealed.of(play.id, play.play))]
+      events: [event.targetAll(playRevealed.of(play.id, play.play))],
+      timeouts: timeouts
     };
   } else {
     return {};

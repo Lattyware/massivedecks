@@ -31,9 +31,13 @@ export const handle: timeout.Handler<UserDisconnect> = (
     }
     if (userData.connection !== "Disconnected") {
       userData.connection = "Disconnected";
+      const events =
+        userData.presence !== "Left"
+          ? [event.targetAll(connectionChanged.disconnected(id))]
+          : [];
       return {
         lobby,
-        events: [event.targetAll(connectionChanged.disconnected(id))]
+        events
       };
     }
   }

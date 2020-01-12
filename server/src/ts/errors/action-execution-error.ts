@@ -54,16 +54,20 @@ export class UnprivilegedError extends ActionExecutionError {
 }
 
 interface IncorrectPlayerRoleDetails extends errors.Details {
-  role: player.Role;
+  role: player.Role | null;
   expected: player.Role;
 }
 
 // Could happen if the round changes unexpectedly (e.g: czar leaves game).
 export class IncorrectPlayerRoleError extends ActionExecutionError {
-  public readonly role: player.Role;
+  public readonly role: player.Role | null;
   public readonly expected: player.Role;
 
-  public constructor(action: Action, role: player.Role, expected: player.Role) {
+  public constructor(
+    action: Action,
+    role: player.Role | null,
+    expected: player.Role
+  ) {
     super(
       `For this action the player must be ${expected} but is ${role}:\n` +
         `${JSON.stringify(action)}`,

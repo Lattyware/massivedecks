@@ -5,6 +5,7 @@ module MassiveDecks.Components.Form.Message exposing
     , error
     , errorWithFix
     , info
+    , mdError
     , none
     , view
     , warning
@@ -18,6 +19,7 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Components as Components
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import Svg.Attributes as Svg
@@ -70,6 +72,11 @@ error mdString =
         , description = mdString
         , fixes = []
         }
+
+
+mdError : MdError -> Message msg
+mdError e =
+    e |> MdError.describe |> error
 
 
 errorWithFix : MdString -> List (Fix msg) -> Message msg

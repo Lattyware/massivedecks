@@ -1,5 +1,6 @@
 module MassiveDecks.Pages.Lobby.Model exposing
     ( Auth
+    , Change(..)
     , Claims
     , Lobby
     , Model
@@ -15,10 +16,21 @@ import Dict exposing (Dict)
 import Json.Decode as Json
 import MassiveDecks.Animated exposing (Animated)
 import MassiveDecks.Game.Model as Game exposing (Game)
+import MassiveDecks.Game.Time as Time
+import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
 import MassiveDecks.User as User exposing (User)
+
+
+{-| A change. This is the result of the update function, and implies either an update to the current page or a redirect
+to somewhere else with some payload.
+-}
+type Change
+    = Stay Model
+    | AuthError GameCode MdError.AuthenticationError
+    | LeftGame GameCode User.LeaveReason
 
 
 {-| Data for the lobby page.
@@ -31,6 +43,7 @@ type alias Model =
     , notificationId : NotificationId
     , notifications : List (Animated Notification)
     , inviteDialogOpen : Bool
+    , timeAnchor : Maybe Time.Anchor
     }
 
 
@@ -72,7 +85,6 @@ type alias Auth =
 type alias Claims =
     { gc : GameCode
     , uid : User.Id
-    , pvg : User.Privilege
     }
 
 
@@ -104,4 +116,4 @@ type NotificationMessage
     = UserConnected User.Id
     | UserDisconnected User.Id
     | UserJoined User.Id
-    | UserLeft User.Id
+    | UserLeft User.Id User.LeaveReason

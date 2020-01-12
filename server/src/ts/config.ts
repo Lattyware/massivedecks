@@ -34,7 +34,6 @@ type Timeouts<D extends Duration> = {
   timeoutCheckFrequency: D;
   disconnectionGracePeriod: D;
   finishedPlayingDelay: D;
-  nextRoundDelay: D;
 } & { [key: string]: D };
 
 type BaseStorage<D extends Duration> = BaseInMemory<D> | BasePostgreSQL<D>;

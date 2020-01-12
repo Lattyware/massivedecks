@@ -19,12 +19,14 @@ module MassiveDecks.Game.Round exposing
     , revealing
     , stage
     , stageDescription
+    , stageToName
     )
 
 import Dict exposing (Dict)
 import Json.Decode as Json
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Game.Time exposing (Time)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.User as User
 import Set exposing (Set)
@@ -73,6 +75,24 @@ stage round =
             SComplete
 
 
+{-| Get the serializing name for the stage.
+-}
+stageToName : Stage -> String
+stageToName s =
+    case s of
+        SPlaying ->
+            "Playing"
+
+        SRevealing ->
+            "Revealing"
+
+        SJudging ->
+            "Judging"
+
+        SComplete ->
+            "Complete"
+
+
 {-| A description of the given stage.
 -}
 stageDescription : Stage -> MdString
@@ -103,43 +123,47 @@ type Round
 {-| A round while users are playing a round.
 -}
 type alias Playing =
-    Data { played : Set User.Id, pick : Pick }
+    Data { played : Set User.Id, pick : Pick, timedOut : Bool }
 
 
-playing : Id -> User.Id -> Set User.Id -> Card.Call -> Set User.Id -> Playing
-playing id czar players call played =
+playing : Id -> User.Id -> Set User.Id -> Card.Call -> Set User.Id -> Time -> Bool -> Playing
+playing id czar players call played startedAt timedOut =
     { id = id
     , czar = czar
     , players = players
     , call = call
     , played = played
     , pick = { state = Selected, cards = [] }
+    , startedAt = startedAt
+    , timedOut = timedOut
     }
 
 
 type alias Revealing =
-    Data { plays : List Play, lastRevealed : Maybe Play.Id }
+    Data { plays : List Play, lastRevealed : Maybe Play.Id, timedOut : Bool }
 
 
-revealing : Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Revealing
-revealing id czar players call plays =
+revealing : Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Time -> Bool -> Revealing
+revealing id czar players call plays startedAt timedOut =
     { id = id
     , czar = czar
     , players = players
     , call = call
     , plays = plays
     , lastRevealed = Nothing
+    , startedAt = startedAt
+    , timedOut = timedOut
     }
 
 
 {-| A round while the czar is judging a round.
 -}
 type alias Judging =
-    Data { plays : List Play.Known, pick : Maybe Play.Id, liked : Set Play.Id }
+    Data { plays : List Play.Known, pick : Maybe Play.Id, liked : Set Play.Id, timedOut : Bool }
 
 
-judging : Id -> User.Id -> Set User.Id -> Card.Call -> List Play.Known -> Judging
-judging id czar players call plays =
+judging : Id -> User.Id -> Set User.Id -> Card.Call -> List Play.Known -> Time -> Bool -> Judging
+judging id czar players call plays startedAt timedOut =
     { id = id
     , czar = czar
     , players = players
@@ -147,6 +171,8 @@ judging id czar players call plays =
     , plays = plays
     , pick = Nothing
     , liked = Set.empty
+    , startedAt = startedAt
+    , timedOut = timedOut
     }
 
 
@@ -156,14 +182,15 @@ type alias Complete =
     Data { plays : Dict User.Id (List Card.Response), winner : User.Id }
 
 
-complete : Id -> User.Id -> Set User.Id -> Card.Call -> Dict User.Id (List Card.Response) -> User.Id -> Complete
-complete id czar players call plays winner =
+complete : Id -> User.Id -> Set User.Id -> Card.Call -> Dict User.Id (List Card.Response) -> User.Id -> Time -> Complete
+complete id czar players call plays winner startedAt =
     { id = id
     , czar = czar
     , players = players
     , call = call
     , plays = plays
     , winner = winner
+    , startedAt = startedAt
     }
 
 
@@ -175,6 +202,7 @@ type alias Data specific =
         , czar : User.Id
         , players : Set User.Id
         , call : Card.Call
+        , startedAt : Time
     }
 
 
@@ -213,4 +241,4 @@ data round =
 
 extract : Data a -> Data {}
 extract rd =
-    { id = rd.id, call = rd.call, czar = rd.czar, players = rd.players }
+    { id = rd.id, call = rd.call, czar = rd.czar, players = rd.players, startedAt = rd.startedAt }

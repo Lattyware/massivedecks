@@ -2,6 +2,7 @@ module MassiveDecks.User exposing
     ( Connection(..)
     , Control(..)
     , Id
+    , LeaveReason(..)
     , Presence(..)
     , Privilege(..)
     , Registration
@@ -51,6 +52,13 @@ roleDescription toDescribe =
 type Presence
     = Joined
     | Left
+
+
+{-| The reason a user left the lobby.
+-}
+type LeaveReason
+    = LeftNormally
+    | Kicked
 
 
 {-| The state of connection to the lobby.

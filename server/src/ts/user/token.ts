@@ -22,7 +22,6 @@ export interface Claims {
    */
   gc: GameCode;
   uid: user.Id;
-  pvg: user.Privilege;
 }
 
 /**
