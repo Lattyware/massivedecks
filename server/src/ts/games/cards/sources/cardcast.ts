@@ -199,7 +199,7 @@ export class Resolver extends source.Resolver {
       // TODO: Error wrapper for connection to Cardcast.
       throw error;
     } finally {
-      connectionPool.release(connection);
+      await connectionPool.release(connection);
     }
   }
 

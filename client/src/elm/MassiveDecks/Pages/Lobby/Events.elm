@@ -15,7 +15,7 @@ import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Game.Time as Time exposing (Time)
-import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
+import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.User as User
 import Set exposing (Set)
 
@@ -73,6 +73,7 @@ type GameEvent
     | StageTimerDone { round : Round.Id, stage : Round.Stage }
     | Paused
     | Continued
+    | GameEnded { winner : List User.Id }
 
 
 type TimedState

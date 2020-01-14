@@ -9,6 +9,7 @@ import * as publicRound from "./round/public";
 import { Public as PublicRound } from "./round/public";
 import * as storedPlay from "./round/storedPlay";
 import { StoredPlay } from "./round/storedPlay";
+import * as util from "../../util";
 
 export type Round = Playing | Revealing | Judging | Complete;
 
@@ -275,7 +276,12 @@ export class Playing extends Base<"Playing"> implements Timed {
   }
 
   public advance(): Revealing {
-    return new Revealing(this.id, this.czar, this.call, this.plays);
+    return new Revealing(
+      this.id,
+      this.czar,
+      this.call,
+      util.shuffled(this.plays)
+    );
   }
 
   public waitingFor(): Set<user.Id> | null {

@@ -2,10 +2,7 @@ import WebSocket from "ws";
 import * as action from "./action";
 import * as authenticate from "./action/authenticate";
 import { MassiveDecksError } from "./errors";
-import {
-  AlreadyLeftError,
-  NotAuthenticatedError
-} from "./errors/authentication";
+import { NotAuthenticatedError } from "./errors/authentication";
 import { InvalidActionError } from "./errors/validation";
 import * as event from "./event";
 import * as sync from "./events/user-event/sync";
@@ -15,8 +12,8 @@ import { GameCode } from "./lobby/game-code";
 import * as logging from "./logging";
 import { ServerState } from "./server-state";
 import * as userDisconnect from "./timeout/user-disconnect";
-import { User } from "./user";
 import * as user from "./user";
+import { User } from "./user";
 import * as token from "./user/token";
 
 const parseJson = (raw: string): object => {
@@ -26,6 +23,42 @@ const parseJson = (raw: string): object => {
     throw new InvalidActionError(error.message);
   }
 };
+
+export class Sockets {
+  private readonly sockets: Map<GameCode, Map<user.Id, WebSocket>>;
+
+  public constructor() {
+    this.sockets = new Map();
+  }
+
+  public set(gameCode: GameCode, id: user.Id, socket: WebSocket): void {
+    this.users(gameCode).set(id, socket);
+  }
+
+  public get(gameCode: GameCode, id: user.Id): WebSocket | undefined {
+    return this.users(gameCode).get(id);
+  }
+
+  public delete(gameCode: GameCode, id: user.Id): boolean {
+    const users = this.users(gameCode);
+    const didDelete = users.delete(id);
+    if (users.size < 1) {
+      this.sockets.delete(gameCode);
+    }
+    return didDelete;
+  }
+
+  private users(gameCode: GameCode): Map<user.Id, WebSocket> {
+    const existing = this.sockets.get(gameCode);
+    if (existing !== undefined) {
+      return existing;
+    } else {
+      const created = new Map();
+      this.sockets.set(gameCode, created);
+      return created;
+    }
+  }
+}
 
 export class SocketManager {
   public readonly sockets: Sockets;
@@ -63,7 +96,6 @@ export class SocketManager {
   public add(server: ServerState, gameCode: GameCode, socket: WebSocket): void {
     const sockets = this.sockets;
     let auth: token.Claims | null = null;
-    socket.on("open", async () => {});
     socket.on(
       "message",
       this.errorWSHandler(socket, async data => {
@@ -139,41 +171,5 @@ export class SocketManager {
         logging.logger.info("WebSocket disconnect:", { user: auth.uid });
       }
     });
-  }
-}
-
-export class Sockets {
-  private readonly sockets: Map<GameCode, Map<user.Id, WebSocket>>;
-
-  public constructor() {
-    this.sockets = new Map();
-  }
-
-  public set(gameCode: GameCode, id: user.Id, socket: WebSocket): void {
-    this.users(gameCode).set(id, socket);
-  }
-
-  public get(gameCode: GameCode, id: user.Id): WebSocket | undefined {
-    return this.users(gameCode).get(id);
-  }
-
-  public delete(gameCode: GameCode, id: user.Id): boolean {
-    const users = this.users(gameCode);
-    const didDelete = users.delete(id);
-    if (users.size < 1) {
-      this.sockets.delete(gameCode);
-    }
-    return didDelete;
-  }
-
-  private users(gameCode: GameCode): Map<user.Id, WebSocket> {
-    const existing = this.sockets.get(gameCode);
-    if (existing !== undefined) {
-      return existing;
-    } else {
-      const created = new Map();
-      this.sockets.set(gameCode, created);
-      return created;
-    }
   }
 }

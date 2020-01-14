@@ -1,3 +1,4 @@
+import { GameEnded } from "./game-event/game-ended";
 import { GameStarted } from "./game-event/game-started";
 import { HandRedrawn } from "./game-event/hand-redrawn";
 import { PauseStateChanged } from "./game-event/pause-state-changed";
@@ -21,4 +22,5 @@ export type GameEvent =
   | HandRedrawn
   | PlayerPresenceChanged
   | PauseStateChanged
-  | StageTimerDone;
+  | StageTimerDone
+  | GameEnded;

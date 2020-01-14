@@ -15,18 +15,13 @@ const name: NameType = "StartGame";
 export const is = (action: Action): action is StartGame =>
   action.action === name;
 
-export const handle: Handler<StartGame> = (auth, lobby, action) => {
-  // If a game is already started, two uses probably hit the button at the same
-  // time. Harmless and no correction needed, so just drop it.
-  if (lobby.game !== undefined) {
-    return {};
-  }
-  return {
+export const handle: Handler<StartGame> = (auth, lobby) =>
+  // We do validation in the task.
+  ({
     tasks: [
       new StartGameTask(
         auth.gc,
         lobby.config.decks.map(s => s.source)
       )
     ]
-  };
-};
+  });

@@ -53,7 +53,7 @@ type alias Game =
     , playerOrder : List User.Id
     , players : Dict User.Id Player
     , rules : Rules
-    , winner : Maybe User.Id
+    , winner : Maybe (List User.Id)
     , paused : Bool
     }
 

@@ -1,6 +1,6 @@
-import { PackingHeat, Reboot, Rules } from "../rules";
-import { Rando } from "./rando";
+import { PackingHeat, Reboot } from "../rules";
 import * as rando from "./rando";
+import { Rando } from "./rando";
 
 /**
  * Non-standard rules that can be applied to a game.

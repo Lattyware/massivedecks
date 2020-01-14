@@ -22,3 +22,4 @@ type Msg
     | Leave
     | Kick User.Id
     | SetTimeAnchor Time.Anchor
+    | EndGame

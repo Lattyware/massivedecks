@@ -32,7 +32,7 @@ export interface Public {
   playerOrder: user.Id[];
   players: { [id: string]: player.Public };
   rules: rules.Public;
-  winner?: user.Id;
+  winner?: string[];
   paused?: boolean;
 }
 
@@ -127,7 +127,7 @@ export class Game {
   public readonly players: Map<user.Id, Player>;
   public readonly decks: Decks;
   public readonly rules: Rules;
-  public winner?: user.Id;
+  public winner?: user.Id[];
   public paused: boolean;
 
   private constructor(

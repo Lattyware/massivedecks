@@ -3,6 +3,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , changeHouseRule
     , changeTimeLimitForStage
     , changeTimeLimitMode
+    , endGame
     , enforceTimeLimit
     , judge
     , kick
@@ -122,6 +123,11 @@ kick user =
 leave : Cmd msg
 leave =
     action "Leave" []
+
+
+endGame : Cmd msg
+endGame =
+    action "EndGame" []
 
 
 enforceTimeLimit : Round.Id -> Round.Stage -> Cmd msg

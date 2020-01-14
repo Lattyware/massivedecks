@@ -7,7 +7,6 @@ module MassiveDecks.Pages.Lobby exposing
     , view
     )
 
-import Browser.Navigation as Navigation
 import Dict exposing (Dict)
 import FontAwesome.Attributes as Icon
 import FontAwesome.Brands as Icon
@@ -115,10 +114,6 @@ subscriptions model =
 
 update : Shared -> Msg -> Model -> ( Change, Cmd Global.Msg )
 update shared msg model =
-    let
-        key =
-            shared.key
-    in
     case msg of
         GameMsg gameMsg ->
             case model.lobby of
@@ -276,6 +271,9 @@ update shared msg model =
         SetTimeAnchor anchor ->
             ( Stay { model | timeAnchor = Just anchor }, Cmd.none )
 
+        EndGame ->
+            ( Stay model, Actions.endGame )
+
 
 view : Shared -> Model -> List (Html Global.Msg)
 view shared model =
@@ -315,8 +313,11 @@ view shared model =
         localUser =
             model.lobby |> Maybe.andThen (.users >> Dict.get model.auth.claims.uid)
 
+        maybeGame =
+            model.lobby |> Maybe.andThen .game
+
         localPlayer =
-            model.lobby |> Maybe.andThen .game |> Maybe.andThen (.game >> .players >> Dict.get model.auth.claims.uid)
+            maybeGame |> Maybe.andThen (.game >> .players >> Dict.get model.auth.claims.uid)
     in
     [ Html.div
         [ HtmlA.id "lobby"
@@ -331,7 +332,7 @@ view shared model =
                             , Strings.ToggleUserList |> Lang.title shared
                             ]
                             ( [ Icon.lg ], usersIcon )
-                      , lobbyMenu shared localUser localPlayer
+                      , lobbyMenu shared localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
                     , castButton
                     ]
@@ -371,8 +372,8 @@ cardSizeToAttr cardSize =
             HtmlA.nothing
 
 
-lobbyMenu : Shared -> Maybe User -> Maybe Player -> Html Global.Msg
-lobbyMenu shared user player =
+lobbyMenu : Shared -> Maybe User -> Maybe Player -> Maybe Game -> Html Global.Msg
+lobbyMenu shared user player game =
     let
         id =
             "lobby-menu-button"
@@ -389,7 +390,7 @@ lobbyMenu shared user player =
             ]
 
         privilegedLobbyMenuItems =
-            [ Menu.button Icon.stopCircle Strings.EndGame Strings.EndGameDescription Nothing
+            [ Menu.button Icon.stopCircle Strings.EndGame Strings.EndGameDescription (game |> Maybe.andThen (\g -> EndGame |> Global.LobbyMsg |> Maybe.justIf (g.winner == Nothing)))
             ]
 
         mdMenuItems =

@@ -68,6 +68,9 @@ export const Schema = {
           $ref: "#/definitions/SetScoreLimit"
         },
         {
+          $ref: "#/definitions/EndGame"
+        },
+        {
           $ref: "#/definitions/Kick"
         },
         {
@@ -93,7 +96,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_10"
+          $ref: "#/definitions/NameType_11"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -314,6 +317,18 @@ export const Schema = {
       required: ["owner"],
       type: "object"
     },
+    EndGame: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "End the current game.",
+      properties: {
+        action: {
+          $ref: "#/definitions/NameType_9"
+        }
+      },
+      required: ["action"],
+      type: "object"
+    },
     EnforceTimeLimit: {
       additionalProperties: false,
       defaultProperties: [],
@@ -400,6 +415,10 @@ export const Schema = {
       type: "string"
     },
     NameType_10: {
+      enum: ["StartGame"],
+      type: "string"
+    },
+    NameType_11: {
       enum: ["Authenticate"],
       type: "string"
     },
@@ -432,7 +451,7 @@ export const Schema = {
       type: "string"
     },
     NameType_9: {
-      enum: ["StartGame"],
+      enum: ["EndGame"],
       type: "string"
     },
     PackingHeat: {
@@ -686,7 +705,7 @@ export const Schema = {
       description: "Start a game in the lobby if possible.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_9"
+          $ref: "#/definitions/NameType_10"
         }
       },
       required: ["action"],

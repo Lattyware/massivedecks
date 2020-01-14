@@ -204,14 +204,22 @@ async function main(): Promise<void> {
   });
 
   setInterval(async () => {
-    const lobbies = await state.store.garbageCollect();
-    if (lobbies > 0) {
-      logging.logger.info(`Collected ${lobbies} ended/abandoned lobbies.`);
+    try {
+      const lobbies = await state.store.garbageCollect();
+      if (lobbies > 0) {
+        logging.logger.info(`Collected ${lobbies} ended/abandoned lobbies.`);
+      }
+    } catch (error) {
+      logging.logException("Error garbage collecting:", error);
     }
   }, config.storage.garbageCollectionFrequency);
 
   setInterval(async () => {
-    await timeout.handle(state);
+    try {
+      await timeout.handle(state);
+    } catch (error) {
+      logging.logException("Error running timeout:", error);
+    }
   }, config.timeouts.timeoutCheckFrequency);
 
   state.tasks

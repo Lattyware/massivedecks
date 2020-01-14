@@ -38,7 +38,6 @@ export const handle: timeout.Handler<FinishedPlaying> = (
     return {};
   }
   const round = game.round;
-  const plays = round.plays;
   if (round.stage !== "Playing" || !isFinished(round)) {
     return {};
   }
@@ -69,12 +68,14 @@ export const handle: timeout.Handler<FinishedPlaying> = (
     }
   }
 
-  const playsToBeRevealed = Array.from(wu(plays).map(play => play.id));
+  game.round = round.advance();
+
+  const playsToBeRevealed = Array.from(
+    wu(game.round.plays).map(play => play.id)
+  );
   const events = [
     event.additionally(startRevealing.of(playsToBeRevealed), newCardsByPlayer)
   ];
-
-  game.round = round.advance();
 
   const timeouts = [];
   const timer = roundStageTimerDone.ifEnabled(

@@ -40,6 +40,25 @@
   }
 }
 
+#game-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  margin: 1em;
+  text-align: center;
+
+  span {
+    margin-top: 1em;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+}
+
 #top-content {
   position: sticky;
   z-index: 2;

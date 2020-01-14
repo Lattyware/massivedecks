@@ -31,7 +31,9 @@ export class StartGame extends task.TaskBase<decks.Templates[]> {
     work: decks.Templates[],
     server: ServerState
   ): Change {
-    if (lobby.game !== undefined) {
+    if (lobby.game !== undefined && lobby.game.winner === undefined) {
+      // If we have an existing game that isn't finished, we don't try and
+      // start a new one.
       return {};
     }
     const lobbyGame = Game.start(work, lobby.users, lobby.config.rules);
@@ -50,5 +52,6 @@ export class StartGame extends task.TaskBase<decks.Templates[]> {
   public static *discover(
     gameCode: GameCode,
     lobby: Lobby
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
   ): Iterable<StartGame> {}
 }

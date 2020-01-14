@@ -105,7 +105,7 @@ export class InMemoryStore extends Store {
       this.lobbies.set(gameCode, transaction.lobby);
     }
     if (transaction.timeouts !== undefined) {
-      for (let timeout of transaction.timeouts) {
+      for (const timeout of transaction.timeouts) {
         this.timeouts.set(uuid(), {
           timeout: timeout.timeout,
           lobby: gameCode,
@@ -122,9 +122,11 @@ export class InMemoryStore extends Store {
   public async garbageCollect(): Promise<number> {
     const toRemove = new Set<GameCode>();
     for (const [gameCode, lobby] of this.lobbies.entries()) {
-      // TODO: Also lobbies that have been abandoned for some time.
-      // TODO: Make ended a time, wait for config minutes before deleting.
-      if (gameLobby.ended(lobby)) {
+      if (
+        wu(lobby.users.values()).every(
+          u => u.control === "Computer" || u.presence === "Left"
+        )
+      ) {
         toRemove.add(gameCode);
       }
     }
@@ -144,6 +146,7 @@ export class InMemoryStore extends Store {
   }
 
   public async *timedOut(): AsyncIterableIterator<timeout.TimedOut> {
+    const done = [];
     for (const [id, meta] of this.timeouts) {
       if (Date.now() > meta.after) {
         yield {
@@ -151,7 +154,11 @@ export class InMemoryStore extends Store {
           timeout: meta.timeout,
           lobby: meta.lobby
         };
+        done.push(id);
       }
+    }
+    for (const id of done) {
+      this.timeouts.delete(id);
     }
   }
 }

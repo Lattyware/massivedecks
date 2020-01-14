@@ -5,6 +5,8 @@ import * as util from "../util";
 import { Handler } from "./handler";
 import * as configure from "./privileged/configure";
 import { Configure } from "./privileged/configure";
+import * as endGame from "./privileged/end-game";
+import { EndGame } from "./privileged/end-game";
 import * as kick from "./privileged/kick";
 import { Kick } from "./privileged/kick";
 import * as setPlayerAway from "./privileged/set-player-away";
@@ -22,14 +24,16 @@ export type Privileged =
   | StartGame
   | SetPlayerAway
   | SetPrivilege
-  | Kick;
+  | Kick
+  | EndGame;
 
 const possible = new Set([
   configure.is,
   startGame.is,
   setPlayerAway.is,
   setPrivilege.is,
-  kick.is
+  kick.is,
+  endGame.is
 ]);
 
 /**
@@ -54,6 +58,8 @@ export const handle: Handler<Privileged> = (auth, lobby, action, server) => {
     return setPrivilege.handle(auth, lobby, action, server);
   } else if (kick.is(action)) {
     return kick.handle(auth, lobby, action, server);
+  } else if (endGame.is(action)) {
+    return endGame.handle(auth, lobby, action, server);
   } else {
     return util.assertNever(action);
   }

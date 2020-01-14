@@ -240,7 +240,7 @@ subscriptions anchor model =
         ( startedAt, maybeLimitSeconds, timedOut ) =
             roundTimeDetails model.game
     in
-    if timedOut then
+    if timedOut || model.game.winner /= Nothing then
         Sub.none
 
     else
@@ -286,7 +286,12 @@ view shared auth timeAnchor name config users model =
                 History.view shared config users name model.game.history
 
             else
-                viewRound shared auth timeAnchor config users model
+                case model.game.winner of
+                    Just winners ->
+                        viewWinner shared users winners
+
+                    Nothing ->
+                        viewRound shared auth timeAnchor config users model
     in
     Html.div [ HtmlA.id "game" ] (overlay ++ gameView)
 
@@ -562,6 +567,13 @@ applyGameEvent auth shared gameEvent model =
             else
                 ( model, Cmd.none )
 
+        Events.GameEnded { winner } ->
+            let
+                game =
+                    model.game
+            in
+            ( { model | game = { game | winner = Just winner } }, Cmd.none )
+
 
 applyGameStarted : Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd Global.Msg )
 applyGameStarted lobby round hand =
@@ -602,6 +614,26 @@ hotJoinPlayer player model =
 
 
 {- Private -}
+
+
+viewWinner : Shared -> Dict User.Id User -> List User.Id -> List (Html msg)
+viewWinner shared users winners =
+    [ Wl.card [ HtmlA.id "game-winner" ]
+        [ Html.span [] [ Icon.trophy |> Icon.viewIcon ]
+        , Html.ul [] (winners |> List.map (viewWinnerListItem shared users))
+        ]
+    ]
+
+
+viewWinnerListItem : Shared -> Dict User.Id User -> User.Id -> Html msg
+viewWinnerListItem shared users user =
+    Html.li []
+        [ users
+            |> Dict.get user
+            |> Maybe.map .name
+            |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
+            |> Html.text
+        ]
 
 
 viewRound : Shared -> Lobby.Auth -> Time.Anchor -> Config -> Dict User.Id User -> Model -> List (Html Global.Msg)

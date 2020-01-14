@@ -21,24 +21,20 @@ const name: NameType = "Judge";
 
 export const is = (action: Action): action is Judge => action.action === name;
 
-export const handle: gameAction.Handler<Judge> = (
-  auth,
-  lobby,
-  action,
-  server
-) => {
-  const lobbyRound = lobby.game.round;
+export const handle: gameAction.Handler<Judge> = (auth, lobby, action) => {
+  const game = lobby.game;
+  const lobbyRound = game.round;
   const plays = lobbyRound.plays;
   if (lobbyRound.verifyStage<round.Judging>(action, "Judging")) {
     const play = plays.find(play => play.id === action.winner);
     if (play === undefined) {
       throw new InvalidActionError("Given play doesn't exist.");
     }
-    const player = lobby.game.players.get(play.playedBy) as Player;
+    const player = game.players.get(play.playedBy) as Player;
     player.score += 1;
     const completedRound = lobbyRound.advance(play.playedBy);
-    lobby.game.round = completedRound;
-    lobby.game.history.splice(0, 0, completedRound.public());
+    game.round = completedRound;
+    game.history.splice(0, 0, completedRound.public());
 
     return {
       lobby,
@@ -46,7 +42,7 @@ export const handle: gameAction.Handler<Judge> = (
       timeouts: [
         {
           timeout: roundStart.of(),
-          after: lobby.game.rules.timeLimits.complete * 1000
+          after: game.rules.timeLimits.complete * 1000
         }
       ]
     };

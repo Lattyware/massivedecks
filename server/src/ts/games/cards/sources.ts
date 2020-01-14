@@ -3,11 +3,15 @@ import * as deckSource from "./source";
 import { Source } from "./source";
 import * as cardcast from "./sources/cardcast";
 import * as custom from "./sources/custom";
+import * as util from "../../util";
 
 function uncachedResolver(source: deckSource.External): deckSource.Resolver {
   switch (source.source) {
     case "Cardcast":
       return new cardcast.Resolver(source);
+
+    default:
+      util.assertNever(source.source);
   }
 }
 

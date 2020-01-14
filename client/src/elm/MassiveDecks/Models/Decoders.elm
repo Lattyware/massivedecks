@@ -194,7 +194,7 @@ game =
         (Json.field "playerOrder" (Json.list userId))
         (Json.field "players" (Json.dict player))
         (Json.field "rules" rules)
-        (Json.maybe (Json.field "winner" userId))
+        (Json.maybe (Json.field "winner" (Json.list userId)))
         (Json.maybe (Json.field "paused" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
@@ -562,8 +562,17 @@ eventByName name =
         "StageTimerDone" ->
             gameEvent stageTimerDone
 
+        "GameEnded" ->
+            gameEvent ended
+
         _ ->
             unknownValue "event" name
+
+
+ended : Json.Decoder Events.GameEvent
+ended =
+    Json.map (\w -> Events.GameEnded { winner = w })
+        (Json.field "winner" (Json.list userId))
 
 
 stageTimerDone : Json.Decoder Events.GameEvent

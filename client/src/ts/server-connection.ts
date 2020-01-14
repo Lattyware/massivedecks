@@ -116,7 +116,7 @@ class LobbyConnection {
         parent.out.send(event.data);
       }
     });
-    socket.addEventListener("open", event => {
+    socket.addEventListener("open", _ => {
       this.delay = LobbyConnection.initialDelay;
       this.send(
         JSON.stringify({
@@ -125,7 +125,7 @@ class LobbyConnection {
         })
       );
     });
-    socket.addEventListener("close", event => {
+    socket.addEventListener("close", _ => {
       if (!this.closed) {
         setTimeout(() => {
           if (!this.closed) {
