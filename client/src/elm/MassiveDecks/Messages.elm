@@ -19,17 +19,15 @@ type Msg
     = ChangePage Route
     | PageChanged Url
     | JoinLobby String Lobby.Auth
-    | SpectateMsg Spectate.Msg
     | StartMsg Start.Msg
     | LobbyMsg Lobby.Msg
+    | SpectateMsg Spectate.Msg
     | SettingsMsg Settings.Msg
     | ErrorMsg Error.Msg
     | SpeechMsg Speech.Msg
     | NotificationMsg Notifications.Msg
     | UpdateToken Lobby.Auth
     | CastStatusUpdate Cast.Status
-    | TryCast Lobby.Auth
+    | RemoteCommand Cast.RemoteControlCommand
     | Refresh
     | BlockedExternalUrl
-    | Copy String
-    | NoOp

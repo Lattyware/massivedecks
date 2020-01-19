@@ -22,4 +22,7 @@ type Msg
     | Leave
     | Kick User.Id
     | SetTimeAnchor Time.Anchor
+    | TryCast Auth
+    | Copy String
     | EndGame
+    | NoOp

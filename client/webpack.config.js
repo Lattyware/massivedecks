@@ -68,10 +68,7 @@ module.exports = (env, argv) => {
     {
       loader: "elm-webpack-loader",
       options: {
-        files: [
-          path.resolve(src, "elm/MassiveDecks.elm"),
-          path.resolve(src, "elm/MassiveDecks/Cast.elm")
-        ],
+        files: [path.resolve(src, "elm/MassiveDecks.elm")],
         optimize: prod,
         debug: dev,
         forceWatch: dev,
@@ -236,7 +233,7 @@ module.exports = (env, argv) => {
       minimizer: [
         // Typescript
         new TerserPlugin({
-          test: /assets\/scripts\/(index|cast|runtime|vendors)\..*\.js$/,
+          test: /assets\/scripts\/(index|cast|runtime|vendors|cast-client|cast-server)\..*\.js$/,
           sourceMap: dev,
           parallel: true,
           terserOptions: {
@@ -281,6 +278,7 @@ module.exports = (env, argv) => {
     },
     devServer: {
       hot: true,
+      allowedHosts: ["localhost", "f2a7ec0b.ngrok.io"],
       proxy: {
         // Forward to the server.
         "/api/**": {

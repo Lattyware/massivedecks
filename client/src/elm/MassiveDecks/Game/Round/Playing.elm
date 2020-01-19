@@ -12,13 +12,11 @@ import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
-import MassiveDecks.Game.Messages as Game
+import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
-import MassiveDecks.Messages as Global
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User
@@ -28,21 +26,21 @@ import Random
 import Set exposing (Set)
 
 
-init : Round.Playing -> Round.Pick -> ( Round.Playing, Cmd Global.Msg )
-init round pick =
+init : (Msg -> msg) -> Round.Playing -> Round.Pick -> ( Round.Playing, Cmd msg )
+init wrap round pick =
     let
         cmd =
             round.players
                 |> playStylesGenerator (Call.slotCount round.call)
-                |> Random.generate (Game.SetPlayStyles >> lift)
+                |> Random.generate (Game.SetPlayStyles >> wrap)
     in
     ( { round | pick = pick }
     , cmd
     )
 
 
-view : Lobby.Auth -> Config -> Model -> Round.Playing -> RoundView Global.Msg
-view auth config model round =
+view : (Msg -> msg) -> Lobby.Auth -> Config -> Model -> Round.Playing -> RoundView msg
+view wrap auth config model round =
     let
         slots =
             Call.slotCount round.call
@@ -74,7 +72,7 @@ view auth config model round =
 
         hand =
             HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]
-                (model.hand |> List.map (round.pick.cards |> viewHandCard config))
+                (model.hand |> List.map (round.pick.cards |> viewHandCard wrap config))
 
         backgroundPlays =
             Html.div [ HtmlA.class "background-plays" ]
@@ -100,14 +98,14 @@ view auth config model round =
 {- Private -}
 
 
-viewHandCard : Config -> List Card.Id -> Card.Response -> ( String, Html Global.Msg )
-viewHandCard config picked response =
+viewHandCard : (Msg -> msg) -> Config -> List Card.Id -> Card.Response -> ( String, Html msg )
+viewHandCard wrap config picked response =
     ( response.details.id
     , Response.view
         config
         Card.Front
         [ HtmlA.classList [ ( "picked", List.member response.details.id picked ) ]
-        , response.details.id |> Game.Pick |> lift |> HtmlE.onClick
+        , response.details.id |> Game.Pick |> wrap |> HtmlE.onClick
         ]
         response
     )
@@ -123,18 +121,17 @@ viewBackgroundPlay playStyles slots played for =
                 |> Maybe.withDefault (List.repeat slots { rotation = 0 })
                 |> List.map viewBackgroundPlayCard
     in
-    Html.div [ HtmlA.classList [ ( "play", True ), ( "played", Set.member for played ) ] ] cards
+    Html.div
+        [ HtmlA.classList [ ( "play", True ), ( "played", Set.member for played ) ] ]
+        cards
 
 
 viewBackgroundPlayCard : CardStyle -> Html msg
 viewBackgroundPlayCard playStyle =
     Response.viewUnknown
-        [ "rotate(" ++ String.fromFloat playStyle.rotation ++ "turn)" |> HtmlA.style "transform" ]
-
-
-lift : Game.Msg -> Global.Msg
-lift msg =
-    msg |> Lobby.GameMsg |> Global.LobbyMsg
+        [ "rotate(" ++ String.fromFloat playStyle.rotation ++ "turn)" |> HtmlA.style "transform"
+        , HtmlA.class "ignore-minimal-card-size"
+        ]
 
 
 playStylesGenerator : Int -> Set User.Id -> Random.Generator PlayStyles

@@ -51,9 +51,9 @@ type alias Model item =
     List (Animated item)
 
 
-subscriptions : Model item -> Sub (Msg item)
-subscriptions model =
-    model |> List.filterMap subscription |> Sub.batch
+subscriptions : (Msg item -> msg) -> Model item -> Sub msg
+subscriptions wrap model =
+    model |> List.filterMap (subscription wrap) |> Sub.batch
 
 
 view : (Html.Attribute msg -> item -> Html msg) -> Animated item -> Html msg
@@ -61,15 +61,17 @@ view render item =
     render (class item.state) item.item
 
 
-update : Settings -> Msg item -> Model item -> ( Model item, Cmd (Msg item) )
-update settings msg model =
+update : (Msg item -> msg) -> Settings -> Msg item -> Model item -> ( Model item, Cmd msg )
+update wrap settings msg model =
     case msg of
         Enter item ->
             ( model |> List.map (setState Entering item), Cmd.none )
 
         Exit item ->
             ( model |> List.map (setState Exiting item)
-            , settings.removeDone |> Maybe.map (\after -> Remove item |> Cmd.after after) |> Maybe.withDefault Cmd.none
+            , settings.removeDone
+                |> Maybe.map (\after -> Remove item |> wrap |> Cmd.after after)
+                |> Maybe.withDefault Cmd.none
             )
 
         Remove item ->
@@ -83,14 +85,14 @@ animate item =
     }
 
 
-enterAfter : Int -> item -> Cmd (Msg item)
-enterAfter milliseconds item =
-    Enter item |> Cmd.after milliseconds
+enterAfter : (Msg item -> msg) -> Int -> item -> Cmd msg
+enterAfter wrap milliseconds item =
+    Enter item |> wrap |> Cmd.after milliseconds
 
 
-exitAfter : Int -> item -> Cmd (Msg item)
-exitAfter milliseconds item =
-    Exit item |> Cmd.after milliseconds
+exitAfter : (Msg item -> msg) -> Int -> item -> Cmd msg
+exitAfter wrap milliseconds item =
+    Exit item |> wrap |> Cmd.after milliseconds
 
 
 {-| If changed, sync to CSS.
@@ -104,10 +106,10 @@ defaultDuration =
 {- Private -}
 
 
-subscription : Animated item -> Maybe (Sub (Msg item))
-subscription item =
+subscription : (Msg item -> msg) -> Animated item -> Maybe (Sub msg)
+subscription wrap item =
     if item.state == New then
-        BrowserEvents.onAnimationFrame (always (Enter item.item)) |> Just
+        BrowserEvents.onAnimationFrame (always (Enter item.item |> wrap)) |> Just
 
     else
         Nothing

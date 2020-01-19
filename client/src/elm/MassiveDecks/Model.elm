@@ -30,4 +30,5 @@ type alias Shared =
 type alias Flags =
     { settings : Settings
     , browserLanguages : List String
+    , remoteMode : Bool
     }

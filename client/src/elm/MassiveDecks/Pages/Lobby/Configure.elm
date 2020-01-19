@@ -152,23 +152,26 @@ update msg model config =
             in
             ( { model | timeLimits = Rules.setTimeLimitByStage stage value timeLimits }, send )
 
+        NoOp ->
+            ( model, Cmd.none )
 
-view : Shared -> Bool -> Model -> GameCode -> Lobby -> Config -> Html Global.Msg
-view shared canEdit model gameCode lobby config =
+
+view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> GameCode -> Lobby -> Config -> Html msg
+view wrap wrapLobby shared canEdit model gameCode lobby config =
     Html.div [ HtmlA.class "configure" ]
         [ Wl.card []
             [ Html.div [ HtmlA.class "title" ]
                 [ Html.h2 [] [ lobby.name |> Html.text ]
                 , Html.div []
-                    [ Invite.button shared
+                    [ Invite.button wrapLobby shared
                     , Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared
                     ]
                 ]
-            , Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab shared model.tab))
-            , tabContent shared canEdit model config
+            , Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab wrap shared model.tab))
+            , tabContent wrap shared canEdit model config
             ]
         , Wl.card []
-            [ startGameSegment shared canEdit lobby config
+            [ startGameSegment wrap wrapLobby shared canEdit lobby config
             ]
         ]
 
@@ -225,15 +228,15 @@ applyChange configChange oldConfig oldConfigure =
 {- Private -}
 
 
-startGameSegment : Shared -> Bool -> Lobby -> Config -> Html Global.Msg
-startGameSegment shared canEdit lobby config =
+startGameSegment : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Lobby -> Config -> Html msg
+startGameSegment wrap wrapLobby shared canEdit lobby config =
     let
         startErrors =
-            startGameProblems lobby.users config
+            startGameProblems wrap wrapLobby lobby.users config
 
         startGameAttrs =
             if List.isEmpty startErrors && canEdit then
-                [ StartGame |> lift |> HtmlE.onClick ]
+                [ StartGame |> wrap |> HtmlE.onClick ]
 
             else
                 [ WlA.disabled ]
@@ -287,8 +290,8 @@ applyDeckChange event config configure =
     ( newConfig, newConfigure )
 
 
-startGameProblems : Dict User.Id User -> Config -> List (Message Global.Msg)
-startGameProblems users config =
+startGameProblems : (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Config -> List (Message msg)
+startGameProblems wrap wrapLobby users config =
     let
         -- We assume decks will have calls/responses.
         summaries =
@@ -306,7 +309,7 @@ startGameProblems users config =
                     Strings.NeedAtLeastOneDeck
                     [ { description = Strings.NoDecksHint
                       , icon = Icon.plus
-                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> lift
+                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> wrap
                       }
                     ]
                     |> Just
@@ -338,7 +341,7 @@ startGameProblems users config =
                 Strings.NeedAtLeastThreePlayers
                 [ { description = Strings.Invite
                   , icon = Icon.bullhorn
-                  , action = Lobby.ToggleInviteDialog |> Global.LobbyMsg
+                  , action = wrapLobby Lobby.ToggleInviteDialog
                   }
                 , { description = Strings.AddAnAiPlayer
                   , icon = Icon.robot
@@ -347,8 +350,7 @@ startGameProblems users config =
                             |> Just
                             |> Rules.RandoChange
                             |> HouseRuleChange Remote
-                            |> Lobby.ConfigureMsg
-                            |> Global.LobbyMsg
+                            |> wrap
                   }
                 ]
                 |> Maybe.justIf (playerCount < 3)
@@ -372,10 +374,10 @@ tabs =
     [ Decks, Rules, TimeLimits, Privacy ]
 
 
-tab : Shared -> Tab -> Tab -> Html Global.Msg
-tab shared currently target =
+tab : (Msg -> msg) -> Shared -> Tab -> Tab -> Html msg
+tab wrap shared currently target =
     Wl.tab
-        ((target |> ChangeTab |> lift |> always |> HtmlE.onCheck)
+        ((target |> ChangeTab |> wrap |> always |> HtmlE.onCheck)
             :: ([ WlA.checked ] |> Maybe.justIf (currently == target) |> Maybe.withDefault [])
         )
         [ target |> tabName |> Lang.html shared ]
@@ -397,8 +399,8 @@ tabName target =
             Strings.ConfigurePrivacy
 
 
-tabContent : Shared -> Bool -> Model -> Config -> Html Global.Msg
-tabContent shared canEdit model config =
+tabContent : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+tabContent wrap shared canEdit model config =
     let
         viewTab =
             case model.tab of
@@ -414,27 +416,27 @@ tabContent shared canEdit model config =
                 Privacy ->
                     configurePrivacy
     in
-    viewTab shared canEdit model config
+    viewTab wrap shared canEdit model config
 
 
-configureRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
-configureRules shared canEdit model config =
+configureRules : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+configureRules wrap shared canEdit model config =
     let
         viewOpt =
-            viewOption shared model config Global.NoOp canEdit
+            viewOption shared model config (wrap NoOp) canEdit
     in
     Html.div [ HtmlA.id "rules-tab" ]
         [ Html.div [ HtmlA.class "core-rules" ]
             [ Html.h3 [] [ Strings.GameRulesTitle |> Lang.html shared ]
-            , viewOpt handSizeOption
-            , viewOpt scoreLimitOption
+            , handSizeOption wrap |> viewOpt
+            , scoreLimitOption wrap |> viewOpt
             ]
-        , houseRules shared canEdit model config
+        , houseRules wrap shared canEdit model config
         ]
 
 
-handSizeOption : ConfigOption Int Global.Msg
-handSizeOption =
+handSizeOption : (Msg -> msg) -> ConfigOption Int msg
+handSizeOption wrap =
     { id = "hand-size-option"
     , toggleable = Nothing
     , primaryEditor =
@@ -448,14 +450,14 @@ handSizeOption =
     , extraEditor = Nothing
     , getRemoteValue = .rules >> .handSize
     , getLocalValue = .handSize
-    , set = \t -> \v -> HandSizeChange t v |> lift
+    , set = \t -> \v -> HandSizeChange t v |> wrap
     , validate = \v -> v >= 3 && v <= 50
     , messages = [ Message.info Strings.HandSizeDescription ]
     }
 
 
-scoreLimitOption : ConfigOption (Maybe Int) Global.Msg
-scoreLimitOption =
+scoreLimitOption : (Msg -> msg) -> ConfigOption (Maybe Int) msg
+scoreLimitOption wrap =
     { id = "score-limit-option"
     , toggleable = Just { off = Nothing, on = Just 25 }
     , primaryEditor =
@@ -469,28 +471,28 @@ scoreLimitOption =
     , extraEditor = Nothing
     , getRemoteValue = .rules >> .scoreLimit
     , getLocalValue = .scoreLimit
-    , set = \t -> \v -> ScoreLimitChange t v |> lift
+    , set = \t -> \v -> ScoreLimitChange t v |> wrap
     , validate = Maybe.map (\v -> v >= 1 && v <= 10000) >> Maybe.withDefault True
     , messages = [ Message.info Strings.ScoreLimitDescription ]
     }
 
 
-houseRules : Shared -> Bool -> Model -> Config -> Html Global.Msg
-houseRules shared canEdit model config =
+houseRules : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+houseRules wrap shared canEdit model config =
     Html.div [ HtmlA.class "house-rules" ]
         [ Html.h3 [] [ Strings.HouseRulesTitle |> Lang.html shared ]
-        , rando shared canEdit model config
-        , packingHeat shared canEdit model config
-        , reboot shared canEdit model config
+        , rando wrap shared canEdit model config
+        , packingHeat wrap shared canEdit model config
+        , reboot wrap shared canEdit model config
         ]
 
 
-type alias ViewHouseRuleSettings houseRule =
-    Shared -> Bool -> houseRule -> (houseRule -> Global.Msg) -> List (Html Global.Msg)
+type alias ViewHouseRuleSettings houseRule msg =
+    (Msg -> msg) -> Shared -> Bool -> houseRule -> (houseRule -> msg) -> List (Html msg)
 
 
-houseRule : Shared -> String -> Rules.HouseRule a -> Bool -> Model -> Config -> ViewHouseRuleSettings a -> Html Global.Msg
-houseRule shared id { default, change, title, description, extract, validate } canEdit model config viewSettings =
+houseRule : (Msg -> msg) -> Shared -> String -> Rules.HouseRule a -> Bool -> Model -> Config -> ViewHouseRuleSettings a msg -> Html msg
+houseRule wrap shared id { default, change, title, description, extract, validate } canEdit model config viewSettings =
     let
         localValue =
             model.houseRules |> extract
@@ -504,10 +506,10 @@ houseRule shared id { default, change, title, description, extract, validate } c
                     |> Maybe.justIf checked
                     |> change
                     |> HouseRuleChange Remote
-                    |> lift
+                    |> wrap
 
         save =
-            localValue |> change |> HouseRuleChange Remote |> lift |> HtmlE.onClick
+            localValue |> change |> HouseRuleChange Remote |> wrap |> HtmlE.onClick
 
         saved =
             localValue == (config.rules.houseRules |> extract)
@@ -517,7 +519,7 @@ houseRule shared id { default, change, title, description, extract, validate } c
 
         settings =
             localValue
-                |> Maybe.map (\v -> viewSettings shared canEdit v (Just >> change >> HouseRuleChange Local >> lift))
+                |> Maybe.map (\v -> viewSettings wrap shared canEdit v (Just >> change >> HouseRuleChange Local >> wrap))
                 |> Maybe.withDefault []
 
         ( saveIcon, message ) =
@@ -553,13 +555,13 @@ houseRule shared id { default, change, title, description, extract, validate } c
         ]
 
 
-rando : Shared -> Bool -> Model -> Config -> Html Global.Msg
-rando shared canEdit model config =
-    houseRule shared "rando" Rules.rando canEdit model config randoSettings
+rando : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+rando wrap shared canEdit model config =
+    houseRule wrap shared "rando" Rules.rando canEdit model config randoSettings
 
 
-randoSettings : Shared -> Bool -> Rules.Rando -> (Rules.Rando -> Global.Msg) -> List (Html Global.Msg)
-randoSettings shared canEdit value localChange =
+randoSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Rando -> (Rules.Rando -> msg) -> List (Html msg)
+randoSettings wrap shared canEdit value localChange =
     [ Form.section
         shared
         "rando-number"
@@ -573,7 +575,7 @@ randoSettings shared canEdit value localChange =
             , value.number |> String.fromInt |> WlA.value
             , String.toInt
                 >> Maybe.map (\n -> { value | number = n } |> localChange)
-                >> Maybe.withDefault Global.NoOp
+                >> Maybe.withDefault (wrap NoOp)
                 |> HtmlE.onInput
             ]
             []
@@ -582,23 +584,23 @@ randoSettings shared canEdit value localChange =
     ]
 
 
-packingHeat : Shared -> Bool -> Model -> Config -> Html Global.Msg
-packingHeat shared canEdit model config =
-    houseRule shared "packing-heat" Rules.packingHeat canEdit model config packingHeatSettings
+packingHeat : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+packingHeat wrap shared canEdit model config =
+    houseRule wrap shared "packing-heat" Rules.packingHeat canEdit model config packingHeatSettings
 
 
-packingHeatSettings : Shared -> Bool -> Rules.PackingHeat -> (Rules.PackingHeat -> Global.Msg) -> List (Html Global.Msg)
-packingHeatSettings shared canEdit value localChange =
+packingHeatSettings : ViewHouseRuleSettings Rules.PackingHeat msg
+packingHeatSettings wrap shared canEdit value localChange =
     []
 
 
-reboot : Shared -> Bool -> Model -> Config -> Html Global.Msg
-reboot shared canEdit model config =
-    houseRule shared "reboot" Rules.reboot canEdit model config rebootSettings
+reboot : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+reboot wrap shared canEdit model config =
+    houseRule wrap shared "reboot" Rules.reboot canEdit model config rebootSettings
 
 
-rebootSettings : Shared -> Bool -> Rules.Reboot -> (Rules.Reboot -> Global.Msg) -> List (Html Global.Msg)
-rebootSettings shared canEdit value localChange =
+rebootSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Reboot -> (Rules.Reboot -> msg) -> List (Html msg)
+rebootSettings wrap shared canEdit value localChange =
     [ Form.section
         shared
         "reboot-cost"
@@ -612,7 +614,7 @@ rebootSettings shared canEdit value localChange =
             , value.cost |> String.fromInt |> WlA.value
             , String.toInt
                 >> Maybe.map (\c -> { value | cost = c } |> localChange)
-                >> Maybe.withDefault Global.NoOp
+                >> Maybe.withDefault (wrap NoOp)
                 |> HtmlE.onInput
             ]
             []
@@ -621,13 +623,13 @@ rebootSettings shared canEdit value localChange =
     ]
 
 
-configureDecks : Shared -> Bool -> Model -> Config -> Html Global.Msg
-configureDecks shared canEdit model config =
+configureDecks : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+configureDecks wrap shared canEdit model config =
     let
         hint =
             if canEdit then
                 Components.linkButton
-                    [ "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> lift |> HtmlE.onClick
+                    [ "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> wrap |> HtmlE.onClick
                     ]
                     [ Strings.NoDecksHint |> Lang.html shared ]
 
@@ -649,11 +651,11 @@ configureDecks shared canEdit model config =
                 ]
 
             else
-                config.decks |> List.map (deck shared canEdit)
+                config.decks |> List.map (deck wrap shared canEdit)
 
         editor =
             if canEdit then
-                [ addDeckWidget shared config.decks model.deckToAdd
+                [ addDeckWidget wrap shared config.decks model.deckToAdd
                 ]
 
             else
@@ -683,27 +685,27 @@ configureDecks shared canEdit model config =
         )
 
 
-configurePrivacy : Shared -> Bool -> Model -> Config -> Html Global.Msg
-configurePrivacy shared canEdit model config =
+configurePrivacy : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+configurePrivacy wrap shared canEdit model config =
     let
         viewOpt =
-            viewOption shared model config Global.NoOp canEdit
+            viewOption shared model config (wrap NoOp) canEdit
     in
     Html.div [ HtmlA.id "privacy-tab" ]
         [ Html.h3 [] [ Strings.ConfigurePrivacy |> Lang.html shared ]
-        , viewOpt publicGameOption
-        , viewOpt (gamePasswordOption model)
+        , viewOpt (publicGameOption wrap)
+        , viewOpt (gamePasswordOption wrap model)
         ]
 
 
-addDeckWidget : Shared -> List Deck -> Source.External -> Html Global.Msg
-addDeckWidget shared existing deckToAdd =
+addDeckWidget : (Msg -> msg) -> Shared -> List Deck -> Source.External -> Html msg
+addDeckWidget wrap shared existing deckToAdd =
     let
         submit =
-            deckToAdd |> submitDeckAction existing
+            deckToAdd |> submitDeckAction wrap existing
     in
     Html.form
-        [ submit |> Result.map (lift >> HtmlE.onSubmit) |> Result.withDefault HtmlA.nothing ]
+        [ submit |> Result.map HtmlE.onSubmit |> Result.withDefault HtmlA.nothing ]
         [ Form.section
             shared
             "add-deck"
@@ -711,13 +713,13 @@ addDeckWidget shared existing deckToAdd =
                 [ Wl.select
                     [ HtmlA.id "source-selector"
                     , WlA.outlined
-                    , HtmlE.onInput (Source.empty >> Maybe.withDefault Source.default >> UpdateSource >> lift)
+                    , HtmlE.onInput (Source.empty >> Maybe.withDefault Source.default >> UpdateSource >> wrap)
                     ]
                     [ Html.option [ HtmlA.value "Cardcast" ]
                         [ Html.text "Cardcast"
                         ]
                     ]
-                , Source.editor shared (deckToAdd |> Source.Ex) (UpdateSource >> lift)
+                , Source.editor shared (deckToAdd |> Source.Ex) (UpdateSource >> wrap)
                 , Components.floatingActionButton
                     [ HtmlA.type_ "submit"
                     , Result.isError submit |> HtmlA.disabled
@@ -730,8 +732,8 @@ addDeckWidget shared existing deckToAdd =
         ]
 
 
-submitDeckAction : List Deck -> Source.External -> Result (Message Global.Msg) Msg
-submitDeckAction existing deckToAdd =
+submitDeckAction : (Msg -> msg) -> List Deck -> Source.External -> Result (Message msg) msg
+submitDeckAction wrap existing deckToAdd =
     let
         potentialProblem =
             if List.any (.source >> Source.Ex >> Source.equals (Source.Ex deckToAdd)) existing then
@@ -745,16 +747,11 @@ submitDeckAction existing deckToAdd =
             problem |> Result.Err
 
         Nothing ->
-            deckToAdd |> AddDeck |> Result.Ok
+            deckToAdd |> AddDeck |> wrap |> Result.Ok
 
 
-lift : Msg -> Global.Msg
-lift =
-    Lobby.ConfigureMsg >> Global.LobbyMsg
-
-
-deck : Shared -> Bool -> Deck -> Html Global.Msg
-deck shared canEdit givenDeck =
+deck : (Msg -> msg) -> Shared -> Bool -> Deck -> Html msg
+deck wrap shared canEdit givenDeck =
     let
         source =
             givenDeck.source
@@ -762,25 +759,27 @@ deck shared canEdit givenDeck =
         row =
             case givenDeck.summary of
                 Just summary ->
-                    [ Html.td [] [ name shared canEdit source False summary.details ]
+                    [ Html.td [] [ name wrap shared canEdit source False summary.details ]
                     , Html.td [] [ summary.calls |> String.fromInt |> Html.text ]
                     , Html.td [] [ summary.responses |> String.fromInt |> Html.text ]
                     ]
 
                 Nothing ->
-                    [ Html.td [ HtmlA.colspan 3 ] [ source |> Source.Ex |> Source.details |> name shared canEdit source True ]
+                    [ Html.td [ HtmlA.colspan 3 ]
+                        [ source |> Source.Ex |> Source.details |> name wrap shared canEdit source True
+                        ]
                     ]
     in
     Html.tr [ HtmlA.class "deck-row" ] row
 
 
-name : Shared -> Bool -> Source.External -> Bool -> Source.Details -> Html Global.Msg
-name shared canEdit source loading details =
+name : (Msg -> msg) -> Shared -> Bool -> Source.External -> Bool -> Source.Details -> Html msg
+name wrap shared canEdit source loading details =
     let
         removeButton =
             if canEdit then
                 [ Components.iconButton
-                    [ source |> RemoveDeck |> lift |> HtmlE.onClick
+                    [ source |> RemoveDeck |> wrap |> HtmlE.onClick
                     , Strings.RemoveDeck |> Lang.title shared
                     , HtmlA.class "remove-button"
                     ]
@@ -820,18 +819,18 @@ makeLink text url =
     Html.blankA [ HtmlA.href url ] [ text ]
 
 
-configureTimeLimits : Shared -> Bool -> Model -> Config -> Html Global.Msg
-configureTimeLimits shared canEdit model config =
+configureTimeLimits : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+configureTimeLimits wrap shared canEdit model config =
     let
         viewOpt =
-            viewOption shared model config Global.NoOp canEdit
+            viewOption shared model config (wrap NoOp) canEdit
 
         stageLimit =
-            \s -> \d -> \t -> stageLimitOption s d t |> viewOpt
+            \s -> \d -> \t -> stageLimitOption wrap s d t |> viewOpt
     in
     Html.div [ HtmlA.id "time-limits-tab" ]
         [ Html.h3 [] [ Strings.ConfigureTimeLimits |> Lang.html shared ]
-        , viewOpt timeLimitModeOption
+        , viewOpt (timeLimitModeOption wrap)
         , stageLimit Round.SPlaying Strings.PlayingTimeLimitDescription True
         , stageLimit Round.SRevealing Strings.RevealingTimeLimitDescription True
         , stageLimit Round.SJudging Strings.JudgingTimeLimitDescription True
@@ -839,22 +838,22 @@ configureTimeLimits shared canEdit model config =
         ]
 
 
-timeLimitModeOption : ConfigOption Rules.TimeLimitMode Global.Msg
-timeLimitModeOption =
+timeLimitModeOption : (Msg -> msg) -> ConfigOption Rules.TimeLimitMode msg
+timeLimitModeOption wrap =
     { id = "time-limit-mode"
     , toggleable = Just { off = Rules.Soft, on = Rules.Hard }
     , primaryEditor = Label { text = Strings.Automatic }
     , extraEditor = Nothing
     , getRemoteValue = .rules >> .timeLimits >> .mode
     , getLocalValue = .timeLimits >> .mode
-    , set = \t -> \v -> TimeLimitChangeMode t v |> lift
+    , set = \t -> \v -> TimeLimitChangeMode t v |> wrap
     , validate = always True
     , messages = [ Message.info Strings.AutomaticDescription ]
     }
 
 
-stageLimitOption : Round.Stage -> MdString -> Bool -> ConfigOption (Maybe Float) Global.Msg
-stageLimitOption stage description toggleable =
+stageLimitOption : (Msg -> msg) -> Round.Stage -> MdString -> Bool -> ConfigOption (Maybe Float) msg
+stageLimitOption wrap stage description toggleable =
     { id = "stage-limit-" ++ (stage |> Round.stageToName)
     , toggleable =
         { off = Nothing
@@ -872,29 +871,29 @@ stageLimitOption stage description toggleable =
     , extraEditor = Nothing
     , getRemoteValue = .rules >> .timeLimits >> Rules.getTimeLimitByStage stage
     , getLocalValue = .timeLimits >> Rules.getTimeLimitByStage stage
-    , set = \t -> \v -> TimeLimitChange t stage v |> lift
+    , set = \t -> \v -> TimeLimitChange t stage v |> wrap
     , validate = Maybe.map (\v -> v >= 0 && v <= 900) >> Maybe.withDefault True
     , messages =
         [ Message.info description ]
     }
 
 
-publicGameOption : ConfigOption Bool Global.Msg
-publicGameOption =
+publicGameOption : (Msg -> msg) -> ConfigOption Bool msg
+publicGameOption wrap =
     { id = "public-option"
     , toggleable = Just { off = False, on = True }
     , primaryEditor = Label { text = Strings.Public }
     , extraEditor = Nothing
     , getRemoteValue = .public
     , getLocalValue = .public
-    , set = \t -> \v -> PublicChange t v |> lift
+    , set = \t -> \v -> PublicChange t v |> wrap
     , validate = always True
     , messages = [ Message.info Strings.PublicDescription ]
     }
 
 
-gamePasswordOption : Model -> ConfigOption (Maybe String) Global.Msg
-gamePasswordOption model =
+gamePasswordOption : (Msg -> msg) -> Model -> ConfigOption (Maybe String) msg
+gamePasswordOption wrap model =
     { id = "game-password-option"
     , toggleable = Just { off = Nothing, on = Just "" }
     , primaryEditor =
@@ -908,14 +907,14 @@ gamePasswordOption model =
     , extraEditor =
         Just
             (Components.iconButton
-                [ TogglePasswordVisibility |> lift |> HtmlE.onClick
+                [ TogglePasswordVisibility |> wrap |> HtmlE.onClick
                 , WlA.disabled |> Maybe.justIf (Maybe.isNothing model.password) |> Maybe.withDefault HtmlA.nothing
                 ]
                 (Icon.eyeSlash |> Maybe.justIf model.passwordVisible |> Maybe.withDefault Icon.eye)
             )
     , getRemoteValue = .password
     , getLocalValue = .password
-    , set = \t -> \v -> PasswordChange t v |> lift
+    , set = \t -> \v -> PasswordChange t v |> wrap
     , validate = Maybe.map (String.isEmpty >> not) >> Maybe.withDefault True
     , messages =
         [ Message.info Strings.LobbyPasswordDescription

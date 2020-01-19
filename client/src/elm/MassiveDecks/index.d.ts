@@ -16,10 +16,7 @@ interface Settings {
 interface Flags {
   settings: Settings;
   browserLanguages: string[];
-}
-
-interface CastFlags {
-  token: Token;
+  remoteMode?: boolean;
 }
 
 interface CastStatus {
@@ -35,6 +32,14 @@ interface OpenCommand {
 interface MessageCommand {
   message: string;
 }
+
+interface SpectateCommand {
+  command: "Spectate";
+  token: string;
+  language: string;
+}
+
+type RemoteControlCommand = SpectateCommand;
 
 interface CloseCommand {}
 
@@ -57,24 +62,17 @@ export namespace Elm {
         speechCommands: InboundPort<Say>;
         speechVoices: OutboundPort<Array<Voice>>;
         storeSettings: InboundPort<Settings>;
-        tryCast: InboundPort<CastFlags>;
+        tryCast: InboundPort<RemoteControlCommand>;
         castStatus: OutboundPort<CastStatus>;
         serverRecv: OutboundPort<string>;
         serverSend: InboundPort<ConnectionCommand>;
         copyText: InboundPort<string>;
+        remoteControl: OutboundPort<RemoteControlCommand>;
       };
     }
     export function init(options: {
       node?: HTMLElement | null;
       flags: Flags;
     }): Elm.MassiveDecks.App;
-
-    namespace Cast {
-      export interface App {}
-      export function init(options: {
-        node?: HTMLElement | null;
-        flags: CastFlags;
-      }): Elm.MassiveDecks.App;
-    }
   }
 }

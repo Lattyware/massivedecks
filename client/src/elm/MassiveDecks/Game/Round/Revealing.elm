@@ -9,16 +9,14 @@ import MassiveDecks.Game.Model exposing (RoundView)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
-import MassiveDecks.Messages as Global
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
 
 
-view : Auth -> Config -> Round.Revealing -> RoundView Global.Msg
-view auth config round =
+view : (Msg -> msg) -> Auth -> Config -> Round.Revealing -> RoundView msg
+view wrap auth config round =
     let
         role =
             Player.role (Round.R round) auth.claims.uid
@@ -35,7 +33,7 @@ view auth config round =
             Call.slotCount round.call
 
         plays =
-            round.plays |> List.map (playDetails config slots (role == Player.RCzar))
+            round.plays |> List.map (playDetails wrap config slots (role == Player.RCzar))
 
         lastRevealed =
             case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
@@ -56,12 +54,12 @@ view auth config round =
 {- Private -}
 
 
-playDetails : Config -> Int -> Bool -> Play -> Plays.Details Global.Msg
-playDetails config slots isCzar { id, responses } =
+playDetails : (Msg -> msg) -> Config -> Int -> Bool -> Play -> Plays.Details msg
+playDetails wrap config slots isCzar { id, responses } =
     let
         cards =
             responses
                 |> Maybe.map (List.map (\r -> Response.view config Card.Front [] r))
                 |> Maybe.withDefault (List.repeat slots (Response.viewUnknown []))
     in
-    Plays.Details id cards (Reveal id |> Lobby.GameMsg |> Global.LobbyMsg |> Maybe.justIf isCzar) []
+    Plays.Details id cards (Reveal id |> wrap |> Maybe.justIf isCzar) []

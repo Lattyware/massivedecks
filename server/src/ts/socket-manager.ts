@@ -25,30 +25,53 @@ const parseJson = (raw: string): object => {
 };
 
 export class Sockets {
-  private readonly sockets: Map<GameCode, Map<user.Id, WebSocket>>;
+  private readonly sockets: Map<GameCode, Map<user.Id, Set<WebSocket>>>;
 
   public constructor() {
     this.sockets = new Map();
   }
 
-  public set(gameCode: GameCode, id: user.Id, socket: WebSocket): void {
-    this.users(gameCode).set(id, socket);
-  }
-
-  public get(gameCode: GameCode, id: user.Id): WebSocket | undefined {
-    return this.users(gameCode).get(id);
-  }
-
-  public delete(gameCode: GameCode, id: user.Id): boolean {
-    const users = this.users(gameCode);
-    const didDelete = users.delete(id);
-    if (users.size < 1) {
-      this.sockets.delete(gameCode);
+  public add(gameCode: GameCode, id: user.Id, socket: WebSocket): void {
+    const maybeUsers = this.users(gameCode).get(id);
+    if (maybeUsers === undefined) {
+      const newSet = new Set<WebSocket>();
+      newSet.add(socket);
+      this.users(gameCode).set(id, newSet);
+    } else {
+      maybeUsers.add(socket);
     }
-    return didDelete;
   }
 
-  private users(gameCode: GameCode): Map<user.Id, WebSocket> {
+  public *get(gameCode: GameCode, id: user.Id): Iterable<WebSocket> {
+    const maybeUsers = this.users(gameCode).get(id);
+    if (maybeUsers === undefined) {
+      return;
+    } else {
+      yield* maybeUsers;
+    }
+  }
+
+  /**
+   * Delete the socket, and return if the user has disconnected from all sockets.
+   * @param gameCode The game code for the game the user is in.
+   * @param id The id of the user.
+   * @param socket THe socket to delete.
+   */
+  public delete(gameCode: GameCode, id: user.Id, socket: WebSocket): boolean {
+    const users = this.users(gameCode);
+    const sockets = users.get(id);
+    const didDelete = sockets !== undefined ? sockets.delete(socket) : false;
+    if (didDelete && sockets !== undefined && sockets.size < 1) {
+      users.delete(id);
+      if (users.size < 1) {
+        this.sockets.delete(gameCode);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private users(gameCode: GameCode): Map<user.Id, Set<WebSocket>> {
     const existing = this.sockets.get(gameCode);
     if (existing !== undefined) {
       return existing;
@@ -107,7 +130,7 @@ export class SocketManager {
           if (validated.action === "Authenticate") {
             auth = await authenticate.handle(server, validated, gameCode);
             const uid = auth.uid;
-            sockets.set(auth.gc, uid, socket);
+            sockets.add(auth.gc, uid, socket);
             await change.apply(server, auth.gc, lobby => {
               let hand = undefined;
               let play = undefined;
@@ -158,17 +181,19 @@ export class SocketManager {
     socket.on("close", async () => {
       if (auth) {
         const uid = auth.uid;
-        sockets.delete(auth.gc, uid);
-        await change.apply(server, auth.gc, lobby => ({
-          lobby,
-          timeouts: [
-            {
-              timeout: userDisconnect.of(uid),
-              after: server.config.timeouts.disconnectionGracePeriod
-            }
-          ]
-        }));
         logging.logger.info("WebSocket disconnect:", { user: auth.uid });
+        if (sockets.delete(auth.gc, uid, socket)) {
+          await change.apply(server, auth.gc, lobby => ({
+            lobby,
+            timeouts: [
+              {
+                timeout: userDisconnect.of(uid),
+                after: server.config.timeouts.disconnectionGracePeriod
+              }
+            ]
+          }));
+          logging.logger.info("User disconnect:", { user: auth.uid });
+        }
       }
     });
   }

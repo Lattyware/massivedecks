@@ -1,0 +1,221 @@
+module MassiveDecks.Pages.Spectate.Stages.Round exposing (view)
+
+import Dict exposing (Dict)
+import FontAwesome.Icon as Icon
+import FontAwesome.Solid as Icon
+import Html exposing (Html)
+import Html.Attributes as HtmlA
+import MassiveDecks.Card.Call as Call
+import MassiveDecks.Card.Model as Card exposing (Call)
+import MassiveDecks.Card.Play exposing (Play)
+import MassiveDecks.Card.Response as Response
+import MassiveDecks.Game.Model as Game
+import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Model exposing (Shared)
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
+import MassiveDecks.User as User exposing (User)
+import MassiveDecks.Util.Maybe as Maybe
+import Round
+import Set exposing (Set)
+
+
+view : Shared -> Config -> Dict User.Id User -> Game.Model -> List (Html msg)
+view shared config users game =
+    case game.game.round of
+        Round.P playing ->
+            viewPlaying shared config game.playStyles playing
+
+        Round.R revealing ->
+            viewRevealing shared config users revealing
+
+        Round.J judging ->
+            viewJudging shared config users judging
+
+        Round.C complete ->
+            viewComplete shared config users complete
+
+
+
+{- Private -}
+
+
+viewPlaying : Shared -> Config -> Game.PlayStyles -> Round.Playing -> List (Html msg)
+viewPlaying shared config playStyles round =
+    let
+        slots =
+            round.call |> Call.slotCount
+    in
+    [ viewCall shared config Nothing round.call
+    , viewUnknownPlays slots playStyles round.players round.played
+    ]
+
+
+viewRevealing : Shared -> Config -> Dict User.Id User -> Round.Revealing -> List (Html msg)
+viewRevealing shared config users round =
+    let
+        fillWith =
+            case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
+                play :: [] ->
+                    play.responses
+
+                _ ->
+                    Nothing
+
+        plays =
+            round.plays |> List.map (\p -> ( Nothing, p.responses ))
+    in
+    [ viewCall shared config fillWith round.call
+    , viewPlays config (round.call |> Call.slotCount) users Nothing plays
+    ]
+
+
+viewJudging : Shared -> Config -> Dict User.Id User -> Round.Judging -> List (Html msg)
+viewJudging shared config users round =
+    let
+        plays =
+            round.plays |> List.map (\p -> ( Nothing, Just p.responses ))
+    in
+    [ viewCall shared config Nothing round.call
+    , viewPlays config (round.call |> Call.slotCount) users Nothing plays
+    ]
+
+
+viewComplete : Shared -> Config -> Dict User.Id User -> Round.Complete -> List (Html msg)
+viewComplete shared config users round =
+    let
+        plays =
+            round.playOrder |> List.map (\u -> ( Just u, Dict.get u round.plays ))
+
+        winner =
+            Dict.get round.winner round.plays
+    in
+    [ viewCall shared config winner round.call
+    , viewPlays config (round.call |> Call.slotCount) users (Just round.winner) plays
+    ]
+
+
+viewCall : Shared -> Config -> Maybe (List Card.Response) -> Call -> Html msg
+viewCall shared config fillWith call =
+    Html.div [ HtmlA.id "call-wrapper" ]
+        [ Call.viewFilled shared config Card.Front [] (fillWith |> Maybe.withDefault [] |> List.map .body) call
+        ]
+
+
+viewUnknownPlays : Int -> Game.PlayStyles -> Set User.Id -> Set User.Id -> Html msg
+viewUnknownPlays slotCount playStyles players played =
+    let
+        angle =
+            players |> Set.size |> anglePerPlay
+
+        getPlayStyle =
+            (\u -> Dict.get u playStyles) >> Maybe.withDefault (List.repeat slotCount { rotation = 0 })
+    in
+    Html.ul [ HtmlA.id "plays" ]
+        (players
+            |> Set.toList
+            |> List.indexedMap (\i -> \u -> viewUnknownPlay (toFloat i * angle) (getPlayStyle u) (Set.member u played))
+        )
+
+
+viewPlays : Config -> Int -> Dict User.Id User -> Maybe User.Id -> List ( Maybe User.Id, Maybe (List Card.Response) ) -> Html msg
+viewPlays config slotCount users winner plays =
+    let
+        angle =
+            plays |> List.length |> anglePerPlay
+    in
+    Html.ul [ HtmlA.id "plays" ] (plays |> List.indexedMap (viewPlayByIndex config slotCount users winner angle))
+
+
+viewPlayByIndex : Config -> Int -> Dict User.Id User -> Maybe User.Id -> Float -> Int -> ( Maybe User.Id, Maybe (List Card.Response) ) -> Html msg
+viewPlayByIndex config slotCount users winner angle index ( user, play ) =
+    let
+        isWinner =
+            case winner of
+                Just w ->
+                    user == Just w
+
+                Nothing ->
+                    False
+    in
+    viewPlay config slotCount (toFloat index * angle) (user |> Maybe.andThen (\u -> Dict.get u users)) isWinner play
+
+
+anglePerPlay : Int -> Float
+anglePerPlay total =
+    turns 1 / toFloat total
+
+
+closeDistance : number
+closeDistance =
+    35
+
+
+farDistance : number
+farDistance =
+    85
+
+
+viewPlay : Config -> Int -> Float -> Maybe User -> Bool -> Maybe (List Card.Response) -> Html msg
+viewPlay config slotCount angle playedBy isWinner responses =
+    Html.li
+        (positionFromAngle angle closeDistance)
+        [ Html.div [ HtmlA.class "with-byline" ]
+            [ Html.span [ HtmlA.class "byline" ]
+                (List.filterMap identity
+                    [ Icon.viewIcon Icon.trophy |> Maybe.justIf isWinner
+                    , playedBy |> Maybe.map (.name >> Html.text)
+                    ]
+                )
+            , Html.ol
+                [ HtmlA.classList [ ( "play", True ), ( "card-set", True ) ]
+                ]
+                (responses
+                    |> Maybe.map (List.map (\response -> Html.li [] [ Response.view config Card.Front [] response ]))
+                    |> Maybe.withDefault (List.repeat slotCount (Html.li [] [ Response.viewUnknown [] ]))
+                )
+            ]
+        ]
+
+
+viewUnknownPlay : Float -> Game.PlayStyle -> Bool -> Html msg
+viewUnknownPlay angle playStyle played =
+    let
+        distance =
+            if played then
+                closeDistance
+
+            else
+                farDistance
+    in
+    Html.li
+        (positionFromAngle angle distance)
+        [ Html.div [ HtmlA.class "with-byline" ]
+            [ Html.span [ HtmlA.class "byline" ] []
+            , Html.ol
+                [ HtmlA.classList [ ( "play", True ), ( "card-set", True ) ]
+                ]
+                (playStyle |> List.map (\cardStyle -> Html.li [] [ Response.viewUnknown [ rotated cardStyle.rotation ] ]))
+            ]
+        ]
+
+
+positionFromAngle : Float -> Float -> List (Html.Attribute msg)
+positionFromAngle angle distance =
+    let
+        startFromLeft =
+            turns 0.5 + angle
+
+        left =
+            cos startFromLeft * distance
+
+        top =
+            sin startFromLeft * distance
+    in
+    [ HtmlA.style "left" (Round.round 4 left ++ "em")
+    , HtmlA.style "top" (Round.round 4 top ++ "em")
+    ]
+
+
+rotated : Float -> Html.Attribute msg
+rotated angle =
+    HtmlA.style "transform" ("rotateZ(" ++ Round.round 6 angle ++ "turn)")

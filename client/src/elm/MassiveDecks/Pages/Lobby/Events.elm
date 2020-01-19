@@ -73,7 +73,7 @@ type GameEvent
     | StageTimerDone { round : Round.Id, stage : Round.Stage }
     | Paused
     | Continued
-    | GameEnded { winner : List User.Id }
+    | GameEnded { winner : Set User.Id }
 
 
 type TimedState

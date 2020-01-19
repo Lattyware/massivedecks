@@ -18,6 +18,7 @@ import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Game.Time exposing (Time)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.User as User
+import Set exposing (Set)
 
 
 {-| A model for the game scene.
@@ -53,7 +54,7 @@ type alias Game =
     , playerOrder : List User.Id
     , players : Dict User.Id Player
     , rules : Rules
-    , winner : Maybe (List User.Id)
+    , winner : Maybe (Set User.Id)
     , paused : Bool
     }
 

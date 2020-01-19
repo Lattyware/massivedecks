@@ -11,7 +11,7 @@ import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
+import MassiveDecks.Pages.Lobby.Messages as Lobby exposing (Msg(..))
 import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Strings as Strings exposing (MdString)
@@ -24,19 +24,19 @@ import Weightless as Wl
 
 {-| A button to show the dialog.
 -}
-button : Shared -> Html Global.Msg
-button shared =
+button : (Msg -> msg) -> Shared -> Html msg
+button wrap shared =
     Components.iconButton
         [ Lang.title shared Strings.Invite
-        , Lobby.ToggleInviteDialog |> Global.LobbyMsg |> HtmlE.onClick
+        , ToggleInviteDialog |> wrap |> HtmlE.onClick
         ]
         Icon.bullhorn
 
 
 {-| A dialog overlay that displays information on how to invite people to the game.
 -}
-dialog : Shared -> GameCode -> Maybe String -> Bool -> Html Global.Msg
-dialog shared gameCode password open =
+dialog : (Msg -> msg) -> Shared -> GameCode -> Maybe String -> Bool -> Html msg
+dialog wrap shared gameCode password open =
     let
         lobbyUrl =
             url shared gameCode
@@ -44,17 +44,17 @@ dialog shared gameCode password open =
     Html.div
         [ HtmlA.id "invite-dialog"
         , HtmlA.classList [ ( "open", open ) ]
-        , Lobby.ToggleInviteDialog |> Global.LobbyMsg |> HtmlE.onClick
+        , Lobby.ToggleInviteDialog |> wrap |> HtmlE.onClick
         ]
         [ Components.iconButton
             [ HtmlA.class "close"
             , Lobby.ToggleInviteDialog
-                |> Global.LobbyMsg
+                |> wrap
                 |> onClickNoPropegation
             , Strings.Close |> Lang.title shared
             ]
             Icon.times
-        , Wl.card [ onClickNoPropegation Global.NoOp ]
+        , Wl.card [ onClickNoPropegation (wrap NoOp) ]
             [ Strings.InviteExplanation { gameCode = GameCode.toString gameCode, password = password } |> Lang.html shared
             , Form.section shared
                 "invite-link"
@@ -66,7 +66,7 @@ dialog shared gameCode password open =
                         , HtmlA.id "invite-link-field"
                         ]
                         []
-                    , Components.iconButton [ "invite-link-field" |> Global.Copy |> HtmlE.onClick ] Icon.copy
+                    , Components.iconButton [ "invite-link-field" |> Copy |> wrap |> HtmlE.onClick ] Icon.copy
                     ]
                 )
                 [ Message.info Strings.InviteLinkHelp ]

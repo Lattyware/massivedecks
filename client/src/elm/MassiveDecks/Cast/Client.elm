@@ -18,7 +18,7 @@ import MassiveDecks.Strings.Languages as Lang
 -}
 tryCast : Shared -> Lobby.Token -> Cmd msg
 tryCast shared token =
-    { token = token, language = Lang.currentLanguage shared } |> Encoders.castFlags |> Ports.tryCast
+    Spectate { token = token, language = Lang.currentLanguage shared } |> Encoders.remoteControlCommand |> Ports.tryCast
 
 
 {-| The subscription to get messages about cast status changes.

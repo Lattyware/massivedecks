@@ -7,7 +7,7 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action.Model exposing (..)
-import MassiveDecks.Game.Messages as Game
+import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
@@ -35,8 +35,8 @@ normal =
     [ WlA.inverted, WlA.outlined ]
 
 
-view : Shared -> Maybe Action -> Action -> Html Global.Msg
-view shared visible action =
+view : (Msg -> msg) -> Shared -> Maybe Action -> Action -> Html msg
+view wrap shared visible action =
     let
         { icon, attrs, title, onClick } =
             case action of
@@ -53,12 +53,12 @@ view shared visible action =
                     IconView Icon.thumbsUp normal Strings.LikePlay Game.Like
 
                 Advance ->
-                    IconView Icon.forward normal Strings.AdvanceRound Game.AdvanceRound
+                    IconView Icon.forward blocking Strings.AdvanceRound Game.AdvanceRound
     in
     Components.floatingActionButton
         (List.concat
             [ [ title |> Lang.title shared
-              , onClick |> Lobby.GameMsg |> Global.LobbyMsg |> HtmlE.onClick
+              , onClick |> wrap |> HtmlE.onClick
               , HtmlA.classList [ ( "action", True ), ( "exited", visible /= Just action ) ]
               ]
             , attrs
@@ -67,9 +67,9 @@ view shared visible action =
         icon
 
 
-type alias IconView =
+type alias IconView msg =
     { icon : Icon
-    , attrs : List (Html.Attribute Global.Msg)
+    , attrs : List (Html.Attribute msg)
     , title : MdString
     , onClick : Game.Msg
     }

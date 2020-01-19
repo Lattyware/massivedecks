@@ -23,7 +23,7 @@
     bottom: 1em;
     right: 1rem;
 
-    z-index: 100;
+    z-index: 999;
 
     --button-fab-size: 4rem;
     font-size: 1.5rem;
@@ -61,7 +61,7 @@
 
 #top-content {
   position: sticky;
-  z-index: 2;
+  z-index: 3;
   top: 0;
   left: 0;
   right: 0;
@@ -92,7 +92,7 @@
 
 #minor-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin: 1rem;
 
   #context-help {
@@ -102,6 +102,7 @@
 
     wl-popover-card {
       min-width: 10em;
+      max-width: 20em;
     }
   }
 
@@ -151,6 +152,7 @@
   justify-content: center;
   align-items: center;
   padding: 2em 0;
+  z-index: 2;
 }
 
 // A play or card that has been picked by the player as the target of some action.

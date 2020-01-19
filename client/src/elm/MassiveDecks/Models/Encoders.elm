@@ -1,12 +1,12 @@
 module MassiveDecks.Models.Encoders exposing
-    ( castFlags
-    , checkAlive
+    ( checkAlive
     , houseRuleChange
     , language
     , lobbyCreation
     , lobbyToken
     , playerPresence
     , privilege
+    , remoteControlCommand
     , roundId
     , settings
     , source
@@ -143,12 +143,15 @@ lobbyCreation c =
         [ ( "owner", c.owner |> userRegistration ) ]
 
 
-castFlags : Cast.Flags -> Json.Value
-castFlags cf =
-    Json.object
-        [ ( "token", cf.token |> Json.string )
-        , ( "language", cf.language |> language )
-        ]
+remoteControlCommand : Cast.RemoteControlCommand -> Json.Value
+remoteControlCommand command =
+    case command of
+        Cast.Spectate spectate ->
+            Json.object
+                [ ( "command", "Spectate" |> Json.string )
+                , ( "token", spectate.token |> Json.string )
+                , ( "language", spectate.language |> language )
+                ]
 
 
 lobbyToken : Lobby.Token -> Json.Value

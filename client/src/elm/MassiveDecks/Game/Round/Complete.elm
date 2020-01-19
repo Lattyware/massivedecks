@@ -11,7 +11,6 @@ import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
@@ -19,7 +18,7 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 
 
-view : Shared -> Bool -> Config -> Dict User.Id User -> Round.Complete -> RoundView Global.Msg
+view : Shared -> Bool -> Config -> Dict User.Id User -> Round.Complete -> RoundView msg
 view shared nextRoundReady config users round =
     let
         winning =
@@ -29,12 +28,15 @@ view shared nextRoundReady config users round =
     , action = Action.Advance |> Maybe.justIf nextRoundReady
     , content =
         HtmlK.ul [ HtmlA.class "complete plays cards" ]
-            (round.plays |> Dict.toList |> List.map (viewPlay shared config users round.winner))
+            (round.playOrder
+                |> List.map (\u -> ( u, Dict.get u round.plays |> Maybe.withDefault [] ))
+                |> List.map (viewPlay shared config users round.winner)
+            )
     , fillCallWith = winning |> Maybe.withDefault []
     }
 
 
-viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, List Card.Response ) -> ( String, Html Global.Msg )
+viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, List Card.Response ) -> ( String, Html msg )
 viewPlay shared config users winner ( id, responses ) =
     let
         cards =

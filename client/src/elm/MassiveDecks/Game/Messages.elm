@@ -25,3 +25,4 @@ type Msg
     | SetPlayerAway User.Id
     | UpdateTimer Time
     | EnforceTimeLimit
+    | NoOp

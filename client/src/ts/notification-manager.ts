@@ -26,6 +26,13 @@ export type Control = "request-permissions";
  */
 export type Command = Control | Message;
 
+export function register(
+  notificationState: OutboundPort<State>,
+  notificationCommands: InboundPort<Command>
+) {
+  new NotificationManager(notificationState, notificationCommands);
+}
+
 /**
  * Checks if the given command is a message.
  * @param command the given command.

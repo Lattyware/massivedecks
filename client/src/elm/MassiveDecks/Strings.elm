@@ -148,6 +148,8 @@ type MdString
     | SetAway -- A short term for leaving the game temporarily.
     | SetBack -- A short term for returning to the game after being away.
     | LeaveGame -- A short term for the action of leaving the game permanently.
+    | Spectate -- A short term for spectating the game.
+    | SpectateDescription -- A description of the action of spectating the game.
     | EndGame -- A short term for the action of ending the game early.
     | EndGameDescription -- A description of the action of ending the game early.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.

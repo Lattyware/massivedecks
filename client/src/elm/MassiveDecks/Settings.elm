@@ -42,8 +42,8 @@ import Weightless.Attributes as WlA
 import Weightless.Slider as Slider
 
 
-init : Settings -> ( Model, Cmd Global.Msg )
-init settings =
+init : (Msg -> msg) -> Settings -> ( Model, Cmd msg )
+init wrap settings =
     let
         cmd =
             if Dict.isEmpty settings.tokens then
@@ -52,7 +52,7 @@ init settings =
             else
                 settings.tokens
                     |> Dict.values
-                    |> Api.checkAlive (Request.map ignore ignore (RemoveInvalid >> Global.SettingsMsg))
+                    |> Api.checkAlive (Request.map (ignore wrap) (ignore wrap) (RemoveInvalid >> wrap))
                     |> Http.request
     in
     ( { settings = settings
@@ -75,7 +75,7 @@ defaults =
     }
 
 
-update : Shared -> Msg -> ( Model, Cmd Msg )
+update : Shared -> Msg -> ( Model, Cmd msg )
 update shared msg =
     let
         model =
@@ -129,9 +129,12 @@ update shared msg =
         ToggleOnlyWhenHidden enabled ->
             changeSettings (\s -> { s | notifications = Notifications.requireNotVisible enabled s.notifications }) model
 
+        NoOp ->
+            ( model, Cmd.none )
 
-view : Shared -> Html Global.Msg
-view shared =
+
+view : (Msg -> msg) -> Shared -> Html msg
+view wrap shared =
     let
         model =
             shared.settings
@@ -146,7 +149,7 @@ view shared =
         button =
             Components.iconButtonStyled
                 [ HtmlA.id "settings-button"
-                , ToggleOpen |> Global.SettingsMsg |> HtmlE.onClick
+                , ToggleOpen |> wrap |> HtmlE.onClick
                 , Strings.SettingsTitle |> Lang.title shared
                 ]
                 ( [ Icon.lg ], icon )
@@ -156,10 +159,10 @@ view shared =
                 [ Html.h3 [] [ Strings.SettingsTitle |> Lang.html shared ]
                 , Html.div [ HtmlA.class "body" ]
                     (List.intersperse (Html.hr [] [])
-                        [ languageSelector shared
-                        , cardSize shared
-                        , speechVoiceSelector shared
-                        , notificationsSwitch shared
+                        [ languageSelector wrap shared
+                        , cardSize wrap shared
+                        , speechVoiceSelector wrap shared
+                        , notificationsSwitch wrap shared
                         ]
                     )
                 ]
@@ -230,11 +233,6 @@ auths settings =
 {- Private -}
 
 
-ignore : anything -> Global.Msg
-ignore =
-    always Global.NoOp
-
-
 changeSettings : (Settings -> Settings) -> Model -> ( Model, Cmd msg )
 changeSettings f model =
     let
@@ -244,8 +242,8 @@ changeSettings f model =
     ( { model | settings = settings }, LocalStorage.store settings )
 
 
-cardSize : Shared -> Html Global.Msg
-cardSize shared =
+cardSize : (Msg -> msg) -> Shared -> Html msg
+cardSize wrap shared =
     let
         settings =
             shared.settings.settings
@@ -266,7 +264,7 @@ cardSize shared =
                     >> Maybe.andThen cardSizeFromValue
                     >> Maybe.withDefault Full
                     >> ChangeCardSize
-                    >> Global.SettingsMsg
+                    >> wrap
                     |> HtmlE.onInput
                 , settings.cardSize |> cardSizeToValue |> String.fromInt |> WlA.value
                 ]
@@ -292,8 +290,8 @@ cardSizeThumb size =
             Icon.viewIcon Icon.callCard
 
 
-speechVoiceSelector : Shared -> Html Global.Msg
-speechVoiceSelector shared =
+speechVoiceSelector : (Msg -> msg) -> Shared -> Html msg
+speechVoiceSelector wrap shared =
     let
         selectedVoice =
             shared.settings.settings.speech.selectedVoice
@@ -321,7 +319,7 @@ speechVoiceSelector shared =
                 [ Html.div
                     [ HtmlA.class "multipart" ]
                     [ Wl.switch
-                        [ HtmlE.onCheck (ToggleSpeech >> Global.SettingsMsg)
+                        [ HtmlE.onCheck (ToggleSpeech >> wrap)
                         , HtmlA.disabled isDisabled
                         , HtmlA.checked enabled
                         ]
@@ -332,7 +330,7 @@ speechVoiceSelector shared =
                         ]
                     ]
                 , Wl.select
-                    [ HtmlE.onInput (ChangeSpeech >> Global.SettingsMsg)
+                    [ HtmlE.onInput (ChangeSpeech >> wrap)
                     , Strings.VoiceSetting |> Lang.string shared |> WlA.label
                     , WlA.outlined
                     , HtmlA.disabled (not enabled || isDisabled)
@@ -358,7 +356,7 @@ defaultFirst a b =
         GT
 
 
-speechVoiceOption : Maybe String -> Speech.Voice -> Html Global.Msg
+speechVoiceOption : Maybe String -> Speech.Voice -> Html msg
 speechVoiceOption selectedVoice voice =
     let
         selected =
@@ -373,8 +371,8 @@ speechVoiceOption selectedVoice voice =
         [ Html.text (voice.name ++ " (" ++ voice.lang ++ ")") ]
 
 
-notificationsSwitch : Shared -> Html Global.Msg
-notificationsSwitch shared =
+notificationsSwitch : (Msg -> msg) -> Shared -> Html msg
+notificationsSwitch wrap shared =
     let
         settings =
             shared.settings.settings.notifications
@@ -397,7 +395,7 @@ notificationsSwitch shared =
             [ Html.div
                 [ HtmlA.class "multipart" ]
                 [ Wl.switch
-                    [ HtmlE.onCheck (ToggleNotifications >> Global.SettingsMsg)
+                    [ HtmlE.onCheck (ToggleNotifications >> wrap)
                     , HtmlA.disabled unsupported
                     , HtmlA.checked enabled
                     ]
@@ -414,7 +412,7 @@ notificationsSwitch shared =
                     (Html.div
                         [ HtmlA.class "multipart" ]
                         [ Wl.switch
-                            [ HtmlE.onCheck (ToggleOnlyWhenHidden >> Global.SettingsMsg)
+                            [ HtmlE.onCheck (ToggleOnlyWhenHidden >> wrap)
                             , HtmlA.disabled visibilityDisabled
                             , HtmlA.checked settings.requireNotVisible
                             ]
@@ -445,8 +443,8 @@ notificationsSwitch shared =
         ]
 
 
-languageSelector : Shared -> Html Global.Msg
-languageSelector shared =
+languageSelector : (Msg -> msg) -> Shared -> Html msg
+languageSelector wrap shared =
     let
         selected =
             Lang.currentLanguage shared
@@ -455,18 +453,13 @@ languageSelector shared =
         shared
         "language"
         (Wl.select
-            [ HtmlE.onInput onChangeLang
+            [ HtmlE.onInput (Lang.fromCode >> ChangeLang >> wrap)
             , Strings.LanguageSetting |> Lang.string shared |> WlA.label
             , WlA.outlined
             ]
             (Lang.languages |> List.map (languageOption selected))
         )
         [ Message.info Strings.MissingLanguage ]
-
-
-onChangeLang : String -> Global.Msg
-onChangeLang code =
-    Lang.fromCode code |> ChangeLang |> Global.SettingsMsg
 
 
 languageOption : Language -> Language -> Html msg
@@ -492,3 +485,8 @@ languageOption currentLanguage language =
     Html.option
         [ language |> Lang.code |> HtmlA.value, HtmlA.selected (currentLanguage == language) ]
         name
+
+
+ignore : (Msg -> msg) -> a -> msg
+ignore wrap =
+    always (NoOp |> wrap)

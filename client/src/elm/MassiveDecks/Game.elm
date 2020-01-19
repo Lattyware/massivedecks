@@ -38,7 +38,7 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
-import MassiveDecks.Pages.Lobby.Events as Events
+import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.Settings.Model exposing (Settings)
@@ -49,15 +49,15 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
-import Set
+import Set exposing (Set)
 import Task
 import Weightless as Wl
 import Weightless.Attributes as WlA
 import Weightless.ProgressBar as ProgressBar
 
 
-init : Game -> List Card.Response -> Round.Pick -> ( Model, Cmd Global.Msg )
-init game hand pick =
+init : (Msg -> msg) -> Game -> List Card.Response -> Round.Pick -> ( Model, Cmd msg )
+init wrap game hand pick =
     let
         model =
             emptyModel game
@@ -65,19 +65,19 @@ init game hand pick =
         ( round, roundCmd ) =
             case game.round of
                 Round.P r ->
-                    Util.modelLift Round.P (Playing.init r pick)
+                    Util.modelLift Round.P (Playing.init wrap r pick)
 
                 _ ->
                     ( game.round, Cmd.none )
 
         timeCmd =
-            Time.now (UpdateTimer >> lift)
+            Time.now (UpdateTimer >> wrap)
     in
     ( { model | hand = hand, game = { game | round = round } }, Cmd.batch [ roundCmd, timeCmd ] )
 
 
-update : Shared -> Msg -> Model -> ( Model, Cmd Global.Msg )
-update shared msg model =
+update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Model, Cmd msg )
+update wrap shared msg model =
     let
         game =
             model.game
@@ -159,7 +159,7 @@ update shared msg model =
                     ( model, Cmd.none )
 
         ScrollToTop ->
-            ( model, Dom.setViewportOf "scroll-frame" 0 0 |> Task.attempt (\_ -> Global.NoOp) )
+            ( model, Dom.setViewportOf "scroll-frame" 0 0 |> Task.attempt (NoOp |> wrap |> always) )
 
         Reveal play ->
             ( model, Actions.reveal play )
@@ -233,9 +233,12 @@ update shared msg model =
         EnforceTimeLimit ->
             ( model, Actions.enforceTimeLimit (model.game.round |> Round.data |> .id) (model.game.round |> Round.stage) )
 
+        NoOp ->
+            ( model, Cmd.none )
 
-subscriptions : Time.Anchor -> Model -> Sub Global.Msg
-subscriptions anchor model =
+
+subscriptions : (Msg -> msg) -> Time.Anchor -> Model -> Sub msg
+subscriptions wrap anchor model =
     let
         ( startedAt, maybeLimitSeconds, timedOut ) =
             roundTimeDetails model.game
@@ -259,21 +262,21 @@ subscriptions anchor model =
                             Sub.none
 
                         else if left > showProgressBarForLast then
-                            Time.every 500 (UpdateTimer >> lift)
+                            Time.every 500 (UpdateTimer >> wrap)
 
                         else
-                            Time.animate (UpdateTimer >> lift)
+                            Time.animate (UpdateTimer >> wrap)
 
                     Nothing ->
-                        Time.animate (UpdateTimer >> lift)
+                        Time.animate (UpdateTimer >> wrap)
 
 
-view : Shared -> Lobby.Auth -> Time.Anchor -> String -> Config -> Dict User.Id User -> Model -> Html Global.Msg
-view shared auth timeAnchor name config users model =
+view : (Msg -> msg) -> Shared -> Lobby.Auth -> Time.Anchor -> String -> Config -> Dict User.Id User -> Model -> Html msg
+view wrap shared auth timeAnchor name config users model =
     let
         overlay =
             if model.game.players |> Dict.get auth.claims.uid |> Maybe.map (\p -> p.presence == Player.Away) |> Maybe.withDefault False then
-                gameOverlay shared Strings.ClientAway (Just ( Strings.SetBack, Player.Active |> SetPresence |> lift ))
+                gameOverlay shared Strings.ClientAway (Just ( Strings.SetBack, Player.Active |> SetPresence |> wrap ))
 
             else if model.game.paused then
                 gameOverlay shared Strings.Paused Nothing
@@ -283,7 +286,7 @@ view shared auth timeAnchor name config users model =
 
         gameView =
             if model.viewingHistory then
-                History.view shared config users name model.game.history
+                History.view wrap shared config users name model.game.history
 
             else
                 case model.game.winner of
@@ -291,13 +294,13 @@ view shared auth timeAnchor name config users model =
                         viewWinner shared users winners
 
                     Nothing ->
-                        viewRound shared auth timeAnchor config users model
+                        viewRound wrap shared auth timeAnchor config users model
     in
     Html.div [ HtmlA.id "game" ] (overlay ++ gameView)
 
 
-applyGameEvent : Lobby.Auth -> Shared -> Events.GameEvent -> Model -> ( Model, Cmd Global.Msg )
-applyGameEvent auth shared gameEvent model =
+applyGameEvent : (Msg -> msg) -> (Event -> msg) -> Lobby.Auth -> Shared -> Events.GameEvent -> Model -> ( Model, Cmd msg )
+applyGameEvent wrap wrapEvent auth shared gameEvent model =
     case gameEvent of
         Events.HandRedrawn { player, hand } ->
             let
@@ -357,8 +360,7 @@ applyGameEvent auth shared gameEvent model =
                     Events.WithTime { event = event, time = time }
                         |> Events.Timed
                         |> Events.Game
-                        |> Lobby.EventReceived
-                        |> Global.LobbyMsg
+                        |> wrapEvent
                 )
             )
 
@@ -419,13 +421,24 @@ applyGameEvent auth shared gameEvent model =
                                 Round.J r ->
                                     let
                                         plays =
-                                            r.plays |> List.filterMap (resolvePlayedBy playedBy) |> Dict.fromList
+                                            r.plays |> List.filterMap (resolvePlayedBy playedBy)
+
+                                        playsDict =
+                                            plays |> Dict.fromList
 
                                         complete =
-                                            Round.complete r.id r.czar r.players r.call plays winner time
+                                            Round.complete
+                                                r.id
+                                                r.czar
+                                                r.players
+                                                r.call
+                                                playsDict
+                                                (plays |> List.map (\( u, _ ) -> u))
+                                                winner
+                                                time
 
                                         tts =
-                                            Dict.get winner plays
+                                            Dict.get winner playsDict
                                                 |> Maybe.map (\p -> speak shared r.call (Just p))
                                                 |> Maybe.withDefault Cmd.none
                                     in
@@ -446,7 +459,7 @@ applyGameEvent auth shared gameEvent model =
                             drawn |> Maybe.withDefault []
 
                         ( newRound, cmd ) =
-                            Playing.init (Round.playing id czar players call Set.empty time False) Round.noPick
+                            Playing.init wrap (Round.playing id czar players call Set.empty time False) Round.noPick
 
                         notification =
                             if Set.member auth.claims.uid players then
@@ -575,8 +588,8 @@ applyGameEvent auth shared gameEvent model =
             ( { model | game = { game | winner = Just winner } }, Cmd.none )
 
 
-applyGameStarted : Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd Global.Msg )
-applyGameStarted lobby round hand =
+applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
+applyGameStarted wrap lobby round hand =
     let
         users =
             lobby.users |> Dict.toList |> List.map (\( id, _ ) -> id)
@@ -594,7 +607,7 @@ applyGameStarted lobby round hand =
             , paused = False
             }
     in
-    init game hand Round.noPick
+    init wrap game hand Round.noPick
 
 
 hotJoinPlayer : User.Id -> Model -> Model
@@ -616,11 +629,11 @@ hotJoinPlayer player model =
 {- Private -}
 
 
-viewWinner : Shared -> Dict User.Id User -> List User.Id -> List (Html msg)
+viewWinner : Shared -> Dict User.Id User -> Set User.Id -> List (Html msg)
 viewWinner shared users winners =
     [ Wl.card [ HtmlA.id "game-winner" ]
         [ Html.span [] [ Icon.trophy |> Icon.viewIcon ]
-        , Html.ul [] (winners |> List.map (viewWinnerListItem shared users))
+        , Html.ul [] (winners |> Set.toList |> List.map (viewWinnerListItem shared users))
         ]
     ]
 
@@ -636,8 +649,8 @@ viewWinnerListItem shared users user =
         ]
 
 
-viewRound : Shared -> Lobby.Auth -> Time.Anchor -> Config -> Dict User.Id User -> Model -> List (Html Global.Msg)
-viewRound shared auth timeAnchor config users model =
+viewRound : (Msg -> msg) -> Shared -> Lobby.Auth -> Time.Anchor -> Config -> Dict User.Id User -> Model -> List (Html msg)
+viewRound wrap shared auth timeAnchor config users model =
     let
         ( call, { instruction, action, content, fillCallWith } ) =
             case model.completeRound of
@@ -647,13 +660,13 @@ viewRound shared auth timeAnchor config users model =
                 Nothing ->
                     case game.round of
                         Round.P round ->
-                            ( round.call, Playing.view auth config model round )
+                            ( round.call, Playing.view wrap auth config model round )
 
                         Round.R round ->
-                            ( round.call, Revealing.view auth config round )
+                            ( round.call, Revealing.view wrap auth config round )
 
                         Round.J round ->
-                            ( round.call, Judging.view auth config round )
+                            ( round.call, Judging.view wrap auth config round )
 
                         Round.C round ->
                             ( round.call, Complete.view shared False config users round )
@@ -673,11 +686,11 @@ viewRound shared auth timeAnchor config users model =
     [ Html.div [ HtmlA.id "top-content" ]
         [ bar |> Maybe.withDefault Html.nothing
         , Html.div [ HtmlA.class "top-row" ]
-            [ minorActions shared auth game instruction
+            [ minorActions wrap shared auth game instruction
             , countdown |> Maybe.withDefault Html.nothing
             ]
         ]
-    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction shared action ]
+    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction wrap shared action ]
     , content
     , Html.div [ HtmlA.class "scroll-top-spacer" ] []
 
@@ -687,7 +700,7 @@ viewRound shared auth timeAnchor config users model =
             [ WlA.flat
             , WlA.fab
             , WlA.inverted
-            , ScrollToTop |> lift |> HtmlE.onClick
+            , ScrollToTop |> wrap |> HtmlE.onClick
             ]
             [ Icon.viewIcon Icon.arrowUp ]
         ]
@@ -706,7 +719,7 @@ help shared instruction =
                 Icon.question
             , Wl.popover
                 (List.concat
-                    [ WlA.anchorOrigin WlA.XLeft WlA.YBottom
+                    [ WlA.anchorOrigin WlA.XCenter WlA.YBottom
                     , WlA.transformOrigin WlA.XLeft WlA.YTop
                     , [ WlA.anchor id, WlA.fixed, WlA.anchorOpenEvents [ "click" ] ]
                     ]
@@ -791,8 +804,8 @@ roundTimeDetails game =
             ( complete.startedAt, Nothing, False )
 
 
-minorActions : Shared -> Lobby.Auth -> Game -> Maybe MdString -> Html Global.Msg
-minorActions shared auth game instruction =
+minorActions : (Msg -> msg) -> Shared -> Lobby.Auth -> Game -> Maybe MdString -> Html msg
+minorActions wrap shared auth game instruction =
     let
         localPlayer =
             game.players |> Dict.get auth.claims.uid
@@ -804,7 +817,7 @@ minorActions shared auth game instruction =
             if timedOut && game.rules.timeLimits.mode == Rules.Soft then
                 Components.iconButton
                     [ Strings.EnforceTimeLimitAction |> Lang.title shared
-                    , EnforceTimeLimit |> lift |> HtmlE.onClick
+                    , EnforceTimeLimit |> wrap |> HtmlE.onClick
                     ]
                     Icon.forward
                     |> Just
@@ -814,9 +827,9 @@ minorActions shared auth game instruction =
     in
     Html.div [ HtmlA.id "minor-actions" ]
         (List.filterMap identity
-            [ Just (historyButton shared)
+            [ Just (historyButton wrap shared)
             , instruction |> Maybe.map (help shared)
-            , Maybe.map2 (\score -> \reboot -> rebootButton shared score reboot)
+            , Maybe.map2 (\score -> \reboot -> rebootButton wrap shared score reboot)
                 (localPlayer |> Maybe.map .score)
                 game.rules.houseRules.reboot
             , enforceTimeLimit
@@ -824,34 +837,34 @@ minorActions shared auth game instruction =
         )
 
 
-historyButton : Shared -> Html Global.Msg
-historyButton shared =
+historyButton : (Msg -> msg) -> Shared -> Html msg
+historyButton wrap shared =
     Components.iconButton
         [ HtmlA.id "history-button"
         , Strings.ViewGameHistoryAction |> Lang.title shared
-        , ToggleHistoryView |> lift |> HtmlE.onClick
+        , ToggleHistoryView |> wrap |> HtmlE.onClick
         ]
         Icon.history
 
 
-rebootButton : Shared -> Int -> Rules.Reboot -> Html Global.Msg
-rebootButton shared score reboot =
+rebootButton : (Msg -> msg) -> Shared -> Int -> Rules.Reboot -> Html msg
+rebootButton wrap shared score reboot =
     Components.iconButton
         [ HtmlA.id "redraw"
         , { cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.title shared
         , WlA.disabled
             |> Maybe.justIf (score < reboot.cost)
-            |> Maybe.withDefault (Redraw |> lift |> HtmlE.onClick)
+            |> Maybe.withDefault (Redraw |> wrap |> HtmlE.onClick)
         ]
         Icon.random
 
 
-viewAction : Shared -> Maybe Action -> Html Global.Msg
-viewAction shared visible =
-    Html.div [] (Action.actions |> List.map (Action.view shared visible))
+viewAction : (Msg -> msg) -> Shared -> Maybe Action -> Html msg
+viewAction wrap shared visible =
+    Html.div [] (Action.actions |> List.map (Action.view wrap shared visible))
 
 
-gameOverlay : Shared -> MdString -> Maybe ( MdString, Global.Msg ) -> List (Html Global.Msg)
+gameOverlay : Shared -> MdString -> Maybe ( MdString, msg ) -> List (Html msg)
 gameOverlay shared message action =
     [ Html.div [ HtmlA.id "game-overlay" ]
         [ Html.p [] [ message |> Lang.html shared ]
@@ -860,7 +873,7 @@ gameOverlay shared message action =
     ]
 
 
-gameOverlayAction : Shared -> ( MdString, Global.Msg ) -> Html Global.Msg
+gameOverlayAction : Shared -> ( MdString, msg ) -> Html msg
 gameOverlayAction shared ( description, action ) =
     Components.linkButton [ action |> HtmlE.onClick ] [ description |> Lang.html shared ]
 
@@ -916,8 +929,3 @@ type alias RoundDetails msg =
     , callFlipped : Bool
     , playing : Bool
     }
-
-
-lift : Msg -> Global.Msg
-lift msg =
-    msg |> Lobby.GameMsg |> Global.LobbyMsg

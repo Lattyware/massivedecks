@@ -1,6 +1,5 @@
 module MassiveDecks.Models.Decoders exposing
-    ( castFlags
-    , castStatus
+    ( castStatus
     , event
     , eventOrMdError
     , externalSource
@@ -12,6 +11,7 @@ module MassiveDecks.Models.Decoders exposing
     , lobbyToken
     , mdError
     , privilege
+    , remoteControlCommand
     , revealingRound
     , settings
     , timeLimitChangedForStage
@@ -81,18 +81,34 @@ castStatusByName name =
             unknownValue "cast status" name
 
 
-castFlags : Json.Decoder Cast.Flags
-castFlags =
-    Json.map2 Cast.Flags
+remoteControlCommand : Json.Decoder Cast.RemoteControlCommand
+remoteControlCommand =
+    Json.field "command" Json.string |> Json.andThen remoteControlCommandByName
+
+
+remoteControlCommandByName : String -> Json.Decoder Cast.RemoteControlCommand
+remoteControlCommandByName name =
+    case name of
+        "Spectate" ->
+            spectateCommand
+
+        _ ->
+            unknownValue "remote command" name
+
+
+spectateCommand : Json.Decoder Cast.RemoteControlCommand
+spectateCommand =
+    Json.map2 (\t -> \l -> Cast.Spectate { token = t, language = l })
         (Json.field "token" lobbyToken)
         (Json.field "language" language)
 
 
 flags : Json.Decoder Flags
 flags =
-    Json.map2 Flags
+    Json.map3 Flags
         (Json.field "settings" settings)
         (Json.field "browserLanguages" (Json.list Json.string))
+        (Json.maybe (Json.field "remoteMode" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
 settings : Json.Decoder Settings
@@ -194,7 +210,7 @@ game =
         (Json.field "playerOrder" (Json.list userId))
         (Json.field "players" (Json.dict player))
         (Json.field "rules" rules)
-        (Json.maybe (Json.field "winner" (Json.list userId)))
+        (Json.maybe (Json.field "winner" (Json.list userId |> Json.map Set.fromList)))
         (Json.maybe (Json.field "paused" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
@@ -572,7 +588,7 @@ eventByName name =
 ended : Json.Decoder Events.GameEvent
 ended =
     Json.map (\w -> Events.GameEnded { winner = w })
-        (Json.field "winner" (Json.list userId))
+        (Json.field "winner" (Json.list userId |> Json.map Set.fromList))
 
 
 stageTimerDone : Json.Decoder Events.GameEvent
@@ -1005,12 +1021,13 @@ judgingRound =
 
 completeRound : Json.Decoder Round.Complete
 completeRound =
-    Json.map7 Round.complete
+    Json.map8 Round.complete
         (Json.field "id" Round.idDecoder)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
         (Json.field "plays" (Json.dict (Json.list response)))
+        (Json.field "playOrder" (Json.list userId))
         (Json.field "winner" userId)
         (Json.field "startedAt" Time.timeDecoder)
 

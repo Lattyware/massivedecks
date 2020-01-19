@@ -149,13 +149,13 @@ const sendHelper = (
   close
 ) => {
   try {
-    const socket = sockets.get(gameCode, user);
-    if (socket) {
+    const userSockets = sockets.get(gameCode, user);
+    logging.logger.info("WebSocket send:", {
+      user: user,
+      event: serializedEvent
+    });
+    for (const socket of userSockets) {
       socket.send(serializedEvent);
-      logging.logger.info("WebSocket send:", {
-        user: user,
-        event: serializedEvent
-      });
       if (close) {
         socket.close(1000, "User no longer in game.");
       }

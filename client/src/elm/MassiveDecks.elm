@@ -7,6 +7,7 @@ import Html.Attributes as HtmlA
 import Json.Decode as Json
 import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
+import MassiveDecks.Cast.Server as Cast
 import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Error.Model as Error
 import MassiveDecks.Error.Overlay as Overlay
@@ -15,19 +16,21 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
+import MassiveDecks.Pages.Loading as Loading
 import MassiveDecks.Pages.Lobby as Lobby
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
+import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Model as Pages exposing (Page)
 import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Start as Start
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown as Unknown
-import MassiveDecks.Ports as Ports
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
+import MassiveDecks.Settings.Messages as Settings
 import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
@@ -62,13 +65,13 @@ init flags url key =
         route =
             Route.fromUrl url
 
-        { settings, browserLanguages } =
+        { settings, browserLanguages, remoteMode } =
             Json.decodeValue Decoders.flags flags
                 |> Result.toMaybe
-                |> Maybe.withDefault (Flags Settings.defaults [])
+                |> Maybe.withDefault (Flags Settings.defaults [] False)
 
         ( initialisedSettings, settingsCmd ) =
-            Settings.init settings
+            Settings.init SettingsMsg settings
 
         ( speech, speechCmd ) =
             Speech.init
@@ -85,7 +88,11 @@ init flags url key =
             }
 
         ( page, pageCmd ) =
-            Pages.fromRoute shared Nothing route |> changePage shared
+            if not remoteMode then
+                Pages.fromRoute shared Nothing route |> changePage shared
+
+            else
+                ( Pages.Loading, Cmd.none )
     in
     ( { page = page, shared = shared, errorOverlay = Overlay.init }
     , Cmd.batch [ pageCmd, settingsCmd, speechCmd ]
@@ -98,6 +105,7 @@ subscriptions model =
         [ Cast.subscriptions
         , Speech.subscriptions (Error.Json >> Error.Add >> ErrorMsg) SpeechMsg
         , Notifications.subscriptions (Error.Json >> Error.Add >> ErrorMsg) NotificationMsg
+        , Cast.remoteControl RemoteCommand (Error.Json >> Error.Add >> ErrorMsg)
         , model.page |> Pages.subscriptions
         ]
 
@@ -201,27 +209,27 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        SpectateMsg spectateMsg ->
-            case model.page of
-                Pages.Spectate spectateModel ->
-                    Util.modelLift (\newSpectateModel -> { model | page = Pages.Spectate newSpectateModel })
-                        (Spectate.update spectateMsg spectateModel)
-
-                _ ->
-                    ( model, Cmd.none )
-
         SettingsMsg settingsMsg ->
             let
                 shared =
                     model.shared
             in
             Settings.update shared settingsMsg
-                |> Util.lift (\s -> { model | shared = { shared | settings = s } }) SettingsMsg
+                |> Util.modelLift (\s -> { model | shared = { shared | settings = s } })
 
         LobbyMsg lobbyMsg ->
             case model.page of
                 Pages.Lobby lobbyModel ->
                     handleLobbyMsg model lobbyMsg lobbyModel
+
+                _ ->
+                    ( model, Cmd.none )
+
+        SpectateMsg spectateMsg ->
+            case model.page of
+                Pages.Spectate spectateModel ->
+                    Util.modelLift (\newSpectateModel -> { model | page = Pages.Spectate newSpectateModel })
+                        (Spectate.update SpectateMsg model.shared spectateMsg spectateModel)
 
                 _ ->
                     ( model, Cmd.none )
@@ -233,12 +241,8 @@ update msg model =
             in
             ( { model | shared = { shared | castStatus = status } }, Cmd.none )
 
-        TryCast auth ->
-            ( model, Cast.tryCast model.shared auth.token )
-
         ErrorMsg errorMsg ->
-            Overlay.update errorMsg model.errorOverlay
-                |> Util.modelLift (\o -> { model | errorOverlay = o })
+            ( { model | errorOverlay = Overlay.update errorMsg model.errorOverlay }, Cmd.none )
 
         SpeechMsg speechMsg ->
             let
@@ -249,13 +253,13 @@ update msg model =
             , Cmd.none
             )
 
-        NotificationMsg notifcationMsg ->
+        NotificationMsg notificationMsg ->
             let
                 oldShared =
                     model.shared
 
                 ( notifications, notificationsCmd ) =
-                    Notifications.update model.shared.settings.settings.notifications notifcationMsg model.shared.notifications
+                    Notifications.update model.shared.settings.settings.notifications notificationMsg model.shared.notifications
             in
             ( { model | shared = { oldShared | notifications = notifications } }, notificationsCmd )
 
@@ -266,11 +270,35 @@ update msg model =
         BlockedExternalUrl ->
             ( model, Cmd.none )
 
-        Copy id ->
-            ( model, Ports.copyText id )
+        RemoteCommand remoteControlCommand ->
+            case remoteControlCommand of
+                Cast.Spectate { token, language } ->
+                    case token |> Token.decode of
+                        Ok auth ->
+                            let
+                                shared =
+                                    model.shared
 
-        NoOp ->
-            ( model, Cmd.none )
+                                ( settings, settingsCmd ) =
+                                    Settings.update model.shared (Settings.ChangeLang (Just language))
+
+                                ( spectate, spectateCmd ) =
+                                    Spectate.initWithAuth auth
+                            in
+                            ( { model
+                                | page = Pages.Spectate spectate
+                                , shared = { shared | settings = settings }
+                              }
+                            , Cmd.batch [ settingsCmd, spectateCmd ]
+                            )
+
+                        Err tokenDecodeError ->
+                            ( { model
+                                | errorOverlay =
+                                    Overlay.update (tokenDecodeError |> Error.Token |> Error.Add) model.errorOverlay
+                              }
+                            , Cmd.none
+                            )
 
 
 view : Model -> Browser.Document Msg
@@ -282,7 +310,7 @@ view model =
                     Start.view model.shared m
 
                 Pages.Lobby m ->
-                    Lobby.view model.shared m
+                    Lobby.view LobbyMsg SettingsMsg model.shared m
 
                 Pages.Spectate m ->
                     Spectate.view model.shared m
@@ -290,10 +318,13 @@ view model =
                 Pages.Unknown m ->
                     Unknown.view model.shared m
 
+                Pages.Loading ->
+                    Loading.view
+
         settingsPanel =
             case model.page of
                 Pages.Start _ ->
-                    [ Html.div [ HtmlA.class "start-settings" ] [ Settings.view model.shared ] ]
+                    [ Html.div [ HtmlA.class "start-settings" ] [ Settings.view SettingsMsg model.shared ] ]
 
                 _ ->
                     []
@@ -328,7 +359,7 @@ handleLobbyMsg model lobbyMsg lobbyModel =
             model.shared
 
         ( change, lobbyCmd ) =
-            Lobby.update shared lobbyMsg lobbyModel
+            Lobby.update LobbyMsg shared lobbyMsg lobbyModel
     in
     case change of
         Lobby.Stay newLobbyModel ->

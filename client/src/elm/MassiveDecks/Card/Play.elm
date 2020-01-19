@@ -3,6 +3,7 @@ module MassiveDecks.Card.Play exposing
     , Known
     , Play
     , asKnown
+    , asPlay
     )
 
 import MassiveDecks.Card.Model as Card
@@ -35,3 +36,10 @@ type alias Known =
 asKnown : Play -> Maybe Known
 asKnown play =
     play.responses |> Maybe.map (Known play.id)
+
+
+{-| Get a known play as a general play.
+-}
+asPlay : Known -> Play
+asPlay known =
+    Play known.id (Just known.responses)

@@ -26,6 +26,7 @@ type Route
     | Lobby Lobby.Route
     | Spectate Spectate.Route
     | Unknown Unknown.Route
+    | Loading
 
 
 {-| A situation where either an operation continues as expected with some data, or the application is redirected to a
@@ -103,3 +104,6 @@ partsAndFragment route =
 
         Unknown unknownRoute ->
             Unknown.partsAndFragment unknownRoute
+
+        Loading ->
+            ( [], Nothing )

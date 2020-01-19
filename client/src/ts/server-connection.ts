@@ -7,6 +7,13 @@ import {
   OutboundPort
 } from "../elm/MassiveDecks";
 
+export function register(
+  serverRecv: OutboundPort<string>,
+  serverSend: InboundPort<ConnectionCommand>
+) {
+  new ServerConnection(serverRecv, serverSend);
+}
+
 function isOpen(command: ConnectionCommand): command is OpenCommand {
   return command.hasOwnProperty("gameCode");
 }
@@ -25,7 +32,7 @@ interface BaseUrl {
   path: string;
 }
 
-export class ServerConnection {
+class ServerConnection {
   static readonly apiUrl = "api/games/";
   readonly base: string;
   readonly out: OutboundPort<string>;

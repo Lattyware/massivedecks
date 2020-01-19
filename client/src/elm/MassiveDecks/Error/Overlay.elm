@@ -51,11 +51,11 @@ view shared route model =
         ]
 
 
-update : Msg -> Error.Overlay -> ( Error.Overlay, Cmd Global.Msg )
+update : Msg -> Error.Overlay -> Error.Overlay
 update msg model =
     case msg of
         Add error ->
-            ( { model | errors = error :: model.errors }, Cmd.none )
+            { model | errors = error :: model.errors }
 
         Clear ->
-            ( { model | errors = [] }, Cmd.none )
+            { model | errors = [] }

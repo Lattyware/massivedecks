@@ -11,7 +11,16 @@ export interface Say {
   phrase: string;
 }
 
-export class Speech {
+export const register = (
+  speechVoices: OutboundPort<Array<Voice>>,
+  speechCommands: InboundPort<Say>
+) => {
+  if ("speechSynthesis" in window) {
+    new Speech(speechVoices, speechCommands);
+  }
+};
+
+class Speech {
   speech: SpeechSynthesis;
   voices: Map<string, SpeechSynthesisVoice>;
   out: OutboundPort<Voice[]>;

@@ -20,6 +20,7 @@ type Msg
     | TogglePasswordVisibility
     | TimeLimitChangeMode Target Rules.TimeLimitMode
     | TimeLimitChange Target Round.Stage (Maybe Float)
+    | NoOp
 
 
 {-| We don't want to push every tiny change to the server. Instead we only push some changes.

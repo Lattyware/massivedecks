@@ -104,6 +104,7 @@ export class Complete extends Base<"Complete"> {
       call: this.call,
       winner: this.winner,
       plays: this.playsObj(),
+      playOrder: this.plays.map(play => play.playedBy),
       startedAt: this.startedAt
     };
   }

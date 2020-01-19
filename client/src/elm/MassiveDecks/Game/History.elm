@@ -13,24 +13,22 @@ import MassiveDecks.Components as Components
 import MassiveDecks.Game.Messages exposing (Msg(..))
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 
 
-view : Shared -> Config -> Dict User.Id User -> String -> List Round.Complete -> List (Html Global.Msg)
-view shared config users name history =
+view : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> String -> List Round.Complete -> List (Html msg)
+view wrap shared config users name history =
     [ Html.div [ HtmlA.id "top-content" ]
         [ Html.div [ HtmlA.id "minor-actions" ]
             [ Components.iconButton
                 [ HtmlA.id "return-to-game-button"
                 , Strings.ViewGameHistoryAction |> Lang.title shared
-                , ToggleHistoryView |> lift |> HtmlE.onClick
+                , ToggleHistoryView |> wrap |> HtmlE.onClick
                 ]
                 Icon.arrowLeft
             ]
@@ -82,8 +80,3 @@ viewPlay shared config users winner ( id, responses ) =
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )
-
-
-lift : Msg -> Global.Msg
-lift msg =
-    msg |> Lobby.GameMsg |> Global.LobbyMsg

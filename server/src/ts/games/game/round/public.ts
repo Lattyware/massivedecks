@@ -37,4 +37,5 @@ export interface Complete extends Base {
   stage: "Complete";
   winner: user.Id;
   plays: { [player: string]: Play };
+  playOrder: user.Id[];
 }

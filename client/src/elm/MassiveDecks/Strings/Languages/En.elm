@@ -524,6 +524,12 @@ translate mdString =
         LeaveGame ->
             [ Text "Leave Game" ]
 
+        Spectate ->
+            [ Text "Spectate" ]
+
+        SpectateDescription ->
+            [ Text "Open a spectator's view of the game." ]
+
         EndGame ->
             [ Text "End Game" ]
 

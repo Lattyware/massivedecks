@@ -13,3 +13,4 @@ type Page
     | Lobby Lobby.Model
     | Spectate Spectate.Model
     | Unknown Unknown.Model
+    | Loading

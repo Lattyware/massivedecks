@@ -1,5 +1,5 @@
 module MassiveDecks.Cast.Model exposing
-    ( Flags
+    ( RemoteControlCommand(..)
     , Status(..)
     )
 
@@ -16,9 +16,7 @@ type Status
     | Connected String
 
 
-{-| The initial date required for the cast.
+{-| Commands when controlling the instance remotely.
 -}
-type alias Flags =
-    { token : Lobby.Token
-    , language : Language
-    }
+type RemoteControlCommand
+    = Spectate { token : Lobby.Token, language : Language }

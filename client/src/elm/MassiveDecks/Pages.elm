@@ -4,6 +4,7 @@ module MassiveDecks.Pages exposing
     , toRoute
     )
 
+import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby as Lobby
@@ -19,7 +20,10 @@ subscriptions : Page -> Sub Msg
 subscriptions model =
     case model of
         Lobby lobby ->
-            Lobby.subscriptions lobby
+            Lobby.subscriptions LobbyMsg (Error.Add >> ErrorMsg) lobby
+
+        Spectate spectate ->
+            Spectate.subscriptions SpectateMsg (Error.Add >> ErrorMsg) spectate
 
         _ ->
             Sub.none
@@ -55,14 +59,17 @@ fromRoute shared oldModel route =
                             fromRoute shared oldModel redirectRoute
 
         Route.Spectate r ->
-            (case oldModel of
+            case oldModel of
                 Just (Spectate old) ->
-                    Spectate.changeRoute r old
+                    Spectate.changeRoute r old |> Util.modelLift Spectate
 
                 _ ->
-                    Spectate.init r
-            )
-                |> Util.modelLift Spectate
+                    case Spectate.init shared r Nothing of
+                        Route.Continue ( spectate, cmd ) ->
+                            ( Spectate spectate, cmd )
+
+                        Route.Redirect redirectRoute ->
+                            fromRoute shared oldModel redirectRoute
 
         Route.Unknown r ->
             (case oldModel of
@@ -73,6 +80,9 @@ fromRoute shared oldModel route =
                     Unknown.init r
             )
                 |> Util.modelLift Unknown
+
+        Route.Loading ->
+            ( Loading, Cmd.none )
 
 
 {-| Extract a route from a page model.
@@ -91,3 +101,6 @@ toRoute model =
 
         Model.Unknown unknown ->
             Unknown.route unknown |> Route.Unknown
+
+        Loading ->
+            Route.Loading

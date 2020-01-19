@@ -3,6 +3,7 @@ port module MassiveDecks.Ports exposing
     , copyText
     , notificationCommands
     , notificationState
+    , remoteControl
     , serverRecv
     , serverSend
     , speechCommands
@@ -42,3 +43,6 @@ port notificationCommands : Json.Value -> Cmd msg
 
 
 port notificationState : (Json.Value -> msg) -> Sub msg
+
+
+port remoteControl : (Json.Value -> msg) -> Sub msg

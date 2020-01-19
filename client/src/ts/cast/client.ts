@@ -1,11 +1,17 @@
 import {
-  CastFlags,
   CastStatus,
   InboundPort,
-  OutboundPort
-} from "../elm/MassiveDecks";
+  OutboundPort,
+  RemoteControlCommand
+} from "../../elm/MassiveDecks";
+import { channel } from "./shared";
 
-const channel = "urn:x-cast:com.rereadgames.massivedecks";
+export const register = (
+  tryCast: InboundPort<RemoteControlCommand>,
+  castStatus: OutboundPort<CastStatus>
+) => {
+  new Client(tryCast, castStatus);
+};
 
 declare const cast: any;
 
@@ -28,38 +34,32 @@ window["__onGCastApiAvailable"] = function(isAvailable: Boolean) {
   }
 };
 
-abstract class WithCastApi {
-  protected constructor() {
+/**
+ * The client that lives on the MassiveDecks client.
+ */
+class Client {
+  readonly tryCast: InboundPort<RemoteControlCommand>;
+  readonly status: OutboundPort<CastStatus>;
+  readonly commandQueue: RemoteControlCommand[];
+
+  constructor(
+    tryCast: InboundPort<RemoteControlCommand>,
+    status: OutboundPort<CastStatus>
+  ) {
     if (whenAvailable == null) {
       this.onceCastApiAvailable();
     } else {
       whenAvailable.push(() => this.onceCastApiAvailable());
     }
-  }
-
-  abstract onceCastApiAvailable(): void;
-}
-
-/**
- * The client that lives on the MassiveDecks client.
- */
-export class Client extends WithCastApi {
-  readonly tryCast: InboundPort<CastFlags>;
-  readonly status: OutboundPort<CastStatus>;
-  flags: CastFlags | null;
-
-  constructor(
-    tryCast: InboundPort<CastFlags>,
-    status: OutboundPort<CastStatus>
-  ) {
-    super();
     this.tryCast = tryCast;
     this.status = status;
-    this.flags = null;
+    this.commandQueue = [];
   }
 
   onceCastApiAvailable(): void {
-    this.tryCast.subscribe((flags: CastFlags) => this.toggleCast(flags));
+    this.tryCast.subscribe((command: RemoteControlCommand) =>
+      this.toggleCast(command)
+    );
     const context = cast.framework.CastContext.getInstance();
     context.addEventListener(
       cast.framework.CastContextEventType.CAST_STATE_CHANGED,
@@ -74,17 +74,22 @@ export class Client extends WithCastApi {
     this.status.send(context.getCastState());
   }
 
-  toggleCast(flags: CastFlags): void {
-    this.flags = flags;
+  toggleCast(command: RemoteControlCommand): void {
     const context = cast.framework.CastContext.getInstance();
     if (context.getCastState() === cast.framework.CastState.CONNECTED) {
       context.endCurrentSession(true);
     } else {
-      context.requestSession().then((e: chrome.cast.ErrorCode) => {
-        if (e) {
-          console.log(e);
-        }
-      });
+      this.commandQueue.push(command);
+      context
+        .requestSession()
+        .then(function(e: chrome.cast.ErrorCode) {
+          if (e) {
+            console.error(e);
+          }
+        })
+        .catch(function(e: Error) {
+          console.error(e);
+        });
     }
   }
 
@@ -110,35 +115,15 @@ export class Client extends WithCastApi {
 
   onSessionStateChanged(event: cast.framework.SessionStateEventData): void {
     if (
-      !event.errorCode &&
-      this.flags != null &&
-      event.sessionState === cast.framework.SessionState.SESSION_STARTED
+      (!event.errorCode &&
+        event.sessionState === cast.framework.SessionState.SESSION_STARTED) ||
+      event.sessionState === cast.framework.SessionState.SESSION_RESUMED
     ) {
-      event.session
-        .sendMessage(channel, JSON.stringify(this.flags))
-        .catch((e: Error) => console.log(e));
+      for (const command of this.commandQueue) {
+        event.session
+          .sendMessage(channel, JSON.stringify(command))
+          .catch((e: Error) => console.error(e));
+      }
     }
-  }
-}
-
-/**
- * The server that lives on the chromecast.
- */
-export class Server extends WithCastApi {
-  readonly launch: (castFlags: CastFlags) => void;
-
-  constructor(launch: (castFlags: CastFlags) => void) {
-    super();
-    this.launch = launch;
-  }
-
-  onceCastApiAvailable(): void {
-    const context = cast.framework.CastReceiverContext.getInstance();
-
-    context.addCustomMessageListener(channel, (customEvent: any) =>
-      this.launch(customEvent.data)
-    );
-
-    context.start();
   }
 }

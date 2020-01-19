@@ -6,18 +6,25 @@
   ul.cards {
     flex-direction: column;
     align-items: stretch;
+    align-content: stretch;
   }
 
-  ul.card-set {
-    flex-direction: row;
+  ol.card-set {
     align-items: stretch;
+    align-content: stretch;
 
     li {
+      height: auto;
       flex-grow: 1;
     }
   }
 
-  :not(.background-plays) .game-card {
+  .with-byline {
+    align-items: stretch;
+    align-content: stretch;
+  }
+
+  .game-card:not(.ignore-minimal-card-size) {
     flex-grow: 1;
     flex-shrink: 1;
     width: auto;
@@ -77,9 +84,16 @@
     }
   }
 
+  .hand,
+  .plays {
+    margin-top: 5em;
+  }
+
   .round {
     justify-content: stretch;
     align-items: stretch;
+    position: sticky;
+    top: 5em;
   }
 
   .liked {

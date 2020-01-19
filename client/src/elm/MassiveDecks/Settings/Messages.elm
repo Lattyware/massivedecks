@@ -16,3 +16,4 @@ type Msg
     | ChangeSpeech String
     | ToggleNotifications Bool
     | ToggleOnlyWhenHidden Bool
+    | NoOp
