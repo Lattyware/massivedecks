@@ -26,13 +26,22 @@ export const handle: gameAction.Handler<Judge> = (auth, lobby, action) => {
   const lobbyRound = game.round;
   const plays = lobbyRound.plays;
   if (lobbyRound.verifyStage<round.Judging>(action, "Judging")) {
-    const play = plays.find(play => play.id === action.winner);
-    if (play === undefined) {
+    let winningPlay = undefined;
+    for (const play of plays) {
+      if (play.likes.size > 0) {
+        const player = game.players.get(play.playedBy) as Player;
+        player.likes += play.likes.size;
+      }
+      if (play.id === action.winner) {
+        winningPlay = play;
+      }
+    }
+    if (winningPlay === undefined) {
       throw new InvalidActionError("Given play doesn't exist.");
     }
-    const player = game.players.get(play.playedBy) as Player;
+    const player = game.players.get(winningPlay.playedBy) as Player;
     player.score += 1;
-    const completedRound = lobbyRound.advance(play.playedBy);
+    const completedRound = lobbyRound.advance(winningPlay.playedBy);
     game.round = completedRound;
     game.history.splice(0, 0, completedRound.public());
 

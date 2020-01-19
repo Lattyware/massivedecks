@@ -772,8 +772,11 @@ userDetails shared game userId user =
 
         score =
             player |> Maybe.map (\p -> Strings.Score { total = p.score })
+
+        likes =
+            player |> Maybe.map (\p -> Strings.Likes { total = p.likes })
     in
-    ( viewDetails shared details, viewDetails shared [ score ] )
+    ( viewDetails shared details, viewDetails shared [ score, likes ] )
 
 
 playStateDetail : Maybe Round -> User.Id -> Maybe MdString

@@ -278,7 +278,7 @@ module.exports = (env, argv) => {
     },
     devServer: {
       hot: true,
-      allowedHosts: ["localhost", "f2a7ec0b.ngrok.io"],
+      allowedHosts: ["localhost"],
       proxy: {
         // Forward to the server.
         "/api/**": {

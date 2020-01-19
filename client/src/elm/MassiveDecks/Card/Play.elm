@@ -1,12 +1,15 @@
 module MassiveDecks.Card.Play exposing
-    ( Id
+    ( Details
+    , Id
     , Known
     , Play
+    , WithLikes
     , asKnown
     , asPlay
     )
 
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.User as User
 
 
 {-| The id for a play.
@@ -20,6 +23,22 @@ type alias Id =
 type alias Play =
     { id : Id
     , responses : Maybe (List Card.Response)
+    }
+
+
+{-| Details we find out about a play when the round is complete.
+-}
+type alias Details =
+    { playedBy : User.Id
+    , likes : Maybe Int
+    }
+
+
+{-| A play with the number of likes it received.
+-}
+type alias WithLikes =
+    { play : List Card.Response
+    , likes : Maybe Int
     }
 
 

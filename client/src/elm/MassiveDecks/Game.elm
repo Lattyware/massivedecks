@@ -177,23 +177,24 @@ update wrap shared msg model =
             ( model, cmd )
 
         Like ->
-            -- TODO: Actually sending this somewhere.
             let
-                newRound =
+                ( newRound, action ) =
                     case game.round of
                         Round.J judging ->
-                            { judging
+                            ( { judging
                                 | liked =
                                     judging.pick
                                         |> Maybe.map (\p -> Set.insert p judging.liked)
                                         |> Maybe.withDefault judging.liked
-                            }
+                              }
                                 |> Round.J
+                            , judging.pick |> Maybe.map Actions.like |> Maybe.withDefault Cmd.none
+                            )
 
                         _ ->
-                            game.round
+                            ( game.round, Cmd.none )
             in
-            ( { model | game = { game | round = newRound } }, Cmd.none )
+            ( { model | game = { game | round = newRound } }, action )
 
         SetPlayStyles playStyles ->
             ( { model | playStyles = playStyles }, Cmd.none )
@@ -413,10 +414,10 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                         game =
                             model.game
 
-                        newPlayers =
+                        playersWithWinner =
                             game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
 
-                        ( newRound, history, speech ) =
+                        { newRound, history, speech, newPlayers } =
                             case game.round of
                                 Round.J r ->
                                     let
@@ -439,16 +440,36 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
                                         tts =
                                             Dict.get winner playsDict
-                                                |> Maybe.map (\p -> speak shared r.call (Just p))
+                                                |> Maybe.map (\p -> speak shared r.call (Just p.play))
                                                 |> Maybe.withDefault Cmd.none
+
+                                        ps =
+                                            playersWithWinner |> Dict.map (updateLikes playsDict)
                                     in
-                                    ( complete |> Round.C, complete :: game.history, tts )
+                                    { newRound = complete |> Round.C
+                                    , history = complete :: game.history
+                                    , speech = tts
+                                    , newPlayers = ps
+                                    }
 
                                 _ ->
                                     -- TODO: Error
-                                    ( game.round, game.history, Cmd.none )
+                                    { newRound = game.round
+                                    , history = game.history
+                                    , speech = Cmd.none
+                                    , newPlayers = playersWithWinner
+                                    }
                     in
-                    ( { model | game = { game | round = newRound, players = newPlayers, history = history } }, speech )
+                    ( { model
+                        | game =
+                            { game
+                                | round = newRound
+                                , players = newPlayers
+                                , history = history
+                            }
+                      }
+                    , speech
+                    )
 
                 Events.RoundStarted { id, czar, players, call, drawn } ->
                     let
@@ -627,6 +648,15 @@ hotJoinPlayer player model =
 
 
 {- Private -}
+
+
+updateLikes : Dict User.Id Play.WithLikes -> User.Id -> Player -> Player
+updateLikes plays uid player =
+    plays
+        |> Dict.get uid
+        |> Maybe.andThen .likes
+        |> Maybe.map (\likes -> { player | likes = likes + player.likes })
+        |> Maybe.withDefault player
 
 
 viewWinner : Shared -> Dict User.Id User -> Set User.Id -> List (Html msg)
@@ -911,9 +941,9 @@ reveal target responses play =
             play
 
 
-resolvePlayedBy : Dict Play.Id User.Id -> Play.Known -> Maybe ( User.Id, List Card.Response )
+resolvePlayedBy : Dict Play.Id Play.Details -> Play.Known -> Maybe ( User.Id, Play.WithLikes )
 resolvePlayedBy playedBy k =
-    Dict.get k.id playedBy |> Maybe.map (\u -> ( u, k.responses ))
+    Dict.get k.id playedBy |> Maybe.map (\d -> ( d.playedBy, { play = k.responses, likes = d.likes } ))
 
 
 type alias ActionDetails msg =

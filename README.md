@@ -8,7 +8,7 @@ bunch of people in the same room on phones, or on voice chat online.
 
 **[Play Massive Decks][hosted]**
 
-[hosted]: http://md.rereadgames.com/
+[hosted]: https://md.rereadgames.com/
 [cah]: https://cardsagainsthumanity.com/
 
 ## About

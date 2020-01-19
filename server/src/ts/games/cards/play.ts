@@ -21,7 +21,7 @@ export interface PotentiallyRevealed {
 /**
  * A play with its id.
  */
-export type Revealed = PotentiallyRevealed & { play: Play };
+export type Revealed = PotentiallyRevealed & { play: Play; likes?: number };
 
 /**
  * Create a new user id.

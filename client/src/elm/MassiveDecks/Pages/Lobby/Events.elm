@@ -90,5 +90,5 @@ type TimedGameEvent
         , drawn : Maybe (List Card.Response)
         }
     | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.Response) }
-    | RoundFinished { winner : User.Id, playedBy : Dict Play.Id User.Id }
+    | RoundFinished { winner : User.Id, playedBy : Dict Play.Id Play.Details }
     | PlayRevealed { id : Play.Id, play : List Card.Response }

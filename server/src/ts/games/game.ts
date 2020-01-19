@@ -92,7 +92,8 @@ export const atStartOfRound = (
       id: playId,
       play: player.hand.slice(0, slotCount),
       playedBy: ai,
-      revealed: false
+      revealed: false,
+      likes: new Set()
     });
     events.push(event.targetAll(playSubmitted.of(ai)));
   }

@@ -34,8 +34,8 @@ view class picked details =
 
 {-| Create a byline.
 -}
-byLine : Shared -> Dict User.Id User -> User.Id -> Maybe Icon -> Html msg
-byLine shared users id icon =
+byLine : Shared -> Dict User.Id User -> User.Id -> Maybe Icon -> Maybe Int -> Html msg
+byLine shared users id icon likes =
     let
         name =
             users |> Dict.get id |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
@@ -43,6 +43,7 @@ byLine shared users id icon =
     Html.span [ HtmlA.class "byline", HtmlA.title name ]
         [ icon |> Maybe.map Icon.viewIcon |> Maybe.withDefault Html.nothing
         , Html.text name
+        , likes |> Maybe.map (\l -> Strings.Likes { total = l } |> Lang.html shared) |> Maybe.withDefault Html.nothing
         ]
 
 

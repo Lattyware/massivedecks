@@ -7,12 +7,14 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
-import MassiveDecks.Card.Play exposing (Play)
+import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Model as Game
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
+import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 import Round
@@ -62,10 +64,10 @@ viewRevealing shared config users round =
                     Nothing
 
         plays =
-            round.plays |> List.map (\p -> ( Nothing, p.responses ))
+            round.plays |> List.map (\p -> ( Nothing, p.responses |> Maybe.map (\r -> { play = r, likes = Nothing }) ))
     in
     [ viewCall shared config fillWith round.call
-    , viewPlays config (round.call |> Call.slotCount) users Nothing plays
+    , viewPlays shared config (round.call |> Call.slotCount) users Nothing plays
     ]
 
 
@@ -73,10 +75,10 @@ viewJudging : Shared -> Config -> Dict User.Id User -> Round.Judging -> List (Ht
 viewJudging shared config users round =
     let
         plays =
-            round.plays |> List.map (\p -> ( Nothing, Just p.responses ))
+            round.plays |> List.map (\p -> ( Nothing, Just { play = p.responses, likes = Nothing } ))
     in
     [ viewCall shared config Nothing round.call
-    , viewPlays config (round.call |> Call.slotCount) users Nothing plays
+    , viewPlays shared config (round.call |> Call.slotCount) users Nothing plays
     ]
 
 
@@ -87,10 +89,10 @@ viewComplete shared config users round =
             round.playOrder |> List.map (\u -> ( Just u, Dict.get u round.plays ))
 
         winner =
-            Dict.get round.winner round.plays
+            Dict.get round.winner round.plays |> Maybe.map .play
     in
     [ viewCall shared config winner round.call
-    , viewPlays config (round.call |> Call.slotCount) users (Just round.winner) plays
+    , viewPlays shared config (round.call |> Call.slotCount) users (Just round.winner) plays
     ]
 
 
@@ -117,17 +119,17 @@ viewUnknownPlays slotCount playStyles players played =
         )
 
 
-viewPlays : Config -> Int -> Dict User.Id User -> Maybe User.Id -> List ( Maybe User.Id, Maybe (List Card.Response) ) -> Html msg
-viewPlays config slotCount users winner plays =
+viewPlays : Shared -> Config -> Int -> Dict User.Id User -> Maybe User.Id -> List ( Maybe User.Id, Maybe Play.WithLikes ) -> Html msg
+viewPlays shared config slotCount users winner plays =
     let
         angle =
             plays |> List.length |> anglePerPlay
     in
-    Html.ul [ HtmlA.id "plays" ] (plays |> List.indexedMap (viewPlayByIndex config slotCount users winner angle))
+    Html.ul [ HtmlA.id "plays" ] (plays |> List.indexedMap (viewPlayByIndex shared config slotCount users winner angle))
 
 
-viewPlayByIndex : Config -> Int -> Dict User.Id User -> Maybe User.Id -> Float -> Int -> ( Maybe User.Id, Maybe (List Card.Response) ) -> Html msg
-viewPlayByIndex config slotCount users winner angle index ( user, play ) =
+viewPlayByIndex : Shared -> Config -> Int -> Dict User.Id User -> Maybe User.Id -> Float -> Int -> ( Maybe User.Id, Maybe Play.WithLikes ) -> Html msg
+viewPlayByIndex shared config slotCount users winner angle index ( user, play ) =
     let
         isWinner =
             case winner of
@@ -137,7 +139,7 @@ viewPlayByIndex config slotCount users winner angle index ( user, play ) =
                 Nothing ->
                     False
     in
-    viewPlay config slotCount (toFloat index * angle) (user |> Maybe.andThen (\u -> Dict.get u users)) isWinner play
+    viewPlay shared config slotCount (toFloat index * angle) (user |> Maybe.andThen (\u -> Dict.get u users)) isWinner play
 
 
 anglePerPlay : Int -> Float
@@ -152,11 +154,11 @@ closeDistance =
 
 farDistance : number
 farDistance =
-    85
+    150
 
 
-viewPlay : Config -> Int -> Float -> Maybe User -> Bool -> Maybe (List Card.Response) -> Html msg
-viewPlay config slotCount angle playedBy isWinner responses =
+viewPlay : Shared -> Config -> Int -> Float -> Maybe User -> Bool -> Maybe Play.WithLikes -> Html msg
+viewPlay shared config slotCount angle playedBy isWinner play =
     Html.li
         (positionFromAngle angle closeDistance)
         [ Html.div [ HtmlA.class "with-byline" ]
@@ -164,13 +166,14 @@ viewPlay config slotCount angle playedBy isWinner responses =
                 (List.filterMap identity
                     [ Icon.viewIcon Icon.trophy |> Maybe.justIf isWinner
                     , playedBy |> Maybe.map (.name >> Html.text)
+                    , play |> Maybe.andThen .likes |> Maybe.map (\l -> Strings.Likes { total = l } |> Lang.html shared)
                     ]
                 )
             , Html.ol
                 [ HtmlA.classList [ ( "play", True ), ( "card-set", True ) ]
                 ]
-                (responses
-                    |> Maybe.map (List.map (\response -> Html.li [] [ Response.view config Card.Front [] response ]))
+                (play
+                    |> Maybe.map (.play >> List.map (\response -> Html.li [] [ Response.view config Card.Front [] response ]))
                     |> Maybe.withDefault (List.repeat slotCount (Html.li [] [ Response.viewUnknown [] ]))
                 )
             ]

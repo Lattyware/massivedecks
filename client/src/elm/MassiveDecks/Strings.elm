@@ -141,6 +141,8 @@ type MdString
     | AiDescription -- A description of a player who is controlled by the computer.
     | Score { total : Int } -- A display of a score.
     | ScoreDescription -- A description of a player's score.
+    | Likes { total : Int } -- A display of a number of likes.
+    | LikesDescription -- A description of the number of likes a play received or a player has recieved.
     | ToggleUserList -- A description of the action of showing or hiding the user list.
     | GameMenu -- A description of the game menu.
     | UnknownUser -- A name for a user that doesn't have a known name.

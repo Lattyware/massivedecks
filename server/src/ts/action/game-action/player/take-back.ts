@@ -9,7 +9,7 @@ import * as gameAction from "../../game-action";
  * A player plays a white card into a round.
  */
 export interface TakeBack {
-  action: "TakeBack";
+  action: NameType;
 }
 
 type NameType = "TakeBack";

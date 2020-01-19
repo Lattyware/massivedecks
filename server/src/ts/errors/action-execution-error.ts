@@ -115,18 +115,18 @@ export class IncorrectUserRoleError extends ActionExecutionError {
 
 interface IncorrectRoundStageDetails extends errors.Details {
   stage: round.Stage;
-  expected: round.Stage;
+  expected: round.Stage[];
 }
 
 // Could happen if the round changes unexpectedly (e.g: czar leaves game).
 export class IncorrectRoundStageError extends ActionExecutionError {
   public readonly stage: round.Stage;
-  public readonly expected: round.Stage;
+  public readonly expected: round.Stage[];
 
   public constructor(
     action: Action,
     stage: round.Stage,
-    expected: round.Stage
+    ...expected: round.Stage[]
   ) {
     super(
       `For this action the round must be in the ${expected} stage but is in ` +

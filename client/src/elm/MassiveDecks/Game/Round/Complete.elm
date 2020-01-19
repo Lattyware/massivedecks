@@ -6,6 +6,7 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Model exposing (..)
@@ -29,22 +30,22 @@ view shared nextRoundReady config users round =
     , content =
         HtmlK.ul [ HtmlA.class "complete plays cards" ]
             (round.playOrder
-                |> List.map (\u -> ( u, Dict.get u round.plays |> Maybe.withDefault [] ))
+                |> List.map (\u -> ( u, Dict.get u round.plays ))
                 |> List.map (viewPlay shared config users round.winner)
             )
-    , fillCallWith = winning |> Maybe.withDefault []
+    , fillCallWith = winning |> Maybe.map .play |> Maybe.withDefault []
     }
 
 
-viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, List Card.Response ) -> ( String, Html msg )
-viewPlay shared config users winner ( id, responses ) =
+viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, Maybe Play.WithLikes ) -> ( String, Html msg )
+viewPlay shared config users winner ( id, play ) =
     let
         cards =
-            responses |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))
+            play |> Maybe.map (.play >> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))) |> Maybe.withDefault []
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id))
+        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id)) (play |> Maybe.andThen .likes)
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )

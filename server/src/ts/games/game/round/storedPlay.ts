@@ -8,6 +8,7 @@ export interface StoredPlay {
   playedBy: user.Id;
   play: Play;
   revealed: boolean;
+  likes: Set<user.Id>;
 }
 
 export type Unrevealed = StoredPlay & { revealed: false };

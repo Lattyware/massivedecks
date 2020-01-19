@@ -35,6 +35,9 @@ export const Schema = {
           $ref: "#/definitions/EnforceTimeLimit"
         },
         {
+          $ref: "#/definitions/Like"
+        },
+        {
           $ref: "#/definitions/Submit"
         },
         {
@@ -96,7 +99,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_11"
+          $ref: "#/definitions/NameType_14"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -161,7 +164,7 @@ export const Schema = {
       description: "Make a change to the configuration of decks for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_2"
+          $ref: "#/definitions/NameType_5"
         },
         change: {
           $ref: "#/definitions/PlayerDriven"
@@ -184,7 +187,7 @@ export const Schema = {
       description: "Set the hand size for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_3"
+          $ref: "#/definitions/NameType_6"
         },
         change: {
           $ref: "#/definitions/Change"
@@ -246,7 +249,7 @@ export const Schema = {
       description: "Change the time limit for a given stage.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_4"
+          $ref: "#/definitions/NameType_7"
         },
         if: {
           description:
@@ -270,7 +273,7 @@ export const Schema = {
         "Change the time limit mode, or disable the time limits completely.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_4"
+          $ref: "#/definitions/NameType_7"
         },
         if: {
           description:
@@ -323,7 +326,7 @@ export const Schema = {
       description: "End the current game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_9"
+          $ref: "#/definitions/NameType_12"
         }
       },
       required: ["action"],
@@ -400,6 +403,21 @@ export const Schema = {
       required: ["action"],
       type: "object"
     },
+    Like: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player plays a white card into a round.",
+      properties: {
+        action: {
+          $ref: "#/definitions/NameType_2"
+        },
+        play: {
+          $ref: "#/definitions/Id"
+        }
+      },
+      required: ["action", "play"],
+      type: "object"
+    },
     Name: {
       description: "The name the user goes by.",
       maxLength: 100,
@@ -415,43 +433,55 @@ export const Schema = {
       type: "string"
     },
     NameType_10: {
-      enum: ["StartGame"],
+      enum: ["SetPublic"],
       type: "string"
     },
     NameType_11: {
+      enum: ["SetScoreLimit"],
+      type: "string"
+    },
+    NameType_12: {
+      enum: ["EndGame"],
+      type: "string"
+    },
+    NameType_13: {
+      enum: ["StartGame"],
+      type: "string"
+    },
+    NameType_14: {
       enum: ["Authenticate"],
       type: "string"
     },
     NameType_2: {
-      enum: ["ChangeDecks"],
+      enum: ["Like"],
       type: "string"
     },
     NameType_3: {
-      enum: ["ChangeHouseRule"],
+      enum: ["Submit"],
       type: "string"
     },
     NameType_4: {
-      enum: ["ChangeTimeLimit"],
+      enum: ["TakeBack"],
       type: "string"
     },
     NameType_5: {
-      enum: ["SetHandSize"],
+      enum: ["ChangeDecks"],
       type: "string"
     },
     NameType_6: {
-      enum: ["SetPassword"],
+      enum: ["ChangeHouseRule"],
       type: "string"
     },
     NameType_7: {
-      enum: ["SetPublic"],
+      enum: ["ChangeTimeLimit"],
       type: "string"
     },
     NameType_8: {
-      enum: ["SetScoreLimit"],
+      enum: ["SetHandSize"],
       type: "string"
     },
     NameType_9: {
-      enum: ["EndGame"],
+      enum: ["SetPassword"],
       type: "string"
     },
     PackingHeat: {
@@ -562,7 +592,7 @@ export const Schema = {
       description: "Set the hand size for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_5"
+          $ref: "#/definitions/NameType_8"
         },
         handSize: {
           description: "The number of cards in each player's hand.",
@@ -584,7 +614,7 @@ export const Schema = {
       description: "Set (or unset) the password for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_6"
+          $ref: "#/definitions/NameType_9"
         },
         if: {
           description:
@@ -658,7 +688,7 @@ export const Schema = {
       description: "Set (or unset) the password for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_7"
+          $ref: "#/definitions/NameType_10"
         },
         if: {
           description:
@@ -678,7 +708,7 @@ export const Schema = {
       description: "(Un)Set the score limit for the lobby.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_8"
+          $ref: "#/definitions/NameType_11"
         },
         if: {
           description:
@@ -705,7 +735,7 @@ export const Schema = {
       description: "Start a game in the lobby if possible.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_10"
+          $ref: "#/definitions/NameType_13"
         }
       },
       required: ["action"],
@@ -717,8 +747,7 @@ export const Schema = {
       description: "A player plays a white card into a round.",
       properties: {
         action: {
-          enum: ["Submit"],
-          type: "string"
+          $ref: "#/definitions/NameType_3"
         },
         play: {
           items: {
@@ -736,8 +765,7 @@ export const Schema = {
       description: "A player plays a white card into a round.",
       properties: {
         action: {
-          enum: ["TakeBack"],
-          type: "string"
+          $ref: "#/definitions/NameType_4"
         }
       },
       required: ["action"],

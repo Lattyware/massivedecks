@@ -1,4 +1,5 @@
 import * as gameRound from "../../games/game/round";
+import * as publicRound from "../../games/game/round/public";
 import * as user from "../../user";
 
 /**
@@ -8,11 +9,11 @@ import * as user from "../../user";
 export interface RoundFinished {
   event: "RoundFinished";
   winner: user.Id;
-  playedBy: { [id: string]: user.Id };
+  playDetails: { [id: string]: publicRound.PlayDetails };
 }
 
 export const of = (round: gameRound.Complete): RoundFinished => ({
   event: "RoundFinished",
   winner: round.winner,
-  playedBy: round.playedBy()
+  playDetails: round.playDetails()
 });

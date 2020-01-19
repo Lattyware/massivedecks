@@ -108,6 +108,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    max-width: $users-width - 8rem;
   }
 
   ol {

@@ -179,10 +179,10 @@ judging id czar players call plays startedAt timedOut =
 {-| A round that has been finished.
 -}
 type alias Complete =
-    Data { plays : Dict User.Id (List Card.Response), playOrder : List User.Id, winner : User.Id }
+    Data { plays : Dict User.Id Play.WithLikes, playOrder : List User.Id, winner : User.Id }
 
 
-complete : Id -> User.Id -> Set User.Id -> Card.Call -> Dict User.Id (List Card.Response) -> List User.Id -> User.Id -> Time -> Complete
+complete : Id -> User.Id -> Set User.Id -> Card.Call -> Dict User.Id Play.WithLikes -> List User.Id -> User.Id -> Time -> Complete
 complete id czar players call plays playOrder winner startedAt =
     { id = id
     , czar = czar

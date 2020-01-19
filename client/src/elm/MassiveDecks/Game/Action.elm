@@ -8,9 +8,7 @@ import Html.Events as HtmlE
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action.Model exposing (..)
 import MassiveDecks.Game.Messages as Game exposing (Msg)
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import Weightless.Attributes as WlA

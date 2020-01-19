@@ -7,6 +7,7 @@ import { Game } from "./game";
  */
 export interface Public {
   score: Score;
+  likes: Likes;
   presence: Presence;
 }
 
@@ -23,6 +24,13 @@ export type Role = "Czar" | "Player";
 export type Score = number;
 
 /**
+ * How many likes the player has received.
+ * @TJS-type integer
+ * @minimum 0
+ */
+export type Likes = number;
+
+/**
  * If the player is active in the game or has been marked as away.
  */
 export type Presence = "Active" | "Away";
@@ -34,17 +42,20 @@ export class Player {
   public hand: Hand;
   public score: Score;
   public presence: Presence;
+  public likes: Likes;
 
   public constructor(hand: Hand) {
     this.hand = hand;
     this.score = 0;
+    this.likes = 0;
     this.presence = "Active";
   }
 
   public public(): Public {
     return {
       score: this.score,
-      presence: this.presence
+      presence: this.presence,
+      likes: this.likes
     };
   }
 

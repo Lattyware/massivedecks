@@ -16,7 +16,7 @@
   max-width: 100%;
   overflow: hidden;
 
-  svg {
-    margin-right: 0.5em;
+  > * {
+    margin: 0 0.25em 0 0.25em;
   }
 }

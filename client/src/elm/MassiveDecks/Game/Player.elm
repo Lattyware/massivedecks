@@ -21,6 +21,7 @@ import Set
 -}
 type alias Player =
     { score : Score
+    , likes : Int
     , presence : Presence
     }
 
@@ -28,6 +29,7 @@ type alias Player =
 default : Player
 default =
     { score = 0
+    , likes = 0
     , presence = Active
     }
 

@@ -503,6 +503,13 @@ translate mdString =
             , Text " this player has."
             ]
 
+        Likes { total } ->
+            [ Text (String.fromInt total) ]
+
+        LikesDescription ->
+            [ Text "The number of likes received."
+            ]
+
         ToggleUserList ->
             [ Text "Show or hide the scoreboard." ]
 

@@ -14,7 +14,7 @@ import * as gameAction from "../../game-action";
  * A player plays a white card into a round.
  */
 export interface Submit {
-  action: "Submit";
+  action: NameType;
   play: card.Id[];
 }
 
@@ -67,7 +67,8 @@ export const handle: gameAction.Handler<Submit> = (
       id: playId,
       play: extractedPlay,
       playedBy: auth.uid,
-      revealed: false
+      revealed: false,
+      likes: new Set()
     });
     const events = [event.targetAll(playSubmitted.of(auth.uid))];
     const timeouts = [];

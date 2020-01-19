@@ -310,8 +310,9 @@ rando =
 
 player : Json.Decoder Player
 player =
-    Json.map2 Player
+    Json.map3 Player
         (Json.field "score" score)
+        (Json.field "likes" Json.int)
         (Json.field "presence" playerPresence)
 
 
@@ -621,7 +622,14 @@ roundFinished : Json.Decoder Events.TimedGameEvent
 roundFinished =
     Json.map2 (\wi -> \pb -> Events.RoundFinished { winner = wi, playedBy = pb })
         (Json.field "winner" userId)
-        (Json.field "playedBy" (Json.dict userId))
+        (Json.field "playDetails" (Json.dict playDetails))
+
+
+playDetails : Json.Decoder Play.Details
+playDetails =
+    Json.map2 Play.Details
+        (Json.field "playedBy" userId)
+        (Json.maybe (Json.field "likes" Json.int))
 
 
 playRevealed : Json.Decoder Events.TimedGameEvent
@@ -1026,10 +1034,17 @@ completeRound =
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
         (Json.field "call" call)
-        (Json.field "plays" (Json.dict (Json.list response)))
+        (Json.field "plays" (Json.dict playWithLikes))
         (Json.field "playOrder" (Json.list userId))
         (Json.field "winner" userId)
         (Json.field "startedAt" Time.timeDecoder)
+
+
+playWithLikes : Json.Decoder Play.WithLikes
+playWithLikes =
+    Json.map2 Play.WithLikes
+        (Json.field "play" (Json.list response))
+        (Json.maybe (Json.field "likes" Json.int))
 
 
 playerRole : Json.Decoder Player.Role

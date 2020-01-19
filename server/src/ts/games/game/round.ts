@@ -2,14 +2,13 @@ import wu from "wu";
 import { Action } from "../../action";
 import { IncorrectRoundStageError } from "../../errors/action-execution-error";
 import * as user from "../../user";
+import * as util from "../../util";
 import * as card from "../cards/card";
 import * as play from "../cards/play";
-import { Play } from "../cards/play";
 import * as publicRound from "./round/public";
 import { Public as PublicRound } from "./round/public";
 import * as storedPlay from "./round/storedPlay";
 import { StoredPlay } from "./round/storedPlay";
-import * as util from "../../util";
 
 export type Round = Playing | Revealing | Judging | Complete;
 
@@ -109,18 +108,24 @@ export class Complete extends Base<"Complete"> {
     };
   }
 
-  public playedBy(): { [player: string]: user.Id } {
-    const obj: { [player: string]: user.Id } = {};
+  public playDetails(): { [player: string]: publicRound.PlayDetails } {
+    const obj: { [player: string]: publicRound.PlayDetails } = {};
     for (const roundPlay of this.plays) {
-      obj[roundPlay.id] = roundPlay.playedBy;
+      obj[roundPlay.id] = {
+        playedBy: roundPlay.playedBy,
+        ...(roundPlay.likes.size > 0 ? { likes: roundPlay.likes.size } : {})
+      };
     }
     return obj;
   }
 
-  private playsObj(): { [player: string]: Play } {
-    const obj: { [player: string]: Play } = {};
+  private playsObj(): { [player: string]: publicRound.PlayWithLikes } {
+    const obj: { [player: string]: publicRound.PlayWithLikes } = {};
     for (const roundPlay of this.plays) {
-      obj[roundPlay.playedBy] = roundPlay.play;
+      obj[roundPlay.playedBy] = {
+        play: roundPlay.play,
+        ...(roundPlay.likes.size > 0 ? { likes: roundPlay.likes.size } : {})
+      };
     }
     return obj;
   }
@@ -178,7 +183,10 @@ export class Judging extends Base<"Judging"> implements Timed {
 
   private *revealedPlays(): Iterable<play.Revealed> {
     for (const roundPlay of this.plays) {
-      yield { id: roundPlay.id, play: roundPlay.play };
+      yield {
+        id: roundPlay.id,
+        play: roundPlay.play
+      };
     }
   }
 }

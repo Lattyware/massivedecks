@@ -156,6 +156,9 @@ enhanceHtml context mdString unenhanced =
         Score _ ->
             [ Html.span [ HtmlA.class "no-wrap", (ScoreDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.star) ]
 
+        Likes _ ->
+            [ Html.span [ HtmlA.class "no-wrap", (LikesDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.thumbsUp) ]
+
         NumberOfCards _ ->
             [ Html.span [ HtmlA.class "amount" ] unenhanced ]
 

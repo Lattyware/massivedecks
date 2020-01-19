@@ -8,6 +8,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , judge
     , kick
     , leave
+    , like
     , redraw
     , removeDeck
     , reveal
@@ -93,6 +94,11 @@ reveal play =
 judge : Play.Id -> Cmd msg
 judge play =
     action "Judge" [ ( "winner", play |> Json.string ) ]
+
+
+like : Play.Id -> Cmd msg
+like play =
+    action "Like" [ ( "play", play |> Json.string ) ]
 
 
 redraw : Cmd msg

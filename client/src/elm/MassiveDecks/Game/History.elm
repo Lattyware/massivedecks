@@ -8,6 +8,7 @@ import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Messages exposing (Msg(..))
@@ -54,13 +55,16 @@ viewRound : Shared -> Config -> Dict User.Id User -> Round.Complete -> ( String,
 viewRound shared config users round =
     let
         winning =
-            round.plays |> Dict.get round.winner |> Maybe.withDefault [] |> List.map .body
+            round.plays |> Dict.get round.winner
+
+        winningBody =
+            winning |> Maybe.map .play |> Maybe.withDefault [] |> List.map .body
     in
     ( Round.idString round.id
     , Html.li [ HtmlA.class "historic-round" ]
         [ Html.div [ HtmlA.class "historic-call with-byline" ]
-            [ Plays.byLine shared users round.czar (Just Icon.gavel)
-            , Html.div [] [ Call.viewFilled shared config Card.Front [] winning round.call ]
+            [ Plays.byLine shared users round.czar (Just Icon.gavel) Nothing
+            , Html.div [] [ Call.viewFilled shared config Card.Front [] winningBody round.call ]
             ]
         , HtmlK.ul [ HtmlA.class "plays cards" ]
             (round.plays |> Dict.toList |> List.map (viewPlay shared config users round.winner))
@@ -68,15 +72,15 @@ viewRound shared config users round =
     )
 
 
-viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, List Card.Response ) -> ( String, Html msg )
-viewPlay shared config users winner ( id, responses ) =
+viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, Play.WithLikes ) -> ( String, Html msg )
+viewPlay shared config users winner ( id, { play, likes } ) =
     let
         cards =
-            responses |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))
+            play |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id))
+        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id)) likes
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )
