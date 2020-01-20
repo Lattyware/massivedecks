@@ -17,7 +17,7 @@ import Json.Decode as Json
 import MassiveDecks.Animated exposing (Animated)
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Time as Time
-import MassiveDecks.Models.MdError as MdError
+import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
@@ -117,3 +117,4 @@ type NotificationMessage
     | UserDisconnected User.Id
     | UserJoined User.Id
     | UserLeft User.Id User.LeaveReason
+    | Error MdError

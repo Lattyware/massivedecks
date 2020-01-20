@@ -24,7 +24,6 @@ import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Menu as Menu
-import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Game as Game
 import MassiveDecks.Game.Messages as Game
@@ -32,7 +31,6 @@ import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Time as Time
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.Actions as Actions
@@ -241,8 +239,18 @@ update wrap shared msg model =
                 MdError.Authentication reason ->
                     ( AuthError model.auth.claims.gc reason, Cmd.none )
 
+                MdError.ActionExecution (MdError.ConfigEditConflict { version, expected }) ->
+                    addNotification wrap
+                        (Error error)
+                        { model
+                            | configure =
+                                model.lobby
+                                    |> Maybe.map (\l -> Configure.updateFromConfig l.config model.configure)
+                                    |> Maybe.withDefault model.configure
+                        }
+
                 _ ->
-                    ( Stay model, Cmd.none )
+                    addNotification wrap (Error error) model
 
         ConfigureMsg configureMsg ->
             case model.lobby of
@@ -524,6 +532,11 @@ viewNotification wrap shared users animationState notification =
 
                         User.Kicked ->
                             Strings.UserKicked { username = username shared users id } |> Lang.html shared
+                    )
+
+                Error mdError ->
+                    ( Icon.viewIcon Icon.exclamationTriangle
+                    , MdError.describe mdError |> Lang.html shared
                     )
     in
     Wl.card

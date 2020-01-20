@@ -1097,10 +1097,10 @@ mdErrorByName name =
         "IncorrectUserRole" ->
             incorrectUserRole |> Json.map MdError.ActionExecution
 
-        "IncorrectRoundStageError" ->
+        "IncorrectRoundStage" ->
             incorrectRoundStageError |> Json.map MdError.ActionExecution
 
-        "ConfigEditConflictError" ->
+        "ConfigEditConflict" ->
             configEditConflictError |> Json.map MdError.ActionExecution
 
         "Unprivileged" ->
@@ -1120,7 +1120,7 @@ mdErrorByName name =
         "Registration" ->
             registrationError |> Json.map MdError.Registration
 
-        "OutOfCardsError" ->
+        "OutOfCards" ->
             Json.succeed MdError.OutOfCardsError |> Json.map MdError.Game
 
         _ ->
@@ -1153,14 +1153,14 @@ stageByName name =
 
 incorrectRoundStageError : Json.Decoder MdError.ActionExecutionError
 incorrectRoundStageError =
-    Json.map2 (\s -> \e -> MdError.IncorrectRoundStageError { stage = s, expected = e })
+    Json.map2 (\s -> \e -> MdError.IncorrectRoundStage { stage = s, expected = e })
         (Json.field "stage" stage)
         (Json.field "expected" stage)
 
 
 configEditConflictError : Json.Decoder MdError.ActionExecutionError
 configEditConflictError =
-    Json.map2 (\v -> \e -> MdError.ConfigEditConflictError { version = v, expected = e })
+    Json.map2 (\v -> \e -> MdError.ConfigEditConflict { version = v, expected = e })
         (Json.field "version" Json.string)
         (Json.field "expected" Json.string)
 

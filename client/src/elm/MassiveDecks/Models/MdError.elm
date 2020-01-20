@@ -27,8 +27,8 @@ type MdError
 type ActionExecutionError
     = IncorrectPlayerRole { role : Player.Role, expected : Player.Role }
     | IncorrectUserRole { role : User.Role, expected : User.Role }
-    | IncorrectRoundStageError { stage : Round.Stage, expected : Round.Stage }
-    | ConfigEditConflictError { version : String, expected : String }
+    | IncorrectRoundStage { stage : Round.Stage, expected : Round.Stage }
+    | ConfigEditConflict { version : String, expected : String }
     | Unprivileged
     | GameNotStarted
 
@@ -83,10 +83,10 @@ describe error =
                 IncorrectUserRole { role, expected } ->
                     Strings.IncorrectUserRoleError { role = User.roleDescription role, expected = User.roleDescription expected }
 
-                IncorrectRoundStageError { stage, expected } ->
+                IncorrectRoundStage { stage, expected } ->
                     Strings.IncorrectRoundStageError { stage = Round.stageDescription stage, expected = Round.stageDescription expected }
 
-                ConfigEditConflictError _ ->
+                ConfigEditConflict _ ->
                     Strings.ConfigEditConflictError
 
                 Unprivileged ->

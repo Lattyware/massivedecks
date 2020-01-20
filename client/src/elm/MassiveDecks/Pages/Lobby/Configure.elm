@@ -21,7 +21,6 @@ import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Messages exposing (..)
