@@ -22,6 +22,7 @@ type alias Shared =
     , castStatus : Cast.Status
     , speech : Speech.Model
     , notifications : Notifications.Model
+    , remoteMode : Bool
     }
 
 

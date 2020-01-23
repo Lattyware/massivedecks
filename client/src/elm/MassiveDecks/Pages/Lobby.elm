@@ -297,8 +297,8 @@ update wrap shared msg model =
             ( Stay model, Cmd.none )
 
 
-view : (Msg -> msg) -> (Settings.Msg -> msg) -> Shared -> Model -> List (Html msg)
-view wrap wrapSettings shared model =
+view : (Msg -> msg) -> (Settings.Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
+view wrap wrapSettings changePage shared model =
     let
         usersShown =
             shared.settings.settings.openUserList
@@ -403,15 +403,15 @@ lobbyMenu wrap shared r user player game =
             "lobby-menu-button"
 
         lobbyMenuItems =
-            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayers (ToggleInviteDialog |> wrap |> Just) ]
+            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
 
         setPresence =
             setPresenceMenuItem wrap player
 
         userLobbyMenuItems =
-            [ setPresence
-            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame (Leave |> wrap |> Just)
-            , Menu.link Icon.tv Strings.Spectate Strings.SpectateDescription (r |> Spectate.Route |> Route.Spectate |> Route.url |> Just)
+            [ Menu.link Icon.tv Strings.Spectate Strings.SpectateDescription (r |> Spectate.Route |> Route.Spectate |> Route.url |> Just)
+            , setPresence
+            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGameDescription (Leave |> wrap |> Just)
             ]
 
         privilegedLobbyMenuItems =
@@ -419,8 +419,8 @@ lobbyMenu wrap shared r user player game =
             ]
 
         mdMenuItems =
-            [ Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGame (Just "https://github.com/lattyware/massivedecks")
-            , Menu.link Icon.bug Strings.ReportError Strings.ReportError (Just "https://github.com/Lattyware/massivedecks/issues/new")
+            [ Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGameDescription (Just "https://github.com/lattyware/massivedecks")
+            , Menu.link Icon.bug Strings.ReportError Strings.ReportErrorDescription (Just "https://github.com/Lattyware/massivedecks/issues/new")
             ]
 
         menuItems =
@@ -436,7 +436,7 @@ lobbyMenu wrap shared r user player game =
     Html.div []
         [ Components.iconButtonStyled [ HtmlA.id id, Strings.GameMenu |> Lang.title shared ]
             ( [ Icon.lg ], Icon.bars )
-        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XCenter, WlA.YTop ) separatedMenuItems
+        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XLeft, WlA.YTop ) separatedMenuItems
         ]
 
 
@@ -507,21 +507,24 @@ keyedViewNotification wrap shared lobby notification =
 viewNotification : (Msg -> msg) -> Shared -> Maybe (Dict User.Id User) -> Html.Attribute msg -> Notification -> Html msg
 viewNotification wrap shared users animationState notification =
     let
-        ( icon, message ) =
+        ( icon, message, class ) =
             case notification.message of
                 UserConnected id ->
                     ( Icon.viewIcon Icon.plug
                     , Strings.UserConnected { username = username shared users id } |> Lang.html shared
+                    , Nothing
                     )
 
                 UserDisconnected id ->
                     ( Icon.layers [] [ Icon.viewIcon Icon.plug, Icon.viewIcon Icon.slash ]
                     , Strings.UserDisconnected { username = username shared users id } |> Lang.html shared
+                    , Nothing
                     )
 
                 UserJoined id ->
                     ( Icon.viewIcon Icon.signInAlt
                     , Strings.UserJoined { username = username shared users id } |> Lang.html shared
+                    , Nothing
                     )
 
                 UserLeft id leaveReason ->
@@ -532,15 +535,17 @@ viewNotification wrap shared users animationState notification =
 
                         User.Kicked ->
                             Strings.UserKicked { username = username shared users id } |> Lang.html shared
+                    , Nothing
                     )
 
                 Error mdError ->
                     ( Icon.viewIcon Icon.exclamationTriangle
                     , MdError.describe mdError |> Lang.html shared
+                    , Just "error"
                     )
     in
     Wl.card
-        [ HtmlA.class "notification", animationState ]
+        [ HtmlA.class "notification", animationState, class |> Maybe.map HtmlA.class |> Maybe.withDefault HtmlA.nothing ]
         [ Html.div [ HtmlA.class "content" ]
             [ Html.span [ HtmlA.class "icon" ] [ icon ]
             , Html.span [ HtmlA.class "message" ] [ message ]
@@ -680,6 +685,13 @@ viewUser wrap shared localUserId localUserPrivilege game ( userId, user ) =
                             User.Unprivileged ->
                                 []
 
+                    --playerState =
+                    --    case user.role of
+                    --        User.Player ->
+                    --            [ Menu.button Icon.eye Strings.BecomeSpectator Strings.BecomeSpectatorDescription Nothing |> Just ]
+                    --
+                    --        User.Spectator ->
+                    --            [ Menu.button Icon.chessPawn Strings.BecomePlayer Strings.BecomePlayerDescription Nothing |> Just ]
                     presenceMenuItems =
                         case user.presence of
                             User.Joined ->
@@ -719,7 +731,11 @@ viewUser wrap shared localUserId localUserPrivilege game ( userId, user ) =
                             User.Left ->
                                 []
                 in
-                [ privilegeMenuItems, presenceMenuItems ]
+                [ privilegeMenuItems
+
+                --, playerState
+                , presenceMenuItems
+                ]
                     |> List.filterMap (\part -> part |> List.filterMap identity |> (\l -> l |> Maybe.justIf (l |> List.isEmpty >> not)))
                     |> List.intersperse [ Menu.Separator ]
                     |> List.concat

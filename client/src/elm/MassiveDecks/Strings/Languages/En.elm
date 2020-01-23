@@ -78,6 +78,9 @@ translate mdString =
         AboutTheGame ->
             [ Text "About" ]
 
+        AboutTheGameDescription ->
+            [ Text "Find out about ", Ref MassiveDecks, Text " and how it is developed." ]
+
         MDLogoDescription ->
             [ Text "A ", Ref Call, Text " and a ", Ref Response, Text " marked with an “M” and a “D”." ]
 
@@ -522,6 +525,9 @@ translate mdString =
         InvitePlayers ->
             [ Text "Invite Players" ]
 
+        InvitePlayersDescription ->
+            [ Text "Get the game code/link/qr code to let others join this game." ]
+
         SetAway ->
             [ Text "Mark As Away" ]
 
@@ -531,17 +537,32 @@ translate mdString =
         LeaveGame ->
             [ Text "Leave Game" ]
 
+        LeaveGameDescription ->
+            [ Text "Permanently leave the game." ]
+
         Spectate ->
-            [ Text "Spectate" ]
+            [ Text "Spectator View" ]
 
         SpectateDescription ->
-            [ Text "Open a spectator's view of the game." ]
+            [ Text "Open a spectator's view of the game in a new tab/window." ]
+
+        BecomeSpectator ->
+            [ Text "Spectate" ]
+
+        BecomeSpectatorDescription ->
+            [ Text "Just watch the game without playing." ]
+
+        BecomePlayer ->
+            [ Text "Play" ]
+
+        BecomePlayerDescription ->
+            [ Text "Play in the game." ]
 
         EndGame ->
             [ Text "End Game" ]
 
         EndGameDescription ->
-            [ Text "End the game early." ]
+            [ Text "End the game now." ]
 
         KickUser ->
             [ Text "Kick" ]
@@ -823,6 +844,9 @@ translate mdString =
         ReportError ->
             [ Text "Report Bug" ]
 
+        ReportErrorDescription ->
+            [ Text "Let the developers know about a bug you encountered so they can fix it." ]
+
         ReportErrorBody ->
             [ Text "I was [replace with a short explanation of what you were doing] when I got the following error:" ]
 
@@ -860,7 +884,7 @@ translate mdString =
             [ Text "The round needs to be at the ", Ref expected, Text " stage to do that, but it is at the ", Ref stage, Text " stage." ]
 
         ConfigEditConflictError ->
-            [ Text "Someone else changed the configuration before you, so their changes took priority." ]
+            [ Text "Someone else changed the configuration before you, your change was not saved." ]
 
         UnprivilegedError ->
             [ Text "You don't have the privileges to do that." ]

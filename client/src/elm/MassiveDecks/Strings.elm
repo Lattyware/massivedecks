@@ -25,6 +25,7 @@ type MdString
     | JoinPrivateGame -- The action of joining a private game the user was invited to. (Short, ideally one word).
     | PlayGame -- The action of joining a game to play it. (Short, ideally one word).
     | AboutTheGame -- The action of finding out more information about the game. (Short, ideally one word).
+    | AboutTheGameDescription -- A description of the action of finding out about the game.
     | MDLogoDescription -- A description of the Massive Decks logo (e.g: for blind users).
     | RereadLogoDescription -- A description of the Reread Games logo (e.g: for blind users).
     | MDProject -- A description of the action of visiting the development project for Massive Decks.
@@ -147,11 +148,17 @@ type MdString
     | GameMenu -- A description of the game menu.
     | UnknownUser -- A name for a user that doesn't have a known name.
     | InvitePlayers -- A short term for inviting players to the game.
+    | InvitePlayersDescription -- A description of what inviting players to the game means.
     | SetAway -- A short term for leaving the game temporarily.
     | SetBack -- A short term for returning to the game after being away.
     | LeaveGame -- A short term for the action of leaving the game permanently.
+    | LeaveGameDescription -- A description of what leaving the game means.
     | Spectate -- A short term for spectating the game.
     | SpectateDescription -- A description of the action of spectating the game.
+    | BecomeSpectator -- A short term for becoming soley a spectator of the game, rather than an active player.
+    | BecomeSpectatorDescription -- A description of becoming soley a spectator of the game, rather than an active player.
+    | BecomePlayer -- A short term for becoming an active player of the game, rather than a spectator.
+    | BecomePlayerDescription -- A description of becoming an active player of the game, rather than a spectator.
     | EndGame -- A short term for the action of ending the game early.
     | EndGameDescription -- A description of the action of ending the game early.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
@@ -240,6 +247,7 @@ type MdString
     | ErrorHelp -- A message telling the user that an error has occurred and what to do.
     | ErrorHelpTitle -- A title saying something went wrong.
     | ReportError -- The action to report an error with the application to a developer.
+    | ReportErrorDescription -- A description of the action of reporting an error to a developer.
     | ReportErrorBody -- An explanation of how to report an error to the developer.
     | BadUrlError -- An error where the server url wasn't valid.
     | TimeoutError -- An error where the server didn't respond for a long time.

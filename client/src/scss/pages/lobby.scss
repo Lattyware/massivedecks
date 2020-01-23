@@ -163,7 +163,7 @@
   left: 0;
   bottom: 0;
   list-style: none;
-  z-index: 100;
+  z-index: 500;
 }
 
 .notification {
@@ -176,6 +176,11 @@
 
   --card-bg: #{$call-background};
   --card-color: #{$call-color};
+
+  &.error {
+    --card-bg: #{$error};
+    --card-color: #{$on-error};
+  }
 
   &.entering {
     transform: translateY(0%);

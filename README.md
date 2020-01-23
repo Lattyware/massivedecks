@@ -25,9 +25,13 @@ The web client for the game is written in [Elm][elm], while the back-end is writ
 
 If you would like to run an instance of Massive Decks, there are a couple of options.
 
+It is suggested you read the [deployment guide on the wiki][deployment-guide].
+
+[deployment-guide]: https://github.com/Lattyware/massivedecks/wiki/Deploying
+
 ### Docker
 
-[Server](https://hub.docker.com/repository/docker/massivedecks/server/general) / [Client](https://hub.docker.com/repository/docker/massivedecks/client/general)
+[Server](https://hub.docker.com/r/massivedecks/server) / [Client](https://hub.docker.com/r/massivedecks/client)
 
 Also see [`docker-compose.yml`](https://github.com/Lattyware/massivedecks/blob/master/docker-compose.yml). The client image
 is an nginx server that both serves the static web client and acts as a proxy for the server. As such, the server should
@@ -36,7 +40,6 @@ not be exposed publicly directly.
 ### Heroku
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Lattyware/massivedecks)
-
 
 ## Contributing
 

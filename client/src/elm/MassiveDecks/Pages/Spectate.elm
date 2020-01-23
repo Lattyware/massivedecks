@@ -13,6 +13,8 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import Html.Events as HtmlE
+import MassiveDecks.Components as Component
 import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
@@ -66,8 +68,8 @@ initWithAuth auth =
     ( { lobby = lobby, advertise = True }, cmd )
 
 
-view : Shared -> Model -> List (Html msg)
-view shared model =
+view : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
+view wrap changePage shared model =
     let
         advert =
             if model.advertise then
@@ -78,7 +80,8 @@ view shared model =
     in
     [ Html.div [ HtmlA.id "spectate" ]
         (List.concat
-            [ advert
+            [ viewSettings wrap changePage shared model
+            , advert
             , viewStage shared model
             ]
         )
@@ -101,9 +104,31 @@ update wrap shared msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        ToggleAdvert ->
+            ( { model | advertise = not model.advertise }, Cmd.none )
+
 
 
 {- Private -}
+
+
+viewSettings : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
+viewSettings wrap changePage shared model =
+    if not shared.remoteMode then
+        let
+            advertiseIcon =
+                if model.advertise then
+                    Icon.eyeSlash
+
+                else
+                    Icon.eye
+        in
+        [ Component.iconButton [ model.lobby.route |> Route.Lobby |> changePage |> HtmlE.onClick ] Icon.arrowLeft
+        , Component.iconButton [ ToggleAdvert |> wrap |> HtmlE.onClick ] advertiseIcon
+        ]
+
+    else
+        []
 
 
 viewStage : Shared -> Model -> List (Html msg)

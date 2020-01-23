@@ -85,6 +85,7 @@ init flags url key =
             , castStatus = Cast.NoDevicesAvailable
             , speech = speech
             , notifications = Notifications.init
+            , remoteMode = remoteMode
             }
 
         ( page, pageCmd ) =
@@ -310,10 +311,10 @@ view model =
                     Start.view model.shared m
 
                 Pages.Lobby m ->
-                    Lobby.view LobbyMsg SettingsMsg model.shared m
+                    Lobby.view LobbyMsg SettingsMsg ChangePage model.shared m
 
                 Pages.Spectate m ->
-                    Spectate.view model.shared m
+                    Spectate.view SpectateMsg ChangePage model.shared m
 
                 Pages.Unknown m ->
                     Unknown.view model.shared m
