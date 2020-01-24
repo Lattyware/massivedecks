@@ -148,18 +148,28 @@ gameCode =
     Json.string |> Json.map GameCode.trusted
 
 
-externalSource : Json.Decoder Source.External
-externalSource =
+source : Json.Decoder Source
+source =
     Json.field "source" Json.string |> Json.andThen sourceByName
 
 
-source : Json.Decoder Source
-source =
-    externalSource |> Json.map Source.Ex
-
-
-sourceByName : String -> Json.Decoder Source.External
+sourceByName : String -> Json.Decoder Source
 sourceByName name =
+    case name of
+        "Player" ->
+            Json.succeed Source.Player
+
+        _ ->
+            externalSourceByName name |> Json.map Source.Ex
+
+
+externalSource : Json.Decoder Source.External
+externalSource =
+    Json.field "source" Json.string |> Json.andThen externalSourceByName
+
+
+externalSourceByName : String -> Json.Decoder Source.External
+externalSourceByName name =
     case name of
         "Cardcast" ->
             Json.field "playCode" Json.string |> Json.map (Cardcast.playCode >> Source.Cardcast)
@@ -285,10 +295,18 @@ timeLimitModeByName name =
 
 houseRules : Json.Decoder Rules.HouseRules
 houseRules =
-    Json.map3 Rules.HouseRules
+    Json.map4 Rules.HouseRules
         (Json.maybe (Json.field "rando" rando))
         (Json.maybe (Json.field "packingHeat" packingHeat))
         (Json.maybe (Json.field "reboot" reboot))
+        (Json.maybe (Json.field "comedyWriter" comedyWriter))
+
+
+comedyWriter : Json.Decoder Rules.ComedyWriter
+comedyWriter =
+    Json.map2 Rules.ComedyWriter
+        (Json.field "number" Json.int)
+        (Json.field "exclusive" Json.bool)
 
 
 packingHeat : Json.Decoder Rules.PackingHeat
@@ -615,7 +633,7 @@ handRedrawn : Json.Decoder Events.GameEvent
 handRedrawn =
     Json.map2 (\pl -> \ha -> Events.HandRedrawn { player = pl, hand = ha })
         (Json.field "player" userId)
-        (Json.maybe (Json.field "hand" (Json.list response)))
+        (Json.maybe (Json.field "hand" (Json.list potentiallyBlankResponse)))
 
 
 roundFinished : Json.Decoder Events.TimedGameEvent
@@ -643,7 +661,7 @@ startRevealing : Json.Decoder Events.TimedGameEvent
 startRevealing =
     Json.map2 (\ps -> \dr -> Events.StartRevealing { plays = ps, drawn = dr })
         (Json.field "plays" (Json.list playId))
-        (Json.maybe (Json.field "drawn" (Json.list response)))
+        (Json.maybe (Json.field "drawn" (Json.list potentiallyBlankResponse)))
 
 
 gameEvent : Json.Decoder Events.GameEvent -> Json.Decoder Event
@@ -692,6 +710,9 @@ houseRuleChangeFromName name =
         "Reboot" ->
             maybeHouseRuleChange (Json.field "cost" Json.int) Rules.Reboot Rules.RebootChange
 
+        "ComedyWriter" ->
+            maybeHouseRuleChange (Json.map2 Rules.ComedyWriter (Json.field "number" Json.int) (Json.field "exclusive" Json.bool)) identity Rules.ComedyWriterChange
+
         _ ->
             unknownValue "house rule (for change)" name
 
@@ -713,7 +734,7 @@ roundStarted =
         (Json.field "call" call)
         (Json.field "czar" userId)
         (Json.field "players" playerSet)
-        (Json.maybe (Json.field "drawn" (Json.list response)))
+        (Json.maybe (Json.field "drawn" (Json.list potentiallyBlankResponse)))
 
 
 privilegeChanged : Json.Decoder Events.Event
@@ -727,16 +748,26 @@ gameStarted : Json.Decoder Events.Event
 gameStarted =
     Json.map2 (\r -> \h -> { round = r, hand = h } |> Events.GameStarted)
         (Json.field "round" playingRound)
-        (Json.field "hand" (Json.list response))
+        (Json.field "hand" (Json.list potentiallyBlankResponse))
 
 
 sync : Json.Decoder Event
 sync =
     Json.map4 (\ls -> \h -> \p -> \pa -> Events.Sync { state = ls, hand = h, play = p, partialTimeAnchor = pa })
         (Json.field "state" lobby)
-        (Json.maybe (Json.field "hand" (Json.list response)))
-        (Json.maybe (Json.field "play" (Json.list cardId)))
+        (Json.maybe (Json.field "hand" (Json.list potentiallyBlankResponse)))
+        (Json.maybe (Json.field "play" (Json.list cardPlayed)))
         (Json.field "gameTime" Time.partialAnchorDecoder)
+
+
+cardPlayed : Json.Decoder Card.Played
+cardPlayed =
+    Json.oneOf
+        [ Json.string |> Json.map (\id -> { id = id, text = Nothing })
+        , Json.map2 (\id -> \text -> { id = id, text = Just text })
+            (Json.field "id" cardId)
+            (Json.field "text" Json.string)
+        ]
 
 
 connection : User.Connection -> Json.Decoder Event
@@ -914,6 +945,18 @@ response =
         (Json.field "text" Json.string)
         (Json.field "id" cardId)
         (Json.field "source" source)
+
+
+blankResponse : Json.Decoder Card.BlankResponse
+blankResponse =
+    Json.map2 Card.blankResponse
+        (Json.field "id" cardId)
+        (Json.field "source" source)
+
+
+potentiallyBlankResponse : Json.Decoder Card.PotentiallyBlankResponse
+potentiallyBlankResponse =
+    Json.oneOf [ response |> Json.map Card.Normal, blankResponse |> Json.map Card.Blank ]
 
 
 call : Json.Decoder Card.Call

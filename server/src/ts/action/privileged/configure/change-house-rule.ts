@@ -5,6 +5,7 @@ import { Handler } from "../../handler";
 import * as configure from "../configure";
 import * as houseRuleChanged from "../../../events/lobby-event/configured/house-rule-changed";
 import * as rando from "../../../games/rules/rando";
+import * as util from "../../../util";
 
 /**
  * Set the hand size for the lobby.
@@ -48,6 +49,15 @@ export const handle: Handler<ChangeHouseRule> = (auth, lobby, action) => {
         changed = true;
       }
       break;
+    case "ComedyWriter":
+      if (hr.comedyWriter !== action.change.settings) {
+        hr.comedyWriter = action.change.settings;
+        changed = true;
+      }
+      break;
+    default:
+      util.assertNever(action.change);
+      return {};
   }
   if (changed) {
     lobby.config.version += 1;

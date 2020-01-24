@@ -1,4 +1,7 @@
-module MassiveDecks.Card.Source.Cardcast exposing (empty, methods)
+module MassiveDecks.Card.Source.Cardcast exposing
+    ( generalMethods
+    , methods
+    )
 
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -15,44 +18,55 @@ import Weightless as Wl
 import Weightless.Attributes as WlA
 
 
-methods : PlayCode -> Source.Methods msg
+methods : PlayCode -> Source.ExternalMethods msg
 methods playCode =
-    { problem = \() -> problem playCode
-    , details = \() -> details playCode
-    , tooltip = \() -> tooltip playCode |> Just
-    , logo = \() -> Just logo
-    , name = \() -> "Cardcast"
+    { name = name
+    , logo = logo
+    , empty = empty
+    , problems = problems playCode
+    , defaultDetails = details playCode
+    , tooltip = tooltip playCode
     , editor = editor playCode
     , equals = equals playCode
     }
 
 
-empty : Source.External
-empty =
-    "" |> playCode |> Source.Cardcast
+generalMethods : Source.ExternalGeneralMethods msg
+generalMethods =
+    { name = name
+    , logo = logo
+    , empty = empty
+    }
 
 
 
 {- Private -}
 
 
-equals : PlayCode -> Source -> Bool
+name : Shared -> String
+name shared =
+    Strings.Cardcast |> Lang.string shared
+
+
+empty : () -> Source.External
+empty () =
+    "" |> playCode |> Source.Cardcast
+
+
+equals : PlayCode -> Source.External -> Bool
 equals (PlayCode pc) source =
     case source of
-        Source.Ex (Source.Cardcast (PlayCode other)) ->
+        Source.Cardcast (PlayCode other) ->
             pc == other
 
-        _ ->
-            False
 
-
-problem : PlayCode -> Maybe (Message msg)
-problem (PlayCode pc) =
+problems : PlayCode -> () -> List (Message msg)
+problems (PlayCode pc) () =
     if String.isEmpty pc then
-        Strings.CardcastEmptyPlayCode |> Message.info |> Just
+        [ Strings.CardcastEmptyPlayCode |> Message.info ]
 
     else
-        Nothing
+        []
 
 
 editor : PlayCode -> Shared -> (Source.External -> msg) -> Html msg
@@ -64,21 +78,26 @@ editor (PlayCode pc) shared update =
         , HtmlE.onInput (playCode >> Source.Cardcast >> update)
         , Strings.CardcastPlayCode |> Lang.label shared
         ]
-        [ Html.span [ WlA.textFieldSlot WlA.BeforeText ] [ logo ] ]
+        [ Html.span [ WlA.textFieldSlot WlA.BeforeText ] [ logoInternal ] ]
 
 
-details : PlayCode -> Source.Details
-details (PlayCode pc) =
-    { name = "Cardcast " ++ pc
+details : PlayCode -> Shared -> Source.Details
+details (PlayCode pc) shared =
+    { name = name shared ++ " " ++ pc
     , url = Just (Url.crossOrigin "https://www.cardcastgame.com" [ "browse", "deck", pc ] [])
     }
 
 
-tooltip : PlayCode -> ( String, Html msg )
-tooltip (PlayCode pc) =
-    ( "cardcast-" ++ pc, Html.span [] [ logo, Html.text pc ] )
+tooltip : PlayCode -> () -> Maybe ( String, Html msg )
+tooltip (PlayCode pc) () =
+    ( "cardcast-" ++ pc, Html.span [] [ logoInternal, Html.text pc ] ) |> Just
 
 
-logo : Html msg
-logo =
+logo : () -> Maybe (Html msg)
+logo () =
+    logoInternal |> Just
+
+
+logoInternal : Html msg
+logoInternal =
     Html.span [ HtmlA.class "cardcast-logo" ] []

@@ -4,6 +4,7 @@ module MassiveDecks.Models.Encoders exposing
     , language
     , lobbyCreation
     , lobbyToken
+    , playedCard
     , playerPresence
     , privilege
     , remoteControlCommand
@@ -17,6 +18,7 @@ module MassiveDecks.Models.Encoders exposing
 
 import Dict
 import Json.Encode as Json
+import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -31,6 +33,16 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
+
+
+playedCard : Card.Played -> Json.Value
+playedCard pc =
+    case pc.text of
+        Nothing ->
+            Json.string pc.id
+
+        Just text ->
+            Json.object [ ( "id", Json.string pc.id ), ( "text", Json.string text ) ]
 
 
 timeLimitMode : Rules.TimeLimitMode -> Json.Value
@@ -192,6 +204,9 @@ houseRuleChange change =
 
                 Rules.RebootChange maybe ->
                     ( "Reboot", maybe |> Maybe.map (\reboot -> Json.object [ ( "cost", Json.int reboot.cost ) ]) )
+
+                Rules.ComedyWriterChange maybe ->
+                    ( "ComedyWriter", maybe |> Maybe.map (\cw -> Json.object [ ( "number", Json.int cw.number ), ( "exclusive", Json.bool cw.exclusive ) ]) )
 
         ruleSettings =
             maybeSettings |> Maybe.map (\s -> [ ( "settings", s ) ]) |> Maybe.withDefault []

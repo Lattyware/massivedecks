@@ -54,6 +54,7 @@ init =
         { rando = Nothing
         , packingHeat = Nothing
         , reboot = Nothing
+        , comedyWriter = Nothing
         }
     , public = False
     , timeLimits = Rules.defaultTimeLimits
@@ -302,6 +303,12 @@ startGameProblems wrap wrapLobby users config =
         loadingDecks =
             config.decks |> List.any (.summary >> Maybe.isNothing)
 
+        hr =
+            config.rules.houseRules
+
+        exclusivelyBlankCards =
+            hr.comedyWriter |> Maybe.map .exclusive |> Maybe.withDefault False
+
         deckIssues =
             if noDecks then
                 [ Message.errorWithFix
@@ -323,7 +330,7 @@ startGameProblems wrap wrapLobby users config =
                     |> Maybe.justIf ((summaries .calls |> List.sum) < 1)
                 , Strings.MissingCardType { cardType = Strings.Response }
                     |> Message.error
-                    |> Maybe.justIf ((summaries .responses |> List.sum) < 1)
+                    |> Maybe.justIf ((summaries .responses |> List.sum) < 1 && not exclusivelyBlankCards)
                 ]
 
         playerCount =
@@ -333,7 +340,7 @@ startGameProblems wrap wrapLobby users config =
                 |> List.length
 
         aiPlayers =
-            config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
+            hr.rando |> Maybe.map .number |> Maybe.withDefault 0
 
         playerIssues =
             [ Message.errorWithFix
@@ -354,8 +361,23 @@ startGameProblems wrap wrapLobby users config =
                 ]
                 |> Maybe.justIf (playerCount < 3)
             ]
+
+        aisNoWriteGoodIssues =
+            [ Message.errorWithFix
+                Strings.RandoCantWrite
+                [ { description = Strings.DisableRando
+                  , icon = Icon.powerOff
+                  , action = Nothing |> Rules.RandoChange |> HouseRuleChange Remote |> wrap
+                  }
+                , { description = Strings.DisableComedyWriter
+                  , icon = Icon.eraser
+                  , action = Nothing |> Rules.ComedyWriterChange |> HouseRuleChange Remote |> wrap
+                  }
+                ]
+                |> Maybe.justIf (hr.rando /= Nothing && hr.comedyWriter /= Nothing)
+            ]
     in
-    [ deckIssues, playerIssues ] |> List.concat |> List.filterMap identity
+    [ deckIssues, playerIssues, aisNoWriteGoodIssues ] |> List.concat |> List.filterMap identity
 
 
 ifRemote : Cmd msg -> Target -> Cmd msg
@@ -483,11 +505,12 @@ houseRules wrap shared canEdit model config =
         , rando wrap shared canEdit model config
         , packingHeat wrap shared canEdit model config
         , reboot wrap shared canEdit model config
+        , comedyWriter wrap shared canEdit model config
         ]
 
 
 type alias ViewHouseRuleSettings houseRule msg =
-    (Msg -> msg) -> Shared -> Bool -> houseRule -> (houseRule -> msg) -> List (Html msg)
+    (Msg -> msg) -> Shared -> Bool -> houseRule -> (Target -> houseRule -> msg) -> List (Html msg)
 
 
 houseRule : (Msg -> msg) -> Shared -> String -> Rules.HouseRule a -> Bool -> Model -> Config -> ViewHouseRuleSettings a msg -> Html msg
@@ -518,7 +541,7 @@ houseRule wrap shared id { default, change, title, description, extract, validat
 
         settings =
             localValue
-                |> Maybe.map (\v -> viewSettings wrap shared canEdit v (Just >> change >> HouseRuleChange Local >> wrap))
+                |> Maybe.map (\v -> viewSettings wrap shared canEdit v (\t -> \nv -> Just nv |> change |> HouseRuleChange t |> wrap))
                 |> Maybe.withDefault []
 
         ( saveIcon, message ) =
@@ -559,8 +582,8 @@ rando wrap shared canEdit model config =
     houseRule wrap shared "rando" Rules.rando canEdit model config randoSettings
 
 
-randoSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Rando -> (Rules.Rando -> msg) -> List (Html msg)
-randoSettings wrap shared canEdit value localChange =
+randoSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Rando -> (Target -> Rules.Rando -> msg) -> List (Html msg)
+randoSettings wrap shared canEdit value change =
     [ Form.section
         shared
         "rando-number"
@@ -573,7 +596,7 @@ randoSettings wrap shared canEdit value localChange =
             , Maybe.justIf (not canEdit) WlA.disabled |> Maybe.withDefault HtmlA.nothing
             , value.number |> String.fromInt |> WlA.value
             , String.toInt
-                >> Maybe.map (\n -> { value | number = n } |> localChange)
+                >> Maybe.map (\n -> { value | number = n } |> change Local)
                 >> Maybe.withDefault (wrap NoOp)
                 |> HtmlE.onInput
             ]
@@ -598,8 +621,8 @@ reboot wrap shared canEdit model config =
     houseRule wrap shared "reboot" Rules.reboot canEdit model config rebootSettings
 
 
-rebootSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Reboot -> (Rules.Reboot -> msg) -> List (Html msg)
-rebootSettings wrap shared canEdit value localChange =
+rebootSettings : (Msg -> msg) -> Shared -> Bool -> Rules.Reboot -> (Target -> Rules.Reboot -> msg) -> List (Html msg)
+rebootSettings wrap shared canEdit value change =
     [ Form.section
         shared
         "reboot-cost"
@@ -612,13 +635,59 @@ rebootSettings wrap shared canEdit value localChange =
             , Maybe.justIf (not canEdit) WlA.disabled |> Maybe.withDefault HtmlA.nothing
             , value.cost |> String.fromInt |> WlA.value
             , String.toInt
-                >> Maybe.map (\c -> { value | cost = c } |> localChange)
+                >> Maybe.map (\c -> { value | cost = c } |> change Local)
                 >> Maybe.withDefault (wrap NoOp)
                 |> HtmlE.onInput
             ]
             []
         )
         [ Strings.HouseRuleRebootCostDescription |> Message.info ]
+    ]
+
+
+comedyWriter : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+comedyWriter wrap shared canEdit model config =
+    houseRule wrap shared "comedy-writer" Rules.comedyWriter canEdit model config comedyWriterSettings
+
+
+comedyWriterSettings : (Msg -> msg) -> Shared -> Bool -> Rules.ComedyWriter -> (Target -> Rules.ComedyWriter -> msg) -> List (Html msg)
+comedyWriterSettings wrap shared canEdit value change =
+    [ Form.section
+        shared
+        "comedy-writer-number"
+        (Wl.textField
+            [ Strings.HouseRuleComedyWriterNumber |> Lang.label shared
+            , HtmlA.class "primary"
+            , WlA.type_ WlA.Number
+            , WlA.min 1
+            , WlA.max 99999
+            , Maybe.justIf (not canEdit) WlA.disabled |> Maybe.withDefault HtmlA.nothing
+            , value.number |> String.fromInt |> WlA.value
+            , String.toInt
+                >> Maybe.map (\n -> { value | number = n } |> change Local)
+                >> Maybe.withDefault (wrap NoOp)
+                |> HtmlE.onInput
+            ]
+            []
+        )
+        [ Strings.HouseRuleComedyWriterNumberDescription |> Message.info ]
+    , Form.section
+        shared
+        "comedy-writer-exclusive"
+        (Html.div [ HtmlA.class "multipart" ]
+            [ Wl.switch
+                [ HtmlA.id "comedy-writer-exclusive-switch"
+                , Maybe.justIf (not canEdit) WlA.disabled |> Maybe.withDefault HtmlA.nothing
+                , WlA.checked |> Maybe.justIf value.exclusive |> Maybe.withDefault HtmlA.nothing
+                , (\e -> { value | exclusive = e } |> change Remote)
+                    |> HtmlE.onCheck
+                ]
+            , Html.label [ HtmlA.for "#comedy-writer-exclusive-switch", HtmlA.class "primary" ]
+                [ Strings.HouseRuleComedyWriterExclusive |> Lang.html shared
+                ]
+            ]
+        )
+        [ Strings.HouseRuleComedyWriterExclusiveDescription |> Message.info ]
     ]
 
 
@@ -709,44 +778,37 @@ addDeckWidget wrap shared existing deckToAdd =
             shared
             "add-deck"
             (Html.div [ HtmlA.class "multipart" ]
-                [ Wl.select
-                    [ HtmlA.id "source-selector"
-                    , WlA.outlined
-                    , HtmlE.onInput (Source.empty >> Maybe.withDefault Source.default >> UpdateSource >> wrap)
+                (List.concat
+                    [ Source.generalEditor shared deckToAdd (UpdateSource >> wrap)
+                    , [ Components.floatingActionButton
+                            [ HtmlA.type_ "submit"
+                            , Result.isError submit |> HtmlA.disabled
+                            , Strings.AddDeck |> Lang.title shared
+                            ]
+                            Icon.plus
+                      ]
                     ]
-                    [ Html.option [ HtmlA.value "Cardcast" ]
-                        [ Html.text "Cardcast"
-                        ]
-                    ]
-                , Source.editor shared (deckToAdd |> Source.Ex) (UpdateSource >> wrap)
-                , Components.floatingActionButton
-                    [ HtmlA.type_ "submit"
-                    , Result.isError submit |> HtmlA.disabled
-                    , Strings.AddDeck |> Lang.title shared
-                    ]
-                    Icon.plus
-                ]
+                )
             )
-            [ submit |> Result.error |> Maybe.withDefault Nothing ]
+            (submit |> Result.error |> Maybe.withDefault [])
         ]
 
 
-submitDeckAction : (Msg -> msg) -> List Deck -> Source.External -> Result (Message msg) msg
+submitDeckAction : (Msg -> msg) -> List Deck -> Source.External -> Result (List (Message msg)) msg
 submitDeckAction wrap existing deckToAdd =
     let
-        potentialProblem =
-            if List.any (.source >> Source.Ex >> Source.equals (Source.Ex deckToAdd)) existing then
-                Strings.DeckAlreadyAdded |> Message.error |> Just
+        potentialProblems =
+            if List.any (.source >> Source.equals deckToAdd) existing then
+                [ Strings.DeckAlreadyAdded |> Message.error ]
 
             else
-                Source.validate (Source.Ex deckToAdd)
+                Source.problems deckToAdd
     in
-    case potentialProblem of
-        Just problem ->
-            problem |> Result.Err
+    if List.isEmpty potentialProblems then
+        deckToAdd |> AddDeck |> wrap |> Result.Ok
 
-        Nothing ->
-            deckToAdd |> AddDeck |> wrap |> Result.Ok
+    else
+        potentialProblems |> Result.Err
 
 
 deck : (Msg -> msg) -> Shared -> Bool -> Deck -> Html msg
@@ -765,7 +827,7 @@ deck wrap shared canEdit givenDeck =
 
                 Nothing ->
                     [ Html.td [ HtmlA.colspan 3 ]
-                        [ source |> Source.Ex |> Source.details |> name wrap shared canEdit source True
+                        [ source |> Source.Ex |> Source.defaultDetails shared |> name wrap shared canEdit source True
                         ]
                     ]
     in
@@ -1011,7 +1073,7 @@ viewOption shared model config noOp canEdit opt =
                         []
 
                 Label { text } ->
-                    Html.span [ HtmlA.class "primary" ] [ text |> Lang.html shared ]
+                    Html.label [ HtmlA.class "primary" ] [ text |> Lang.html shared ]
 
         switch =
             case opt.toggleable of

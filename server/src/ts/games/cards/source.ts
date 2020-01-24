@@ -3,12 +3,12 @@ import { Cache } from "../../cache";
 import * as logging from "../../logging";
 import * as decks from "./decks";
 import { Cardcast } from "./sources/cardcast";
-import { Custom } from "./sources/custom";
+import { Player } from "./sources/player";
 
 /**
  * A source for a card or deck.
  */
-export type Source = External | Custom;
+export type Source = External | Player;
 
 /**
  * An external source for a card or deck.

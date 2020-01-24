@@ -1,6 +1,7 @@
 import uuid from "uuid/v4";
-import { Source } from "./source";
 import wu from "wu";
+import { Source } from "./source";
+import { Player } from "./sources/player";
 
 /**
  * A game card.
@@ -16,12 +17,30 @@ export interface Call extends BaseCard {
 }
 
 /**
+ * A response or a blank response.
+ */
+export type PotentiallyBlankResponse = Response | BlankResponse;
+
+/**
  * A response (some text) played into slots.
  */
 export interface Response extends BaseCard {
-  /** The text on the response.*/
+  /** The text on the response. If this is undefined, the card is a blank
+   * card. */
   text: string;
 }
+
+/**
+ * A response (some text) played into slots. This is a special blank response
+ * only valid in limited circumstances.
+ */
+export interface BlankResponse extends BaseCard {
+  source: Player;
+}
+
+export const isBlankResponse = (
+  response: PotentiallyBlankResponse
+): response is BlankResponse => !response.hasOwnProperty("text");
 
 /** A unique id for an instance of a card.*/
 export type Id = string;

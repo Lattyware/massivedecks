@@ -457,7 +457,14 @@ notificationDuration =
     3500
 
 
-applySync : (Msg -> msg) -> Model -> Lobby -> Maybe (List Card.Response) -> Maybe (List Card.Id) -> Time.PartialAnchor -> ( Change, Cmd msg )
+applySync :
+    (Msg -> msg)
+    -> Model
+    -> Lobby
+    -> Maybe (List Card.PotentiallyBlankResponse)
+    -> Maybe (List Card.Played)
+    -> Time.PartialAnchor
+    -> ( Change, Cmd msg )
 applySync wrap model state hand pick partialTimeAnchor =
     let
         play =

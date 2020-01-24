@@ -75,7 +75,7 @@ export class Deck<C extends card.BaseCard> {
  */
 export interface Decks {
   calls: Deck<card.Call>;
-  responses: Deck<card.Response>;
+  responses: Deck<card.PotentiallyBlankResponse>;
 }
 
 /**
@@ -88,16 +88,8 @@ export type Template<C extends card.BaseCard> = Set<C>;
  */
 export interface Templates extends cache.Tagged {
   calls: Template<card.Call>;
-  responses: Template<card.Response>;
+  responses: Template<card.PotentiallyBlankResponse>;
 }
-
-/**
- * An empty pair of templates.
- */
-export const emptyTemplates = (): Templates => ({
-  calls: new Set(),
-  responses: new Set()
-});
 
 export const decks = (templates: Iterable<Templates>): Decks => ({
   calls: new Deck(wu(templates).map(template => template.calls)),

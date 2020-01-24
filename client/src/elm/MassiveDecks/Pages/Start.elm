@@ -23,7 +23,7 @@ import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
-import MassiveDecks.Components.Form.Message as Message
+import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error as Error
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
@@ -185,7 +185,7 @@ view shared model =
             [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Call.viewUnknown [] ] ]
             , Html.div [ HtmlA.class "subtitle" ]
                 [ Html.div [ HtmlA.class "card-slicer" ]
-                    [ Response.view Configure.fake Card.Front [] (subtitleCard shared)
+                    [ Response.view shared Configure.fake Card.Front [] (subtitleCard shared)
                     ]
                 ]
             ]
@@ -372,7 +372,7 @@ newContent shared model =
         [ error
         , Html.div [ HtmlA.class "restrict" ]
             (List.concat
-                [ nameField shared model
+                [ nameField shared model Nothing
                 , [ Wl.button
                         [ buttonAttr
                         ]
@@ -408,13 +408,16 @@ joinContent shared model =
                 |> Maybe.map (Error.view shared (Route.Start model.route))
                 |> Maybe.withDefault Html.nothing
 
-        ( gameError, passwordError ) =
+        ( gameError, nameError, passwordError ) =
             case model.joinLobbyRequest.error of
                 Just (MdError.Authentication MdError.InvalidLobbyPassword) ->
-                    ( Nothing, model.joinLobbyRequest.error )
+                    ( Nothing, Nothing, model.joinLobbyRequest.error )
+
+                Just (MdError.Registration (MdError.UsernameAlreadyInUseError _)) ->
+                    ( Nothing, model.joinLobbyRequest.error, Nothing )
 
                 _ ->
-                    ( model.joinLobbyRequest.error, Nothing )
+                    ( model.joinLobbyRequest.error, Nothing, Nothing )
 
         maybePasswordField =
             model.password
@@ -426,7 +429,7 @@ joinContent shared model =
         , Html.div [ HtmlA.class "restrict" ]
             (List.concat
                 [ rejoinSection shared model
-                , nameField shared model
+                , nameField shared model nameError
                 , [ Form.section shared
                         "game-code-input"
                         (Wl.textField
@@ -503,19 +506,8 @@ rejoinLobby shared result =
             Nothing
 
 
-nameField : Shared -> Model -> List (Html Global.Msg)
-nameField shared model =
-    let
-        -- TODO: Wire to real error.
-        --        help =
-        --            if False then
-        --                Wl.Error [ Strings.NameInUse |> Lang.html shared ]
-        --
-        --            else
-        --                Wl.None
-        _ =
-            ""
-    in
+nameField : Shared -> Model -> Maybe MdError -> List (Html Global.Msg)
+nameField shared model error =
     [ Form.section shared
         "name-input"
         (Wl.textField
@@ -528,7 +520,7 @@ nameField shared model =
             ]
             []
         )
-        []
+        [ error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none ]
     ]
 
 
@@ -565,6 +557,7 @@ houseRules =
     [ ( Strings.HouseRuleReboot, Strings.HouseRuleRebootDescription { cost = Nothing } )
     , ( Strings.HouseRulePackingHeat, Strings.HouseRulePackingHeatDescription )
     , ( Strings.HouseRuleRandoCardrissian, Strings.HouseRuleRandoCardrissianDescription )
+    , ( Strings.HouseRuleComedyWriter, Strings.HouseRuleComedyWriterDescription )
     ]
 
 

@@ -76,9 +76,9 @@ setPublic value =
     configAction "SetPublic" [ ( "public", value |> Json.bool ) ]
 
 
-submit : List Card.Id -> Cmd msg
+submit : List Card.Played -> Cmd msg
 submit play =
-    action "Submit" [ ( "play", play |> Json.list Json.string ) ]
+    action "Submit" [ ( "play", play |> Json.list Encoders.playedCard ) ]
 
 
 takeBack : Cmd msg
@@ -118,7 +118,7 @@ setPlayerAway player =
 
 setPrivilege : User.Id -> User.Privilege -> Cmd msg
 setPrivilege player privilege =
-    action "SetPrivilege" [ ( "player", player |> Json.string ), ( "privilege", privilege |> Encoders.privilege ) ]
+    action "SetPrivilege" [ ( "user", player |> Json.string ), ( "privilege", privilege |> Encoders.privilege ) ]
 
 
 kick : User.Id -> Cmd msg

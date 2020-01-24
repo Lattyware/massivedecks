@@ -108,6 +108,20 @@ export interface Reboot {
   cost: number;
 }
 
+export interface ComedyWriter {
+  /**
+   * The number of blank cards to add.
+   * @TJS-type integer
+   * @minimum 1
+   * @maximum 99999
+   */
+  number: number;
+  /**
+   * If only blank cards will be used.
+   */
+  exclusive: boolean;
+}
+
 export const censor = (rules: Rules): Public => ({
   ...rules,
   houseRules: houseRules.censor(rules.houseRules)
@@ -121,5 +135,10 @@ export interface ChangeBase<Name extends string, HouseRule> {
 export type ChangePackingHeat = ChangeBase<"PackingHeat", PackingHeat>;
 export type ChangeRando = ChangeBase<"Rando", rando.Public>;
 export type ChangeReboot = ChangeBase<"Reboot", Reboot>;
+export type ChangeComedyWriter = ChangeBase<"ComedyWriter", ComedyWriter>;
 
-export type Change = ChangePackingHeat | ChangeRando | ChangeReboot;
+export type Change =
+  | ChangePackingHeat
+  | ChangeRando
+  | ChangeReboot
+  | ChangeComedyWriter;

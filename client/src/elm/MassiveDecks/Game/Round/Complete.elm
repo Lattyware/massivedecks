@@ -41,7 +41,9 @@ viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, Maybe 
 viewPlay shared config users winner ( id, play ) =
     let
         cards =
-            play |> Maybe.map (.play >> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))) |> Maybe.withDefault []
+            play
+                |> Maybe.map (.play >> List.map (\r -> ( r.details.id, Html.li [] [ Response.view shared config Card.Front [] r ] )))
+                |> Maybe.withDefault []
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]

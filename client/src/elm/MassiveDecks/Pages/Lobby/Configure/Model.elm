@@ -66,6 +66,7 @@ fake =
             { rando = Nothing
             , packingHeat = Nothing
             , reboot = Nothing
+            , comedyWriter = Nothing
             }
         , timeLimits =
             { mode = Rules.Soft

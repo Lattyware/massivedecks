@@ -1,4 +1,4 @@
-import { PackingHeat, Reboot } from "../rules";
+import { PackingHeat, Reboot, ComedyWriter } from "../rules";
 import * as rando from "./rando";
 import { Rando } from "./rando";
 
@@ -8,6 +8,7 @@ import { Rando } from "./rando";
 export interface HouseRules {
   packingHeat?: PackingHeat;
   reboot?: Reboot;
+  comedyWriter?: ComedyWriter;
   rando: Rando;
 }
 
@@ -17,6 +18,7 @@ export interface HouseRules {
 export interface Public {
   packingHeat?: PackingHeat;
   reboot?: Reboot;
+  comedyWriter?: ComedyWriter;
   rando?: rando.Public;
 }
 

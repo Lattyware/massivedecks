@@ -8,18 +8,21 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
+import MassiveDecks.Card as Card
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Response as Response
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
+import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Strings as Strings
-import MassiveDecks.User as User
+import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.List as List
 import MassiveDecks.Util.Random as Random
 import Random
@@ -39,8 +42,8 @@ init wrap round pick =
     )
 
 
-view : (Msg -> msg) -> Lobby.Auth -> Config -> Model -> Round.Playing -> RoundView msg
-view wrap auth config model round =
+view : (Msg -> msg) -> Lobby.Auth -> Shared -> Config -> Dict User.Id User -> Model -> Round.Playing -> RoundView msg
+view wrap auth shared config users model round =
     let
         slots =
             Call.slotCount round.call
@@ -72,7 +75,7 @@ view wrap auth config model round =
 
         hand =
             HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]
-                (model.hand |> List.map (round.pick.cards |> viewHandCard wrap config))
+                (model.hand |> List.map (round.pick.cards |> viewHandCard wrap shared config model.filledCards))
 
         backgroundPlays =
             Html.div [ HtmlA.class "background-plays" ]
@@ -80,8 +83,9 @@ view wrap auth config model round =
 
         picked =
             round.pick.cards
-                |> List.map (\id -> List.find (\c -> c.details.id == id) model.hand)
+                |> List.map (\p -> List.find (\c -> (Card.details c).id == p.id) model.hand)
                 |> List.filterMap identity
+                |> List.map (Card.asResponseFromDict model.filledCards)
     in
     { instruction = Just instruction
     , action = action
@@ -98,15 +102,30 @@ view wrap auth config model round =
 {- Private -}
 
 
-viewHandCard : (Msg -> msg) -> Config -> List Card.Id -> Card.Response -> ( String, Html msg )
-viewHandCard wrap config picked response =
-    ( response.details.id
-    , Response.view
+viewHandCard : (Msg -> msg) -> Shared -> Config -> Dict Card.Id String -> List Card.Played -> Card.PotentiallyBlankResponse -> ( String, Html msg )
+viewHandCard wrap shared config filled picked response =
+    let
+        details =
+            Card.details response
+
+        fill =
+            case details.source of
+                Source.Player ->
+                    (filled |> Dict.get details.id) |> Maybe.withDefault "" |> Just
+
+                _ ->
+                    Nothing
+    in
+    ( details.id
+    , Response.viewPotentiallyBlank
+        shared
         config
         Card.Front
-        [ HtmlA.classList [ ( "picked", List.member response.details.id picked ) ]
-        , response.details.id |> Game.Pick |> wrap |> HtmlE.onClick
+        (\v -> Game.EditBlank details.id v |> wrap)
+        [ HtmlA.classList [ ( "picked", picked |> List.map .id |> List.member details.id ) ]
+        , Card.Played details.id fill |> Game.Pick |> wrap |> HtmlE.onClick
         ]
+        filled
         response
     )
 

@@ -10,13 +10,25 @@ import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 
 
 {-| Details on where game data came from.
+
+    - `Ex`: External sources are the main sources of cards users can add.
+    - `Player`: These are cards written by the given player.
+    - `Fake`: These are cards used for presentation outside of a game environment.
+
 -}
 type Source
     = Ex External
+    | Player
     | Fake
 
 
 {-| An external source.
+
+"External" might be a bit of a poor name here. What this mostly means is that the user can add these as decks. Other
+sources are more limited and specific.
+
+    - `Cardcast`: Decks from the Cardcast database.
+
 -}
 type External
     = Cardcast Cardcast.PlayCode

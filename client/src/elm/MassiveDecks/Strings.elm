@@ -59,6 +59,12 @@ type MdString
     | HouseRuleRebootCostDescription --
     | HouseRulePackingHeat -- The name of the "Packing Heat" house rule.
     | HouseRulePackingHeatDescription -- A description of the "Packing Heat" house rule.
+    | HouseRuleComedyWriter -- The name of the "Comedy Writer" house rule.
+    | HouseRuleComedyWriterDescription -- A description of the "Comedy Writer" house rule.
+    | HouseRuleComedyWriterNumber -- A name of the setting for the number of blank cards added to the game.
+    | HouseRuleComedyWriterNumberDescription -- A description of the setting for the number of blank cards added to the game.
+    | HouseRuleComedyWriterExclusive -- A name of the setting for exclusively having blank cards in the game.
+    | HouseRuleComedyWriterExclusiveDescription -- A description of the setting for exclusively having blank cards in the game.
       -- Note that the below name is a pun on the Star Wars character "Lando Calrissian" and the words "Random" and
       -- "Card". It may be better to be more literal, or make an alternative reference. This is essentially adding
       -- a computer player that just plays a random card.
@@ -179,8 +185,10 @@ type MdString
     | MissingCardType { cardType : MdString } -- An error explaining that the user needs a deck with the given type of card (call/response).
     | AddDeck -- A description of the action of adding a deck to the game configuration.
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
+    | Cardcast -- The name of the Cardcast service.
     | CardcastPlayCode -- A term referring to the play code that identifies a deck on Cardcast.
     | CardcastEmptyPlayCode -- A description of the problem of the entered Cardcast play code being empty.
+    | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.
     | ConfigureDecks -- A name for the section of the configuration screen for changing the decks for the game.
     | ConfigureRules -- A name for the section of the configuration screen for changing the rules for the game.
@@ -192,6 +200,9 @@ type MdString
     | ScoreLimitDescription -- The description of the above rule.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
+    | RandoCantWrite -- A description of the problem that the AI players can't use blank cards.
+    | DisableRando -- A description of disabling the "Rando Cardrissian" house rule.
+    | DisableComedyWriter -- A description of disabling the "Comedy Writer" house rule.
     | AddAnAiPlayer -- A description of adding an AI player to the game.
     | PasswordShared -- A warning that game passwords are visible to anyone else in the game.
     | PasswordNotSecured -- A warning that game passwords are not stored securely and should not be used elsewhere.

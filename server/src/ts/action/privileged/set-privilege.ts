@@ -10,7 +10,7 @@ import { Handler } from "../handler";
  * A privileged user asks to change the privilege of another user.
  */
 export interface SetPrivilege {
-  action: "SetPrivilege";
+  action: NameType;
   user: user.Id;
   privilege: user.Privilege;
 }

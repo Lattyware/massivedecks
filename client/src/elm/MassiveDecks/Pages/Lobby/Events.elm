@@ -25,15 +25,15 @@ import Set exposing (Set)
 type Event
     = Sync
         { state : Lobby
-        , hand : Maybe (List Card.Response)
-        , play : Maybe (List Card.Id)
+        , hand : Maybe (List Card.PotentiallyBlankResponse)
+        , play : Maybe (List Card.Played)
         , partialTimeAnchor : Time.PartialAnchor
         }
     | Connection { user : User.Id, state : User.Connection }
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : ConfigChanged, version : String }
       -- Not a game event because we don't need to be in a game
-    | GameStarted { round : Round.Playing, hand : List Card.Response }
+    | GameStarted { round : Round.Playing, hand : List Card.PotentiallyBlankResponse }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
 
@@ -64,7 +64,7 @@ type DeckChange
 
 
 type GameEvent
-    = HandRedrawn { player : User.Id, hand : Maybe (List Card.Response) }
+    = HandRedrawn { player : User.Id, hand : Maybe (List Card.PotentiallyBlankResponse) }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }
     | PlayerAway { player : User.Id }
@@ -87,8 +87,8 @@ type TimedGameEvent
         , czar : User.Id
         , players : Set User.Id
         , call : Card.Call
-        , drawn : Maybe (List Card.Response)
+        , drawn : Maybe (List Card.PotentiallyBlankResponse)
         }
-    | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.Response) }
+    | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.PotentiallyBlankResponse) }
     | RoundFinished { winner : User.Id, playedBy : Dict Play.Id Play.Details }
     | PlayRevealed { id : Play.Id, play : List Card.Response }

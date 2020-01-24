@@ -8,12 +8,12 @@ import * as card from "../../games/cards/card";
 export interface StartRevealing {
   event: "StartRevealing";
   plays: play.Id[];
-  drawn?: card.Response[];
+  drawn?: card.PotentiallyBlankResponse[];
 }
 
 export const of = (
   plays: play.Id[],
-  drawn?: card.Response[]
+  drawn?: card.PotentiallyBlankResponse[]
 ): StartRevealing => ({
   event: "StartRevealing",
   plays,

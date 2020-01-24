@@ -173,7 +173,7 @@ viewPlay shared config slotCount angle playedBy isWinner play =
                 [ HtmlA.classList [ ( "play", True ), ( "card-set", True ) ]
                 ]
                 (play
-                    |> Maybe.map (.play >> List.map (\response -> Html.li [] [ Response.view config Card.Front [] response ]))
+                    |> Maybe.map (.play >> List.map (\response -> Html.li [] [ Response.view shared config Card.Front [] response ]))
                     |> Maybe.withDefault (List.repeat slotCount (Html.li [] [ Response.viewUnknown [] ]))
                 )
             ]

@@ -1,5 +1,6 @@
 module MassiveDecks.Game.Round.Judging exposing (view)
 
+import Dict exposing (Dict)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
@@ -10,15 +11,17 @@ import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
+import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
+import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 import Set exposing (Set)
 
 
-view : (Msg -> msg) -> Auth -> Config -> Round.Judging -> RoundView msg
-view wrap auth config round =
+view : (Msg -> msg) -> Auth -> Shared -> Config -> Round.Judging -> RoundView msg
+view wrap auth shared config round =
     let
         role =
             Player.role (Round.J round) auth.claims.uid
@@ -39,7 +42,7 @@ view wrap auth config round =
                 |> Maybe.withDefault []
 
         details =
-            round.plays |> List.map (playDetails wrap config round.liked)
+            round.plays |> List.map (playDetails wrap shared config round.liked)
     in
     { instruction = Just instruction
     , action = action
@@ -52,12 +55,12 @@ view wrap auth config round =
 {- Private -}
 
 
-playDetails : (Msg -> msg) -> Config -> Set Play.Id -> Play.Known -> Plays.Details msg
-playDetails wrap config liked { id, responses } =
+playDetails : (Msg -> msg) -> Shared -> Config -> Set Play.Id -> Play.Known -> Plays.Details msg
+playDetails wrap shared config liked { id, responses } =
     let
         cards =
             responses
-                |> List.map (\r -> Response.view config Card.Front [] r)
+                |> List.map (\r -> Response.view shared config Card.Front [] r)
 
         attrs =
             [ HtmlA.class "liked" ] |> Maybe.justIf (Set.member id liked) |> Maybe.withDefault []

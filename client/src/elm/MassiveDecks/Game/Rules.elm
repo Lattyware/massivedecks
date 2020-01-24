@@ -1,5 +1,6 @@
 module MassiveDecks.Game.Rules exposing
-    ( HouseRule
+    ( ComedyWriter
+    , HouseRule
     , HouseRuleChange(..)
     , HouseRules
     , PackingHeat
@@ -9,6 +10,7 @@ module MassiveDecks.Game.Rules exposing
     , TimeLimitMode(..)
     , TimeLimits
     , apply
+    , comedyWriter
     , defaultTimeLimits
     , getTimeLimitByStage
     , packingHeat
@@ -38,6 +40,7 @@ type alias HouseRules =
     { rando : Maybe Rando
     , packingHeat : Maybe PackingHeat
     , reboot : Maybe Reboot
+    , comedyWriter : Maybe ComedyWriter
     }
 
 
@@ -109,10 +112,17 @@ type alias Rando =
     { number : Int }
 
 
+type alias ComedyWriter =
+    { number : Int
+    , exclusive : Bool
+    }
+
+
 type HouseRuleChange
     = RandoChange (Maybe Rando)
     | PackingHeatChange (Maybe PackingHeat)
     | RebootChange (Maybe Reboot)
+    | ComedyWriterChange (Maybe ComedyWriter)
 
 
 apply : HouseRuleChange -> HouseRules -> HouseRules
@@ -126,6 +136,9 @@ apply change houseRules =
 
         RebootChange c ->
             { houseRules | reboot = c }
+
+        ComedyWriterChange c ->
+            { houseRules | comedyWriter = c }
 
 
 type alias HouseRule a =
@@ -179,4 +192,16 @@ packingHeat =
     , extract = .packingHeat
     , insert = \ph -> \hr -> { hr | packingHeat = ph }
     , validate = \_ -> True
+    }
+
+
+comedyWriter : HouseRule ComedyWriter
+comedyWriter =
+    { default = { number = 3, exclusive = False }
+    , change = ComedyWriterChange
+    , title = Strings.HouseRuleComedyWriter
+    , description = always Strings.HouseRuleComedyWriterDescription
+    , extract = .comedyWriter
+    , insert = \cw -> \hr -> { hr | comedyWriter = cw }
+    , validate = \r -> r.number >= 1 && r.number <= 99999
     }

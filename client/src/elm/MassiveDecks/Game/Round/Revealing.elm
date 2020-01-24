@@ -1,5 +1,6 @@
 module MassiveDecks.Game.Round.Revealing exposing (view)
 
+import Dict exposing (Dict)
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play exposing (Play)
@@ -9,14 +10,16 @@ import MassiveDecks.Game.Model exposing (RoundView)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
+import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
+import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 
 
-view : (Msg -> msg) -> Auth -> Config -> Round.Revealing -> RoundView msg
-view wrap auth config round =
+view : (Msg -> msg) -> Auth -> Shared -> Config -> Round.Revealing -> RoundView msg
+view wrap auth shared config round =
     let
         role =
             Player.role (Round.R round) auth.claims.uid
@@ -33,7 +36,7 @@ view wrap auth config round =
             Call.slotCount round.call
 
         plays =
-            round.plays |> List.map (playDetails wrap config slots (role == Player.RCzar))
+            round.plays |> List.map (playDetails wrap shared config slots (role == Player.RCzar))
 
         lastRevealed =
             case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
@@ -54,12 +57,12 @@ view wrap auth config round =
 {- Private -}
 
 
-playDetails : (Msg -> msg) -> Config -> Int -> Bool -> Play -> Plays.Details msg
-playDetails wrap config slots isCzar { id, responses } =
+playDetails : (Msg -> msg) -> Shared -> Config -> Int -> Bool -> Play -> Plays.Details msg
+playDetails wrap shared config slots isCzar { id, responses } =
     let
         cards =
             responses
-                |> Maybe.map (List.map (\r -> Response.view config Card.Front [] r))
+                |> Maybe.map (List.map (\r -> Response.view shared config Card.Front [] r))
                 |> Maybe.withDefault (List.repeat slots (Response.viewUnknown []))
     in
     Plays.Details id cards (Reveal id |> wrap |> Maybe.justIf isCzar) []

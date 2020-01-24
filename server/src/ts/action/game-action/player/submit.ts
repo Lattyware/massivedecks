@@ -15,8 +15,17 @@ import * as gameAction from "../../game-action";
  */
 export interface Submit {
   action: NameType;
-  play: card.Id[];
+  play: (card.Id | FilledBlankCard)[];
 }
+
+export interface FilledBlankCard {
+  id: card.Id;
+  text: string;
+}
+
+const isFilledBlankCard = (
+  card: card.Id | FilledBlankCard
+): card is FilledBlankCard => typeof card !== "string";
 
 type NameType = "Submit";
 const name: NameType = "Submit";
@@ -52,16 +61,36 @@ export const handle: gameAction.Handler<Submit> = (
     if (player === undefined) {
       throw new IncorrectUserRoleError(action, "Spectator", "Player");
     }
-    const ids = new Set(action.play);
+    const cards = new Set(action.play);
     const extractedPlay: Play = [];
-    for (const playedId of ids) {
-      const played = player.hand.find(card => card.id === playedId);
+    for (const playedCard of cards) {
+      const id = isFilledBlankCard(playedCard) ? playedCard.id : playedCard;
+      const played = player.hand.find(c => c.id === id);
       if (played === undefined) {
         throw new InvalidActionError(
           "The given card doesn't exist or isn't in the player's hand."
         );
       }
-      extractedPlay.push(played);
+      if (card.isBlankResponse(played)) {
+        if (isFilledBlankCard(playedCard)) {
+          extractedPlay.push({
+            text: playedCard.text,
+            ...played
+          });
+        } else {
+          throw new InvalidActionError(
+            "The given card is blank, but the play didn't provide the value."
+          );
+        }
+      } else {
+        if (isFilledBlankCard(playedCard)) {
+          throw new InvalidActionError(
+            "The given card is not blank, but the play provided a value."
+          );
+        } else {
+          extractedPlay.push(played);
+        }
+      }
     }
     plays.push({
       id: playId,

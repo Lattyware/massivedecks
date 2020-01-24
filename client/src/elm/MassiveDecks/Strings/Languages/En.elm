@@ -233,6 +233,33 @@ translate mdString =
             , Text ", so everyone has more options."
             ]
 
+        HouseRuleComedyWriter ->
+            [ Text "Comedy Writer" ]
+
+        HouseRuleComedyWriterDescription ->
+            [ Text "Add blank "
+            , Ref (Plural { singular = Response, amount = Nothing })
+            , Text " where players can write custom responses."
+            ]
+
+        HouseRuleComedyWriterNumber ->
+            [ Text "Blank ", Ref (Plural { singular = Response, amount = Nothing }) ]
+
+        HouseRuleComedyWriterNumberDescription ->
+            [ Text "The number of Blank "
+            , Ref (Plural { singular = Response, amount = Nothing })
+            , Text "that will be in the game."
+            ]
+
+        HouseRuleComedyWriterExclusive ->
+            [ Text "Only Blank ", Ref (Plural { singular = Response, amount = Nothing }) ]
+
+        HouseRuleComedyWriterExclusiveDescription ->
+            [ Text "If enabled, all other "
+            , Ref (Plural { singular = Response, amount = Nothing })
+            , Text " will be ignored, only blank ones will exist in-game."
+            ]
+
         HouseRuleRandoCardrissian ->
             [ Text "Rando Cardrissian" ]
 
@@ -620,11 +647,17 @@ translate mdString =
         RemoveDeck ->
             [ Text "Remove deck." ]
 
+        Cardcast ->
+            [ Text "Cardcast" ]
+
         CardcastPlayCode ->
-            [ Text "Cardcast Play Code" ]
+            [ Ref Cardcast, Text " Play Code" ]
 
         CardcastEmptyPlayCode ->
             [ Text "Enter a ", Ref CardcastPlayCode, Text " for the deck you want to add." ]
+
+        APlayer ->
+            [ Text "A Player" ]
 
         DeckAlreadyAdded ->
             [ Text "This deck is already in the game." ]
@@ -665,6 +698,15 @@ translate mdString =
 
         NeedAtLeastThreePlayers ->
             [ Text "You need at least three players to start the game." ]
+
+        RandoCantWrite ->
+            [ Text "Computer players can't write their own cards." ]
+
+        DisableComedyWriter ->
+            [ Text "Disable ", Ref HouseRuleComedyWriter ]
+
+        DisableRando ->
+            [ Text "Disable ", Ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
             [ Text "Add an AI player to the game." ]

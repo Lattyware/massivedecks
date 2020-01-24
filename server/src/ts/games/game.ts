@@ -90,7 +90,7 @@ export const atStartOfRound = (
     const playId = play.id();
     plays.push({
       id: playId,
-      play: player.hand.slice(0, slotCount),
+      play: player.hand.slice(0, slotCount) as card.Response[],
       playedBy: ai,
       revealed: false,
       likes: new Set()
@@ -196,7 +196,31 @@ export class Game {
     users: Map<user.Id, User>,
     rules: Rules
   ): Game & { round: round.Playing } {
-    const gameDecks = decks.decks(templates);
+    let allTemplates: Iterable<Templates>;
+    const cw = rules.houseRules.comedyWriter;
+    if (cw !== undefined) {
+      const blanks: Templates = {
+        calls: new Set(),
+        responses: new Set(
+          wu.repeat({}, cw.number).map(() => ({
+            id: card.id(),
+            source: { source: "Player" }
+          }))
+        )
+      };
+      allTemplates = [
+        ...(cw.exclusive
+          ? wu(templates).map(t => ({
+              calls: t.calls,
+              responses: new Set<card.PotentiallyBlankResponse>()
+            }))
+          : templates),
+        blanks
+      ];
+    } else {
+      allTemplates = templates;
+    }
+    const gameDecks = decks.decks(allTemplates);
     const playerOrder = wu(users.entries())
       .filter(([_, user]) => user.role === "Player")
       .map(([id, _]) => id)

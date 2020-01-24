@@ -9,7 +9,8 @@ import MassiveDecks.User as User
 
 
 type Msg
-    = Pick Card.Id
+    = Pick Card.Played
+    | EditBlank Card.Id String
     | Submit
     | TakeBack
     | PickPlay Play.Id

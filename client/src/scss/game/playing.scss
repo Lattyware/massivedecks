@@ -45,11 +45,10 @@
 
   .play {
     position: relative;
-    transform: translateY(-100%);
+    transform: translateY(-$card-width * 4);
     transition: transform 500ms ease-in;
     width: $card-width + $card-margin * 2;
     margin-left: -0.5 * ($card-width + $card-margin * 2);
-    @include pad-to-aspect-ratio(var(--card-aspect-ratio));
 
     .game-card {
       transform: rotate(0);

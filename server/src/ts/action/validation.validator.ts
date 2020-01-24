@@ -99,7 +99,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_14"
+          $ref: "#/definitions/NameType_15"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -134,6 +134,9 @@ export const Schema = {
         },
         {
           $ref: "#/definitions/ChangeReboot"
+        },
+        {
+          $ref: "#/definitions/ChangeComedyWriter"
         }
       ]
     },
@@ -146,6 +149,9 @@ export const Schema = {
     "ChangeBase.HouseRule_2": {
       $ref: "#/definitions/Reboot"
     },
+    "ChangeBase.HouseRule_3": {
+      $ref: "#/definitions/ComedyWriter"
+    },
     "ChangeBase.Name": {
       enum: ["PackingHeat"],
       type: "string"
@@ -157,6 +163,24 @@ export const Schema = {
     "ChangeBase.Name_2": {
       enum: ["Reboot"],
       type: "string"
+    },
+    "ChangeBase.Name_3": {
+      enum: ["ComedyWriter"],
+      type: "string"
+    },
+    ChangeComedyWriter: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        houseRule: {
+          $ref: "#/definitions/ChangeBase.Name_3"
+        },
+        settings: {
+          $ref: "#/definitions/ChangeBase.HouseRule_3"
+        }
+      },
+      required: ["houseRule"],
+      type: "object"
     },
     ChangeDecks: {
       additionalProperties: false,
@@ -302,6 +326,24 @@ export const Schema = {
       required: ["tokens"],
       type: "object"
     },
+    ComedyWriter: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        exclusive: {
+          description: "If only blank cards will be used.",
+          type: "boolean"
+        },
+        number: {
+          description: "The number of blank cards to add.",
+          maximum: 99999,
+          minimum: 1,
+          type: "number"
+        }
+      },
+      required: ["exclusive", "number"],
+      type: "object"
+    },
     CreateLobby: {
       additionalProperties: false,
       defaultProperties: [],
@@ -354,6 +396,20 @@ export const Schema = {
     External: {
       $ref: "#/definitions/Cardcast",
       description: "A source for Cardcast."
+    },
+    FilledBlankCard: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        id: {
+          $ref: "#/definitions/Id"
+        },
+        text: {
+          type: "string"
+        }
+      },
+      required: ["id", "text"],
+      type: "object"
     },
     Id: {
       description: "A unique id for a play.",
@@ -445,10 +501,14 @@ export const Schema = {
       type: "string"
     },
     NameType_13: {
-      enum: ["StartGame"],
+      enum: ["SetPrivilege"],
       type: "string"
     },
     NameType_14: {
+      enum: ["StartGame"],
+      type: "string"
+    },
+    NameType_15: {
       enum: ["Authenticate"],
       type: "string"
     },
@@ -669,8 +729,7 @@ export const Schema = {
         "A privileged user asks to change the privilege of another user.",
       properties: {
         action: {
-          enum: ["SetPrivilege"],
-          type: "string"
+          $ref: "#/definitions/NameType_13"
         },
         privilege: {
           $ref: "#/definitions/Privilege"
@@ -735,7 +794,7 @@ export const Schema = {
       description: "Start a game in the lobby if possible.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_13"
+          $ref: "#/definitions/NameType_14"
         }
       },
       required: ["action"],
@@ -751,7 +810,14 @@ export const Schema = {
         },
         play: {
           items: {
-            type: "string"
+            anyOf: [
+              {
+                $ref: "#/definitions/FilledBlankCard"
+              },
+              {
+                type: "string"
+              }
+            ]
           },
           type: "array"
         }

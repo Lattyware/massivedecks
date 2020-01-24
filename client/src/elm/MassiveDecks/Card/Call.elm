@@ -49,6 +49,7 @@ viewInternal : Shared -> Config -> Side -> List (Html.Attribute msg) -> (Parts -
 viewInternal shared config side attributes viewParts call =
     Card.view
         "call"
+        shared
         config.decks
         side
         attributes

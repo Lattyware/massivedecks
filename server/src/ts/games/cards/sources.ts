@@ -2,7 +2,7 @@ import { Cache } from "../../cache";
 import * as deckSource from "./source";
 import { Source } from "./source";
 import * as cardcast from "./sources/cardcast";
-import * as custom from "./sources/custom";
+import * as player from "./sources/player";
 import * as util from "../../util";
 
 function uncachedResolver(source: deckSource.External): deckSource.Resolver {
@@ -38,6 +38,6 @@ export const details = async (
   cache: Cache,
   source: Source
 ): Promise<deckSource.Details> =>
-  source.source === "Custom"
-    ? custom.details(source)
+  source.source === "Player"
+    ? player.details(source)
     : await resolver(cache, source).details();

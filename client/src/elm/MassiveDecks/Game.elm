@@ -15,6 +15,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import MassiveDecks.Card as Card
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
@@ -33,13 +34,11 @@ import MassiveDecks.Game.Round.Playing as Playing
 import MassiveDecks.Game.Round.Revealing as Revealing
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Game.Time as Time exposing (Time)
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
-import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.Settings.Model exposing (Settings)
 import MassiveDecks.Speech as Speech
@@ -56,7 +55,7 @@ import Weightless.Attributes as WlA
 import Weightless.ProgressBar as ProgressBar
 
 
-init : (Msg -> msg) -> Game -> List Card.Response -> Round.Pick -> ( Model, Cmd msg )
+init : (Msg -> msg) -> Game -> List Card.PotentiallyBlankResponse -> Round.Pick -> ( Model, Cmd msg )
 init wrap game hand pick =
     let
         model =
@@ -83,7 +82,7 @@ update wrap shared msg model =
             model.game
     in
     case msg of
-        Pick id ->
+        Pick played ->
             case game.round of
                 Round.P playingRound ->
                     let
@@ -91,11 +90,11 @@ update wrap shared msg model =
                             playingRound.pick
 
                         picked =
-                            if List.member id picks.cards then
-                                List.filter ((/=) id) picks.cards
+                            if picks.cards |> List.map .id |> List.member played.id then
+                                List.filter (\p -> p.id /= played.id) picks.cards
 
                             else
-                                picks.cards ++ [ id ]
+                                picks.cards ++ [ played ]
 
                         extra =
                             max 0 (List.length picked - (playingRound.call |> Call.slotCount))
@@ -104,6 +103,18 @@ update wrap shared msg model =
                             Round.P { playingRound | pick = { picks | cards = picked |> List.drop extra } }
                     in
                     ( { model | game = { game | round = newRound } }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        EditBlank id text ->
+            case game.round of
+                Round.P playingRound ->
+                    if playingRound.pick.cards |> List.all (\p -> p.id /= id) then
+                        ( { model | filledCards = model.filledCards |> Dict.insert id text }, Cmd.none )
+
+                    else
+                        ( model, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -385,9 +396,12 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                         False
                                         |> Round.R
 
+                                picked =
+                                    r.pick.cards |> List.map .id |> Set.fromList
+
                                 newHand =
                                     model.hand
-                                        |> List.filter (\c -> not (List.member c.details.id r.pick.cards))
+                                        |> List.filter (\c -> not (Set.member (Card.details c).id picked))
                                         |> (\h -> h ++ (drawn |> Maybe.withDefault []))
 
                                 role =
@@ -609,7 +623,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
             ( { model | game = { game | winner = Just winner } }, Cmd.none )
 
 
-applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
+applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.PotentiallyBlankResponse -> ( Model, Cmd msg )
 applyGameStarted wrap lobby round hand =
     let
         users =
@@ -690,13 +704,13 @@ viewRound wrap shared auth timeAnchor config users model =
                 Nothing ->
                     case game.round of
                         Round.P round ->
-                            ( round.call, Playing.view wrap auth config model round )
+                            ( round.call, Playing.view wrap auth shared config users model round )
 
                         Round.R round ->
-                            ( round.call, Revealing.view wrap auth config round )
+                            ( round.call, Revealing.view wrap auth shared config round )
 
                         Round.J round ->
-                            ( round.call, Judging.view wrap auth config round )
+                            ( round.call, Judging.view wrap auth shared config round )
 
                         Round.C round ->
                             ( round.call, Complete.view shared False config users round )

@@ -76,7 +76,7 @@ viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, Play.W
 viewPlay shared config users winner ( id, { play, likes } ) =
     let
         cards =
-            play |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view config Card.Front [] r ] ))
+            play |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view shared config Card.Front [] r ] ))
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
