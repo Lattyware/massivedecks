@@ -40,7 +40,6 @@ import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
-import MassiveDecks.Settings.Model exposing (Settings)
 import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang

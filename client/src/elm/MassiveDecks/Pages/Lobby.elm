@@ -589,7 +589,7 @@ viewLobby wrap shared configure auth timeAnchor lobby =
         , Html.div [ HtmlA.id "scroll-frame" ]
             [ lobby.game
                 |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.name lobby.config lobby.users)
-                |> Maybe.withDefault (Configure.view (ConfigureMsg >> wrap) wrap shared privileged configure auth.claims.gc lobby lobby.config)
+                |> Maybe.withDefault (Configure.view (ConfigureMsg >> wrap) wrap shared privileged configure auth.claims.gc lobby)
             ]
         ]
     ]

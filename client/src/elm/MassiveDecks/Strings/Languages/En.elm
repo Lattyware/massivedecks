@@ -641,11 +641,27 @@ translate mdString =
             , Text ". You need a deck that does to start the game."
             ]
 
+        NotEnoughCardsOfType { cardType, needed, have } ->
+            [ Text "For the number of players in the game, you need at least "
+            , Text (needed |> String.fromInt)
+            , Text " "
+            , Ref (Plural { singular = cardType, amount = Just needed })
+            , Text " but you only have "
+            , Text (have |> String.fromInt)
+            , Text "."
+            ]
+
         AddDeck ->
             [ Text "Add deck." ]
 
         RemoveDeck ->
             [ Text "Remove deck." ]
+
+        SourceNotFound { source } ->
+            [ Ref source, Text " doesn't recognise the deck you asked for. Check the details you gave are correct." ]
+
+        SourceServiceFailure { source } ->
+            [ Ref source, Text " failed to provide the deck. Please try again later or try another source." ]
 
         Cardcast ->
             [ Text "Cardcast" ]
@@ -692,6 +708,14 @@ translate mdString =
             , Text " "
             , Segment [ Text "If disabled, the game continues indefinitely." ]
             ]
+
+        UnsavedChangesWarning ->
+            [ Text "You have unsaved changes to the configuration, they must be saved first if you want them to apply "
+            , Text "to the game."
+            ]
+
+        DiscardChanges ->
+            [ Text "Discard your unsaved changes." ]
 
         NeedAtLeastOneDeck ->
             [ Text "You need a deck of cards added to start the game." ]

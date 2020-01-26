@@ -1,6 +1,5 @@
 module MassiveDecks.Game.Round.Judging exposing (view)
 
-import Dict exposing (Dict)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
@@ -15,7 +14,6 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
-import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 import Set exposing (Set)
 

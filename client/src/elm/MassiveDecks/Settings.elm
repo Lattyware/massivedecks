@@ -23,7 +23,6 @@ import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Icon as Icon
 import MassiveDecks.LocalStorage as LocalStorage
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)

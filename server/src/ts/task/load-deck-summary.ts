@@ -1,6 +1,11 @@
+import * as config from "../lobby/config";
 import * as event from "../event";
 import * as decksChanged from "../events/lobby-event/configured/decks-changed";
 import * as deckSource from "../games/cards/source";
+import {
+  SourceNotFoundError,
+  SourceServiceError
+} from "../games/cards/sources";
 import * as sources from "../games/cards/sources";
 import { Lobby } from "../lobby";
 import { Change } from "../lobby/change";
@@ -17,19 +22,23 @@ export class LoadDeckSummary extends task.TaskBase<deckSource.Summary> {
   }
 
   protected async begin(server: ServerState): Promise<deckSource.Summary> {
-    // We are intentionally ensuring the templates get cached here in advance,
-    // but don't actually need to do anything with them at this point.
-    return sources.resolver(server.cache, this.source).summaryAndTemplates()
-      .summary;
+    const loaded = await sources
+      .resolver(server.cache, this.source)
+      // We are intentionally ensuring the templates get cached here in advance,
+      // but don't actually need to do anything with them at this point.
+      .summaryAndTemplates();
+    return loaded.summary;
   }
 
   protected resolve(lobby: Lobby, work: deckSource.Summary): Change {
-    const config = lobby.config;
+    const lobbyConfig = lobby.config;
     const resolver = sources.limitedResolver(this.source);
-    const summarised = config.decks.find(deck => resolver.equals(deck.source));
+    const summarised = lobbyConfig.decks.find(deck =>
+      resolver.equals(deck.source)
+    );
     if (summarised !== undefined) {
       summarised.summary = work;
-      config.version += 1;
+      lobbyConfig.version += 1;
       return {
         lobby,
         events: [
@@ -37,7 +46,40 @@ export class LoadDeckSummary extends task.TaskBase<deckSource.Summary> {
             decksChanged.of(
               this.source,
               { change: "Load", summary: work },
-              config.version
+              lobbyConfig.version
+            )
+          )
+        ]
+      };
+    } else {
+      return {};
+    }
+  }
+
+  protected resolveError(lobby: Lobby, error: Error): Change {
+    const lobbyConfig = lobby.config;
+    let reason: config.FailReason;
+    if (error instanceof SourceNotFoundError) {
+      reason = "NotFound";
+    } else if (error instanceof SourceServiceError) {
+      reason = "SourceFailure";
+    } else {
+      throw error;
+    }
+    const decks = lobbyConfig.decks;
+    const resolver = sources.limitedResolver(this.source);
+    const failed = decks.find(deck => resolver.equals(deck.source));
+    if (failed !== undefined) {
+      lobbyConfig.decks = decks.filter(deck => deck !== failed);
+      lobbyConfig.version += 1;
+      return {
+        lobby,
+        events: [
+          event.targetAll(
+            decksChanged.of(
+              this.source,
+              { change: "Fail", reason: reason },
+              lobbyConfig.version
             )
           )
         ]

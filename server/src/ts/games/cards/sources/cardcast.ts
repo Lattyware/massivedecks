@@ -1,9 +1,11 @@
 import http, { AxiosRequestConfig } from "axios";
 import genericPool from "generic-pool";
+import HttpStatus from "http-status-codes";
 import * as card from "../card";
 import { Slot } from "../card";
 import * as decks from "../decks";
 import * as source from "../source";
+import { SourceNotFoundError, SourceServiceError } from "../sources";
 
 interface CCSummary {
   name: string;
@@ -155,59 +157,57 @@ export class Resolver extends source.Resolver {
   }
 
   public async atLeastSummary(): Promise<source.AtLeastSummary> {
-    const summary = (await Resolver.get(
+    const summary = await Resolver.get<CCSummary>(
       summaryUrl(this.source.playCode)
-    )) as CCSummary;
-    try {
-      return {
-        summary: {
-          details: {
-            name: summary.name,
-            url: humanViewUrl(this.source.playCode)
-          },
-          calls: Number.parseInt(summary.call_count, 10),
-          responses: Number.parseInt(summary.response_count, 10),
-          tag: summary.updated_at
-        }
-      };
-    } catch (error) {
-      // TODO: Error wrapper for unexpected response shape.
-      throw error;
-    }
+    );
+    return {
+      summary: {
+        details: {
+          name: summary.name,
+          url: humanViewUrl(this.source.playCode)
+        },
+        calls: Number.parseInt(summary.call_count, 10),
+        responses: Number.parseInt(summary.response_count, 10),
+        tag: summary.updated_at
+      }
+    };
   }
 
   public async atLeastTemplates(): Promise<source.AtLeastTemplates> {
-    const deck = (await Resolver.get(deckUrl(this.source.playCode))) as CCDeck;
-    try {
-      return {
-        templates: {
-          calls: new Set(deck.calls.map(c => call(this.source, c))),
-          responses: new Set(deck.responses.map(r => response(this.source, r)))
-        }
-      };
-    } catch (error) {
-      // TODO: Error wrapper for unexpected response shape.
-      throw error;
-    }
+    const deck = await Resolver.get<CCDeck>(deckUrl(this.source.playCode));
+    return {
+      templates: {
+        calls: new Set(deck.calls.map(c => call(this.source, c))),
+        responses: new Set(deck.responses.map(r => response(this.source, r)))
+      }
+    };
   }
 
-  private static async get<T>(url: string): Promise<object> {
+  private static async get<T>(url: string): Promise<T> {
     const connection = await connectionPool.acquire();
     try {
       return (await connection.get(url)).data;
     } catch (error) {
-      // TODO: Error wrapper for connection to Cardcast.
-      throw error;
+      if (error.response) {
+        const response = error.response;
+        if (response.status === HttpStatus.NOT_FOUND) {
+          throw new SourceNotFoundError();
+        } else {
+          throw new SourceServiceError();
+        }
+      } else {
+        throw error;
+      }
     } finally {
       await connectionPool.release(connection);
     }
   }
 
-  public summaryAndTemplates = (): {
-    summary: Promise<source.Summary>;
-    templates: Promise<decks.Templates>;
-  } => ({
-    summary: this.summary(),
-    templates: this.templates()
+  public summaryAndTemplates = async (): Promise<{
+    summary: source.Summary;
+    templates: decks.Templates;
+  }> => ({
+    summary: await this.summary(),
+    templates: await this.templates()
   });
 }

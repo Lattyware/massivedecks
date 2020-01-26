@@ -38,6 +38,7 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Notifications.Model as Notifications
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as DeckConfig
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -234,9 +235,9 @@ config =
         (Json.maybe (Json.field "public" Json.bool) |> Json.map (Maybe.withDefault False))
 
 
-deck : Json.Decoder Configure.Deck
+deck : Json.Decoder DeckConfig.Deck
 deck =
-    Json.map2 Configure.Deck
+    Json.map2 DeckConfig.Deck
         (Json.field "source" externalSource)
         (Json.maybe (Json.field "summary" summary))
 

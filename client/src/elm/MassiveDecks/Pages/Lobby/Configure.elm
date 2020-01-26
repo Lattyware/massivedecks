@@ -7,13 +7,10 @@ module MassiveDecks.Pages.Lobby.Configure exposing
     )
 
 import Dict exposing (Dict)
-import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
-import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components as Components
@@ -23,6 +20,8 @@ import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Actions as Actions
+import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (Deck)
 import MassiveDecks.Pages.Lobby.Configure.Messages exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Events as Events
@@ -33,18 +32,15 @@ import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
-import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.Result as Result
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
 
 init : Model
 init =
-    { deckToAdd = Source.default
-    , deckErrors = []
+    { decks = Decks.init
     , handSize = 10
     , scoreLimit = Just 25
     , tab = Decks
@@ -63,9 +59,8 @@ init =
 
 updateFromConfig : Config -> Model -> Model
 updateFromConfig config model =
-    { deckToAdd = model.deckToAdd
-    , deckErrors = model.deckErrors
-    , tab = model.tab
+    { tab = model.tab
+    , decks = Decks.updateFromConfig config.decks model.decks
     , handSize = config.rules.handSize
     , scoreLimit = config.rules.scoreLimit
     , password = config.password
@@ -79,14 +74,12 @@ updateFromConfig config model =
 update : Msg -> Model -> Config -> ( Model, Cmd msg )
 update msg model config =
     case msg of
-        AddDeck source ->
-            ( { model | deckToAdd = Source.emptyMatching source }, Actions.addDeck config.version source )
-
-        RemoveDeck source ->
-            ( model, Actions.removeDeck config.version source )
-
-        UpdateSource source ->
-            ( { model | deckToAdd = source }, Cmd.none )
+        DeckMsg deckMsg ->
+            let
+                ( decks, cmd ) =
+                    Decks.update config.version deckMsg model.decks
+            in
+            ( { model | decks = decks }, cmd )
 
         ChangeTab t ->
             ( { model | tab = t }, Cmd.none )
@@ -152,12 +145,18 @@ update msg model config =
             in
             ( { model | timeLimits = Rules.setTimeLimitByStage stage value timeLimits }, send )
 
+        RevertChanges ->
+            ( updateFromConfig config model, Cmd.none )
+
+        SaveChanges ->
+            ( model, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
 
-view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> GameCode -> Lobby -> Config -> Html msg
-view wrap wrapLobby shared canEdit model gameCode lobby config =
+view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> GameCode -> Lobby -> Html msg
+view wrap wrapLobby shared canEdit model gameCode lobby =
     Html.div [ HtmlA.class "configure" ]
         [ Wl.card []
             [ Html.div [ HtmlA.class "title" ]
@@ -168,10 +167,10 @@ view wrap wrapLobby shared canEdit model gameCode lobby config =
                     ]
                 ]
             , Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab wrap shared model.tab))
-            , tabContent wrap shared canEdit model config
+            , tabContent wrap shared canEdit model lobby.config
             ]
         , Wl.card []
-            [ startGameSegment wrap wrapLobby shared canEdit lobby config
+            [ startGameSegment wrap wrapLobby shared canEdit model lobby
             ]
         ]
 
@@ -190,7 +189,11 @@ applyChange configChange oldConfig oldConfigure =
     in
     case configChange of
         Events.DecksChanged decksChanged ->
-            applyDeckChange decksChanged oldConfig oldConfigure
+            let
+                ( c, m ) =
+                    Decks.handleEvent decksChanged oldConfig.decks oldConfigure.decks
+            in
+            ( { oldConfig | decks = c }, { oldConfigure | decks = m } )
 
         Events.HandSizeSet { size } ->
             ( { oldConfig | rules = { oldRules | handSize = size } }, { oldConfigure | handSize = size } )
@@ -228,11 +231,14 @@ applyChange configChange oldConfig oldConfigure =
 {- Private -}
 
 
-startGameSegment : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Lobby -> Config -> Html msg
-startGameSegment wrap wrapLobby shared canEdit lobby config =
+startGameSegment : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> Lobby -> Html msg
+startGameSegment wrap wrapLobby shared canEdit model lobby =
     let
+        config =
+            lobby.config
+
         startErrors =
-            startGameProblems wrap wrapLobby lobby.users config
+            startGameProblems wrap wrapLobby lobby.users model config
 
         startGameAttrs =
             if List.isEmpty startErrors && canEdit then
@@ -247,55 +253,15 @@ startGameSegment wrap wrapLobby shared canEdit lobby config =
         (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
 
 
-addSummary : Source.External -> Source.Summary -> Deck -> Deck
-addSummary target summary deckSource =
-    if deckSource.source == target then
-        Deck target (Just summary)
-
-    else
-        deckSource
-
-
-applyDeckChange : { change : Events.DeckChange, deck : Source.External } -> Config -> Model -> ( Config, Model )
-applyDeckChange event config configure =
-    let
-        change =
-            event.change
-
-        deckSource =
-            event.deck
-
-        newConfig =
-            case change of
-                Events.Add ->
-                    { config | decks = config.decks ++ [ Deck deckSource Nothing ] }
-
-                Events.Remove ->
-                    { config | decks = config.decks |> List.filter (.source >> (/=) deckSource) }
-
-                Events.Load { summary } ->
-                    { config | decks = config.decks |> List.map (addSummary deckSource summary) }
-
-                Events.Fail _ ->
-                    { config | decks = config.decks |> List.filter (.source >> (/=) deckSource) }
-
-        newConfigure =
-            case change of
-                Events.Fail { reason } ->
-                    { configure | deckErrors = { deck = deckSource, reason = reason } :: configure.deckErrors }
-
-                _ ->
-                    configure
-    in
-    ( newConfig, newConfigure )
-
-
-startGameProblems : (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Config -> List (Message msg)
-startGameProblems wrap wrapLobby users config =
+startGameProblems : (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Model -> Config -> List (Message msg)
+startGameProblems wrap wrapLobby users model config =
     let
         -- We assume decks will have calls/responses.
         summaries =
-            \getTypeAmount -> config.decks |> List.map (.summary >> Maybe.map getTypeAmount >> Maybe.withDefault 1)
+            \getTypeAmount ->
+                config.decks
+                    |> List.map (.summary >> Maybe.map getTypeAmount >> Maybe.withDefault 1)
+                    |> List.sum
 
         noDecks =
             List.length config.decks == 0
@@ -306,8 +272,20 @@ startGameProblems wrap wrapLobby users config =
         hr =
             config.rules.houseRules
 
-        exclusivelyBlankCards =
-            hr.comedyWriter |> Maybe.map .exclusive |> Maybe.withDefault False
+        numberOfResponses =
+            case hr.comedyWriter of
+                Just { exclusive, number } ->
+                    if exclusive then
+                        number
+
+                    else
+                        number + summaries .responses
+
+                Nothing ->
+                    summaries .responses
+
+        requiredResponses =
+            (users |> Dict.values |> List.filter (\u -> u.role == User.Player) |> List.length) * 3
 
         deckIssues =
             if noDecks then
@@ -315,7 +293,7 @@ startGameProblems wrap wrapLobby users config =
                     Strings.NeedAtLeastOneDeck
                     [ { description = Strings.NoDecksHint
                       , icon = Icon.plus
-                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> wrap
+                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> Decks.Add |> DeckMsg |> wrap
                       }
                     ]
                     |> Just
@@ -327,10 +305,13 @@ startGameProblems wrap wrapLobby users config =
             else
                 [ Strings.MissingCardType { cardType = Strings.Call }
                     |> Message.error
-                    |> Maybe.justIf ((summaries .calls |> List.sum) < 1)
+                    |> Maybe.justIf (summaries .calls < 1)
                 , Strings.MissingCardType { cardType = Strings.Response }
                     |> Message.error
-                    |> Maybe.justIf ((summaries .responses |> List.sum) < 1 && not exclusivelyBlankCards)
+                    |> Maybe.justIf (numberOfResponses < 1)
+                , Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredResponses, have = numberOfResponses }
+                    |> Message.error
+                    |> Maybe.justIf (numberOfResponses < requiredResponses)
                 ]
 
         playerCount =
@@ -376,8 +357,18 @@ startGameProblems wrap wrapLobby users config =
                 ]
                 |> Maybe.justIf (hr.rando /= Nothing && hr.comedyWriter /= Nothing)
             ]
+
+        configurationIssues =
+            [ Message.errorWithFix Strings.UnsavedChangesWarning
+                [ { description = Strings.DiscardChanges
+                  , icon = Icon.undo
+                  , action = RevertChanges |> wrap
+                  }
+                ]
+                |> Maybe.justIf (updateFromConfig config model /= model)
+            ]
     in
-    [ deckIssues, playerIssues, aisNoWriteGoodIssues ] |> List.concat |> List.filterMap identity
+    [ deckIssues, playerIssues, aisNoWriteGoodIssues, configurationIssues ] |> List.concat |> List.filterMap identity
 
 
 ifRemote : Cmd msg -> Target -> Cmd msg
@@ -438,6 +429,11 @@ tabContent wrap shared canEdit model config =
                     configurePrivacy
     in
     viewTab wrap shared canEdit model config
+
+
+configureDecks : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
+configureDecks wrap shared canEdit model config =
+    Decks.view (DeckMsg >> wrap) shared canEdit model.decks config.decks
 
 
 configureRules : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
@@ -691,68 +687,6 @@ comedyWriterSettings wrap shared canEdit value change =
     ]
 
 
-configureDecks : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
-configureDecks wrap shared canEdit model config =
-    let
-        hint =
-            if canEdit then
-                Components.linkButton
-                    [ "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> AddDeck |> wrap |> HtmlE.onClick
-                    ]
-                    [ Strings.NoDecksHint |> Lang.html shared ]
-
-            else
-                Html.nothing
-
-        tableContent =
-            if List.isEmpty config.decks then
-                [ Html.tr [ HtmlA.class "empty-info" ]
-                    [ Html.td [ HtmlA.colspan 3 ]
-                        [ Html.p []
-                            [ Icon.viewIcon Icon.ghost
-                            , Html.text " "
-                            , Strings.NoDecks |> Lang.html shared
-                            ]
-                        , hint
-                        ]
-                    ]
-                ]
-
-            else
-                config.decks |> List.map (deck wrap shared canEdit)
-
-        editor =
-            if canEdit then
-                [ addDeckWidget wrap shared config.decks model.deckToAdd
-                ]
-
-            else
-                []
-    in
-    Html.div [ HtmlA.id "decks-tab", HtmlA.class "compressed-terms" ]
-        (List.concat
-            [ [ Html.h3 [] [ Strings.ConfigureDecks |> Lang.html shared ]
-              , Html.table []
-                    [ Html.colgroup []
-                        [ Html.col [ HtmlA.class "deck-name" ] []
-                        , Html.col [ HtmlA.class "count" ] []
-                        , Html.col [ HtmlA.class "count" ] []
-                        ]
-                    , Html.thead []
-                        [ Html.tr []
-                            [ Html.th [ HtmlA.class "deck-name", HtmlA.scope "col" ] [ Strings.Deck |> Lang.html shared ]
-                            , Html.th [ HtmlA.scope "col" ] [ Strings.Call |> Lang.html shared ]
-                            , Html.th [ HtmlA.scope "col" ] [ Strings.Response |> Lang.html shared ]
-                            ]
-                        ]
-                    , Html.tbody [] tableContent
-                    ]
-              ]
-            , editor
-            ]
-        )
-
-
 configurePrivacy : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg
 configurePrivacy wrap shared canEdit model config =
     let
@@ -764,120 +698,6 @@ configurePrivacy wrap shared canEdit model config =
         , viewOpt (publicGameOption wrap)
         , viewOpt (gamePasswordOption wrap model)
         ]
-
-
-addDeckWidget : (Msg -> msg) -> Shared -> List Deck -> Source.External -> Html msg
-addDeckWidget wrap shared existing deckToAdd =
-    let
-        submit =
-            deckToAdd |> submitDeckAction wrap existing
-    in
-    Html.form
-        [ submit |> Result.map HtmlE.onSubmit |> Result.withDefault HtmlA.nothing ]
-        [ Form.section
-            shared
-            "add-deck"
-            (Html.div [ HtmlA.class "multipart" ]
-                (List.concat
-                    [ Source.generalEditor shared deckToAdd (UpdateSource >> wrap)
-                    , [ Components.floatingActionButton
-                            [ HtmlA.type_ "submit"
-                            , Result.isError submit |> HtmlA.disabled
-                            , Strings.AddDeck |> Lang.title shared
-                            ]
-                            Icon.plus
-                      ]
-                    ]
-                )
-            )
-            (submit |> Result.error |> Maybe.withDefault [])
-        ]
-
-
-submitDeckAction : (Msg -> msg) -> List Deck -> Source.External -> Result (List (Message msg)) msg
-submitDeckAction wrap existing deckToAdd =
-    let
-        potentialProblems =
-            if List.any (.source >> Source.equals deckToAdd) existing then
-                [ Strings.DeckAlreadyAdded |> Message.error ]
-
-            else
-                Source.problems deckToAdd
-    in
-    if List.isEmpty potentialProblems then
-        deckToAdd |> AddDeck |> wrap |> Result.Ok
-
-    else
-        potentialProblems |> Result.Err
-
-
-deck : (Msg -> msg) -> Shared -> Bool -> Deck -> Html msg
-deck wrap shared canEdit givenDeck =
-    let
-        source =
-            givenDeck.source
-
-        row =
-            case givenDeck.summary of
-                Just summary ->
-                    [ Html.td [] [ name wrap shared canEdit source False summary.details ]
-                    , Html.td [] [ summary.calls |> String.fromInt |> Html.text ]
-                    , Html.td [] [ summary.responses |> String.fromInt |> Html.text ]
-                    ]
-
-                Nothing ->
-                    [ Html.td [ HtmlA.colspan 3 ]
-                        [ source |> Source.Ex |> Source.defaultDetails shared |> name wrap shared canEdit source True
-                        ]
-                    ]
-    in
-    Html.tr [ HtmlA.class "deck-row" ] row
-
-
-name : (Msg -> msg) -> Shared -> Bool -> Source.External -> Bool -> Source.Details -> Html msg
-name wrap shared canEdit source loading details =
-    let
-        removeButton =
-            if canEdit then
-                [ Components.iconButton
-                    [ source |> RemoveDeck |> wrap |> HtmlE.onClick
-                    , Strings.RemoveDeck |> Lang.title shared
-                    , HtmlA.class "remove-button"
-                    ]
-                    Icon.minus
-                ]
-
-            else
-                []
-
-        ( maybeId, maybeTooltip ) =
-            source |> Source.Ex |> Source.tooltip |> Maybe.decompose
-
-        attrs =
-            maybeId |> Maybe.map (\id -> [ HtmlA.id id ]) |> Maybe.withDefault []
-
-        nameText =
-            Html.text details.name
-
-        tooltip =
-            maybeTooltip |> Maybe.map (\t -> [ t ]) |> Maybe.withDefault []
-
-        linkOrText =
-            [ Html.span attrs [ Maybe.transformWith nameText makeLink details.url ] ]
-
-        spinner =
-            if loading then
-                [ Icon.viewStyled [ Icon.spin ] Icon.circleNotch ]
-
-            else
-                []
-    in
-    Html.td [ HtmlA.class "name" ] (List.concat [ linkOrText, removeButton, spinner, tooltip ])
-
-
-makeLink : Html msg -> String -> Html msg
-makeLink text url =
-    Html.blankA [ HtmlA.href url ] [ text ]
 
 
 configureTimeLimits : (Msg -> msg) -> Shared -> Bool -> Model -> Config -> Html msg

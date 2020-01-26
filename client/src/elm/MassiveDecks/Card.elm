@@ -14,7 +14,7 @@ import MassiveDecks.Card.Model exposing (..)
 import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Configure
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 

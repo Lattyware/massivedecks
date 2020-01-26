@@ -45,11 +45,8 @@ export abstract class Cache {
     getCachedAlways: (
       source: deckSource.Resolver
     ) => Promise<Aged<Always> | undefined>,
-    cacheAlways: (source: deckSource.Resolver, value: Always) => Promise<void>,
-    cacheSometimes: (
-      source: deckSource.Resolver,
-      value: Sometimes
-    ) => Promise<void>,
+    cacheAlways: (source: deckSource.Resolver, value: Always) => void,
+    cacheSometimes: (source: deckSource.Resolver, value: Sometimes) => void,
     extract: (result: Result) => [Always, Sometimes | undefined],
     miss: () => Promise<Result>
   ): Promise<Always> {
@@ -58,11 +55,9 @@ export abstract class Cache {
       return cached.cached;
     } else {
       const [always, sometimes] = extract(await miss());
-      await cacheAlways(source, always);
+      cacheAlways(source, always);
       if (sometimes !== undefined) {
-        cacheSometimes(source, sometimes).catch(error =>
-          logging.logException("Error while caching:", error)
-        );
+        cacheSometimes(source, sometimes);
       }
       return always;
     }
@@ -95,9 +90,9 @@ export abstract class Cache {
   ): Promise<deckSource.Summary> {
     return this.get(
       source,
-      s => this.getCachedSummary(s),
-      (s, summary) => this.cacheSummary(s, summary),
-      (s, templates: decks.Templates) => this.cacheTemplates(s, templates),
+      this.getCachedSummary.bind(this),
+      this.cacheSummaryBackground.bind(this),
+      this.cacheTemplatesBackground.bind(this),
       result => [result.summary, result.templates],
       miss
     );
@@ -117,9 +112,9 @@ export abstract class Cache {
   ): Promise<decks.Templates> {
     return this.get(
       source,
-      s => this.getCachedTemplates(s),
-      (s, templates) => this.cacheTemplates(s, templates),
-      (s, summary: deckSource.Summary) => this.cacheSummary(s, summary),
+      this.getCachedTemplates.bind(this),
+      this.cacheTemplatesBackground.bind(this),
+      this.cacheSummaryBackground.bind(this),
       result => [result.templates, result.summary],
       miss
     );
@@ -140,6 +135,13 @@ export abstract class Cache {
     summary: deckSource.Summary
   ): Promise<void>;
 
+  public cacheSummaryBackground(
+    source: deckSource.Resolver,
+    summary: deckSource.Summary
+  ): void {
+    this.cacheSummary(source, summary).catch(Cache.logError);
+  }
+
   /**
    * Get the given deck templates from the cache.
    */
@@ -154,4 +156,15 @@ export abstract class Cache {
     source: deckSource.Resolver,
     templates: decks.Templates
   ): Promise<void>;
+
+  public cacheTemplatesBackground(
+    source: deckSource.Resolver,
+    templates: decks.Templates
+  ): void {
+    this.cacheTemplates(source, templates).catch(Cache.logError);
+  }
+
+  private static logError = (error: Error): void => {
+    logging.logException("Error while caching.", error);
+  };
 }

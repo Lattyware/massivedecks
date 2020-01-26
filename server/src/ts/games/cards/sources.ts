@@ -15,6 +15,17 @@ function uncachedResolver(source: deckSource.External): deckSource.Resolver {
   }
 }
 
+export class SourceNotFoundError extends Error {
+  public constructor() {
+    super("The given deck was not found at the source.");
+  }
+}
+export class SourceServiceError extends Error {
+  public constructor() {
+    super("The given source was not available.");
+  }
+}
+
 /**
  * Get the limited resolver for the given source.
  */

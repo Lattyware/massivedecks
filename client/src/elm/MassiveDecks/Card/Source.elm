@@ -7,13 +7,13 @@ module MassiveDecks.Card.Source exposing
     , equals
     , externalAndEquals
     , generalEditor
+    , loadFailureReasonMessage
     , logo
     , name
     , problems
     , tooltip
     )
 
-import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -24,9 +24,8 @@ import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Card.Source.Player as Player
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.User as User exposing (User)
 import Weightless as Wl
 import Weightless.Attributes as WlA
 
@@ -78,9 +77,9 @@ emptyMatching source =
 
 {-| The name of a source.
 -}
-name : Shared -> Source -> String
-name shared source =
-    (methods source |> .name) shared
+name : Source -> MdString
+name source =
+    () |> (methods source |> .name)
 
 
 {-| Any problems, if they exist, for a source. If none, it is valid.
@@ -152,6 +151,19 @@ generalEditor shared currentValue update =
 editor : Shared -> External -> (External -> msg) -> Html msg
 editor shared source =
     shared |> (externalMethods source |> .editor)
+
+
+{-| Get a user message explaining the reason a source failed to load.
+The first argument is the name of the source that failed to load.
+-}
+loadFailureReasonMessage : MdString -> LoadFailureReason -> MdString
+loadFailureReasonMessage source loadFailureReason =
+    case loadFailureReason of
+        SourceFailure ->
+            Strings.SourceServiceFailure { source = source }
+
+        NotFound ->
+            Strings.SourceNotFound { source = source }
 
 
 

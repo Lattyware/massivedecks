@@ -8,7 +8,7 @@ import MassiveDecks.Strings.Languages as Lang
 
 methods : Source.Methods msg
 methods =
-    { name = \shared -> Lang.string shared Strings.APlayer
+    { name = \() -> Strings.APlayer
     , logo = \() -> Nothing
     , defaultDetails =
         \shared ->

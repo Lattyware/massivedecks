@@ -33,12 +33,14 @@ sourceMapSupport.install();
 
 process.on("uncaughtException", function(error) {
   logging.logException("Uncaught exception: ", error);
-  process.exit(1);
 });
 
 process.on("unhandledRejection", function(reason, promise) {
-  logging.logger.error(`Unhandled rejection at ${promise}: ${reason}`);
-  process.exit(1);
+  if (reason instanceof Error) {
+    logging.logException(`Unhandled rejection for ${promise}.`, reason);
+  } else {
+    logging.logger.error(`Unhandled rejection at ${promise}: ${reason}`);
+  }
 });
 
 function getConfigFilePath(): string {

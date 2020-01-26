@@ -8,12 +8,11 @@ module MassiveDecks.Card.Source.Methods exposing
     , Methods
     )
 
-import Dict exposing (Dict)
 import Html exposing (Html)
 import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.User as User exposing (User)
+import MassiveDecks.Strings exposing (MdString)
 
 
 {-| A collection of methods applied to a specific source.
@@ -53,7 +52,7 @@ The methods are as follows:
 
 -}
 type alias GeneralMethods msg =
-    { name : Shared -> String
+    { name : () -> MdString
     , logo : () -> Maybe (Html msg)
     }
 

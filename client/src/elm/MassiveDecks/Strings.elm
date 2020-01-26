@@ -183,8 +183,11 @@ type MdString
     | NoDecksHint -- A hint explaining that the user needs to add at least one deck, and offering the CaH deck.
     | WaitForDecks -- A hint that the user has to wait for decks to load before starting the game.
     | MissingCardType { cardType : MdString } -- An error explaining that the user needs a deck with the given type of card (call/response).
+    | NotEnoughCardsOfType { cardType : MdString, needed : Int, have : Int } -- An error explaining that the user needs to add more cards of the given type for the number of players.
     | AddDeck -- A description of the action of adding a deck to the game configuration.
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
+    | SourceNotFound { source : MdString } -- An explanation that the deck didn't load because it doesn't exist on the source service.
+    | SourceServiceFailure { source : MdString } -- An explanation that the deck didn't load because the source service is currently failing.
     | Cardcast -- The name of the Cardcast service.
     | CardcastPlayCode -- A term referring to the play code that identifies a deck on Cardcast.
     | CardcastEmptyPlayCode -- A description of the problem of the entered Cardcast play code being empty.
@@ -198,6 +201,8 @@ type MdString
     | HandSizeDescription -- The description of the above rule.
     | ScoreLimit -- The name of the rule defining how many points a player has to accumulate to win the game.
     | ScoreLimitDescription -- The description of the above rule.
+    | UnsavedChangesWarning -- A warning to the user that they have unsaved changes to the configuration.
+    | DiscardChanges -- The action of discarding unsaved changes to the configuration.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
     | RandoCantWrite -- A description of the problem that the AI players can't use blank cards.

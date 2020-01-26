@@ -43,9 +43,9 @@ generalMethods =
 {- Private -}
 
 
-name : Shared -> String
-name shared =
-    Strings.Cardcast |> Lang.string shared
+name : () -> MdString
+name () =
+    Strings.Cardcast
 
 
 empty : () -> Source.External
@@ -83,7 +83,7 @@ editor (PlayCode pc) shared update =
 
 details : PlayCode -> Shared -> Source.Details
 details (PlayCode pc) shared =
-    { name = name shared ++ " " ++ pc
+    { name = (() |> name |> Lang.string shared) ++ " " ++ pc
     , url = Just (Url.crossOrigin "https://www.cardcastgame.com" [ "browse", "deck", pc ] [])
     }
 

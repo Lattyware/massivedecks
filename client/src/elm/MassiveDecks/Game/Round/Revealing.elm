@@ -1,6 +1,5 @@
 module MassiveDecks.Game.Round.Revealing exposing (view)
 
-import Dict exposing (Dict)
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play exposing (Play)
@@ -14,7 +13,6 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
-import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 
 

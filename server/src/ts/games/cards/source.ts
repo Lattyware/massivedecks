@@ -124,10 +124,10 @@ export abstract class Resolver implements LimitedResolver {
    * Get both the summary and templates efficiently. This will issue two
    * separate requests if necessary, but only one if possible.
    */
-  public abstract summaryAndTemplates(): {
-    summary: Promise<Summary>;
-    templates: Promise<decks.Templates>;
-  };
+  public abstract summaryAndTemplates(): Promise<{
+    summary: Summary;
+    templates: decks.Templates;
+  }>;
 }
 
 /**
@@ -177,72 +177,44 @@ export class CachedResolver extends Resolver {
 
   public async atLeastSummary(): Promise<AtLeastSummary> {
     return {
-      summary: await this.cache.getSummary(this.resolver, () =>
-        this.resolver.atLeastSummary()
+      summary: await this.cache.getSummary(
+        this.resolver,
+        async () => await this.resolver.atLeastSummary()
       )
     };
   }
 
   public async atLeastTemplates(): Promise<AtLeastTemplates> {
     return {
-      templates: await this.cache.getTemplates(this.resolver, () =>
-        this.resolver.atLeastTemplates()
+      templates: await this.cache.getTemplates(
+        this.resolver,
+        async () => await this.resolver.atLeastTemplates()
       )
     };
   }
 
-  public summaryAndTemplates(): {
-    summary: Promise<Summary>;
-    templates: Promise<decks.Templates>;
-  } {
-    const promise = this.internalSummaryAndTemplates();
-    return {
-      summary: promise.then(async value => await value.summary),
-      templates: promise.then(async value => await value.templates)
-    };
-  }
-
-  private async internalSummaryAndTemplates(): Promise<{
-    summary: Promise<Summary>;
-    templates: Promise<decks.Templates>;
+  public async summaryAndTemplates(): Promise<{
+    summary: Summary;
+    templates: decks.Templates;
   }> {
-    return this.internalSummaryAndTemplatesContent(
-      await this.cache.getCachedSummary(this.resolver),
-      await this.cache.getCachedTemplates(this.resolver)
-    );
-  }
-
-  private internalSummaryAndTemplatesContent(
-    cachedSummary?: cache.Aged<Summary>,
-    cachedTemplates?: cache.Aged<decks.Templates>
-  ): {
-    summary: Promise<Summary>;
-    templates: Promise<decks.Templates>;
-  } {
+    const cachedSummary = await this.cache.getCachedSummary(this.resolver);
+    const cachedTemplates = await this.cache.getCachedTemplates(this.resolver);
     if (cachedSummary === undefined && cachedTemplates === undefined) {
-      const result = this.resolver.summaryAndTemplates();
-      result.summary
-        .then(async s => await this.cache.cacheSummary(this.resolver, s))
-        .catch(CachedResolver.logError);
-      result.templates
-        .then(async t => await this.cache.cacheTemplates(this.resolver, t))
-        .catch(CachedResolver.logError);
+      const result = await this.resolver.summaryAndTemplates();
+      this.cache.cacheSummaryBackground(this.resolver, result.summary);
+      this.cache.cacheTemplatesBackground(this.resolver, result.templates);
       return result;
     } else {
       return {
         summary:
           cachedSummary !== undefined
-            ? Promise.resolve(cachedSummary.cached)
-            : this.summary(),
+            ? cachedSummary.cached
+            : await this.summary(),
         templates:
           cachedTemplates !== undefined
-            ? Promise.resolve(cachedTemplates.cached)
-            : this.templates()
+            ? cachedTemplates.cached
+            : await this.templates()
       };
     }
-  }
-
-  private static logError(error: Error): void {
-    logging.logException("Error while caching:", error);
   }
 }

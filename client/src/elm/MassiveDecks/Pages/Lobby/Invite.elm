@@ -8,7 +8,6 @@ import Json.Decode
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Messages as Lobby exposing (Msg(..))

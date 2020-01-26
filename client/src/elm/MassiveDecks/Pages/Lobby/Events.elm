@@ -1,6 +1,7 @@
 module MassiveDecks.Pages.Lobby.Events exposing
     ( ConfigChanged(..)
     , DeckChange(..)
+    , DeckEvent
     , Event(..)
     , GameEvent(..)
     , PresenceState(..)
@@ -46,7 +47,7 @@ type PresenceState
 
 
 type ConfigChanged
-    = DecksChanged { change : DeckChange, deck : Source.External }
+    = DecksChanged DeckEvent
     | HandSizeSet { size : Int }
     | ScoreLimitSet { limit : Maybe Int }
     | PasswordSet { password : Maybe String }
@@ -54,6 +55,10 @@ type ConfigChanged
     | PublicSet { public : Bool }
     | ChangeTimeLimitForStage { stage : Round.Stage, timeLimit : Maybe Float }
     | ChangeTimeLimitMode { mode : Rules.TimeLimitMode }
+
+
+type alias DeckEvent =
+    { change : DeckChange, deck : Source.External }
 
 
 type DeckChange

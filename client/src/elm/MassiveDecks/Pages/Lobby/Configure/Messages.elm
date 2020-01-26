@@ -1,15 +1,13 @@
 module MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..), Target(..))
 
-import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
 
 
 type Msg
-    = AddDeck Source.External
-    | RemoveDeck Source.External
-    | UpdateSource Source.External
+    = DeckMsg Decks.Msg
     | ChangeTab Tab
     | StartGame
     | HandSizeChange Target Int
@@ -20,6 +18,8 @@ type Msg
     | TogglePasswordVisibility
     | TimeLimitChangeMode Target Rules.TimeLimitMode
     | TimeLimitChange Target Round.Stage (Maybe Float)
+    | RevertChanges
+    | SaveChanges
     | NoOp
 
 

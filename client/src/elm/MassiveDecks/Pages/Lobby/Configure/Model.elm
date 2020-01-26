@@ -1,14 +1,12 @@
 module MassiveDecks.Pages.Lobby.Configure.Model exposing
     ( Config
-    , Deck
-    , DeckError
     , Model
     , Tab(..)
     , fake
     )
 
-import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Rules as Rules exposing (Rules)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
 
 
 type Tab
@@ -18,15 +16,8 @@ type Tab
     | Privacy
 
 
-type alias DeckError =
-    { reason : Source.LoadFailureReason
-    , deck : Source.External
-    }
-
-
 type alias Model =
-    { deckToAdd : Source.External
-    , deckErrors : List DeckError
+    { decks : Decks.Model
     , handSize : Int
     , scoreLimit : Maybe Int
     , password : Maybe String
@@ -38,17 +29,11 @@ type alias Model =
     }
 
 
-{-| A deck in the configuration, either loaded or not.
--}
-type alias Deck =
-    { source : Source.External, summary : Maybe Source.Summary }
-
-
 {-| Configuration for a lobby.
 -}
 type alias Config =
     { rules : Rules
-    , decks : List Deck
+    , decks : Decks.Config
     , password : Maybe String
     , version : String
     , public : Bool
