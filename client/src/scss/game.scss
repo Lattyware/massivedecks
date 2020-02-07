@@ -17,26 +17,12 @@
 
   min-height: 100%;
 
-  // A button that allows the user to perform the main action in the game for them at this moment.
   .action {
     position: fixed;
     bottom: 1em;
     right: 1rem;
 
     z-index: 999;
-
-    --button-fab-size: 4rem;
-    font-size: 1.5rem;
-
-    // A style for actions that the game is waiting on - high contrast to grab attention.
-    &.important {
-      --button-bg: #{$secondary};
-      --button-color: #{$on-secondary};
-      --button-bg-hover: #{$secondary-light};
-      --button-color-hover: #{$on-secondary-light};
-      --button-bg-active: #{$secondary-dark};
-      --button-color-acitve: #{$on-secondary-dark};
-    }
   }
 }
 

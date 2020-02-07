@@ -7,6 +7,7 @@ import MassiveDecks.Card.Model exposing (..)
 import MassiveDecks.Card.Parts as Parts exposing (Parts)
 import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Model exposing (Shared)
+import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages as Lang
@@ -50,7 +51,7 @@ viewInternal shared config side attributes viewParts call =
     Card.view
         "call"
         shared
-        config.decks
+        (config.decks |> Decks.getSummary)
         side
         attributes
         (viewBody viewParts call)

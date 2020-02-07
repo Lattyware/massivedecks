@@ -9,12 +9,11 @@ module MassiveDecks.Pages.Lobby.Model exposing
     , NotificationMessage(..)
     , State(..)
     , Token
-    , TokenDecodingError(..)
     )
 
 import Dict exposing (Dict)
-import Json.Decode as Json
 import MassiveDecks.Animated exposing (Animated)
+import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
@@ -31,6 +30,7 @@ type Change
     = Stay Model
     | AuthError GameCode MdError.AuthenticationError
     | LeftGame GameCode User.LeaveReason
+    | ConfigError Error
 
 
 {-| Data for the lobby page.
@@ -86,14 +86,6 @@ type alias Claims =
     { gc : GameCode
     , uid : User.Id
     }
-
-
-{-| An error while trying to decode a token.
--}
-type TokenDecodingError
-    = InvalidTokenStructure Token
-    | TokenJsonError Json.Error
-    | TokenBase64Error String
 
 
 {-| A transient notification for the user.

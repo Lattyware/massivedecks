@@ -24,14 +24,14 @@ import MassiveDecks.Util.Maybe as Maybe
 view :
     String
     -> Shared
-    -> List Configure.Deck
+    -> Configure.GetSummary
     -> Side
     -> List (Html.Attribute msg)
     -> ViewBody msg
     -> ViewInstructions msg
     -> Source
     -> Html msg
-view cardTypeClass shared decks visibleSide attributes viewBody viewInstructions source =
+view cardTypeClass shared getSummary visibleSide attributes viewBody viewInstructions source =
     Html.div
         (HtmlA.classList
             [ ( "game-card", True )
@@ -40,7 +40,7 @@ view cardTypeClass shared decks visibleSide attributes viewBody viewInstructions
             ]
             :: attributes
         )
-        [ Html.div [ HtmlA.class "aspect" ] [ front shared decks viewBody viewInstructions source, back ] ]
+        [ Html.div [ HtmlA.class "aspect" ] [ front shared getSummary viewBody viewInstructions source, back ] ]
 
 
 {-| Render an unknown card to HTML, face-down.
@@ -112,27 +112,25 @@ back =
         ]
 
 
-front : Shared -> List Configure.Deck -> ViewBody msg -> ViewInstructions msg -> Source -> Html msg
-front shared decks (ViewBody viewBody) viewInstructions source =
+front : Shared -> Configure.GetSummary -> ViewBody msg -> ViewInstructions msg -> Source -> Html msg
+front shared getSummary (ViewBody viewBody) viewInstructions source =
     cardSide Front
         [ Html.div [ HtmlA.class "content" ] (viewBody ())
-        , info shared decks viewInstructions source
+        , info shared getSummary viewInstructions source
         ]
 
 
-info : Shared -> List Configure.Deck -> ViewInstructions msg -> Source -> Html msg
-info shared decks (ViewInstructions viewInstructions) source =
-    Html.div [ HtmlA.class "info" ] ((source |> viewSource shared decks) :: viewInstructions ())
+info : Shared -> Configure.GetSummary -> ViewInstructions msg -> Source -> Html msg
+info shared getSummary (ViewInstructions viewInstructions) source =
+    Html.div [ HtmlA.class "info" ] ((source |> viewSource shared getSummary) :: viewInstructions ())
 
 
-viewSource : Shared -> List Configure.Deck -> Source -> Html msg
-viewSource shared decks s =
+viewSource : Shared -> Configure.GetSummary -> Source -> Html msg
+viewSource shared getSummary s =
     let
         sourceDetails =
-            decks
-                |> List.filter (\d -> Source.externalAndEquals d.source s)
-                |> List.head
-                |> Maybe.andThen .summary
+            s
+                |> getSummary
                 |> Maybe.map .details
                 |> Maybe.withDefault (Source.defaultDetails shared s)
     in

@@ -7,6 +7,7 @@ import MassiveDecks.Models.MdError exposing (MdError)
 import MassiveDecks.Pages.Lobby.Configure.Messages as Configure
 import MassiveDecks.Pages.Lobby.Events exposing (Event)
 import MassiveDecks.Pages.Lobby.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Route exposing (Section)
 import MassiveDecks.User as User
 
 
@@ -24,5 +25,6 @@ type Msg
     | SetTimeAnchor Time.Anchor
     | TryCast Auth
     | Copy String
+    | ChangeSection Section
     | EndGame
     | NoOp

@@ -1,6 +1,5 @@
 import * as houseRules from "./rules/houseRules";
 import { HouseRules } from "./rules/houseRules";
-import * as rando from "./rules/rando";
 
 /** The rules for a standard game.
  */
@@ -126,19 +125,3 @@ export const censor = (rules: Rules): Public => ({
   ...rules,
   houseRules: houseRules.censor(rules.houseRules)
 });
-
-export interface ChangeBase<Name extends string, HouseRule> {
-  houseRule: Name;
-  settings?: HouseRule;
-}
-
-export type ChangePackingHeat = ChangeBase<"PackingHeat", PackingHeat>;
-export type ChangeRando = ChangeBase<"Rando", rando.Public>;
-export type ChangeReboot = ChangeBase<"Reboot", Reboot>;
-export type ChangeComedyWriter = ChangeBase<"ComedyWriter", ComedyWriter>;
-
-export type Change =
-  | ChangePackingHeat
-  | ChangeRando
-  | ChangeReboot
-  | ChangeComedyWriter;

@@ -789,11 +789,17 @@ timer timeAnchor model =
     left |> Maybe.map timerInternal |> Maybe.withDefault { bar = Nothing, countdown = Nothing }
 
 
-timerInternal : Float -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
-timerInternal left =
+timerInternal : Int -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
+timerInternal leftInt =
     let
+        last =
+            showProgressBarForLast |> toFloat
+
+        left =
+            leftInt |> toFloat
+
         progressBar =
-            (1 - (showProgressBarForLast - left) / showProgressBarForLast)
+            (1 - (last - left) / last)
                 |> timerProgressBar
     in
     { bar = progressBar
@@ -810,24 +816,24 @@ timerProgressBar proportion =
         Nothing
 
 
-showProgressBarForLast : Float
+showProgressBarForLast : Int
 showProgressBarForLast =
     20000
 
 
-timeLeft : Time.Anchor -> Time -> Time -> Float -> Float
+timeLeft : Time.Anchor -> Time -> Time -> Int -> Int
 timeLeft anchor startedAt currentTime limit =
     let
         limitInMillis =
             limit * 1000
 
         timePassed =
-            Time.millisecondsSince anchor startedAt currentTime |> toFloat
+            Time.millisecondsSince anchor startedAt currentTime
     in
     limitInMillis - timePassed
 
 
-roundTimeDetails : Game -> ( Time, Maybe Float, Bool )
+roundTimeDetails : Game -> ( Time, Maybe Int, Bool )
 roundTimeDetails game =
     let
         timeLimits =

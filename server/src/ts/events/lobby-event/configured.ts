@@ -1,27 +1,17 @@
-import { DecksChanged } from "./configured/decks-changed";
-import { HandSizeSet } from "./configured/hand-size-set";
-import { HouseRuleChanged } from "./configured/house-rule-changed";
-import { PasswordSet } from "./configured/password-set";
-import { PublicSet } from "./configured/public-set";
-import { ScoreLimitSet } from "./configured/score-limit-set";
-import { TimeLimitsChanged } from "./configured/time-limits-changed";
+import jsonPatch from "rfc6902";
 
 /**
- * An event for when connection state for a user changes.
+ * A change was made to the configuration for the lobby.
  */
-export type Configured =
-  | PasswordSet
-  | HandSizeSet
-  | ScoreLimitSet
-  | DecksChanged
-  | HouseRuleChanged
-  | PublicSet
-  | TimeLimitsChanged;
-
-export interface Base {
-  event: string;
+export interface Configured {
+  event: "Configured";
   /**
-   * The version the config is at once this change is applied.
+   * The change to make to the configuration.
    */
-  version: string;
+  change: jsonPatch.Patch;
 }
+
+export const of = (change: jsonPatch.Patch): Configured => ({
+  event: "Configured",
+  change
+});

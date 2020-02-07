@@ -30,6 +30,19 @@
       margin-right: 0.5em;
     }
   }
+
+  .actions {
+    display: flex;
+    flex-direction: column-reverse;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    margin: 1em;
+  }
+}
+
+.indent {
+  margin-left: 1em;
 }
 
 #decks-tab table {
@@ -132,4 +145,44 @@
       margin: 0 1.5em;
     }
   }
+}
+
+#merge-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  background-color: transparentize($secondary-background, 0.6);
+
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .conflict {
+    display: flex;
+    flex-direction: column;
+
+    .resolution {
+      display: flex;
+      flex-direction: row;
+
+      .resolve {
+        flex-basis: 0;
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+.locally-changed {
+  background-color: transparentize($primary-light, 0.9);
+}
+
+.validation-error {
+  background-color: transparentize($error, 0.9);
 }

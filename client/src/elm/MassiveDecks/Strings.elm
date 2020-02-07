@@ -72,6 +72,10 @@ type MdString
     | HouseRuleRandoCardrissianDescription -- A description of the "Rando Cardrissian" house rule.
     | HouseRuleRandoCardrissianNumber -- A name of the setting for the number of bots added to the game.
     | HouseRuleRandoCardrissianNumberDescription -- A description of the setting for the number of bots added to the game.
+    | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
+    | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
+    | SetValue { value : Int } -- A description of the action of resolving a problem by setting the value to the given one.
+    | CantBeEmpty -- An error when a configuration value must be non-empty.
       -- Settings
     | SettingsTitle -- The title for the settings panel.
     | LanguageSetting -- The label for the "Language" setting.
@@ -167,6 +171,10 @@ type MdString
     | BecomePlayerDescription -- A description of becoming an active player of the game, rather than a spectator.
     | EndGame -- A short term for the action of ending the game early.
     | EndGameDescription -- A description of the action of ending the game early.
+    | ViewGame -- A short term for the action of viewing the in-progress game.
+    | ViewGameDescription -- A description of the action of viewing the in-progress game.
+    | ViewConfgiuration -- A short term for the action of viewing the configuration for the game.
+    | ViewConfgiurationDescription -- A description of the action of viewing the configuration for the game.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
     | Promote -- A short term for the action of allowing a user to edit the game configuration.
     | Demote -- A short term for the action of no longer allowing a user to edit the game configuration.
@@ -202,7 +210,8 @@ type MdString
     | ScoreLimit -- The name of the rule defining how many points a player has to accumulate to win the game.
     | ScoreLimitDescription -- The description of the above rule.
     | UnsavedChangesWarning -- A warning to the user that they have unsaved changes to the configuration.
-    | DiscardChanges -- The action of discarding unsaved changes to the configuration.
+    | SaveChanges -- The action of saving changes to the configuration.
+    | RevertChanges -- The action of discarding unsaved changes to the configuration.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
     | RandoCantWrite -- A description of the problem that the AI players can't use blank cards.
@@ -226,6 +235,10 @@ type MdString
     | RevealingTimeLimitDescription -- A description of the setting for the time limit on the revealing stage.
     | JudgingTimeLimitDescription -- A description of the setting for the time limit on the judging stage.
     | CompleteTimeLimitDescription -- A description of the setting for the time limit on the complete stage.
+    | Conflict -- A title for a section showing conflicting configuration changes.
+    | ConflictDescription -- An explanation of what a conflict is.
+    | YourChanges -- A title for a section showing changes tot he configuration by the user.
+    | TheirChanges -- A title for a section showing changes to the configuration by someone else.
       -- Game
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
@@ -271,6 +284,8 @@ type MdString
     | ServerDownError -- An error where the game server wasn't available.
     | BadStatusError -- An error where the server gave a response we didn't expect.
     | BadPayloadError -- An error where the server gave a response we didn't understand.
+    | PatchError -- An error where the patch from the server can't be applied.
+    | VersionMismatch -- An error where we are out of sync with the config change.
     | CastError -- An error where we the cast device couldn't connect to the game.
     | ActionExecutionError -- A short title for an error where the user can't do the thing they asked to do.
     | IncorrectPlayerRoleError { role : MdString, expected : MdString } -- An error where the player tries to do something when they don't have the right role (czar/player).
@@ -279,6 +294,7 @@ type MdString
     | ConfigEditConflictError -- An error where the user tries to make a change to the configuration, but someone else changed it first.
     | UnprivilegedError -- An error where the user doesn't have the privileges to perform the action they are trying to do.
     | GameNotStartedError -- An error where the game hasn't started and the user tries to do something that needs to be done in a game.
+    | InvalidActionError { reason : String } -- An error where the client has sent an error the server doesn't accept.
     | AuthenticationError -- A short title for an error where the user can't authenticate.
     | IncorrectIssuerError -- An error where the user tries to authenticate using credentials that are out of date.
     | InvalidAuthenticationError -- An error where the user tries to authenticate using credentials that are corrupted.

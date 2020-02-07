@@ -1,14 +1,15 @@
-import * as config from "../lobby/config";
+import jsonPatch from "rfc6902";
 import * as event from "../event";
-import * as decksChanged from "../events/lobby-event/configured/decks-changed";
+import * as configured from "../events/lobby-event/configured";
 import * as deckSource from "../games/cards/source";
+import * as sources from "../games/cards/sources";
 import {
   SourceNotFoundError,
   SourceServiceError
 } from "../games/cards/sources";
-import * as sources from "../games/cards/sources";
 import { Lobby } from "../lobby";
 import { Change } from "../lobby/change";
+import * as config from "../lobby/config";
 import { GameCode } from "../lobby/game-code";
 import { ServerState } from "../server-state";
 import * as task from "../task";
@@ -30,34 +31,40 @@ export class LoadDeckSummary extends task.TaskBase<deckSource.Summary> {
     return loaded.summary;
   }
 
-  protected resolve(lobby: Lobby, work: deckSource.Summary): Change {
+  private resolveInternal(
+    lobby: Lobby,
+    modify: (source: config.ConfiguredSource) => void
+  ): Change {
     const lobbyConfig = lobby.config;
+    const oldConfig = JSON.parse(JSON.stringify(config.censor(lobby.config)));
+    const decks = lobbyConfig.decks;
     const resolver = sources.limitedResolver(this.source);
-    const summarised = lobbyConfig.decks.find(deck =>
-      resolver.equals(deck.source)
-    );
-    if (summarised !== undefined) {
-      summarised.summary = work;
+    const target = decks.find(deck => resolver.equals(deck.source));
+    if (target !== undefined) {
+      modify(target);
       lobbyConfig.version += 1;
+      const patch = jsonPatch.createPatch(
+        oldConfig,
+        config.censor(lobbyConfig)
+      );
       return {
         lobby,
-        events: [
-          event.targetAll(
-            decksChanged.of(
-              this.source,
-              { change: "Load", summary: work },
-              lobbyConfig.version
-            )
-          )
-        ]
+        events: [event.targetAll(configured.of(patch))]
       };
     } else {
       return {};
     }
   }
 
+  protected resolve(lobby: Lobby, work: deckSource.Summary): Change {
+    return this.resolveInternal(lobby, summarised => {
+      if (!config.isFailed(summarised)) {
+        summarised.summary = { ...work, tag: undefined };
+      }
+    });
+  }
+
   protected resolveError(lobby: Lobby, error: Error): Change {
-    const lobbyConfig = lobby.config;
     let reason: config.FailReason;
     if (error instanceof SourceNotFoundError) {
       reason = "NotFound";
@@ -66,36 +73,19 @@ export class LoadDeckSummary extends task.TaskBase<deckSource.Summary> {
     } else {
       throw error;
     }
-    const decks = lobbyConfig.decks;
-    const resolver = sources.limitedResolver(this.source);
-    const failed = decks.find(deck => resolver.equals(deck.source));
-    if (failed !== undefined) {
-      lobbyConfig.decks = decks.filter(deck => deck !== failed);
-      lobbyConfig.version += 1;
-      return {
-        lobby,
-        events: [
-          event.targetAll(
-            decksChanged.of(
-              this.source,
-              { change: "Fail", reason: reason },
-              lobbyConfig.version
-            )
-          )
-        ]
-      };
-    } else {
-      return {};
-    }
+    return this.resolveInternal(lobby, failed => {
+      if (!failed.hasOwnProperty("summary")) {
+        (failed as config.FailedSource).failure = reason;
+      }
+    });
   }
 
   public static *discover(
     gameCode: GameCode,
     lobby: Lobby
   ): Iterable<LoadDeckSummary> {
-    const config = lobby.config;
-    for (const deck of config.decks) {
-      if (deck.summary === undefined) {
+    for (const deck of lobby.config.decks) {
+      if (!config.isFailed(deck) && deck.summary === undefined) {
         yield new LoadDeckSummary(gameCode, deck.source);
       }
     }

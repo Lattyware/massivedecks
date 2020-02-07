@@ -1,6 +1,5 @@
 module MassiveDecks.Notifications exposing
-    ( default
-    , init
+    ( init
     , notify
     , requireNotVisible
     , setEnabled
@@ -25,15 +24,6 @@ init : Model
 init =
     { permission = NotificationsUnsupported
     , visibility = VisibilityUnsupported
-    }
-
-
-{-| The default settings for the notification system.
--}
-default : Settings
-default =
-    { enabled = False
-    , requireNotVisible = True
     }
 
 

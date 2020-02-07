@@ -1,4 +1,12 @@
-module MassiveDecks.Notifications.Model exposing (Message, Model, Msg, Permission(..), Settings, Visibility(..))
+module MassiveDecks.Notifications.Model exposing
+    ( Message
+    , Model
+    , Msg
+    , Permission(..)
+    , Settings
+    , Visibility(..)
+    , default
+    )
 
 import MassiveDecks.Strings exposing (MdString)
 
@@ -41,6 +49,15 @@ type alias Model =
 type alias Settings =
     { enabled : Bool
     , requireNotVisible : Bool
+    }
+
+
+{-| The default settings for the notification system.
+-}
+default : Settings
+default =
+    { enabled = False
+    , requireNotVisible = True
     }
 
 

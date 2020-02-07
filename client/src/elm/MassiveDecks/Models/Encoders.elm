@@ -1,12 +1,17 @@
 module MassiveDecks.Models.Encoders exposing
     ( checkAlive
-    , houseRuleChange
+    , comedyWriter
+    , config
+    , deckOrError
     , language
     , lobbyCreation
     , lobbyToken
+    , packingHeat
     , playedCard
     , playerPresence
     , privilege
+    , rando
+    , reboot
     , remoteControlCommand
     , roundId
     , settings
@@ -24,8 +29,10 @@ import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
-import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Game.Rules as Rules exposing (Rules)
 import MassiveDecks.Notifications.Model as Notifications
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config, Tab(..))
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Start.Model as Start
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
@@ -33,6 +40,140 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
+
+
+config : Config -> Json.Value
+config c =
+    Json.object
+        (List.concat
+            [ [ ( "rules", c.rules |> rules )
+              , ( "decks", c.decks |> decks )
+              , ( "version", c.version |> Json.string )
+              , ( "public", c.privacy.public |> Json.bool )
+              ]
+            , c.privacy.password |> Maybe.map (\p -> [ ( "password", p |> Json.string ) ]) |> Maybe.withDefault []
+            ]
+        )
+
+
+rules : Rules -> Json.Value
+rules r =
+    Json.object
+        (List.concat
+            [ [ ( "handSize", r.handSize |> Json.int )
+              , ( "houseRules", r.houseRules |> houseRules )
+              , ( "timeLimits", r.timeLimits |> timeLimits )
+              ]
+            , r.scoreLimit |> Maybe.map (\sl -> [ ( "scoreLimit", sl |> Json.int ) ]) |> Maybe.withDefault []
+            ]
+        )
+
+
+timeLimits : Rules.TimeLimits -> Json.Value
+timeLimits t =
+    Json.object
+        (List.filterMap identity
+            [ Just ( "mode", timeLimitMode t.mode )
+            , t.playing |> Maybe.map (\p -> ( "playing", p |> Json.int ))
+            , t.revealing |> Maybe.map (\r -> ( "revealing", r |> Json.int ))
+            , t.judging |> Maybe.map (\j -> ( "judging", j |> Json.int ))
+            , Just ( "complete", t.complete |> Json.int )
+            ]
+        )
+
+
+houseRules : Rules.HouseRules -> Json.Value
+houseRules h =
+    Json.object
+        (List.filterMap identity
+            [ h.rando |> Maybe.map (\r -> ( "rando", rando r ))
+            , h.packingHeat |> Maybe.map (\p -> ( "packingHeat", packingHeat p ))
+            , h.reboot |> Maybe.map (\r -> ( "reboot", reboot r ))
+            , h.comedyWriter |> Maybe.map (\c -> ( "comedyWriter", comedyWriter c ))
+            ]
+        )
+
+
+rando : Rules.Rando -> Json.Value
+rando { number } =
+    Json.object [ ( "number", number |> Json.int ) ]
+
+
+reboot : Rules.Reboot -> Json.Value
+reboot { cost } =
+    Json.object [ ( "cost", cost |> Json.int ) ]
+
+
+packingHeat : Rules.PackingHeat -> Json.Value
+packingHeat _ =
+    Json.object []
+
+
+comedyWriter : Rules.ComedyWriter -> Json.Value
+comedyWriter { number, exclusive } =
+    Json.object [ ( "number", number |> Json.int ), ( "exclusive", exclusive |> Json.bool ) ]
+
+
+decks : Decks.Config -> Json.Value
+decks d =
+    d |> Json.list deckOrError
+
+
+deckOrError : Decks.DeckOrError -> Json.Value
+deckOrError de =
+    case de of
+        Decks.D d ->
+            deck d
+
+        Decks.E e ->
+            deckError e
+
+
+deck : Decks.Deck -> Json.Value
+deck d =
+    Json.object
+        (List.filterMap identity
+            [ Just ( "source", source d.source )
+            , d.summary |> Maybe.map (\s -> ( "summary", summary s ))
+            ]
+        )
+
+
+summary : Source.Summary -> Json.Value
+summary s =
+    Json.object
+        [ ( "details", details s.details )
+        , ( "calls", Json.int s.calls )
+        , ( "responses", Json.int s.responses )
+        ]
+
+
+details : Source.Details -> Json.Value
+details d =
+    Json.object
+        (List.filterMap identity
+            [ Just ( "name", Json.string d.name )
+            , d.url |> Maybe.map (\u -> ( "url", Json.string u ))
+            ]
+        )
+
+
+deckError : Decks.Error -> Json.Value
+deckError e =
+    Json.object
+        [ ( "source", source e.source )
+        , ( "reason", failureReason e.reason )
+        ]
+
+
+failureReason : Source.LoadFailureReason -> Json.Value
+failureReason reason =
+    case reason of
+        Source.SourceFailure ->
+            Json.string "SourceFailure"
+
+        Source.NotFound ->
+            Json.string "NotFound"
 
 
 playedCard : Card.Played -> Json.Value
@@ -189,27 +330,3 @@ userRegistration r =
         (( "name", r.name |> Json.string )
             :: (r.password |> Maybe.map (\p -> [ ( "password", p |> Json.string ) ]) |> Maybe.withDefault [])
         )
-
-
-houseRuleChange : Rules.HouseRuleChange -> Json.Value
-houseRuleChange change =
-    let
-        ( name, maybeSettings ) =
-            case change of
-                Rules.RandoChange maybe ->
-                    ( "Rando", maybe |> Maybe.map (\rando -> Json.object [ ( "number", Json.int rando.number ) ]) )
-
-                Rules.PackingHeatChange maybe ->
-                    ( "PackingHeat", maybe |> Maybe.map (\_ -> Json.object []) )
-
-                Rules.RebootChange maybe ->
-                    ( "Reboot", maybe |> Maybe.map (\reboot -> Json.object [ ( "cost", Json.int reboot.cost ) ]) )
-
-                Rules.ComedyWriterChange maybe ->
-                    ( "ComedyWriter", maybe |> Maybe.map (\cw -> Json.object [ ( "number", Json.int cw.number ), ( "exclusive", Json.bool cw.exclusive ) ]) )
-
-        ruleSettings =
-            maybeSettings |> Maybe.map (\s -> [ ( "settings", s ) ]) |> Maybe.withDefault []
-    in
-    Json.object
-        (( "houseRule", name |> Json.string ) :: ruleSettings)

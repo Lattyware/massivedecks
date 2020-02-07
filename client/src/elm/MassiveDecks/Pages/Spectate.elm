@@ -39,19 +39,19 @@ changeRoute : Route -> Model -> ( Model, Cmd Global.Msg )
 changeRoute r model =
     let
         ( lobby, cmd ) =
-            Lobby.changeRoute r.lobby model.lobby
+            Lobby.changeRoute { gameCode = r.gameCode, section = Nothing } model.lobby
     in
     ( { model | lobby = lobby }, cmd )
 
 
 route : Model -> Route
 route model =
-    { lobby = model.lobby.route }
+    { gameCode = model.lobby.route.gameCode }
 
 
 init : Shared -> Route -> Maybe Auth -> Route.Fork ( Model, Cmd Global.Msg )
 init shared initialRoute auth =
-    case Lobby.init shared initialRoute.lobby auth of
+    case Lobby.init shared { gameCode = initialRoute.gameCode, section = Nothing } auth of
         Route.Continue ( lobby, cmd ) ->
             Route.Continue ( { lobby = lobby, advertise = True }, cmd )
 
@@ -63,7 +63,7 @@ initWithAuth : Auth -> ( Model, Cmd Global.Msg )
 initWithAuth auth =
     let
         ( lobby, cmd ) =
-            Lobby.initWithAuth { gameCode = auth.claims.gc } auth
+            Lobby.initWithAuth { gameCode = auth.claims.gc, section = Nothing } auth
     in
     ( { lobby = lobby, advertise = True }, cmd )
 

@@ -1,12 +1,24 @@
 module MassiveDecks.Pages.Lobby.Configure.Model exposing
     ( Config
+    , Id(..)
     , Model
+    , Source(..)
     , Tab(..)
     , fake
     )
 
 import MassiveDecks.Game.Rules as Rules exposing (Rules)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
+import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as Privacy
+import MassiveDecks.Pages.Lobby.Configure.Rules.Model as Rules
+import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model as TimeLimits
+
+
+{-| Where a config has come from.
+-}
+type Source
+    = Local
+    | Remote
 
 
 type Tab
@@ -16,16 +28,22 @@ type Tab
     | Privacy
 
 
+type Id
+    = All
+    | DecksId Decks.Id
+    | PrivacyId Privacy.Id
+    | TimeLimitsId TimeLimits.Id
+    | RulesId Rules.Id
+
+
 type alias Model =
-    { decks : Decks.Model
-    , handSize : Int
-    , scoreLimit : Maybe Int
-    , password : Maybe String
-    , passwordVisible : Bool
+    { localConfig : Config
     , tab : Tab
-    , houseRules : Rules.HouseRules
-    , public : Bool
-    , timeLimits : Rules.TimeLimits
+    , decks : Decks.Model
+    , privacy : Privacy.Model
+    , timeLimits : TimeLimits.Model
+    , rules : Rules.Model
+    , conflicts : List Id
     }
 
 
@@ -34,9 +52,8 @@ type alias Model =
 type alias Config =
     { rules : Rules
     , decks : Decks.Config
-    , password : Maybe String
+    , privacy : Privacy.Config
     , version : String
-    , public : Bool
     }
 
 
@@ -62,7 +79,9 @@ fake =
             }
         }
     , decks = []
-    , password = Nothing
+    , privacy =
+        { password = Nothing
+        , public = False
+        }
     , version = ""
-    , public = False
     }

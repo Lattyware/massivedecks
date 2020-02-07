@@ -31,6 +31,7 @@ type ActionExecutionError
     | ConfigEditConflict { version : String, expected : String }
     | Unprivileged
     | GameNotStarted
+    | InvalidAction { reason : String }
 
 
 type AuthenticationError
@@ -94,6 +95,9 @@ describe error =
 
                 GameNotStarted ->
                     Strings.GameNotStartedError
+
+                InvalidAction { reason } ->
+                    Strings.InvalidActionError { reason = reason }
 
         Authentication ae ->
             case ae of

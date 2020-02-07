@@ -1,5 +1,6 @@
 module MassiveDecks.Pages.Lobby.Route exposing
     ( Route
+    , Section(..)
     , partsAndFragment
     , route
     )
@@ -12,17 +13,37 @@ import MassiveDecks.Util.Maybe as Maybe
 -}
 type alias Route =
     { gameCode : GameCode
+    , section : Maybe Section
     }
+
+
+type Section
+    = Configure
+    | Play
 
 
 route : List String -> Maybe String -> Maybe Route
 route parts _ =
     case parts of
-        [ name, gameCode ] ->
+        _ :: _ :: "spectate" :: _ ->
+            Nothing
+
+        name :: gameCode :: sectionName ->
+            let
+                section =
+                    if sectionName == [ configName ] then
+                        Just Configure
+
+                    else if sectionName == [ playName ] then
+                        Just Play
+
+                    else
+                        Nothing
+            in
             gameCode
                 |> Maybe.justIf (name == lobbiesName)
                 |> Maybe.andThen GameCode.fromString
-                |> Maybe.map (\gc -> { gameCode = gc })
+                |> Maybe.map (\gc -> { gameCode = gc, section = section })
 
         _ ->
             Nothing
@@ -32,12 +53,39 @@ route parts _ =
 -}
 partsAndFragment : Route -> ( List String, Maybe String )
 partsAndFragment r =
-    ( [ lobbiesName, r.gameCode |> GameCode.toString ], Nothing )
+    ( List.filterMap identity
+        [ lobbiesName |> Just
+        , r.gameCode |> GameCode.toString |> Just
+        , r.section |> Maybe.map sectionToString
+        ]
+    , Nothing
+    )
 
 
 
 {- Private -}
 
 
+lobbiesName : String
 lobbiesName =
     "games"
+
+
+configName : String
+configName =
+    "configure"
+
+
+playName : String
+playName =
+    "play"
+
+
+sectionToString : Section -> String
+sectionToString section =
+    case section of
+        Configure ->
+            configName
+
+        Play ->
+            playName

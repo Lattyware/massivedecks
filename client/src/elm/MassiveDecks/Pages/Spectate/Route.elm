@@ -4,13 +4,14 @@ module MassiveDecks.Pages.Spectate.Route exposing
     , route
     )
 
+import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route as Lobby
 
 
 {-| A route for a lobby page.
 -}
 type alias Route =
-    { lobby : Lobby.Route
+    { gameCode : GameCode
     }
 
 
@@ -27,7 +28,7 @@ route parts fragment =
             parts |> List.drop oneLess |> List.head
     in
     if last == Just spectateName then
-        Lobby.route allButLast fragment |> Maybe.map (\lobby -> { lobby = lobby })
+        Lobby.route allButLast fragment |> Maybe.map (\lobby -> { gameCode = lobby.gameCode })
 
     else
         Nothing
@@ -39,7 +40,7 @@ partsAndFragment : Route -> ( List String, Maybe String )
 partsAndFragment r =
     let
         ( parts, fragment ) =
-            Lobby.partsAndFragment r.lobby
+            Lobby.partsAndFragment { gameCode = r.gameCode, section = Nothing }
     in
     ( parts ++ [ spectateName ], fragment )
 

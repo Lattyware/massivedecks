@@ -9,7 +9,6 @@ import Json.Decode as Json
 import MassiveDecks.Error.Model exposing (..)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
-import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
@@ -137,13 +136,13 @@ render error =
 
         Token tokenError ->
             case tokenError of
-                Lobby.InvalidTokenStructure token ->
+                InvalidTokenStructure token ->
                     Model Strings.BadPayloadError ("Token didn't have expected structure: " ++ token |> Just)
 
-                Lobby.TokenBase64Error msg ->
+                TokenBase64Error msg ->
                     Model Strings.BadPayloadError ("Base 64 decode error on token: " ++ msg |> Just)
 
-                Lobby.TokenJsonError jsonError ->
+                TokenJsonError jsonError ->
                     let
                         err =
                             jsonError |> Json |> render
@@ -152,3 +151,11 @@ render error =
 
         Json jsonError ->
             Model Strings.BadPayloadError (jsonError |> Json.errorToString |> Just)
+
+        Config configError ->
+            case configError of
+                PatchError reason ->
+                    Model Strings.PatchError (Just reason)
+
+                VersionMismatch ->
+                    Model Strings.VersionMismatch (Just "")

@@ -1,12 +1,25 @@
 module MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing
     ( Config
     , Deck
+    , DeckOrError(..)
     , Error
+    , GetSummary
+    , Id(..)
     , Model
     , Msg(..)
     )
 
-import MassiveDecks.Card.Source.Model as Source
+import MassiveDecks.Card.Source.Model as Source exposing (Source)
+
+
+type Id
+    = All
+
+
+{-| Summaries from the deck list.
+-}
+type alias GetSummary =
+    Source -> Maybe Source.Summary
 
 
 {-| A deck in the configuration, either loaded or not.
@@ -18,23 +31,27 @@ type alias Deck =
 {-| An error encountered while loading a deck.
 -}
 type alias Error =
-    { reason : Source.LoadFailureReason
-    , deck : Source.External
-    }
+    { source : Source.External, reason : Source.LoadFailureReason }
+
+
+{-| A deck or an error.
+-}
+type DeckOrError
+    = D Deck
+    | E Error
 
 
 {-| The model for the editor for decks.
 -}
 type alias Model =
     { toAdd : Source.External
-    , errors : List Error
     }
 
 
 {-| The configuration value for decks.
 -}
 type alias Config =
-    List Deck
+    List DeckOrError
 
 
 {-| Messages from user interaction.
@@ -42,4 +59,4 @@ type alias Config =
 type Msg
     = Update Source.External
     | Add Source.External
-    | Remove Source.External
+    | Remove Int

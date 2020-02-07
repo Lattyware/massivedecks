@@ -1,8 +1,5 @@
 module MassiveDecks.Pages.Lobby.Actions exposing
-    ( addDeck
-    , changeHouseRule
-    , changeTimeLimitForStage
-    , changeTimeLimitMode
+    ( configure
     , endGame
     , enforceTimeLimit
     , judge
@@ -10,70 +7,34 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , leave
     , like
     , redraw
-    , removeDeck
     , reveal
-    , setHandSize
-    , setPassword
     , setPlayerAway
     , setPresence
     , setPrivilege
-    , setPublic
-    , setScoreLimit
     , startGame
     , submit
     , takeBack
     )
 
 import Json.Encode as Json
+import Json.Patch exposing (Patch)
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
-import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.User as User
 
 
-addDeck : String -> Source.External -> Cmd msg
-addDeck =
-    changeDecks "Add"
-
-
-removeDeck : String -> Source.External -> Cmd msg
-removeDeck =
-    changeDecks "Remove"
+configure : Json.Patch.Patch -> Cmd msg
+configure patch =
+    action "Configure" [ ( "change", patch |> Json.Patch.encoder ) ]
 
 
 startGame : Cmd msg
 startGame =
     action "StartGame" []
-
-
-setScoreLimit : Maybe Int -> String -> Cmd msg
-setScoreLimit value =
-    configAction "SetScoreLimit" (value |> Maybe.map (\v -> [ ( "scoreLimit", v |> Json.int ) ]) |> Maybe.withDefault [])
-
-
-setHandSize : Int -> String -> Cmd msg
-setHandSize value =
-    configAction "SetHandSize" [ ( "handSize", value |> Json.int ) ]
-
-
-setPassword : Maybe String -> String -> Cmd msg
-setPassword value =
-    configAction "SetPassword" (value |> Maybe.map (\v -> [ ( "password", v |> Json.string ) ]) |> Maybe.withDefault [])
-
-
-changeHouseRule : Rules.HouseRuleChange -> String -> Cmd msg
-changeHouseRule value =
-    configAction "ChangeHouseRule" [ ( "change", value |> Encoders.houseRuleChange ) ]
-
-
-setPublic : Bool -> String -> Cmd msg
-setPublic value =
-    configAction "SetPublic" [ ( "public", value |> Json.bool ) ]
 
 
 submit : List Card.Played -> Cmd msg
@@ -144,37 +105,8 @@ enforceTimeLimit round stage =
         ]
 
 
-changeTimeLimitMode : Rules.TimeLimitMode -> String -> Cmd msg
-changeTimeLimitMode mode version =
-    configAction "ChangeTimeLimit" [ ( "mode", Encoders.timeLimitMode mode ) ] version
-
-
-changeTimeLimitForStage : Round.Stage -> Maybe Float -> String -> Cmd msg
-changeTimeLimitForStage stage timeLimit version =
-    let
-        timeLimitField =
-            case timeLimit of
-                Just duration ->
-                    [ ( "timeLimit", duration |> Json.float ) ]
-
-                Nothing ->
-                    []
-    in
-    configAction "ChangeTimeLimit" (( "stage", Encoders.stage stage ) :: timeLimitField) version
-
-
 
 {- Private -}
-
-
-changeDecks : String -> String -> Source.External -> Cmd msg
-changeDecks change version source =
-    configAction "ChangeDecks" [ ( "deck", source |> Encoders.source ), ( "change", change |> Json.string ) ] version
-
-
-configAction : String -> List ( String, Json.Value ) -> String -> Cmd msg
-configAction name data version =
-    action name (( "if", version |> Json.string ) :: data)
 
 
 action : String -> List ( String, Json.Value ) -> Cmd msg

@@ -1,11 +1,12 @@
 module MassiveDecks.Error.Model exposing
-    ( Error(..)
+    ( ConfigError(..)
+    , Error(..)
     , HttpError(..)
     , Overlay
+    , TokenDecodingError(..)
     )
 
 import Json.Decode as Json
-import MassiveDecks.Pages.Lobby.Model as Lobby
 
 
 {-| A generic error for the application as a whole.
@@ -13,7 +14,15 @@ import MassiveDecks.Pages.Lobby.Model as Lobby
 type Error
     = Http HttpError
     | Json Json.Error
-    | Token Lobby.TokenDecodingError
+    | Token TokenDecodingError
+    | Config ConfigError
+
+
+{-| Errors in configuration.
+-}
+type ConfigError
+    = PatchError String
+    | VersionMismatch
 
 
 {-| An error from an HTTP request.
@@ -29,3 +38,11 @@ type HttpError
 -}
 type alias Overlay =
     { errors : List Error }
+
+
+{-| An error while trying to decode a token.
+-}
+type TokenDecodingError
+    = InvalidTokenStructure String
+    | TokenJsonError Json.Error
+    | TokenBase64Error String

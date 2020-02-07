@@ -2,6 +2,7 @@ module MassiveDecks.Pages.Lobby.Token exposing (decode)
 
 import Base64
 import Json.Decode as Json
+import MassiveDecks.Error.Model exposing (TokenDecodingError(..))
 import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Pages.Lobby.Model exposing (..)
 

@@ -276,6 +276,18 @@ translate mdString =
         HouseRuleRandoCardrissianNumberDescription ->
             [ Text "The number of AI players that will be in the game." ]
 
+        MustBeMoreThanOrEqualValidationError { min } ->
+            [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
+
+        MustBeLessThanOrEqualValidationError { max } ->
+            [ Text "The value must be at most  ", Text (String.fromInt max), Text "." ]
+
+        SetValue { value } ->
+            [ Text "Set the value to ", Text (String.fromInt value), Text "." ]
+
+        CantBeEmpty ->
+            [ Text "This can't be empty." ]
+
         SettingsTitle ->
             [ Text "Settings" ]
 
@@ -591,6 +603,18 @@ translate mdString =
         EndGameDescription ->
             [ Text "End the game now." ]
 
+        ViewGame ->
+            [ Text "Game View" ]
+
+        ViewGameDescription ->
+            [ Text "Switch to view the game." ]
+
+        ViewConfgiuration ->
+            [ Text "Configuration View" ]
+
+        ViewConfgiurationDescription ->
+            [ Text "Switch to view the game's configuration." ]
+
         KickUser ->
             [ Text "Kick" ]
 
@@ -714,7 +738,10 @@ translate mdString =
             , Text "to the game."
             ]
 
-        DiscardChanges ->
+        SaveChanges ->
+            [ Text "Save your changes." ]
+
+        RevertChanges ->
             [ Text "Discard your unsaved changes." ]
 
         NeedAtLeastOneDeck ->
@@ -794,6 +821,20 @@ translate mdString =
 
         CompleteTimeLimitDescription ->
             [ Text "How much time (in seconds) to wait after one round ends before starting the next one." ]
+
+        Conflict ->
+            [ Text "Conflict" ]
+
+        ConflictDescription ->
+            [ Text "Someone else made changes to this while you were also making changes. "
+            , Text "Please choose if you want to keep your changes or theirs."
+            ]
+
+        YourChanges ->
+            [ Text "Your Changes" ]
+
+        TheirChanges ->
+            [ Text "Their Changes" ]
 
         -- Game
         SubmitPlay ->
@@ -934,6 +975,12 @@ translate mdString =
         BadPayloadError ->
             [ Text "The server gave a response we didn’t understand." ]
 
+        PatchError ->
+            [ Text "The server gave a patch we couldn't apply." ]
+
+        VersionMismatch ->
+            [ Text "The server gave a config change for a different version than we expected." ]
+
         CastError ->
             [ Text "Sorry, something went wrong trying to connect to the game." ]
 
@@ -957,6 +1004,9 @@ translate mdString =
 
         GameNotStartedError ->
             [ Text "The game needs to started to do that." ]
+
+        InvalidActionError { reason } ->
+            [ Text "The server didn't understand a request from the client. Details: ", Text reason ]
 
         AuthenticationError ->
             [ Text "You can't join that game." ]

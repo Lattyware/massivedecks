@@ -150,7 +150,7 @@ const sendHelper = (
 ) => {
   try {
     const userSockets = sockets.get(gameCode, user);
-    logging.logger.info("WebSocket send:", {
+    logging.logger.debug("WebSocket send:", {
       user: user,
       event: serializedEvent
     });

@@ -25,6 +25,7 @@ import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error as Error
+import MassiveDecks.Error.Model as Error
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (..)
@@ -475,7 +476,7 @@ passwordField shared error password =
 
 
 rejoinSection : Shared -> Model -> List (Html Global.Msg)
-rejoinSection shared model =
+rejoinSection shared _ =
     let
         lobbies =
             shared.settings.settings.tokens |> Dict.values |> List.map Token.decode
@@ -491,12 +492,12 @@ rejoinSection shared model =
         ]
 
 
-rejoinLobby : Shared -> Result Lobby.TokenDecodingError Lobby.Auth -> Maybe (Html Global.Msg)
+rejoinLobby : Shared -> Result Error.TokenDecodingError Lobby.Auth -> Maybe (Html Global.Msg)
 rejoinLobby shared result =
     case result of
         Ok auth ->
             Html.li []
-                [ Html.a [ Route.Lobby { gameCode = auth.claims.gc } |> Route.href ]
+                [ Html.a [ Route.Lobby { gameCode = auth.claims.gc, section = Nothing } |> Route.href ]
                     [ Strings.RejoinGame { code = GameCode.toString auth.claims.gc } |> Lang.html shared
                     ]
                 ]

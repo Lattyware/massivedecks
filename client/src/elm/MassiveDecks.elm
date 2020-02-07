@@ -175,7 +175,7 @@ update msg model =
                     model.shared
 
                 ( ( lobby, lobbyCmd ), ( settings, settingsCmd ) ) =
-                    case Lobby.init shared { gameCode = auth.claims.gc } (Just auth) of
+                    case Lobby.init shared { gameCode = auth.claims.gc, section = Nothing } (Just auth) of
                         Route.Continue continue ->
                             ( continue |> Util.modelLift Pages.Lobby |> changePage shared
                             , Settings.onJoinLobby auth name shared.settings
@@ -311,7 +311,7 @@ view model =
                     Start.view model.shared m
 
                 Pages.Lobby m ->
-                    Lobby.view LobbyMsg SettingsMsg ChangePage model.shared m
+                    Lobby.view LobbyMsg SettingsMsg model.shared m
 
                 Pages.Spectate m ->
                     Spectate.view SpectateMsg ChangePage model.shared m
@@ -402,6 +402,15 @@ handleLobbyMsg model lobbyMsg lobbyModel =
             in
             ( { model | page = Pages.Start page, shared = { shared | settings = settings } }
             , Cmd.batch [ lobbyCmd, settingsCmd, changePageCmd, urlCommand ]
+            )
+
+        Lobby.ConfigError error ->
+            let
+                overlay =
+                    model.errorOverlay
+            in
+            ( { model | errorOverlay = { overlay | errors = overlay.errors ++ [ error ] } }
+            , Cmd.none
             )
 
 

@@ -8,6 +8,7 @@ module MassiveDecks.Pages.Lobby exposing
     , view
     )
 
+import Browser.Navigation as Navigation
 import Dict exposing (Dict)
 import FontAwesome.Attributes as Icon
 import FontAwesome.Brands as Icon
@@ -18,6 +19,7 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
+import Json.Patch as Json
 import MassiveDecks.Animated as Animated exposing (Animated)
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Cast.Client as Cast
@@ -142,19 +144,24 @@ update wrap shared msg model =
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
                             applySync wrap model state hand play partialTimeAnchor
 
-                        Events.Configured configured ->
-                            ( Stay
-                                (model.lobby
-                                    |> Maybe.map (\l -> applyConfigured configured l model)
-                                    |> Maybe.withDefault model
-                                )
+                        Events.Configured { change } ->
+                            ( applyConfigured change model
                             , Cmd.none
                             )
 
                         Events.GameStarted { round, hand } ->
-                            Util.modelLift
-                                (\g -> Stay { model | lobby = Just { lobby | game = Just g } })
-                                (Game.applyGameStarted (GameMsg >> wrap) lobby round hand)
+                            let
+                                r =
+                                    model.route
+
+                                applyGame g =
+                                    Stay
+                                        { model
+                                            | lobby = Just { lobby | game = Just g }
+                                            , route = { r | section = Just Play }
+                                        }
+                            in
+                            Util.modelLift applyGame (Game.applyGameStarted (GameMsg >> wrap) lobby round hand)
 
                         Events.Game gameEvent ->
                             lobby.game
@@ -239,13 +246,17 @@ update wrap shared msg model =
                 MdError.Authentication reason ->
                     ( AuthError model.auth.claims.gc reason, Cmd.none )
 
-                MdError.ActionExecution (MdError.ConfigEditConflict { version, expected }) ->
+                MdError.ActionExecution (MdError.ConfigEditConflict _) ->
+                    let
+                        configure =
+                            model.configure
+                    in
                     addNotification wrap
                         (Error error)
                         { model
                             | configure =
                                 model.lobby
-                                    |> Maybe.map (\l -> Configure.updateFromConfig l.config model.configure)
+                                    |> Maybe.map (\l -> { configure | localConfig = l.config })
                                     |> Maybe.withDefault model.configure
                         }
 
@@ -293,12 +304,22 @@ update wrap shared msg model =
         Copy id ->
             ( Stay model, Ports.copyText id )
 
+        ChangeSection s ->
+            let
+                r =
+                    route model
+
+                newRoute =
+                    { r | section = Just s }
+            in
+            ( Stay { model | route = newRoute }, newRoute |> Route.Lobby |> Route.url |> Navigation.replaceUrl shared.key )
+
         NoOp ->
             ( Stay model, Cmd.none )
 
 
-view : (Msg -> msg) -> (Settings.Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
-view wrap wrapSettings changePage shared model =
+view : (Msg -> msg) -> (Settings.Msg -> msg) -> Shared -> Model -> List (Html msg)
+view wrap wrapSettings shared model =
     let
         usersShown =
             shared.settings.settings.openUserList
@@ -363,7 +384,7 @@ view wrap wrapSettings changePage shared model =
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
             :: (model.lobby
-                    |> Maybe.map2 (viewLobby wrap shared model.configure model.auth) model.timeAnchor
+                    |> Maybe.map2 (viewLobby wrap shared model.route model.configure model.auth) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
                             [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
@@ -374,7 +395,7 @@ view wrap wrapSettings changePage shared model =
         wrap
         shared
         model.auth.claims.gc
-        (model.lobby |> Maybe.andThen (.config >> .password))
+        (model.lobby |> Maybe.andThen (.config >> .privacy >> .password))
         model.inviteDialogOpen
     ]
 
@@ -409,9 +430,18 @@ lobbyMenu wrap shared r user player game =
             setPresenceMenuItem wrap player
 
         userLobbyMenuItems =
-            [ Menu.link Icon.tv Strings.Spectate Strings.SpectateDescription (r |> Spectate.Route |> Route.Spectate |> Route.url |> Just)
-            , setPresence
+            [ setPresence
             , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGameDescription (Leave |> wrap |> Just)
+            ]
+
+        viewMenuItems =
+            [ Menu.link Icon.tv Strings.Spectate Strings.SpectateDescription (r.gameCode |> Spectate.Route |> Route.Spectate |> Route.url |> Just)
+            , case section r game of
+                Configure ->
+                    Menu.button Icon.play Strings.ViewGame Strings.ViewGameDescription (ChangeSection Play |> wrap |> Maybe.justIf (game /= Nothing))
+
+                Play ->
+                    Menu.button Icon.cog Strings.ViewConfgiuration Strings.ViewConfgiurationDescription (ChangeSection Configure |> wrap |> Just)
             ]
 
         privilegedLobbyMenuItems =
@@ -426,6 +456,7 @@ lobbyMenu wrap shared r user player game =
         menuItems =
             [ lobbyMenuItems |> Just
             , userLobbyMenuItems |> Just
+            , viewMenuItems |> Just
             , privilegedLobbyMenuItems |> Maybe.justIf ((user |> Maybe.map .privilege) == Just User.Privileged)
             , mdMenuItems |> Just
             ]
@@ -440,16 +471,23 @@ lobbyMenu wrap shared r user player game =
         ]
 
 
-applyConfigured : { change : Events.ConfigChanged, version : String } -> Lobby -> Model -> Model
-applyConfigured { change, version } oldLobby oldModel =
-    let
-        ( config, configure ) =
-            Configure.applyChange change oldLobby.config oldModel.configure
+applyConfigured : Json.Patch -> Model -> Change
+applyConfigured change oldModel =
+    case oldModel.lobby of
+        Just oldLobby ->
+            let
+                updatedConfig =
+                    Configure.applyChange change oldLobby.config oldModel.configure
+            in
+            case updatedConfig of
+                Ok ( config, model ) ->
+                    { oldModel | lobby = Just { oldLobby | config = config }, configure = model } |> Stay
 
-        lobby =
-            Just { oldLobby | config = { config | version = version } }
-    in
-    { oldModel | lobby = lobby, configure = configure }
+                Err error ->
+                    error |> ConfigError
+
+        Nothing ->
+            Stay oldModel
 
 
 notificationDuration : Int
@@ -480,11 +518,14 @@ applySync wrap model state hand pick partialTimeAnchor =
 
         timeCmd =
             Time.anchor (SetTimeAnchor >> wrap) partialTimeAnchor
+
+        configure =
+            model.configure
     in
     ( Stay
         { model
             | lobby = Just { state | game = game }
-            , configure = Configure.updateFromConfig state.config model.configure
+            , configure = { configure | localConfig = state.config }
         }
     , Cmd.batch [ timeCmd, gameCmd ]
     )
@@ -575,24 +616,45 @@ username shared users id =
         |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
 
 
-viewLobby : (Msg -> msg) -> Shared -> Configure.Model -> Auth -> Time.Anchor -> Lobby -> List (Html msg)
-viewLobby wrap shared configure auth timeAnchor lobby =
+viewLobby : (Msg -> msg) -> Shared -> Route -> Configure.Model -> Auth -> Time.Anchor -> Lobby -> List (Html msg)
+viewLobby wrap shared r configure auth timeAnchor lobby =
     let
         game =
             lobby.game |> Maybe.map .game
 
         privileged =
             (lobby.users |> Dict.get auth.claims.uid |> Maybe.map .privilege) == Just User.Privileged
+
+        canEdit =
+            privileged && (game |> Maybe.map (.winner >> Maybe.isJust) |> Maybe.withDefault True)
+
+        content =
+            case section r (lobby.game |> Maybe.map .game) of
+                Configure ->
+                    Configure.view (ConfigureMsg >> wrap)
+                        wrap
+                        shared
+                        (ChangeSection Play |> wrap |> Maybe.justIf (lobby.game /= Nothing))
+                        canEdit
+                        configure
+                        auth.claims.gc
+                        lobby
+
+                Play ->
+                    lobby.game
+                        |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.name lobby.config lobby.users)
+                        |> Maybe.withDefault (Html.div [] [ Strings.GameNotStartedError |> Lang.html shared ])
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
         [ viewUsers wrap shared auth.claims.uid lobby.users game
-        , Html.div [ HtmlA.id "scroll-frame" ]
-            [ lobby.game
-                |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.name lobby.config lobby.users)
-                |> Maybe.withDefault (Configure.view (ConfigureMsg >> wrap) wrap shared privileged configure auth.claims.gc lobby)
-            ]
+        , Html.div [ HtmlA.id "scroll-frame" ] [ content ]
         ]
     ]
+
+
+section : Route -> Maybe Game -> Section
+section r game =
+    r.section |> Maybe.withDefault (game |> Maybe.map (always Play) |> Maybe.withDefault Configure)
 
 
 viewUsers : (Msg -> msg) -> Shared -> User.Id -> Dict User.Id User -> Maybe Game -> Html msg

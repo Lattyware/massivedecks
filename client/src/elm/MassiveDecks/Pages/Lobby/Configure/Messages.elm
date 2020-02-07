@@ -1,30 +1,20 @@
-module MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..), Target(..))
+module MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..))
 
-import MassiveDecks.Game.Round as Round
-import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as Privacy
+import MassiveDecks.Pages.Lobby.Configure.Rules.Model as Rules
+import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model as TimeLimits
 
 
 type Msg
-    = DeckMsg Decks.Msg
+    = DecksMsg Decks.Msg
+    | PrivacyMsg Privacy.Msg
+    | TimeLimitsMsg TimeLimits.Msg
+    | RulesMsg Rules.Msg
     | ChangeTab Tab
     | StartGame
-    | HandSizeChange Target Int
-    | ScoreLimitChange Target (Maybe Int)
-    | PasswordChange Target (Maybe String)
-    | HouseRuleChange Target Rules.HouseRuleChange
-    | PublicChange Target Bool
-    | TogglePasswordVisibility
-    | TimeLimitChangeMode Target Rules.TimeLimitMode
-    | TimeLimitChange Target Round.Stage (Maybe Float)
-    | RevertChanges
+    | ResolveConflict Source Id
     | SaveChanges
+    | RevertChanges
     | NoOp
-
-
-{-| We don't want to push every tiny change to the server. Instead we only push some changes.
--}
-type Target
-    = Remote
-    | Local

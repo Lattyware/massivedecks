@@ -12,6 +12,7 @@ import Html.Events as HtmlE
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model exposing (..)
 import MassiveDecks.Model exposing (Shared)
+import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Util.String as String
 
@@ -23,7 +24,7 @@ view shared config side attributes response =
     Card.view
         "response"
         shared
-        config.decks
+        (config.decks |> Decks.getSummary)
         side
         attributes
         (viewBody response)
@@ -57,7 +58,7 @@ viewBlank shared config side update attributes response fill =
     Card.view
         "response"
         shared
-        config.decks
+        (config.decks |> Decks.getSummary)
         side
         attributes
         (viewBlankBody update fill)

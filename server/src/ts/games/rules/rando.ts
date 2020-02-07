@@ -114,7 +114,7 @@ export function* change(
   inLobby: Lobby,
   config: Rando,
   changeTo?: Public
-): Iterable<event.Distributor> | null {
+): Iterable<event.Distributor> {
   const want = changeTo !== undefined ? changeTo.number : 0;
   const have = config.current.length;
   const eventsCollection = [];

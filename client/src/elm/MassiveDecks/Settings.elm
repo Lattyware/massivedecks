@@ -25,6 +25,7 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.LocalStorage as LocalStorage
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
+import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token

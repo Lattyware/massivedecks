@@ -1,8 +1,5 @@
 module MassiveDecks.Pages.Lobby.Events exposing
-    ( ConfigChanged(..)
-    , DeckChange(..)
-    , DeckEvent
-    , Event(..)
+    ( Event(..)
     , GameEvent(..)
     , PresenceState(..)
     , TimedGameEvent(..)
@@ -10,11 +7,10 @@ module MassiveDecks.Pages.Lobby.Events exposing
     )
 
 import Dict exposing (Dict)
+import Json.Patch as Json
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Game.Round as Round
-import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.User as User
@@ -32,7 +28,7 @@ type Event
         }
     | Connection { user : User.Id, state : User.Connection }
     | Presence { user : User.Id, state : PresenceState }
-    | Configured { change : ConfigChanged, version : String }
+    | Configured { change : Json.Patch }
       -- Not a game event because we don't need to be in a game
     | GameStarted { round : Round.Playing, hand : List Card.PotentiallyBlankResponse }
     | Game GameEvent
@@ -44,28 +40,6 @@ type Event
 type PresenceState
     = UserJoined { name : String, privilege : User.Privilege, control : User.Control }
     | UserLeft { reason : User.LeaveReason }
-
-
-type ConfigChanged
-    = DecksChanged DeckEvent
-    | HandSizeSet { size : Int }
-    | ScoreLimitSet { limit : Maybe Int }
-    | PasswordSet { password : Maybe String }
-    | HouseRuleChanged { change : Rules.HouseRuleChange }
-    | PublicSet { public : Bool }
-    | ChangeTimeLimitForStage { stage : Round.Stage, timeLimit : Maybe Float }
-    | ChangeTimeLimitMode { mode : Rules.TimeLimitMode }
-
-
-type alias DeckEvent =
-    { change : DeckChange, deck : Source.External }
-
-
-type DeckChange
-    = Add
-    | Remove
-    | Load { summary : Source.Summary }
-    | Fail { reason : Source.LoadFailureReason }
 
 
 type GameEvent

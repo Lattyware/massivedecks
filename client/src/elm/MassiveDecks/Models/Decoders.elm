@@ -1,5 +1,6 @@
 module MassiveDecks.Models.Decoders exposing
     ( castStatus
+    , config
     , event
     , eventOrMdError
     , externalSource
@@ -14,8 +15,6 @@ module MassiveDecks.Models.Decoders exposing
     , remoteControlCommand
     , revealingRound
     , settings
-    , timeLimitChangedForStage
-    , timeLimitModeChanged
     , tokenValidity
     , userId
     , userSummary
@@ -23,6 +22,7 @@ module MassiveDecks.Models.Decoders exposing
 
 import Dict exposing (Dict)
 import Json.Decode as Json
+import Json.Patch
 import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
@@ -36,10 +36,10 @@ import MassiveDecks.Game.Rules as Rules exposing (Rules)
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
-import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as DeckConfig
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
+import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as PrivacyConfig
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
@@ -227,12 +227,23 @@ game =
 
 config : Json.Decoder Configure.Config
 config =
-    Json.map5 Configure.Config
+    Json.map4 Configure.Config
         (Json.field "rules" rules)
-        (Json.field "decks" (Json.list deck))
-        (Json.maybe (Json.field "password" Json.string))
+        (Json.field "decks" (Json.list deckOrError))
+        privacyConfig
         (Json.field "version" Json.string)
+
+
+privacyConfig : Json.Decoder PrivacyConfig.Config
+privacyConfig =
+    Json.map2 PrivacyConfig.Config
+        (Json.maybe (Json.field "password" Json.string))
         (Json.maybe (Json.field "public" Json.bool) |> Json.map (Maybe.withDefault False))
+
+
+deckOrError : Json.Decoder DeckConfig.DeckOrError
+deckOrError =
+    Json.oneOf [ Json.map DeckConfig.E deckError, Json.map DeckConfig.D deck ]
 
 
 deck : Json.Decoder DeckConfig.Deck
@@ -240,6 +251,13 @@ deck =
     Json.map2 DeckConfig.Deck
         (Json.field "source" externalSource)
         (Json.maybe (Json.field "summary" summary))
+
+
+deckError : Json.Decoder DeckConfig.Error
+deckError =
+    Json.map2 DeckConfig.Error
+        (Json.field "source" externalSource)
+        (Json.field "failure" failReason)
 
 
 summary : Json.Decoder Source.Summary
@@ -270,10 +288,10 @@ timeLimits : Json.Decoder Rules.TimeLimits
 timeLimits =
     Json.map5 Rules.TimeLimits
         (Json.field "mode" timeLimitMode)
-        (Json.maybe (Json.field "playing" Json.float))
-        (Json.maybe (Json.field "revealing" Json.float))
-        (Json.maybe (Json.field "judging" Json.float))
-        (Json.field "complete" Json.float)
+        (Json.maybe (Json.field "playing" Json.int))
+        (Json.maybe (Json.field "revealing" Json.int))
+        (Json.maybe (Json.field "judging" Json.int))
+        (Json.field "complete" Json.int)
 
 
 timeLimitMode : Json.Decoder Rules.TimeLimitMode
@@ -535,26 +553,8 @@ eventByName name =
         "Left" ->
             userLeft |> Json.andThen presence
 
-        "DecksChanged" ->
-            configured decksChanged
-
-        "ScoreLimitSet" ->
-            configured scoreLimitSet
-
-        "HandSizeSet" ->
-            configured handSizeSet
-
-        "PasswordSet" ->
-            configured passwordSet
-
-        "HouseRuleChanged" ->
-            configured houseRuleChanged
-
-        "PublicSet" ->
-            configured publicSet
-
-        "TimeLimitsChanged" ->
-            configured timeLimitsChanged
+        "Configured" ->
+            configured
 
         "GameStarted" ->
             gameStarted
@@ -603,6 +603,12 @@ eventByName name =
 
         _ ->
             unknownValue "event" name
+
+
+configured : Json.Decoder Events.Event
+configured =
+    Json.map (\c -> Events.Configured { change = c })
+        (Json.field "change" Json.Patch.decoder)
 
 
 ended : Json.Decoder Events.GameEvent
@@ -685,47 +691,6 @@ playTakenBack : Json.Decoder Events.GameEvent
 playTakenBack =
     Json.map (\by -> Events.PlayTakenBack { by = by })
         (Json.field "by" userId)
-
-
-houseRuleChanged : Json.Decoder Events.ConfigChanged
-houseRuleChanged =
-    Json.map (\c -> Events.HouseRuleChanged { change = c })
-        (Json.field "change" houseRuleChange)
-
-
-houseRuleChange : Json.Decoder Rules.HouseRuleChange
-houseRuleChange =
-    Json.andThen houseRuleChangeFromName
-        (Json.field "houseRule" Json.string)
-
-
-houseRuleChangeFromName : String -> Json.Decoder Rules.HouseRuleChange
-houseRuleChangeFromName name =
-    case name of
-        "Rando" ->
-            maybeHouseRuleChange (Json.field "number" Json.int) Rules.Rando Rules.RandoChange
-
-        "PackingHeat" ->
-            maybeHouseRuleChange (Json.succeed ()) (always Rules.PackingHeat) Rules.PackingHeatChange
-
-        "Reboot" ->
-            maybeHouseRuleChange (Json.field "cost" Json.int) Rules.Reboot Rules.RebootChange
-
-        "ComedyWriter" ->
-            maybeHouseRuleChange (Json.map2 Rules.ComedyWriter (Json.field "number" Json.int) (Json.field "exclusive" Json.bool)) identity Rules.ComedyWriterChange
-
-        _ ->
-            unknownValue "house rule (for change)" name
-
-
-maybeHouseRuleChange :
-    Json.Decoder a
-    -> (a -> b)
-    -> (Maybe b -> Rules.HouseRuleChange)
-    -> Json.Decoder Rules.HouseRuleChange
-maybeHouseRuleChange parseSettings wrapSettings wrapChange =
-    Json.map (Maybe.map wrapSettings >> wrapChange)
-        (Json.maybe (Json.field "settings" parseSettings))
 
 
 roundStarted : Json.Decoder Events.TimedGameEvent
@@ -813,89 +778,6 @@ leaveReasonByName name =
 
         _ ->
             unknownValue "leaving reason" name
-
-
-timeLimitsChanged : Json.Decoder Events.ConfigChanged
-timeLimitsChanged =
-    Json.oneOf [ timeLimitModeChanged, timeLimitChangedForStage ]
-
-
-timeLimitChangedForStage : Json.Decoder Events.ConfigChanged
-timeLimitChangedForStage =
-    Json.map2 (\s -> \tl -> Events.ChangeTimeLimitForStage { stage = s, timeLimit = tl })
-        (Json.field "stage" stage)
-        (Json.maybe (Json.field "timeLimit" Json.float))
-
-
-timeLimitModeChanged : Json.Decoder Events.ConfigChanged
-timeLimitModeChanged =
-    Json.map (\m -> Events.ChangeTimeLimitMode { mode = m })
-        (Json.field "mode" timeLimitMode)
-
-
-publicSet : Json.Decoder Events.ConfigChanged
-publicSet =
-    Json.map (\public -> Events.PublicSet { public = public })
-        (Json.field "public" Json.bool)
-
-
-passwordSet : Json.Decoder Events.ConfigChanged
-passwordSet =
-    Json.map (\password -> Events.PasswordSet { password = password })
-        (Json.maybe (Json.field "password" Json.string))
-
-
-configured : Json.Decoder Events.ConfigChanged -> Json.Decoder Event
-configured configChangedDecoder =
-    Json.map2 (\c -> \v -> Events.Configured { change = c, version = v })
-        configChangedDecoder
-        (Json.field "version" Json.string)
-
-
-decksChanged : Json.Decoder Events.ConfigChanged
-decksChanged =
-    Json.map2 (\c -> \d -> Events.DecksChanged { change = c, deck = d })
-        (Json.field "change" deckChange)
-        (Json.field "deck" externalSource)
-
-
-scoreLimitSet : Json.Decoder Events.ConfigChanged
-scoreLimitSet =
-    Json.map (\limit -> Events.ScoreLimitSet { limit = limit })
-        (Json.maybe (Json.field "scoreLimit" Json.int))
-
-
-handSizeSet : Json.Decoder Events.ConfigChanged
-handSizeSet =
-    Json.map (\size -> Events.HandSizeSet { size = size })
-        (Json.field "handSize" Json.int)
-
-
-deckChange : Json.Decoder Events.DeckChange
-deckChange =
-    Json.oneOf
-        [ Json.field "change" Json.string |> Json.andThen deckChangeByName
-        , Json.string |> Json.andThen deckChangeByName
-        ]
-
-
-deckChangeByName : String -> Json.Decoder Events.DeckChange
-deckChangeByName name =
-    case name of
-        "Add" ->
-            Json.succeed Events.Add
-
-        "Remove" ->
-            Json.succeed Events.Remove
-
-        "Load" ->
-            Json.field "summary" summary |> Json.map (\s -> Events.Load { summary = s })
-
-        "Fail" ->
-            Json.field "reason" failReason |> Json.map (\r -> Events.Fail { reason = r })
-
-        _ ->
-            unknownValue "deck change" name
 
 
 failReason : Json.Decoder Source.LoadFailureReason
@@ -1167,6 +1049,9 @@ mdErrorByName name =
         "OutOfCards" ->
             Json.succeed MdError.OutOfCardsError |> Json.map MdError.Game
 
+        "InvalidAction" ->
+            invalidActionError |> Json.map MdError.ActionExecution
+
         _ ->
             unknownValue "error" name
 
@@ -1193,6 +1078,12 @@ stageByName name =
 
         _ ->
             unknownValue "round stage" name
+
+
+invalidActionError : Json.Decoder MdError.ActionExecutionError
+invalidActionError =
+    Json.map (\r -> MdError.InvalidAction { reason = r })
+        (Json.field "reason" Json.string)
 
 
 incorrectRoundStageError : Json.Decoder MdError.ActionExecutionError
