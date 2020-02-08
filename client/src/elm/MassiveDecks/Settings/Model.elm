@@ -4,7 +4,6 @@ module MassiveDecks.Settings.Model exposing
     , Settings
     , cardSizeFromValue
     , cardSizeToValue
-    , cardSizes
     )
 
 import Dict exposing (Dict)
@@ -42,11 +41,6 @@ type CardSize
     = Minimal
     | Square
     | Full
-
-
-cardSizes : List CardSize
-cardSizes =
-    [ Minimal, Square, Full ]
 
 
 cardSizeToValue : CardSize -> Int

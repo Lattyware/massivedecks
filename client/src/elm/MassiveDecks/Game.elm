@@ -44,7 +44,6 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
-import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import Set exposing (Set)
@@ -63,7 +62,11 @@ init wrap game hand pick =
         ( round, roundCmd ) =
             case game.round of
                 Round.P r ->
-                    Util.modelLift Round.P (Playing.init wrap r pick)
+                    let
+                        ( playing, cmd ) =
+                            Playing.init wrap r pick
+                    in
+                    ( Round.P playing, cmd )
 
                 _ ->
                     ( game.round, Cmd.none )

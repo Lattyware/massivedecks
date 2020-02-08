@@ -46,7 +46,6 @@ import MassiveDecks.Requests.HttpData.Model as HttpData exposing (HttpData)
 import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Version as Version
@@ -127,24 +126,33 @@ update shared msg model =
             ( { model | name = name }, Cmd.none )
 
         StartGame httpDataMsg ->
-            Util.modelLift (\nlr -> { model | newLobbyRequest = nlr })
-                (HttpData.update (startGameRequest model.name) httpDataMsg model.newLobbyRequest)
+            let
+                ( nlr, cmd ) =
+                    HttpData.update (startGameRequest model.name) httpDataMsg model.newLobbyRequest
+            in
+            ( { model | newLobbyRequest = nlr }, cmd )
 
         JoinGame httpDataMsg ->
             case model.gameCode of
                 Just gc ->
-                    Util.modelLift (\jlr -> { model | joinLobbyRequest = jlr })
-                        (HttpData.update
-                            (joinGameRequest gc model.name model.password)
-                            httpDataMsg
-                            model.joinLobbyRequest
-                        )
+                    let
+                        ( jlr, cmd ) =
+                            HttpData.update
+                                (joinGameRequest gc model.name model.password)
+                                httpDataMsg
+                                model.joinLobbyRequest
+                    in
+                    ( { model | joinLobbyRequest = jlr }, cmd )
 
                 _ ->
                     ( model, Cmd.none )
 
         LobbyBrowserMsg lbm ->
-            Util.modelLift (\lobbies -> { model | lobbies = lobbies }) (LobbyBrowser.update lbm model.lobbies)
+            let
+                ( lobbies, cmd ) =
+                    LobbyBrowser.update lbm model.lobbies
+            in
+            ( { model | lobbies = lobbies }, cmd )
 
         PasswordChanged newPassword ->
             ( { model | password = Just newPassword }, Cmd.none )

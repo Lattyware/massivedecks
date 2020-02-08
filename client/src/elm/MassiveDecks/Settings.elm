@@ -2,6 +2,7 @@ module MassiveDecks.Settings exposing
     ( auths
     , defaults
     , init
+    , onAddDeck
     , onJoinLobby
     , onTokenUpdate
     , removeToken
@@ -18,6 +19,8 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Http
+import MassiveDecks.Card.Source as Source
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
@@ -170,6 +173,24 @@ view wrap shared =
     Html.div [] [ button, panel ]
 
 
+{-| Add a deck to the recent decks list, shuffling the oldest off if needed.
+-}
+onAddDeck : Source.External -> Model -> ( Model, Cmd msg )
+onAddDeck source model =
+    let
+        settings =
+            model.settings
+
+        newRecentDecks =
+            (source :: (settings.recentDecks |> List.filter (Source.equals source >> not)))
+                |> List.take maxRecentDecks
+
+        updatedSettings =
+            { settings | recentDecks = newRecentDecks }
+    in
+    ( { model | settings = updatedSettings }, LocalStorage.store updatedSettings )
+
+
 {-| Add a token to the token list and set the last used name, because the user has joined a lobby.
 We take an `Auth` here even though we don't really use it to ensure the token has been successfully parsed.
 -}
@@ -231,6 +252,11 @@ auths settings =
 
 
 {- Private -}
+
+
+maxRecentDecks : Int
+maxRecentDecks =
+    20
 
 
 changeSettings : (Settings -> Settings) -> Model -> ( Model, Cmd msg )

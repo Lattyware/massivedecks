@@ -13,7 +13,6 @@ import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Start as Start
 import MassiveDecks.Pages.Unknown as Unknown
-import MassiveDecks.Util as Util
 
 
 subscriptions : Page -> Sub Msg
@@ -36,19 +35,25 @@ fromRoute : Shared -> Maybe Page -> Route -> ( Page, Cmd Msg )
 fromRoute shared oldModel route =
     case route of
         Route.Start r ->
-            (case oldModel of
-                Just (Start old) ->
-                    Start.changeRoute r old
+            let
+                ( start, cmd ) =
+                    case oldModel of
+                        Just (Start old) ->
+                            Start.changeRoute r old
 
-                _ ->
-                    Start.init shared r
-            )
-                |> Util.modelLift Start
+                        _ ->
+                            Start.init shared r
+            in
+            ( Start start, cmd )
 
         Route.Lobby r ->
             case oldModel of
                 Just (Lobby old) ->
-                    Lobby.changeRoute r old |> Util.modelLift Lobby
+                    let
+                        ( lobby, cmd ) =
+                            Lobby.changeRoute r old
+                    in
+                    ( Lobby lobby, cmd )
 
                 _ ->
                     case Lobby.init shared r Nothing of
@@ -61,7 +66,11 @@ fromRoute shared oldModel route =
         Route.Spectate r ->
             case oldModel of
                 Just (Spectate old) ->
-                    Spectate.changeRoute r old |> Util.modelLift Spectate
+                    let
+                        ( spectate, cmd ) =
+                            Spectate.changeRoute r old
+                    in
+                    ( Spectate spectate, cmd )
 
                 _ ->
                     case Spectate.init shared r Nothing of
@@ -72,14 +81,16 @@ fromRoute shared oldModel route =
                             fromRoute shared oldModel redirectRoute
 
         Route.Unknown r ->
-            (case oldModel of
-                Just (Unknown old) ->
-                    Unknown.changeRoute r old
+            let
+                ( unknown, cmd ) =
+                    case oldModel of
+                        Just (Unknown old) ->
+                            Unknown.changeRoute r old
 
-                _ ->
-                    Unknown.init r
-            )
-                |> Util.modelLift Unknown
+                        _ ->
+                            Unknown.init r
+            in
+            ( Unknown unknown, cmd )
 
         Route.Loading ->
             ( Loading, Cmd.none )

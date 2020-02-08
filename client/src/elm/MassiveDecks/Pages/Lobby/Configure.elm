@@ -67,8 +67,8 @@ init =
     }
 
 
-update : Msg -> Model -> Config -> ( Model, Cmd msg )
-update msg model config =
+update : Shared -> Msg -> Model -> Config -> ( Model, Shared, Cmd msg )
+update shared msg model config =
     case msg of
         PrivacyMsg privacyMsg ->
             let
@@ -78,14 +78,14 @@ update msg model config =
                 ( local, privacy, cmd ) =
                     Privacy.update privacyMsg localConfig.privacy model.privacy
             in
-            ( { model | privacy = privacy, localConfig = { localConfig | privacy = local } }, cmd )
+            ( { model | privacy = privacy, localConfig = { localConfig | privacy = local } }, shared, cmd )
 
         DecksMsg decksMsg ->
             let
-                ( decks, cmd ) =
-                    Decks.update decksMsg model.decks
+                ( decks, newShared, cmd ) =
+                    Decks.update shared decksMsg model.decks
             in
-            ( { model | decks = decks }, cmd )
+            ( { model | decks = decks }, newShared, cmd )
 
         TimeLimitsMsg timeLimitsMsg ->
             let
@@ -102,6 +102,7 @@ update msg model config =
                 | timeLimits = timeLimits
                 , localConfig = { localConfig | rules = { rules | timeLimits = local } }
               }
+            , shared
             , cmd
             )
 
@@ -117,14 +118,15 @@ update msg model config =
                 | rules = newRules
                 , localConfig = { localConfig | rules = local }
               }
+            , shared
             , cmd
             )
 
         StartGame ->
-            ( model, Actions.startGame )
+            ( model, shared, Actions.startGame )
 
         ChangeTab t ->
-            ( { model | tab = t }, Cmd.none )
+            ( { model | tab = t }, shared, Cmd.none )
 
         ResolveConflict source id ->
             let
@@ -146,24 +148,25 @@ update msg model config =
                                 |> Maybe.withDefault Cmd.none
                             )
             in
-            ( { model | localConfig = newLocal, conflicts = model.conflicts |> List.filter ((/=) id) }, cmd )
+            ( { model | localConfig = newLocal, conflicts = model.conflicts |> List.filter ((/=) id) }, shared, cmd )
 
         SaveChanges ->
             if Component.isValid all model.localConfig then
                 ( model
+                , shared
                 , patchFor config model.localConfig
                     |> Maybe.map Actions.configure
                     |> Maybe.withDefault Cmd.none
                 )
 
             else
-                ( model, Cmd.none )
+                ( model, shared, Cmd.none )
 
         RevertChanges ->
-            ( { model | localConfig = config }, Cmd.none )
+            ( { model | localConfig = config }, shared, Cmd.none )
 
         NoOp ->
-            ( model, Cmd.none )
+            ( model, shared, Cmd.none )
 
 
 view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Maybe msg -> Bool -> Model -> GameCode -> Lobby -> Html msg

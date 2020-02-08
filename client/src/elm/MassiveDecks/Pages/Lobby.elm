@@ -56,7 +56,6 @@ import MassiveDecks.Settings.Model as Settings exposing (Settings)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
-import MassiveDecks.Util as Util
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
@@ -118,7 +117,7 @@ subscriptions wrap handleError model =
         ]
 
 
-update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Change, Cmd msg )
+update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Change, Shared, Cmd msg )
 update wrap shared msg model =
     case msg of
         GameMsg gameMsg ->
@@ -130,23 +129,24 @@ update wrap shared msg model =
                                 ( updatedGame, gameCmd ) =
                                     Game.update (GameMsg >> wrap) shared gameMsg g
                             in
-                            ( Stay { model | lobby = Just { l | game = Just updatedGame } }, gameCmd )
+                            ( Stay { model | lobby = Just { l | game = Just updatedGame } }, shared, gameCmd )
 
                         Nothing ->
-                            ( Stay model, Cmd.none )
+                            ( Stay model, shared, Cmd.none )
 
                 Nothing ->
-                    ( Stay model, Cmd.none )
+                    ( Stay model, shared, Cmd.none )
 
         EventReceived event ->
             case model.lobby of
                 Just lobby ->
                     case event of
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
-                            applySync wrap model state hand play partialTimeAnchor
+                            applySync wrap shared model state hand play partialTimeAnchor
 
                         Events.Configured { change } ->
                             ( applyConfigured change model
+                            , shared
                             , Cmd.none
                             )
 
@@ -155,24 +155,30 @@ update wrap shared msg model =
                                 r =
                                     model.route
 
-                                applyGame g =
+                                ( g, cmd ) =
+                                    Game.applyGameStarted (GameMsg >> wrap) lobby round hand
+
+                                newGame =
                                     Stay
                                         { model
                                             | lobby = Just { lobby | game = Just g }
                                             , route = { r | section = Just Play }
                                         }
                             in
-                            Util.modelLift applyGame (Game.applyGameStarted (GameMsg >> wrap) lobby round hand)
+                            ( newGame, shared, cmd )
 
                         Events.Game gameEvent ->
+                            let
+                                withGame game =
+                                    let
+                                        ( g, cmd ) =
+                                            Game.applyGameEvent (GameMsg >> wrap) (EventReceived >> wrap) model.auth shared gameEvent game
+                                    in
+                                    ( Stay { model | lobby = Just { lobby | game = Just g } }, shared, cmd )
+                            in
                             lobby.game
-                                |> Maybe.map
-                                    (\game ->
-                                        Util.modelLift
-                                            (\g -> Stay { model | lobby = Just { lobby | game = Just g } })
-                                            (Game.applyGameEvent (GameMsg >> wrap) (EventReceived >> wrap) model.auth shared gameEvent game)
-                                    )
-                                |> Maybe.withDefault ( Stay model, Cmd.none )
+                                |> Maybe.map withGame
+                                |> Maybe.withDefault ( Stay model, shared, Cmd.none )
 
                         Events.Connection { user, state } ->
                             let
@@ -188,12 +194,12 @@ update wrap shared msg model =
                                             , UserDisconnected user
                                             )
                             in
-                            addNotification wrap message { model | lobby = Just { lobby | users = newUsers } }
+                            addNotification wrap shared message { model | lobby = Just { lobby | users = newUsers } }
 
                         Events.Presence { user, state } ->
                             case ( state, user == model.auth.claims.uid ) of
                                 ( Events.UserLeft { reason }, True ) ->
-                                    ( LeftGame model.auth.claims.gc reason, Cmd.none )
+                                    ( LeftGame model.auth.claims.gc reason, shared, Cmd.none )
 
                                 _ ->
                                     let
@@ -224,6 +230,7 @@ update wrap shared msg model =
                                                     }
                                     in
                                     addNotification wrap
+                                        shared
                                         message
                                         { model | lobby = Just { lobby | users = newUsers, game = game } }
 
@@ -232,23 +239,23 @@ update wrap shared msg model =
                                 users =
                                     lobby.users |> Dict.update user (Maybe.map (\u -> { u | privilege = privilege }))
                             in
-                            ( Stay { model | lobby = Just { lobby | users = users } }, Cmd.none )
+                            ( Stay { model | lobby = Just { lobby | users = users } }, shared, Cmd.none )
 
                         Events.ErrorEncountered { error } ->
-                            ( Stay { model | lobby = Just { lobby | errors = lobby.errors ++ [ error ] } }, Cmd.none )
+                            ( Stay { model | lobby = Just { lobby | errors = lobby.errors ++ [ error ] } }, shared, Cmd.none )
 
                 Nothing ->
                     case event of
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
-                            applySync wrap model state hand play partialTimeAnchor
+                            applySync wrap shared model state hand play partialTimeAnchor
 
                         _ ->
-                            ( Stay model, Cmd.none )
+                            ( Stay model, shared, Cmd.none )
 
         ErrorReceived error ->
             case error of
                 MdError.Authentication reason ->
-                    ( AuthError model.auth.claims.gc reason, Cmd.none )
+                    ( AuthError model.auth.claims.gc reason, shared, Cmd.none )
 
                 MdError.ActionExecution (MdError.ConfigEditConflict _) ->
                     let
@@ -256,6 +263,7 @@ update wrap shared msg model =
                             model.configure
                     in
                     addNotification wrap
+                        shared
                         (Error error)
                         { model
                             | configure =
@@ -265,48 +273,53 @@ update wrap shared msg model =
                         }
 
                 _ ->
-                    addNotification wrap (Error error) model
+                    addNotification wrap shared (Error error) model
 
         ConfigureMsg configureMsg ->
             case model.lobby of
                 Just l ->
-                    Util.modelLift (\c -> Stay { model | configure = c })
-                        (Configure.update configureMsg model.configure l.config)
+                    let
+                        ( c, s, cmd ) =
+                            Configure.update shared configureMsg model.configure l.config
+                    in
+                    ( Stay { model | configure = c }, s, cmd )
 
                 Nothing ->
-                    ( Stay model, Cmd.none )
+                    ( Stay model, shared, Cmd.none )
 
         NotificationMsg notificationMsg ->
-            Util.modelLift
-                (\notifications -> Stay { model | notifications = notifications })
-                (Animated.update (NotificationMsg >> wrap) { removeDone = Just Animated.defaultDuration } notificationMsg model.notifications)
+            let
+                ( notifications, cmd ) =
+                    Animated.update (NotificationMsg >> wrap) { removeDone = Just Animated.defaultDuration } notificationMsg model.notifications
+            in
+            ( Stay { model | notifications = notifications }, shared, cmd )
 
         ToggleInviteDialog ->
-            ( Stay { model | inviteDialogOpen = not model.inviteDialogOpen }, Cmd.none )
+            ( Stay { model | inviteDialogOpen = not model.inviteDialogOpen }, shared, Cmd.none )
 
         Leave ->
-            ( Stay model, Actions.leave )
+            ( Stay model, shared, Actions.leave )
 
         Kick id ->
-            ( Stay model, Actions.kick id )
+            ( Stay model, shared, Actions.kick id )
 
         SetAway id ->
-            ( Stay model, Actions.setPlayerAway id )
+            ( Stay model, shared, Actions.setPlayerAway id )
 
         SetPrivilege id privilege ->
-            ( Stay model, Actions.setPrivilege id privilege )
+            ( Stay model, shared, Actions.setPrivilege id privilege )
 
         SetTimeAnchor anchor ->
-            ( Stay { model | timeAnchor = Just anchor }, Cmd.none )
+            ( Stay { model | timeAnchor = Just anchor }, shared, Cmd.none )
 
         EndGame ->
-            ( Stay model, Actions.endGame )
+            ( Stay model, shared, Actions.endGame )
 
         TryCast auth ->
-            ( Stay model, Cast.tryCast shared auth.token )
+            ( Stay model, shared, Cast.tryCast shared auth.token )
 
         Copy id ->
-            ( Stay model, Ports.copyText id )
+            ( Stay model, shared, Ports.copyText id )
 
         ChangeSection s ->
             let
@@ -316,10 +329,10 @@ update wrap shared msg model =
                 newRoute =
                     { r | section = Just s }
             in
-            ( Stay { model | route = newRoute }, newRoute |> Route.Lobby |> Route.url |> Navigation.replaceUrl shared.key )
+            ( Stay { model | route = newRoute }, shared, newRoute |> Route.Lobby |> Route.url |> Navigation.replaceUrl shared.key )
 
         NoOp ->
-            ( Stay model, Cmd.none )
+            ( Stay model, shared, Cmd.none )
 
 
 view : (Msg -> msg) -> (Settings.Msg -> msg) -> Shared -> Model -> List (Html msg)
@@ -501,13 +514,14 @@ notificationDuration =
 
 applySync :
     (Msg -> msg)
+    -> Shared
     -> Model
     -> Lobby
     -> Maybe (List Card.PotentiallyBlankResponse)
     -> Maybe (List Card.Played)
     -> Time.PartialAnchor
-    -> ( Change, Cmd msg )
-applySync wrap model state hand pick partialTimeAnchor =
+    -> ( Change, Shared, Cmd msg )
+applySync wrap shared model state hand pick partialTimeAnchor =
     let
         play =
             pick |> Maybe.map (\cards -> { state = Round.Submitted, cards = cards }) |> Maybe.withDefault Round.noPick
@@ -515,7 +529,11 @@ applySync wrap model state hand pick partialTimeAnchor =
         ( game, gameCmd ) =
             case state.game of
                 Just g ->
-                    Util.modelLift Just (Game.init (GameMsg >> wrap) g.game (hand |> Maybe.withDefault []) play)
+                    let
+                        ( newGame, cmd ) =
+                            Game.init (GameMsg >> wrap) g.game (hand |> Maybe.withDefault []) play
+                    in
+                    ( Just newGame, cmd )
 
                 Nothing ->
                     ( Nothing, Cmd.none )
@@ -531,12 +549,13 @@ applySync wrap model state hand pick partialTimeAnchor =
             | lobby = Just { state | game = game }
             , configure = { configure | localConfig = state.config }
         }
+    , shared
     , Cmd.batch [ timeCmd, gameCmd ]
     )
 
 
-addNotification : (Msg -> msg) -> NotificationMessage -> Model -> ( Change, Cmd msg )
-addNotification wrap message model =
+addNotification : (Msg -> msg) -> Shared -> NotificationMessage -> Model -> ( Change, Shared, Cmd msg )
+addNotification wrap shared message model =
     let
         notification =
             { id = model.notificationId, message = message }
@@ -545,6 +564,7 @@ addNotification wrap message model =
             model.notifications ++ [ Animated.animate notification ]
     in
     ( Stay { model | notifications = notifications, notificationId = model.notificationId + 1 }
+    , shared
     , Animated.exitAfter (NotificationMsg >> wrap) notificationDuration notification
     )
 

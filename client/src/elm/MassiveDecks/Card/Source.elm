@@ -24,6 +24,7 @@ import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Card.Source.Player as Player
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import Weightless as Wl
@@ -131,8 +132,8 @@ logo source =
 
 {-| An editor for any supported external source.
 -}
-generalEditor : Shared -> External -> (External -> msg) -> List (Html msg)
-generalEditor shared currentValue update =
+generalEditor : Shared -> List DeckOrError -> External -> (External -> msg) -> List (Html msg)
+generalEditor shared existing currentValue update =
     [ Wl.select
         [ HtmlA.id "source-selector"
         , WlA.outlined
@@ -142,15 +143,15 @@ generalEditor shared currentValue update =
             [ Strings.Cardcast |> Lang.html shared
             ]
         ]
-    , editor shared currentValue update
+    , editor shared existing currentValue update
     ]
 
 
 {-| An editor for the given source value.
 -}
-editor : Shared -> External -> (External -> msg) -> Html msg
-editor shared source =
-    shared |> (externalMethods source |> .editor)
+editor : Shared -> List DeckOrError -> External -> (External -> msg) -> Html msg
+editor shared existing source =
+    (externalMethods source |> .editor) shared existing
 
 
 {-| Get a user message explaining the reason a source failed to load.

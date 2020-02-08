@@ -18,6 +18,8 @@ import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Loading as Loading
 import MassiveDecks.Pages.Lobby as Lobby
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
+import MassiveDecks.Pages.Lobby.Configure.Messages as Configure
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
@@ -35,7 +37,6 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User
-import MassiveDecks.Util as Util
 import MassiveDecks.Util.Url as Url
 import Url exposing (Url)
 
@@ -136,8 +137,11 @@ update msg model =
     case msg of
         ChangePage route ->
             if oldRoute /= route then
-                changePageFromRoute model.shared route model.page
-                    |> Util.modelLift (\p -> { model | page = p })
+                let
+                    ( p, cmd ) =
+                        changePageFromRoute model.shared route model.page
+                in
+                ( { model | page = p }, cmd )
 
             else
                 ( model, Cmd.none )
@@ -176,8 +180,8 @@ update msg model =
 
                 ( ( lobby, lobbyCmd ), ( settings, settingsCmd ) ) =
                     case Lobby.init shared { gameCode = auth.claims.gc, section = Nothing } (Just auth) of
-                        Route.Continue continue ->
-                            ( continue |> Util.modelLift Pages.Lobby |> changePage shared
+                        Route.Continue ( continue, cmd ) ->
+                            ( changePage shared ( continue |> Pages.Lobby, cmd )
                             , Settings.onJoinLobby auth name shared.settings
                             )
 
@@ -197,15 +201,20 @@ update msg model =
             let
                 shared =
                     model.shared
+
+                ( settings, cmd ) =
+                    Settings.onTokenUpdate auth shared.settings
             in
-            Util.modelLift (\settings -> { model | shared = { shared | settings = settings } })
-                (Settings.onTokenUpdate auth shared.settings)
+            ( { model | shared = { shared | settings = settings } }, cmd )
 
         StartMsg startMsg ->
             case model.page of
                 Pages.Start startModel ->
-                    Util.modelLift (\newStartModel -> { model | page = Pages.Start newStartModel })
-                        (Start.update model.shared startMsg startModel)
+                    let
+                        ( newStartModel, cmd ) =
+                            Start.update model.shared startMsg startModel
+                    in
+                    ( { model | page = Pages.Start newStartModel }, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -214,9 +223,11 @@ update msg model =
             let
                 shared =
                     model.shared
+
+                ( s, cmd ) =
+                    Settings.update shared settingsMsg
             in
-            Settings.update shared settingsMsg
-                |> Util.modelLift (\s -> { model | shared = { shared | settings = s } })
+            ( { model | shared = { shared | settings = s } }, cmd )
 
         LobbyMsg lobbyMsg ->
             case model.page of
@@ -229,8 +240,11 @@ update msg model =
         SpectateMsg spectateMsg ->
             case model.page of
                 Pages.Spectate spectateModel ->
-                    Util.modelLift (\newSpectateModel -> { model | page = Pages.Spectate newSpectateModel })
-                        (Spectate.update SpectateMsg model.shared spectateMsg spectateModel)
+                    let
+                        ( newSpectateModel, newShared, cmd ) =
+                            Spectate.update SpectateMsg model.shared spectateMsg spectateModel
+                    in
+                    ( { model | page = Pages.Spectate newSpectateModel, shared = newShared }, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -354,13 +368,13 @@ view model =
 
 
 handleLobbyMsg : Model -> Lobby.Msg -> Lobby.Model -> ( Model, Cmd Msg )
-handleLobbyMsg model lobbyMsg lobbyModel =
+handleLobbyMsg baseModel lobbyMsg lobbyModel =
     let
-        shared =
-            model.shared
+        ( change, shared, lobbyCmd ) =
+            Lobby.update LobbyMsg baseModel.shared lobbyMsg lobbyModel
 
-        ( change, lobbyCmd ) =
-            Lobby.update LobbyMsg shared lobbyMsg lobbyModel
+        model =
+            { baseModel | shared = shared }
     in
     case change of
         Lobby.Stay newLobbyModel ->

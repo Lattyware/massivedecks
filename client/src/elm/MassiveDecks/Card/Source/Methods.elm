@@ -12,6 +12,7 @@ import Html exposing (Html)
 import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings exposing (MdString)
 
 
@@ -82,7 +83,7 @@ type alias IsSpecific general msg =
 -}
 type alias IsSpecificExternal general msg =
     { general
-        | editor : Shared -> (External -> msg) -> Html msg
+        | editor : Shared -> List DeckOrError -> (External -> msg) -> Html msg
         , equals : External -> Bool
         , problems : () -> List (Message msg)
     }

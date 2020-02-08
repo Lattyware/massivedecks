@@ -93,19 +93,19 @@ subscriptions wrap handleError model =
     Lobby.subscriptions (LobbyMsg >> wrap) handleError model.lobby
 
 
-update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Model, Cmd msg )
+update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Model, Shared, Cmd msg )
 update wrap shared msg model =
     case msg of
         LobbyMsg lobbyMsg ->
             case Lobby.update (LobbyMsg >> wrap) shared lobbyMsg model.lobby of
-                ( Lobby.Stay newModel, cmd ) ->
-                    ( { model | lobby = newModel }, cmd )
+                ( Lobby.Stay newModel, newShared, cmd ) ->
+                    ( { model | lobby = newModel }, newShared, cmd )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( model, shared, Cmd.none )
 
         ToggleAdvert ->
-            ( { model | advertise = not model.advertise }, Cmd.none )
+            ( { model | advertise = not model.advertise }, shared, Cmd.none )
 
 
 

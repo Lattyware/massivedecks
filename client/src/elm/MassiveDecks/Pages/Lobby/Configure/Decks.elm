@@ -27,6 +27,7 @@ import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Compo
 import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator exposing (Validator)
 import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (..)
+import MassiveDecks.Settings as Settings
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
@@ -55,17 +56,24 @@ default =
 
 {-| React to user input.
 -}
-update : Msg -> Model -> ( Model, Cmd msg )
-update msg model =
+update : Shared -> Msg -> Model -> ( Model, Shared, Cmd msg )
+update shared msg model =
     case msg of
         Update source ->
-            ( { model | toAdd = source }, Cmd.none )
+            ( { model | toAdd = source }, shared, Cmd.none )
 
         Add source ->
-            ( { model | toAdd = Source.emptyMatching source }, Actions.configure (addDeck source) )
+            let
+                ( settings, settingsCmd ) =
+                    Settings.onAddDeck source shared.settings
+            in
+            ( { model | toAdd = Source.emptyMatching source }
+            , { shared | settings = settings }
+            , Cmd.batch [ Actions.configure (addDeck source), settingsCmd ]
+            )
 
         Remove index ->
-            ( model, Actions.configure (removeDeck index) )
+            ( model, shared, Actions.configure (removeDeck index) )
 
 
 {-| View the editor/viewer for decks.
@@ -199,7 +207,7 @@ addDeckWidget wrap shared existing deckToAdd =
             "add-deck"
             (Html.div [ HtmlA.class "multipart" ]
                 (List.concat
-                    [ Source.generalEditor shared deckToAdd (Update >> wrap)
+                    [ Source.generalEditor shared existing deckToAdd (Update >> wrap)
                     , [ Components.floatingActionButton
                             [ HtmlA.type_ "submit"
                             , Result.isError submit |> HtmlA.disabled

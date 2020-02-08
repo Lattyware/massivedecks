@@ -11,8 +11,10 @@ import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.Util.Maybe as Maybe
 import Url.Builder as Url
 import Weightless as Wl
 import Weightless.Attributes as WlA
@@ -69,16 +71,42 @@ problems (PlayCode pc) () =
         []
 
 
-editor : PlayCode -> Shared -> (Source.External -> msg) -> Html msg
-editor (PlayCode pc) shared update =
-    Wl.textField
-        [ HtmlA.value pc
-        , HtmlA.class "primary"
-        , WlA.outlined
-        , HtmlE.onInput (playCode >> Source.Cardcast >> update)
-        , Strings.CardcastPlayCode |> Lang.label shared
+editor : PlayCode -> Shared -> List DeckOrError -> (Source.External -> msg) -> Html msg
+editor (PlayCode pc) shared existing update =
+    let
+        notAlreadyInGame potential =
+            case potential of
+                Source.Cardcast playCode ->
+                    let
+                        notSameDeck deckOrError =
+                            let
+                                source =
+                                    case deckOrError of
+                                        Decks.D d ->
+                                            d.source
+
+                                        Decks.E e ->
+                                            e.source
+                            in
+                            equals playCode source |> not
+                    in
+                    playCode |> Maybe.justIf (existing |> List.all notSameDeck)
+
+        recentDeck (PlayCode recent) =
+            Html.option [ HtmlA.value recent ] []
+    in
+    Html.div [ HtmlA.class "primary" ]
+        [ Html.datalist [ HtmlA.id "cardcast-recent-decks" ]
+            (shared.settings.settings.recentDecks |> List.filterMap notAlreadyInGame |> List.map recentDeck)
+        , Wl.textField
+            [ HtmlA.value pc
+            , WlA.outlined
+            , WlA.list "cardcast-recent-decks"
+            , HtmlE.onInput (playCode >> Source.Cardcast >> update)
+            , Strings.CardcastPlayCode |> Lang.label shared
+            ]
+            [ Html.span [ WlA.textFieldSlot WlA.BeforeText ] [ logoInternal ] ]
         ]
-        [ Html.span [ WlA.textFieldSlot WlA.BeforeText ] [ logoInternal ] ]
 
 
 details : PlayCode -> Shared -> Source.Details
