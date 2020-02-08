@@ -23,6 +23,7 @@ export interface EnvironmentalConfig {
 
 export interface Config<D extends Duration> extends EnvironmentalConfig {
   timeouts: Timeouts<D>;
+  tasks: Tasks<D>;
   storage: BaseStorage<D>;
   cache: BaseCache<D>;
 }
@@ -35,6 +36,11 @@ type Timeouts<D extends Duration> = {
   disconnectionGracePeriod: D;
   finishedPlayingDelay: D;
 } & { [key: string]: D };
+
+type Tasks<D extends Duration> = {
+  rateLimit: number;
+  processTickFrequency: D;
+};
 
 type BaseStorage<D extends Duration> = BaseInMemory<D> | BasePostgreSQL<D>;
 export type Storage = BaseStorage<ParsedDuration>;
@@ -109,6 +115,13 @@ export const parseTimeouts = (
     parseDuration(value)
   );
 
+export const parseTasks = (
+  tasks: Tasks<UnparsedDuration>
+): Tasks<ParsedDuration> => ({
+  ...tasks,
+  processTickFrequency: parseDuration(tasks.processTickFrequency)
+});
+
 export const pullFromEnvironment = (config: Parsed): Parsed => {
   for (const name of environmental) {
     const envName = `MD_${name
@@ -127,6 +140,7 @@ export const parse = (config: Unparsed): Parsed =>
   pullFromEnvironment({
     ...config,
     timeouts: parseTimeouts(config.timeouts),
+    tasks: parseTasks(config.tasks),
     storage: parseStorage(config.storage),
     cache: parseCache(config.cache)
   });

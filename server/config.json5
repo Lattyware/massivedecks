@@ -33,6 +33,17 @@
     finishedPlayingDelay: "PT2S"
   },
 
+  // Tasks are things that take some time to happen (e.g: requesting data from external card services).
+  // These are queued, and the settings here will determine server load and game responsiveness when under load.
+  tasks: {
+    // The number of tasks that can be processed at once. Limiting this stops the server getting overloaded, but setting
+    // too low a value will result in games being slowed down.
+    rateLimit: 20,
+    // How often to process queued tasks. Setting this too high will result in games being slowed down a lot when the
+    // rate limit is hit (an ISO 8601 duration).
+    processTickFrequency: "PT0.5S"
+  },
+
   // How to store game data.
   storage: {
     // Example of a configuration using in-memory storage. Note this means server restart wipes all data.

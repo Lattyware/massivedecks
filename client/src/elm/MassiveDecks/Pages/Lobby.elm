@@ -26,6 +26,7 @@ import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Menu as Menu
+import MassiveDecks.Error as MdError
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Game as Game
 import MassiveDecks.Game.Messages as Game
@@ -232,6 +233,9 @@ update wrap shared msg model =
                                     lobby.users |> Dict.update user (Maybe.map (\u -> { u | privilege = privilege }))
                             in
                             ( Stay { model | lobby = Just { lobby | users = users } }, Cmd.none )
+
+                        Events.ErrorEncountered { error } ->
+                            ( Stay { model | lobby = Just { lobby | errors = lobby.errors ++ [ error ] } }, Cmd.none )
 
                 Nothing ->
                     case event of
@@ -648,8 +652,23 @@ viewLobby wrap shared r configure auth timeAnchor lobby =
     [ Html.div [ HtmlA.id "lobby-content" ]
         [ viewUsers wrap shared auth.claims.uid lobby.users game
         , Html.div [ HtmlA.id "scroll-frame" ] [ content ]
+        , lobby.errors |> viewErrors shared
         ]
     ]
+
+
+viewErrors : Shared -> List MdError.GameStateError -> Html msg
+viewErrors shared errors =
+    if errors |> List.isEmpty then
+        Html.nothing
+
+    else
+        Html.div [ HtmlA.class "lobby-errors" ] (errors |> List.map (viewError shared))
+
+
+viewError : Shared -> MdError.GameStateError -> Html msg
+viewError shared error =
+    error |> MdError.Game |> MdError.viewSpecific shared
 
 
 section : Route -> Maybe Game -> Section

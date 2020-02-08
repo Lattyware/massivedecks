@@ -6,6 +6,7 @@ module MassiveDecks.Models.Decoders exposing
     , externalSource
     , flags
     , gameCode
+    , gameStateError
     , language
     , lobbyState
     , lobbySummary
@@ -204,13 +205,14 @@ languageFromCode code =
 
 lobby : Json.Decoder Lobby
 lobby =
-    Json.map6 Lobby
+    Json.map7 Lobby
         (Json.field "name" Json.string)
         (Json.field "public" Json.bool)
         (Json.field "users" users)
         (Json.field "owner" userId)
         (Json.field "config" config)
         (Json.maybe (Json.field "game" game |> Json.map Game.emptyModel))
+        (Json.maybe (Json.field "errors" (Json.list gameStateError)) |> Json.map (Maybe.withDefault []))
 
 
 game : Json.Decoder Game
@@ -601,8 +603,17 @@ eventByName name =
         "GameEnded" ->
             gameEvent ended
 
+        "ErrorEncountered" ->
+            errorEncountered
+
         _ ->
             unknownValue "event" name
+
+
+errorEncountered : Json.Decoder Events.Event
+errorEncountered =
+    Json.map (\e -> Events.ErrorEncountered { error = e })
+        (Json.field "error" gameStateError)
 
 
 configured : Json.Decoder Events.Event
@@ -1047,13 +1058,28 @@ mdErrorByName name =
             registrationError |> Json.map MdError.Registration
 
         "OutOfCards" ->
-            Json.succeed MdError.OutOfCardsError |> Json.map MdError.Game
+            gameStateErrorByName name |> Json.map MdError.Game
 
         "InvalidAction" ->
             invalidActionError |> Json.map MdError.ActionExecution
 
         _ ->
             unknownValue "error" name
+
+
+gameStateError : Json.Decoder MdError.GameStateError
+gameStateError =
+    Json.field "error" Json.string |> Json.andThen gameStateErrorByName
+
+
+gameStateErrorByName : String -> Json.Decoder MdError.GameStateError
+gameStateErrorByName name =
+    case name of
+        "OutOfCards" ->
+            Json.succeed MdError.OutOfCardsError
+
+        _ ->
+            unknownValue "game state error" name
 
 
 stage : Json.Decoder Round.Stage

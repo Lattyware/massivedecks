@@ -1,4 +1,6 @@
+import { GameStateError } from "../errors/game-state-error";
 import * as event from "../event";
+import * as errorEncountered from "../events/lobby-event/error-encountered";
 import { Lobby } from "../lobby";
 import { ServerState } from "../server-state";
 import { Task } from "../task";
@@ -69,15 +71,12 @@ function internalApply(
   lobby?: Lobby;
   timeouts?: Iterable<timeout.TimeoutAfter>;
   tasks?: Iterable<Task>;
+  events?: Iterable<event.Distributor>;
 } {
   let lobbyUnchanged = change.lobby === undefined;
-  const lobby: Lobby =
-    change.lobby !== undefined ? change.lobby : originalLobby;
-  if (change.events !== undefined) {
-    event.send(server.socketManager, gameCode, lobby, change.events);
-  }
-  let currentLobby = lobby;
+  let currentLobby = change.lobby !== undefined ? change.lobby : originalLobby;
   const returnTasks = change.tasks !== undefined ? [...change.tasks] : [];
+  const events = change.events !== undefined ? [...change.events] : [];
   const futureTimeouts = [];
   if (change.timeouts !== undefined) {
     for (const timeoutAfter of change.timeouts) {
@@ -101,6 +100,9 @@ function internalApply(
         if (chained.tasks !== undefined) {
           returnTasks.push(...chained.tasks);
         }
+        if (chained.events !== undefined) {
+          events.push(...chained.events);
+        }
       }
     }
   }
@@ -108,7 +110,8 @@ function internalApply(
   const timeoutResult =
     futureTimeouts.length === 0 ? {} : { timeouts: futureTimeouts };
   const tasksResult = returnTasks.length === 0 ? {} : { tasks: returnTasks };
-  return { ...lobbyResult, ...timeoutResult, ...tasksResult };
+  const eventResult = events.length === 0 ? {} : { events };
+  return { ...lobbyResult, ...timeoutResult, ...tasksResult, ...eventResult };
 }
 
 /**
@@ -124,27 +127,45 @@ export async function applyAndReturn<T>(
   handler: HandlerWithReturnValue<T>,
   timeoutId?: timeout.Id
 ): Promise<T> {
-  const [tasks, returnValue] = await server.store.writeAndReturn(
-    gameCode,
-    lobby => {
-      const { change, returnValue } = handler(lobby);
-      const result = internalApply(server, gameCode, lobby, change);
-      return {
-        transaction: {
-          lobby: result.lobby,
-          timeouts: result.timeouts,
-          executedTimeout: timeoutId
-        },
-        result: [result.tasks, returnValue]
-      };
+  try {
+    const [tasks, returnValue] = await server.store.writeAndReturn(
+      gameCode,
+      lobby => {
+        const { change, returnValue } = handler(lobby);
+        const result = internalApply(server, gameCode, lobby, change);
+        if (result.events !== undefined) {
+          event.send(server.socketManager, gameCode, lobby, result.events);
+        }
+        return {
+          transaction: {
+            lobby: result.lobby,
+            timeouts: result.timeouts,
+            executedTimeout: timeoutId
+          },
+          result: [result.tasks, returnValue]
+        };
+      }
+    );
+    if (tasks !== undefined) {
+      for (const task of tasks) {
+        await server.tasks.enqueue(server, task);
+      }
     }
-  );
-  if (tasks !== undefined) {
-    for (const task of tasks) {
-      await server.tasks.enqueue(server, task);
-    }
+    return returnValue;
+  } catch (error) {
+    // If we get an error we still want to kill the timeout and potentially
+    // tell the user about the error.
+    await server.store.write(gameCode, lobby => {
+      if (error instanceof GameStateError) {
+        lobby.errors.push(error.details());
+        event.send(server.socketManager, gameCode, lobby, [
+          event.targetAll(errorEncountered.of(error.details()))
+        ]);
+      }
+      return { lobby, executedTimeout: timeoutId };
+    });
+    throw error;
   }
-  return returnValue;
 }
 
 /**

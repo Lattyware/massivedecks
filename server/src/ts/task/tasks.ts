@@ -15,6 +15,18 @@ interface Discoverable {
  */
 export class Queue {
   private static readonly tasks: Discoverable[] = [LoadDeckSummary, StartGame];
+  /**
+   * The maximum number of tasks that will be executed in a tick.
+   */
+  public readonly rateLimit: number;
+  private readonly tasks: Task[];
+  private startedThisTick: number;
+
+  constructor(rateLimit: number) {
+    this.rateLimit = rateLimit;
+    this.startedThisTick = 0;
+    this.tasks = [];
+  }
 
   /**
    * Discover tasks that need to be run for the given lobby state.
@@ -40,14 +52,35 @@ export class Queue {
     }
   }
 
-  // TODO: Real queuing.
-  // Probably not a huge deal, but we might go a bit nuts at startup in some
-  // cases.
   /**
-   * Start a new background task.
+   * Enqueue a new background task to be executed when possible.
    */
   public enqueue(server: ServerState, task: Task): void {
-    logging.logger.info("Task queued:", { task });
+    if (this.startedThisTick <= this.rateLimit) {
+      this.start(server, task);
+    } else {
+      this.tasks.unshift(task);
+    }
+  }
+
+  /**
+   * Process the queue, starting queued jobs.
+   */
+  public process(server: ServerState): void {
+    this.startedThisTick = 0;
+    while (this.startedThisTick <= this.rateLimit) {
+      const task = this.tasks.pop();
+      if (task !== undefined) {
+        this.start(server, task);
+      } else {
+        break;
+      }
+    }
+  }
+
+  private start(server: ServerState, task: Task): void {
+    logging.logger.info("Task started:", { task });
+    this.startedThisTick += 1;
     task
       .handle(server)
       .catch(error => logging.logException("Error processing task:", error))

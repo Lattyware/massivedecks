@@ -18,7 +18,7 @@ export async function create(config: config.Parsed): Promise<ServerState> {
   const store = await stores.from(config.storage);
   const cache = await caches.from(config.cache);
   const socketManager = new SocketManager();
-  const tasks = new backgroundTasks.Queue();
+  const tasks = new backgroundTasks.Queue(config.tasks.rateLimit);
 
   return {
     config,

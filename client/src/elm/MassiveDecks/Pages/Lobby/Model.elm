@@ -16,7 +16,7 @@ import MassiveDecks.Animated exposing (Animated)
 import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Time as Time
-import MassiveDecks.Models.MdError as MdError exposing (MdError)
+import MassiveDecks.Models.MdError as MdError exposing (GameStateError, MdError)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
@@ -56,6 +56,7 @@ type alias Lobby =
     , owner : User.Id
     , config : Configure.Config
     , game : Maybe Game.Model
+    , errors : List GameStateError
     }
 
 

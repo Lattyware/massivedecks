@@ -224,6 +224,14 @@ async function main(): Promise<void> {
     }
   }, config.timeouts.timeoutCheckFrequency);
 
+  setInterval(async () => {
+    try {
+      await state.tasks.process(state);
+    } catch (error) {
+      logging.logException("Error processing task queue:", error);
+    }
+  }, config.tasks.processTickFrequency);
+
   state.tasks
     .loadFromStore(state)
     .catch(error => logging.logException("Error running store tasks:", error));

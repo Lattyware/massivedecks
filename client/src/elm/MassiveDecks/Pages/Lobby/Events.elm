@@ -12,6 +12,7 @@ import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Time as Time exposing (Time)
+import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.User as User
 import Set exposing (Set)
@@ -33,6 +34,7 @@ type Event
     | GameStarted { round : Round.Playing, hand : List Card.PotentiallyBlankResponse }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
+    | ErrorEncountered { error : MdError.GameStateError }
 
 
 {-| The user's intentional presence in the lobby.

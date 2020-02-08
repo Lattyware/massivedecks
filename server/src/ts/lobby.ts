@@ -1,5 +1,7 @@
 import { CreateLobby } from "./action/initial/create-lobby";
 import { RegisterUser } from "./action/initial/register-user";
+import * as errors from "./errors";
+import { GameStateError } from "./errors/game-state-error";
 import * as event from "./event";
 import * as presenceChanged from "./events/lobby-event/presence-changed";
 import * as game from "./games/game";
@@ -23,6 +25,7 @@ export interface Lobby {
   owner: user.Id;
   config: Config;
   game?: Game;
+  errors: errors.Details[];
 }
 
 /**
@@ -46,6 +49,7 @@ export interface Public {
   owner: user.Id;
   config: config.Public;
   game?: game.Public;
+  errors?: errors.Details[];
 }
 
 /**
@@ -86,7 +90,8 @@ export function create(creation: CreateLobby): Lobby {
     nextUserId: 1,
     users: new Map([[id, user.create(creation.owner, "Privileged")]]),
     owner: id,
-    config: defaultConfig()
+    config: defaultConfig(),
+    errors: []
   };
 }
 
@@ -112,12 +117,6 @@ export const summary = (gameCode: GameCode, lobby: Lobby): Summary => ({
   ...(lobby.config.password !== undefined ? { password: true } : {})
 });
 
-/**
- * If the given lobby has ended.
- */
-export const ended = (lobby: Lobby): boolean =>
-  lobby.game !== undefined && lobby.game.winner !== undefined;
-
 function usersObj(lobby: Lobby): { [id: string]: user.Public } {
   const obj: { [id: string]: user.Public } = {};
   for (const [id, lobbyUser] of lobby.users.entries()) {
@@ -132,7 +131,8 @@ export const censor = (lobby: Lobby): Public => ({
   users: usersObj(lobby),
   owner: lobby.owner,
   config: config.censor(lobby.config),
-  ...(lobby.game === undefined ? {} : { game: lobby.game.public() })
+  ...(lobby.game === undefined ? {} : { game: lobby.game.public() }),
+  ...(lobby.errors.length === 0 ? {} : { errors: lobby.errors })
 });
 
 export const addUser = (
