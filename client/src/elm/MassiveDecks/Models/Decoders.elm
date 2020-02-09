@@ -555,6 +555,9 @@ eventByName name =
         "Left" ->
             userLeft |> Json.andThen presence
 
+        "UserRoleChanged" ->
+            userRoleChanged
+
         "Configured" ->
             configured
 
@@ -608,6 +611,14 @@ eventByName name =
 
         _ ->
             unknownValue "event" name
+
+
+userRoleChanged : Json.Decoder Events.Event
+userRoleChanged =
+    Json.map3 (\u -> \r -> \h -> Events.UserRoleChanged { user = u, role = r, hand = h })
+        (Json.field "user" userId)
+        (Json.field "role" role)
+        (Json.maybe (Json.field "hand" (Json.list potentiallyBlankResponse)))
 
 
 errorEncountered : Json.Decoder Events.Event
@@ -725,7 +736,7 @@ gameStarted : Json.Decoder Events.Event
 gameStarted =
     Json.map2 (\r -> \h -> { round = r, hand = h } |> Events.GameStarted)
         (Json.field "round" playingRound)
-        (Json.field "hand" (Json.list potentiallyBlankResponse))
+        (Json.maybe (Json.field "hand" (Json.list potentiallyBlankResponse)))
 
 
 sync : Json.Decoder Event

@@ -1,14 +1,14 @@
 import HttpStatus from "http-status-codes";
-import * as errors from "../errors";
+import * as Errors from "../errors";
 
 export type Reason = "UsernameAlreadyInUse";
 
-export interface Details extends errors.Details {
+export interface Details extends Errors.Details {
   error: "Registration";
   reason: Reason;
 }
 
-abstract class RegistrationError<MoreDetails> extends errors.MassiveDecksError<
+abstract class RegistrationError<MoreDetails> extends Errors.MassiveDecksError<
   Details & MoreDetails
 > {
   public readonly status: number = HttpStatus.CONFLICT;

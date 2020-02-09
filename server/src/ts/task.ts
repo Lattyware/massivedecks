@@ -1,6 +1,5 @@
 import { Lobby } from "./lobby";
-import * as change from "./lobby/change";
-import { Change } from "./lobby/change";
+import * as Change from "./lobby/change";
 import { GameCode } from "./lobby/game-code";
 import { ServerState } from "./server-state";
 
@@ -20,12 +19,12 @@ export abstract class TaskBase<T> implements Task {
     lobby: Lobby,
     work: T,
     server: ServerState
-  ): Change;
+  ): Change.Change;
   protected resolveError(
     lobby: Lobby,
     error: Error,
     server: ServerState
-  ): Change {
+  ): Change.Change {
     throw error;
   }
 
@@ -34,12 +33,12 @@ export abstract class TaskBase<T> implements Task {
     try {
       work = await this.begin(server);
     } catch (error) {
-      await change.apply(server, this.gameCode, lobby =>
+      await Change.apply(server, this.gameCode, lobby =>
         this.resolveError(lobby, error, server)
       );
       return;
     }
-    await change.apply(server, this.gameCode, lobby =>
+    await Change.apply(server, this.gameCode, lobby =>
       this.resolve(lobby, work, server)
     );
   }

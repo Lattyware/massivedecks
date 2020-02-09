@@ -1,22 +1,22 @@
-import * as card from "../../games/cards/card";
+import * as Card from "../../games/cards/card";
 import { Hand } from "../../games/cards/hand";
-import * as lobby from "../../lobby";
+import * as Lobby from "../../lobby";
 
 /**
  * Synchronise the game state.
  */
 export interface Sync {
   event: "Sync";
-  state: lobby.Public;
+  state: Lobby.Public;
   hand?: Hand;
-  play?: card.Id[];
+  play?: Card.Id[];
   gameTime: number;
 }
 
 export const of = (
-  state: lobby.Public,
+  state: Lobby.Public,
   hand?: Hand,
-  play?: card.Id[]
+  play?: Card.Id[]
 ): Sync => ({
   event: "Sync",
   state,

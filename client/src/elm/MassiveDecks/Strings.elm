@@ -123,6 +123,7 @@ type MdString
     | StartYourOwn -- A question asking if the player wants to start a new game.
       -- Spectation
     | JoinTheGame -- A short phrase encouraging a player to join the game using information that follows.
+    | ToggleAdvertDescription -- A description of the action of toggling showing the info on how to join the game.
       -- Cards
     | Pick { numberOfCards : Int } -- The word describing the action of picking a card from their hand to play. Use NumberOfCards for the number.
     | Draw { numberOfCards : Int } -- The word describing the action of drawing a card from the deck to their hand. Use NumberOfCards for the number.
@@ -171,8 +172,8 @@ type MdString
     | BecomePlayerDescription -- A description of becoming an active player of the game, rather than a spectator.
     | EndGame -- A short term for the action of ending the game early.
     | EndGameDescription -- A description of the action of ending the game early.
-    | ViewGame -- A short term for the action of viewing the in-progress game.
-    | ViewGameDescription -- A description of the action of viewing the in-progress game.
+    | ReturnViewToGame -- A short term for the action of viewing the in-progress game.
+    | ReturnViewToGameDescription -- A description of the action of viewing the in-progress game.
     | ViewConfgiuration -- A short term for the action of viewing the configuration for the game.
     | ViewConfgiurationDescription -- A description of the action of viewing the configuration for the game.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
@@ -214,6 +215,7 @@ type MdString
     | RevertChanges -- The action of discarding unsaved changes to the configuration.
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
+    | NeedAtLeastOneHuman -- A description of the problem that the game needs at least one human player.
     | RandoCantWrite -- A description of the problem that the AI players can't use blank cards.
     | DisableRando -- A description of disabling the "Rando Cardrissian" house rule.
     | DisableComedyWriter -- A description of disabling the "Comedy Writer" house rule.

@@ -1,5 +1,5 @@
 import { InvalidActionError } from "../../errors/validation";
-import * as validation from "../validation.validator";
+import * as Validation from "../validation.validator";
 import { RegisterUser } from "./register-user";
 
 /**
@@ -16,7 +16,7 @@ export interface CreateLobby {
   owner: RegisterUser;
 }
 
-const _validateCreateLobby = validation.validate("CreateLobby");
+const _validateCreateLobby = Validation.validate("CreateLobby");
 export const validate = (action: object): CreateLobby => {
   try {
     return _validateCreateLobby(action);

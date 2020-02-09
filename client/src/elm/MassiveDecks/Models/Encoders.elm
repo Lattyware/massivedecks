@@ -19,6 +19,7 @@ module MassiveDecks.Models.Encoders exposing
     , stage
     , timeLimitMode
     , userRegistration
+    , userRole
     )
 
 import Dict
@@ -40,6 +41,20 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
+
+
+userRole : User.Role -> Json.Value
+userRole role =
+    let
+        name =
+            case role of
+                User.Player ->
+                    "Player"
+
+                User.Spectator ->
+                    "Spectator"
+    in
+    name |> Json.string
 
 
 config : Config -> Json.Value

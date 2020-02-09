@@ -1,6 +1,5 @@
-import * as cache from "../../cache";
-import { Cache } from "../../cache";
-import * as decks from "./decks";
+import * as Cache from "../../cache";
+import * as Decks from "./decks";
 import { Cardcast } from "./sources/cardcast";
 import { Player } from "./sources/player";
 
@@ -28,7 +27,7 @@ export interface Details {
   url?: string;
 }
 
-export interface Summary extends cache.Tagged {
+export interface Summary extends Cache.Tagged {
   /**
    * Details about the deck.
    */
@@ -47,11 +46,11 @@ export interface Summary extends cache.Tagged {
 
 export interface AtLeastSummary {
   summary: Summary;
-  templates?: decks.Templates;
+  templates?: Decks.Templates;
 }
 
 export interface AtLeastTemplates {
-  templates: decks.Templates;
+  templates: Decks.Templates;
   summary?: Summary;
 }
 
@@ -84,7 +83,7 @@ export abstract class Resolver implements LimitedResolver {
    * Note that if you have a fresh summary, you should check if that has a
    * tag first.
    */
-  public abstract async getTag(): Promise<cache.Tag | undefined>;
+  public abstract async getTag(): Promise<Cache.Tag | undefined>;
 
   /**
    * The summary for the source, and potentially the templates if efficient to
@@ -115,7 +114,7 @@ export abstract class Resolver implements LimitedResolver {
   /**
    * The deck templates for the source.
    */
-  public async templates(): Promise<decks.Templates> {
+  public async templates(): Promise<Decks.Templates> {
     return (await this.atLeastTemplates()).templates;
   }
 
@@ -125,7 +124,7 @@ export abstract class Resolver implements LimitedResolver {
    */
   public abstract summaryAndTemplates(): Promise<{
     summary: Summary;
-    templates: decks.Templates;
+    templates: Decks.Templates;
   }>;
 }
 
@@ -145,9 +144,9 @@ export interface LimitedResolver {
  */
 export class CachedResolver extends Resolver {
   private readonly resolver: Resolver;
-  private readonly cache: Cache;
+  private readonly cache: Cache.Cache;
 
-  public constructor(cache: Cache, resolver: Resolver) {
+  public constructor(cache: Cache.Cache, resolver: Resolver) {
     super();
     this.cache = cache;
     this.resolver = resolver;
@@ -169,7 +168,7 @@ export class CachedResolver extends Resolver {
     return this.resolver.equals(source);
   }
 
-  public async getTag(): Promise<cache.Tag | undefined> {
+  public async getTag(): Promise<Cache.Tag | undefined> {
     // Caching the tag here would defy the point.
     return this.resolver.getTag();
   }
@@ -194,7 +193,7 @@ export class CachedResolver extends Resolver {
 
   public async summaryAndTemplates(): Promise<{
     summary: Summary;
-    templates: decks.Templates;
+    templates: Decks.Templates;
   }> {
     const cachedSummary = await this.cache.getCachedSummary(this.resolver);
     const cachedTemplates = await this.cache.getCachedTemplates(this.resolver);

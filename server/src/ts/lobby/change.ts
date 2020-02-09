@@ -1,16 +1,16 @@
 import { GameStateError } from "../errors/game-state-error";
-import * as event from "../event";
-import * as errorEncountered from "../events/lobby-event/error-encountered";
+import * as Event from "../event";
+import * as ErrorEncountered from "../events/lobby-event/error-encountered";
 import { Lobby } from "../lobby";
 import { ServerState } from "../server-state";
 import { Task } from "../task";
-import * as timeout from "../timeout";
+import * as Timeout from "../timeout";
 import { GameCode } from "./game-code";
 
 export interface Change {
   lobby?: Lobby;
-  events?: Iterable<event.Distributor>;
-  timeouts?: Iterable<timeout.TimeoutAfter>;
+  events?: Iterable<Event.Distributor>;
+  timeouts?: Iterable<Timeout.After>;
   tasks?: Iterable<Task>;
 }
 
@@ -35,8 +35,8 @@ export function reduce<T, L extends Lobby>(
 ): ConstrainedChange<L> {
   let currentLobby = lobby;
   let lobbyUnchanged = true;
-  const events: event.Distributor[] = [];
-  const timeouts: timeout.TimeoutAfter[] = [];
+  const events: Event.Distributor[] = [];
+  const timeouts: Timeout.After[] = [];
   const tasks: Task[] = [];
   for (const item of items) {
     const result = toChange(currentLobby, item);
@@ -69,9 +69,9 @@ function internalApply(
   change: Change
 ): {
   lobby?: Lobby;
-  timeouts?: Iterable<timeout.TimeoutAfter>;
+  timeouts?: Iterable<Timeout.After>;
   tasks?: Iterable<Task>;
-  events?: Iterable<event.Distributor>;
+  events?: Iterable<Event.Distributor>;
 } {
   let lobbyUnchanged = change.lobby === undefined;
   let currentLobby = change.lobby !== undefined ? change.lobby : originalLobby;
@@ -87,7 +87,7 @@ function internalApply(
           server,
           gameCode,
           currentLobby,
-          timeout.handler(server, timeoutAfter.timeout, gameCode, currentLobby)
+          Timeout.handler(server, timeoutAfter.timeout, gameCode, currentLobby)
         );
         if (chained.lobby !== undefined) {
           lobbyUnchanged = false;
@@ -125,7 +125,7 @@ export async function applyAndReturn<T>(
   server: ServerState,
   gameCode: GameCode,
   handler: HandlerWithReturnValue<T>,
-  timeoutId?: timeout.Id
+  timeoutId?: Timeout.Id
 ): Promise<T> {
   try {
     const [tasks, returnValue] = await server.store.writeAndReturn(
@@ -134,7 +134,7 @@ export async function applyAndReturn<T>(
         const { change, returnValue } = handler(lobby);
         const result = internalApply(server, gameCode, lobby, change);
         if (result.events !== undefined) {
-          event.send(server.socketManager, gameCode, lobby, result.events);
+          Event.send(server.socketManager, gameCode, lobby, result.events);
         }
         return {
           transaction: {
@@ -158,8 +158,8 @@ export async function applyAndReturn<T>(
     await server.store.write(gameCode, lobby => {
       if (error instanceof GameStateError) {
         lobby.errors.push(error.details());
-        event.send(server.socketManager, gameCode, lobby, [
-          event.targetAll(errorEncountered.of(error.details()))
+        Event.send(server.socketManager, gameCode, lobby, [
+          Event.targetAll(ErrorEncountered.of(error.details()))
         ]);
       }
       return { lobby, executedTimeout: timeoutId };
@@ -179,7 +179,7 @@ export async function apply(
   server: ServerState,
   gameCode: GameCode,
   handler: Handler,
-  timeoutId?: timeout.Id
+  timeoutId?: Timeout.Id
 ): Promise<void> {
   await applyAndReturn(server, gameCode, lobby => ({
     change: handler(lobby),

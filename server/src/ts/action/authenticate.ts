@@ -1,22 +1,18 @@
 import { Action } from "../action";
-import {
-  AlreadyLeftError,
-  InvalidAuthenticationError
-} from "../errors/authentication";
-import * as event from "../event";
-import * as connectionChanged from "../events/lobby-event/connection-changed";
-import * as change from "../lobby/change";
+import * as Authentication from "../errors/authentication";
+import * as Event from "../event";
+import * as ConnectionChanged from "../events/lobby-event/connection-changed";
+import * as Change from "../lobby/change";
 import { GameCode } from "../lobby/game-code";
 import { ServerState } from "../server-state";
-import * as token from "../user/token";
-import { Token } from "../user/token";
+import * as Token from "../user/token";
 
 /**
  * Authenticate with the game.
  */
 export interface Authenticate {
   action: NameType;
-  token: Token;
+  token: Token.Token;
 }
 
 type NameType = "Authenticate";
@@ -39,27 +35,27 @@ export async function handle(
   server: ServerState,
   authenticate: Authenticate,
   gameCode: GameCode
-): Promise<token.Claims> {
-  const claims = token.validate(
+): Promise<Token.Claims> {
+  const claims = Token.validate(
     authenticate.token,
     await server.store.id(),
     server.config.secret
   );
   if (claims.gc !== gameCode) {
-    throw new InvalidAuthenticationError("wrong game code");
+    throw new Authentication.InvalidAuthenticationError("wrong game code");
   }
-  await change.apply(server, gameCode, lobby => {
+  await Change.apply(server, gameCode, lobby => {
     const user = lobby.users.get(claims.uid);
     if (user === undefined) {
-      throw new InvalidAuthenticationError("no such user");
+      throw new Authentication.InvalidAuthenticationError("no such user");
     }
     if (user.presence === "Left") {
-      throw new AlreadyLeftError();
+      throw new Authentication.AlreadyLeftError();
     }
     if (user.connection !== "Connected") {
       user.connection = "Connected";
       return {
-        events: [event.targetAll(connectionChanged.connected(claims.uid))]
+        events: [Event.targetAll(ConnectionChanged.connected(claims.uid))]
       };
     } else {
       return {};

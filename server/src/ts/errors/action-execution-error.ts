@@ -2,13 +2,13 @@ import HttpStatus from "http-status-codes";
 import { Action } from "../action";
 import { GameAction } from "../action/game-action";
 import { Privileged } from "../action/privileged";
-import * as errors from "../errors";
-import * as round from "../games/game/round";
-import * as player from "../games/player";
-import * as user from "../user";
+import * as Errors from "../errors";
+import * as Round from "../games/game/round";
+import * as Player from "../games/player";
+import * as User from "../user";
 
-abstract class ActionExecutionError extends errors.MassiveDecksError<
-  errors.Details
+abstract class ActionExecutionError extends Errors.MassiveDecksError<
+  Errors.Details
 > {
   public readonly status: number = HttpStatus.BAD_REQUEST;
   public readonly action: Action;
@@ -30,7 +30,7 @@ export class GameNotStartedError extends ActionExecutionError {
     Error.captureStackTrace(this, GameNotStartedError);
   }
 
-  public details = (): errors.Details => ({
+  public details = (): Errors.Details => ({
     error: "GameNotStarted"
   });
 }
@@ -48,25 +48,25 @@ export class UnprivilegedError extends ActionExecutionError {
     Error.captureStackTrace(this, UnprivilegedError);
   }
 
-  public details = (): errors.Details => ({
+  public details = (): Errors.Details => ({
     error: "Unprivileged"
   });
 }
 
-interface IncorrectPlayerRoleDetails extends errors.Details {
-  role: player.Role | null;
-  expected: player.Role;
+interface IncorrectPlayerRoleDetails extends Errors.Details {
+  role: Player.Role | null;
+  expected: Player.Role;
 }
 
 // Could happen if the round changes unexpectedly (e.g: czar leaves game).
 export class IncorrectPlayerRoleError extends ActionExecutionError {
-  public readonly role: player.Role | null;
-  public readonly expected: player.Role;
+  public readonly role: Player.Role | null;
+  public readonly expected: Player.Role;
 
   public constructor(
     action: Action,
-    role: player.Role | null,
-    expected: player.Role
+    role: Player.Role | null,
+    expected: Player.Role
   ) {
     super(
       `For this action the player must be ${expected} but is ${role}:\n` +
@@ -85,17 +85,17 @@ export class IncorrectPlayerRoleError extends ActionExecutionError {
   });
 }
 
-interface IncorrectUserRoleDetails extends errors.Details {
-  role: user.Role;
-  expected: user.Role;
+interface IncorrectUserRoleDetails extends Errors.Details {
+  role: User.Role;
+  expected: User.Role;
 }
 
 // Could happen if the user's role changes.
 export class IncorrectUserRoleError extends ActionExecutionError {
-  public readonly role: user.Role;
-  public readonly expected: user.Role;
+  public readonly role: User.Role;
+  public readonly expected: User.Role;
 
-  public constructor(action: Action, role: user.Role, expected: user.Role) {
+  public constructor(action: Action, role: User.Role, expected: User.Role) {
     super(
       `For this action the user must be ${expected} but is ${role}:\n` +
         `${JSON.stringify(action)}`,
@@ -113,20 +113,20 @@ export class IncorrectUserRoleError extends ActionExecutionError {
   });
 }
 
-interface IncorrectRoundStageDetails extends errors.Details {
-  stage: round.Stage;
-  expected: round.Stage[];
+interface IncorrectRoundStageDetails extends Errors.Details {
+  stage: Round.Stage;
+  expected: Round.Stage[];
 }
 
 // Could happen if the round changes unexpectedly (e.g: czar leaves game).
 export class IncorrectRoundStageError extends ActionExecutionError {
-  public readonly stage: round.Stage;
-  public readonly expected: round.Stage[];
+  public readonly stage: Round.Stage;
+  public readonly expected: Round.Stage[];
 
   public constructor(
     action: Action,
-    stage: round.Stage,
-    ...expected: round.Stage[]
+    stage: Round.Stage,
+    ...expected: Round.Stage[]
   ) {
     super(
       `For this action the round must be in the ${expected} stage but is in ` +
@@ -145,7 +145,7 @@ export class IncorrectRoundStageError extends ActionExecutionError {
   });
 }
 
-interface ConfigEditConflictDetails extends errors.Details {
+interface ConfigEditConflictDetails extends Errors.Details {
   version: string;
   expected: string;
 }

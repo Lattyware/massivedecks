@@ -4,7 +4,7 @@ import {
   InvalidAuthenticationError
 } from "../errors/authentication";
 import { GameCode } from "../lobby/game-code";
-import * as user from "../user";
+import * as User from "../user";
 
 /**
  * A token that contains the encoded claims of a user.
@@ -21,7 +21,7 @@ export interface Claims {
    * The game code for the lobby this claim is valid in.
    */
   gc: GameCode;
-  uid: user.Id;
+  uid: User.Id;
 }
 
 /**

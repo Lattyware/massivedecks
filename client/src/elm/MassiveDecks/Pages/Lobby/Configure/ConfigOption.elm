@@ -14,11 +14,11 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Components.Form as Form
-import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Component.Validator exposing (Validator)
 import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable exposing (Toggleable)
-import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe

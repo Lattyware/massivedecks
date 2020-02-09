@@ -1,8 +1,8 @@
-import * as cache from "../../cache";
-import { OutOfCardsError } from "../../errors/game-state-error";
-import * as card from "./card";
-import * as util from "../../util";
 import wu from "wu";
+import * as Cache from "../../cache";
+import { OutOfCardsError } from "../../errors/game-state-error";
+import * as Util from "../../util";
+import * as Card from "./card";
 
 const union = <T>(sets: Iterable<Set<T>>): Set<T> => {
   const result = new Set<T>();
@@ -17,7 +17,7 @@ const union = <T>(sets: Iterable<Set<T>>): Set<T> => {
 /**
  * A deck of cards.
  */
-export class Deck<C extends card.BaseCard> {
+export class Deck<C extends Card.BaseCard> {
   /**
    * The cards in the deck.
    */
@@ -36,7 +36,7 @@ export class Deck<C extends card.BaseCard> {
   public discard(cards: Iterable<C>): void;
   public discard(firstCard: C, ...cards: C[]): void;
   public discard(firstCard: C | Iterable<C>, ...cards: C[]): void {
-    const resolvedCards: Iterable<C> = util.isIterable(firstCard)
+    const resolvedCards: Iterable<C> = Util.isIterable(firstCard)
       ? cards
       : [firstCard, ...cards];
     for (const c of resolvedCards) {
@@ -65,7 +65,7 @@ export class Deck<C extends card.BaseCard> {
     if (this.discarded.size < 1) {
       throw new OutOfCardsError();
     }
-    this.cards.push(...util.shuffled(this.discarded));
+    this.cards.push(...Util.shuffled(this.discarded));
     this.discarded.clear();
   }
 }
@@ -74,21 +74,21 @@ export class Deck<C extends card.BaseCard> {
  * The two decks needed for a game.
  */
 export interface Decks {
-  calls: Deck<card.Call>;
-  responses: Deck<card.PotentiallyBlankResponse>;
+  calls: Deck<Card.Call>;
+  responses: Deck<Card.PotentiallyBlankResponse>;
 }
 
 /**
  * A template for a deck.
  */
-export type Template<C extends card.BaseCard> = Set<C>;
+export type Template<C extends Card.BaseCard> = Set<C>;
 
 /**
  * Templates for the two decks needed for a game.
  */
-export interface Templates extends cache.Tagged {
-  calls: Template<card.Call>;
-  responses: Template<card.PotentiallyBlankResponse>;
+export interface Templates extends Cache.Tagged {
+  calls: Template<Card.Call>;
+  responses: Template<Card.PotentiallyBlankResponse>;
 }
 
 export const decks = (templates: Iterable<Templates>): Decks => ({

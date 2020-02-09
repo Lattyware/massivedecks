@@ -10,7 +10,6 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby as Lobby
 import MassiveDecks.Pages.Model as Model exposing (..)
 import MassiveDecks.Pages.Route as Route exposing (Route)
-import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Start as Start
 import MassiveDecks.Pages.Unknown as Unknown
 
@@ -20,9 +19,6 @@ subscriptions model =
     case model of
         Lobby lobby ->
             Lobby.subscriptions LobbyMsg (Error.Add >> ErrorMsg) lobby
-
-        Spectate spectate ->
-            Spectate.subscriptions SpectateMsg (Error.Add >> ErrorMsg) spectate
 
         _ ->
             Sub.none
@@ -47,38 +43,21 @@ fromRoute shared oldModel route =
             ( Start start, cmd )
 
         Route.Lobby r ->
-            case oldModel of
-                Just (Lobby old) ->
-                    let
-                        ( lobby, cmd ) =
-                            Lobby.changeRoute r old
-                    in
+            let
+                fork =
+                    case oldModel of
+                        Just (Lobby old) ->
+                            Lobby.changeRoute shared r old
+
+                        _ ->
+                            Lobby.init shared r Nothing
+            in
+            case fork of
+                Route.Continue ( lobby, cmd ) ->
                     ( Lobby lobby, cmd )
 
-                _ ->
-                    case Lobby.init shared r Nothing of
-                        Route.Continue ( lobby, cmd ) ->
-                            ( Lobby lobby, cmd )
-
-                        Route.Redirect redirectRoute ->
-                            fromRoute shared oldModel redirectRoute
-
-        Route.Spectate r ->
-            case oldModel of
-                Just (Spectate old) ->
-                    let
-                        ( spectate, cmd ) =
-                            Spectate.changeRoute r old
-                    in
-                    ( Spectate spectate, cmd )
-
-                _ ->
-                    case Spectate.init shared r Nothing of
-                        Route.Continue ( spectate, cmd ) ->
-                            ( Spectate spectate, cmd )
-
-                        Route.Redirect redirectRoute ->
-                            fromRoute shared oldModel redirectRoute
+                Route.Redirect redirectRoute ->
+                    fromRoute shared oldModel redirectRoute
 
         Route.Unknown r ->
             let
@@ -106,9 +85,6 @@ toRoute model =
 
         Model.Lobby lobby ->
             Lobby.route lobby |> Route.Lobby
-
-        Model.Spectate spectate ->
-            Spectate.route spectate |> Route.Spectate
 
         Model.Unknown unknown ->
             Unknown.route unknown |> Route.Unknown

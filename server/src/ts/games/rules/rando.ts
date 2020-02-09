@@ -1,11 +1,9 @@
 import { RegisterUser } from "../../action/initial/register-user";
-import * as event from "../../event";
-import * as presenceChanged from "../../events/lobby-event/presence-changed";
-import { Lobby } from "../../lobby";
-import * as lobby from "../../lobby";
-import { User } from "../../user";
-import * as util from "../../util";
-import * as user from "../../user";
+import * as Event from "../../event";
+import * as PresenceChanged from "../../events/lobby-event/presence-changed";
+import * as Lobby from "../../lobby";
+import * as User from "../../user";
+import * as Util from "../../util";
 
 /**
  * The maximum number of AI players allowed in a single game.
@@ -46,12 +44,12 @@ export interface Rando {
   /**
    * The ids of active AI players in the game.
    */
-  current: user.Id[];
+  current: User.Id[];
   /**
    * The names or ids of potential AI players that are not currently active in
    * the game.
    */
-  unused: (user.Id | RegisterUser)[];
+  unused: (User.Id | RegisterUser)[];
 }
 
 /**
@@ -60,7 +58,7 @@ export interface Rando {
 export const create = (): Rando => ({
   current: [],
   unused: [aiName]
-    .concat(util.shuffled(aiNames).slice(0, max - 1))
+    .concat(Util.shuffled(aiNames).slice(0, max - 1))
     .map(name => ({ name }))
 });
 
@@ -83,24 +81,24 @@ export interface Public {
 export const censor = (rando: Rando): Public | undefined =>
   rando.current.length > 0 ? { number: rando.current.length } : undefined;
 
-const isId = (ai: user.Id | RegisterUser): ai is user.Id =>
+const isId = (ai: User.Id | RegisterUser): ai is User.Id =>
   typeof ai === "string";
 
 export const createIfNeeded = (
-  inLobby: Lobby,
-  ai: user.Id | RegisterUser
-): { user: user.Id; events: Iterable<event.Distributor> } => {
+  inLobby: Lobby.Lobby,
+  ai: User.Id | RegisterUser
+): { user: User.Id; events: Iterable<Event.Distributor> } => {
   if (isId(ai)) {
     return {
       user: ai,
       events: [
-        event.targetAll(
-          presenceChanged.joined(ai, inLobby.users.get(ai) as User)
+        Event.targetAll(
+          PresenceChanged.joined(ai, inLobby.users.get(ai) as User.User)
         )
       ]
     };
   } else {
-    return lobby.addUser(inLobby, ai, user => ({
+    return Lobby.addUser(inLobby, ai, user => ({
       ...user,
       control: "Computer"
     }));
@@ -111,10 +109,10 @@ export const createIfNeeded = (
  * Change the internal model to match the given public representation.
  */
 export function* change(
-  inLobby: Lobby,
+  inLobby: Lobby.Lobby,
   config: Rando,
   changeTo?: Public
-): Iterable<event.Distributor> {
+): Iterable<Event.Distributor> {
   const want = changeTo !== undefined ? changeTo.number : 0;
   const have = config.current.length;
   const eventsCollection = [];
@@ -127,7 +125,7 @@ export function* change(
       .splice(0, toAdd)
       .map(ai => createIfNeeded(inLobby, ai));
     for (const { user, events } of added) {
-      const userData = inLobby.users.get(user) as User;
+      const userData = inLobby.users.get(user) as User.User;
       userData.presence = "Joined";
       config.current.push(user);
       eventsCollection.push(...events);
@@ -139,9 +137,9 @@ export function* change(
       toRemove
     );
     for (const ai of removed) {
-      const user = inLobby.users.get(ai) as User;
+      const user = inLobby.users.get(ai) as User.User;
       user.presence = "Left";
-      eventsCollection.push(event.targetAll(presenceChanged.left(ai, "Left")));
+      eventsCollection.push(Event.targetAll(PresenceChanged.left(ai, "Left")));
     }
     config.unused.splice(0, 0, ...removed);
   }

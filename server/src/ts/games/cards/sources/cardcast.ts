@@ -1,10 +1,10 @@
 import http, { AxiosRequestConfig } from "axios";
 import genericPool from "generic-pool";
 import HttpStatus from "http-status-codes";
-import * as card from "../card";
+import * as Card from "../card";
 import { Slot } from "../card";
-import * as decks from "../decks";
-import * as source from "../source";
+import * as Decks from "../decks";
+import * as Source from "../source";
 import { SourceNotFoundError, SourceServiceError } from "../sources";
 
 interface CCSummary {
@@ -86,7 +86,7 @@ const nextWordShouldBeCapitalized = (previously: string): boolean =>
  * much flexibility as we do, we use heuristics to try and do the right thing.
  */
 // TODO: We probably want to offer some control over these heuristics.
-function* parts(call: CCCard): Iterable<card.Part> {
+function* parts(call: CCCard): Iterable<Card.Part> {
   const upper: Slot = call.text.every(text => text === text.toUpperCase())
     ? { transform: "UpperCase" }
     : {};
@@ -110,19 +110,19 @@ function* parts(call: CCCard): Iterable<card.Part> {
   }
 }
 
-const call = (source: Cardcast, call: CCCard): card.Call => ({
-  id: card.id(),
+const call = (source: Cardcast, call: CCCard): Card.Call => ({
+  id: Card.id(),
   parts: [Array.from(parts(call))],
   source: source
 });
 
-const response = (source: Cardcast, response: CCCard): card.Response => ({
-  id: card.id(),
+const response = (source: Cardcast, response: CCCard): Card.Response => ({
+  id: Card.id(),
   text: response.text[0],
   source: source
 });
 
-export class Resolver extends source.Resolver {
+export class Resolver extends Source.Resolver {
   public readonly source: Cardcast;
 
   public constructor(source: Cardcast) {
@@ -138,14 +138,14 @@ export class Resolver extends source.Resolver {
     return this.source.playCode;
   }
 
-  public loadingDetails(): source.Details {
+  public loadingDetails(): Source.Details {
     return {
       name: `Cardcast ${this.source.playCode}`,
       url: humanViewUrl(this.source.playCode)
     };
   }
 
-  public equals(source: source.External): boolean {
+  public equals(source: Source.External): boolean {
     return (
       source.source === "Cardcast" &&
       this.source.playCode.toUpperCase() === source.playCode.toUpperCase()
@@ -156,7 +156,7 @@ export class Resolver extends source.Resolver {
     return (await this.summary()).tag;
   }
 
-  public async atLeastSummary(): Promise<source.AtLeastSummary> {
+  public async atLeastSummary(): Promise<Source.AtLeastSummary> {
     const summary = await Resolver.get<CCSummary>(
       summaryUrl(this.source.playCode)
     );
@@ -173,7 +173,7 @@ export class Resolver extends source.Resolver {
     };
   }
 
-  public async atLeastTemplates(): Promise<source.AtLeastTemplates> {
+  public async atLeastTemplates(): Promise<Source.AtLeastTemplates> {
     const deck = await Resolver.get<CCDeck>(deckUrl(this.source.playCode));
     return {
       templates: {
@@ -204,8 +204,8 @@ export class Resolver extends source.Resolver {
   }
 
   public summaryAndTemplates = async (): Promise<{
-    summary: source.Summary;
-    templates: decks.Templates;
+    summary: Source.Summary;
+    templates: Decks.Templates;
   }> => ({
     summary: await this.summary(),
     templates: await this.templates()

@@ -1,6 +1,6 @@
-import * as gameRound from "../../games/game/round";
-import * as publicRound from "../../games/game/round/public";
-import * as user from "../../user";
+import * as GameRound from "../../games/game/round";
+import * as PublicRound from "../../games/game/round/public";
+import * as User from "../../user";
 
 /**
  * Indicates players have finished playing into the round and now the czar
@@ -8,11 +8,11 @@ import * as user from "../../user";
  */
 export interface RoundFinished {
   event: "RoundFinished";
-  winner: user.Id;
-  playDetails: { [id: string]: publicRound.PlayDetails };
+  winner: User.Id;
+  playDetails: { [id: string]: PublicRound.PlayDetails };
 }
 
-export const of = (round: gameRound.Complete): RoundFinished => ({
+export const of = (round: GameRound.Complete): RoundFinished => ({
   event: "RoundFinished",
   winner: round.winner,
   playDetails: round.playDetails()

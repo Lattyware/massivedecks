@@ -134,12 +134,14 @@ async function main(): Promise<void> {
       lobby.nextUserId += 1;
       lobby.users.set(id, newUser);
       const game = lobby.game;
-      if (game !== undefined && newUser.role === "Player") {
+      if (game !== undefined) {
         game.playerOrder.push(id);
-        game.players.set(
-          id,
-          new Player(game.decks.responses.draw(game.rules.handSize))
-        );
+        if (newUser.role === "Player") {
+          game.players.set(
+            id,
+            new Player(game.decks.responses.draw(game.rules.handSize))
+          );
+        }
       }
       const unpause =
         game !== undefined

@@ -1,94 +1,68 @@
-import { Action } from "../action";
-import {
-  GameNotStartedError,
-  IncorrectPlayerRoleError
-} from "../errors/action-execution-error";
+import * as Action from "../action";
+import * as ActionExecutionError from "../errors/action-execution-error";
+import { GameNotStartedError } from "../errors/action-execution-error";
 import { Game } from "../games/game";
-import * as player from "../games/player";
-import { Player } from "../games/player";
-import * as gameLobby from "../lobby";
-import * as token from "../user/token";
-import * as util from "../util";
-import * as czar from "./game-action/czar";
-import { Czar } from "./game-action/czar";
-import * as enforceTimeLimit from "./game-action/enforce-time-limit";
-import { EnforceTimeLimit } from "./game-action/enforce-time-limit";
-import * as playerAction from "./game-action/player";
-import { Player as PlayerAction } from "./game-action/player";
-import * as redraw from "./game-action/redraw";
-import { Redraw } from "./game-action/redraw";
-import * as setPresence from "./game-action/set-presence";
-import { SetPresence } from "./game-action/set-presence";
-import * as handler from "./handler";
-import wu from "wu";
+import * as Player from "../games/player";
+import * as Lobby from "../lobby";
+import { ServerState } from "../server-state";
+import * as Token from "../user/token";
+import * as Actions from "./actions";
+import * as Czar from "./game-action/czar";
+import * as EnforceTimeLimit from "./game-action/enforce-time-limit";
+import * as PlayerAction from "./game-action/player";
+import * as Redraw from "./game-action/redraw";
+import * as SetPresence from "./game-action/set-presence";
 
 /**
  * An action only a player can perform.
  */
 export type GameAction =
-  | PlayerAction
-  | Czar
-  | Redraw
-  | EnforceTimeLimit
-  | SetPresence;
+  | PlayerAction.Player
+  | Czar.Czar
+  | Redraw.Redraw
+  | EnforceTimeLimit.EnforceTimeLimit
+  | SetPresence.SetPresence;
 
-/**
- * A handler for game actions.
- */
-export type Handler<T extends GameAction> = handler.Custom<
-  T,
-  gameLobby.WithActiveGame
->;
-
-const possible = new Set([
-  playerAction.is,
-  czar.is,
-  redraw.is,
-  enforceTimeLimit.is,
-  setPresence.is
-]);
-
-/**
- * Check if an action is a configure action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is GameAction =>
-  wu(possible).some(is => is(action));
-
-export const handle: handler.Handler<GameAction> = (
-  auth,
-  lobby,
-  action,
-  server
-) => {
-  if (gameLobby.hasActiveGame(lobby)) {
-    if (czar.is(action)) {
-      return czar.handle(auth, lobby, action, server);
-    } else if (playerAction.is(action)) {
-      return playerAction.handle(auth, lobby, action, server);
-    } else if (redraw.is(action)) {
-      return redraw.handle(auth, lobby, action, server);
-    } else if (enforceTimeLimit.is(action)) {
-      return enforceTimeLimit.handle(auth, lobby, action, server);
-    } else if (setPresence.is(action)) {
-      return setPresence.handle(auth, lobby, action, server);
-    } else {
-      return util.assertNever(action);
-    }
-  } else {
-    throw new GameNotStartedError(action);
+class GameActions extends Actions.Group<
+  Action.Action,
+  GameAction,
+  Lobby.Lobby,
+  Lobby.WithActiveGame
+> {
+  constructor() {
+    super(
+      PlayerAction.actions,
+      Czar.actions,
+      Redraw.actions,
+      EnforceTimeLimit.actions,
+      SetPresence.actions
+    );
   }
-};
+
+  public limit(
+    auth: Token.Claims,
+    lobby: Lobby.Lobby,
+    action: GameAction,
+    server: ServerState
+  ): lobby is Lobby.WithActiveGame {
+    if (!Lobby.hasActiveGame(lobby)) {
+      throw new GameNotStartedError(action);
+    }
+    return true;
+  }
+}
+
+export const actions = new GameActions();
 
 export function expectRole(
-  auth: token.Claims,
-  action: Czar,
+  auth: Token.Claims,
+  action: Czar.Czar,
   game: Game,
   expected: "Czar"
 ): void;
 export function expectRole(
-  auth: token.Claims,
-  action: PlayerAction,
+  auth: Token.Claims,
+  action: PlayerAction.Player,
   game: Game,
   expected: "Player"
 ): void;
@@ -100,13 +74,17 @@ export function expectRole(
  * @param expected The expected role for the user.
  */
 export function expectRole(
-  auth: token.Claims,
+  auth: Token.Claims,
   action: GameAction,
   game: Game,
-  expected: player.Role
+  expected: Player.Role
 ): void {
   const playerRole = Player.role(auth.uid, game);
   if (playerRole !== expected) {
-    throw new IncorrectPlayerRoleError(action, playerRole, expected);
+    throw new ActionExecutionError.IncorrectPlayerRoleError(
+      action,
+      playerRole,
+      expected
+    );
   }
 }

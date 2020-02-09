@@ -20,6 +20,7 @@ import MassiveDecks.Models.MdError as MdError exposing (GameStateError, MdError)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
+import MassiveDecks.Pages.Lobby.Spectate.Model as Spectate
 import MassiveDecks.User as User exposing (User)
 
 
@@ -44,6 +45,7 @@ type alias Model =
     , notifications : List (Animated Notification)
     , inviteDialogOpen : Bool
     , timeAnchor : Maybe Time.Anchor
+    , spectate : Spectate.Model
     }
 
 

@@ -1,5 +1,5 @@
-import moment from "moment";
-import * as util from "./util";
+import Moment from "moment";
+import * as Util from "./util";
 
 type Duration = UnparsedDuration | ParsedDuration;
 type UnparsedDuration = string;
@@ -92,7 +92,7 @@ interface BasePostgreSQLCache<D extends Duration> extends CacheBase<D> {
 export type PostgreSQLCache = BasePostgreSQL<ParsedDuration>;
 
 const parseDuration = (unparsed: UnparsedDuration): ParsedDuration =>
-  moment.duration(unparsed).asMilliseconds();
+  Moment.duration(unparsed).asMilliseconds();
 
 export const parseStorage = (
   storage: BaseStorage<UnparsedDuration>
@@ -111,7 +111,7 @@ export const parseCache = (
 export const parseTimeouts = (
   timeouts: Timeouts<UnparsedDuration>
 ): Timeouts<ParsedDuration> =>
-  util.mapObjectValues(timeouts, (key: string, value: UnparsedDuration) =>
+  Util.mapObjectValues(timeouts, (key: string, value: UnparsedDuration) =>
     parseDuration(value)
   );
 

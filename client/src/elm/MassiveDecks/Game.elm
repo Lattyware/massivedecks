@@ -647,15 +647,23 @@ applyGameStarted wrap lobby round hand =
     init wrap game hand Round.noPick
 
 
-hotJoinPlayer : User.Id -> Model -> Model
-hotJoinPlayer player model =
+hotJoinPlayer : User.Id -> User -> Model -> Model
+hotJoinPlayer player user model =
     let
         oldGame =
             model.game
 
+        players =
+            case user.role of
+                User.Player ->
+                    oldGame.players |> Dict.insert player Player.default
+
+                User.Spectator ->
+                    oldGame.players
+
         game =
             { oldGame
-                | players = oldGame.players |> Dict.insert player Player.default
+                | players = players
                 , playerOrder = oldGame.playerOrder ++ [ player ]
             }
     in

@@ -1,4 +1,4 @@
-import * as source from "../source";
+import * as Source from "../source";
 
 /**
  * A source for custom cards made during the game.
@@ -10,6 +10,6 @@ export interface Player {
 /**
  * Get the details for a given source.
  */
-export const details = (_: Player): source.Details => ({
+export const details = (_: Player): Source.Details => ({
   name: "A Player"
 });

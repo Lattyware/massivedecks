@@ -10,7 +10,6 @@ module MassiveDecks.Pages.Route exposing
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Pages.Lobby.Route as Lobby
-import MassiveDecks.Pages.Spectate.Route as Spectate
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown.Route as Unknown
 import MassiveDecks.Util.Maybe as Maybe
@@ -24,7 +23,6 @@ These can be transformed to and from URLs losslessly.
 type Route
     = Start Start.Route
     | Lobby Lobby.Route
-    | Spectate Spectate.Route
     | Unknown Unknown.Route
     | Loading
 
@@ -64,7 +62,6 @@ fromUrl given =
     in
     [ Start.route parts fragment |> Maybe.map Start
     , Lobby.route parts fragment |> Maybe.map Lobby
-    , Spectate.route parts fragment |> Maybe.map Spectate
     ]
         |> Maybe.first
         |> Maybe.withDefault (Unknown.route parts fragment |> Unknown)
@@ -98,9 +95,6 @@ partsAndFragment route =
 
         Lobby lobbyRoute ->
             Lobby.partsAndFragment lobbyRoute
-
-        Spectate spectateRoute ->
-            Spectate.partsAndFragment spectateRoute
 
         Unknown unknownRoute ->
             Unknown.partsAndFragment unknownRoute

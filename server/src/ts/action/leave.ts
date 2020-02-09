@@ -1,6 +1,8 @@
-import { Action } from "../action";
-import { Handler } from "./handler";
-import * as kick from "./privileged/kick";
+import * as Action from "../action";
+import * as Lobby from "../lobby";
+import * as Actions from "./actions";
+import * as Handler from "./handler";
+import * as Kick from "./privileged/kick";
 
 /**
  * A player asks to leave the game.
@@ -9,10 +11,20 @@ export interface Leave {
   action: "Leave";
 }
 
-type NameType = "Leave";
-const name: NameType = "Leave";
+class LeaveActions extends Actions.Implementation<
+  Action.Action,
+  Leave,
+  "Leave",
+  Lobby.Lobby
+> {
+  protected readonly name = "Leave";
 
-export const is = (action: Action): action is Leave => action.action === name;
+  protected handle: Handler.Custom<Leave, Lobby.Lobby> = (
+    auth,
+    lobby,
+    action,
+    server
+  ) => Kick.removeUser(auth.uid, lobby, server, "Left");
+}
 
-export const handle: Handler<Leave> = (auth, lobby, action, server) =>
-  kick.removeUser(auth.uid, lobby, server, "Left");
+export const actions = new LeaveActions();

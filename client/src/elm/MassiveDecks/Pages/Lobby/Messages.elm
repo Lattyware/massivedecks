@@ -8,6 +8,7 @@ import MassiveDecks.Pages.Lobby.Configure.Messages as Configure
 import MassiveDecks.Pages.Lobby.Events exposing (Event)
 import MassiveDecks.Pages.Lobby.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Route exposing (Section)
+import MassiveDecks.Pages.Lobby.Spectate.Messages as Spectate
 import MassiveDecks.User as User
 
 
@@ -17,14 +18,16 @@ type Msg
     | ErrorReceived MdError
     | ConfigureMsg Configure.Msg
     | NotificationMsg (Animated.Msg Notification)
+    | SpectateMsg Spectate.Msg
     | ToggleInviteDialog
     | SetAway User.Id
     | SetPrivilege User.Id User.Privilege
+    | SetUserRole User.Role
     | Leave
     | Kick User.Id
     | SetTimeAnchor Time.Anchor
     | TryCast Auth
     | Copy String
-    | ChangeSection Section
+    | ChangeSection (Maybe Section)
     | EndGame
     | NoOp

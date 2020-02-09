@@ -1,4 +1,4 @@
-import * as user from "../../user";
+import * as User from "../../user";
 
 /**
  * An event for when connection state for a user changes.
@@ -6,7 +6,7 @@ import * as user from "../../user";
 export type ConnectionChanged = Connected | Disconnected;
 
 interface Base {
-  user: user.Id;
+  user: User.Id;
 }
 
 /**
@@ -16,7 +16,7 @@ export interface Connected extends Base {
   event: "Connected";
 }
 
-export const connected = (user: user.Id): Connected => ({
+export const connected = (user: User.Id): Connected => ({
   event: "Connected",
   user
 });
@@ -28,7 +28,7 @@ export interface Disconnected extends Base {
   event: "Disconnected";
 }
 
-export const disconnected = (user: user.Id): Disconnected => ({
+export const disconnected = (user: User.Id): Disconnected => ({
   event: "Disconnected",
   user
 });

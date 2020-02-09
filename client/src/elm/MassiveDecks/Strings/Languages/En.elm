@@ -427,6 +427,9 @@ translate mdString =
         JoinTheGame ->
             [ Text "Join the game!" ]
 
+        ToggleAdvertDescription ->
+            [ Text "Toggle showing the information on joining the game." ]
+
         -- Cards
         Pick numberOfCards ->
             [ Text "Pick", Ref (NumberOfCards numberOfCards) ]
@@ -603,14 +606,14 @@ translate mdString =
         EndGameDescription ->
             [ Text "End the game now." ]
 
-        ViewGame ->
-            [ Text "Game View" ]
+        ReturnViewToGame ->
+            [ Text "Return" ]
 
-        ViewGameDescription ->
-            [ Text "Switch to view the game." ]
+        ReturnViewToGameDescription ->
+            [ Text "Return to the main game view." ]
 
         ViewConfgiuration ->
-            [ Text "Configuration View" ]
+            [ Text "Configure" ]
 
         ViewConfgiurationDescription ->
             [ Text "Switch to view the game's configuration." ]
@@ -749,6 +752,13 @@ translate mdString =
 
         NeedAtLeastThreePlayers ->
             [ Text "You need at least three players to start the game." ]
+
+        NeedAtLeastOneHuman ->
+            [ Text "Unfortunately computer players can't be the "
+            , Ref Czar
+            , Text ", so you need at least one human player to start the game."
+            , Text " (Although only one human might be a bit boring!)"
+            ]
 
         RandoCantWrite ->
             [ Text "Computer players can't write their own cards." ]

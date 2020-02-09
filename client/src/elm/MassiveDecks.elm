@@ -18,15 +18,13 @@ import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Loading as Loading
 import MassiveDecks.Pages.Lobby as Lobby
-import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
-import MassiveDecks.Pages.Lobby.Configure.Messages as Configure
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
+import MassiveDecks.Pages.Lobby.Route as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Model as Pages exposing (Page)
 import MassiveDecks.Pages.Route as Route exposing (Route)
-import MassiveDecks.Pages.Spectate as Spectate
 import MassiveDecks.Pages.Start as Start
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown as Unknown
@@ -237,18 +235,6 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        SpectateMsg spectateMsg ->
-            case model.page of
-                Pages.Spectate spectateModel ->
-                    let
-                        ( newSpectateModel, newShared, cmd ) =
-                            Spectate.update SpectateMsg model.shared spectateMsg spectateModel
-                    in
-                    ( { model | page = Pages.Spectate newSpectateModel, shared = newShared }, cmd )
-
-                _ ->
-                    ( model, Cmd.none )
-
         CastStatusUpdate status ->
             let
                 shared =
@@ -297,14 +283,14 @@ update msg model =
                                 ( settings, settingsCmd ) =
                                     Settings.update model.shared (Settings.ChangeLang (Just language))
 
-                                ( spectate, spectateCmd ) =
-                                    Spectate.initWithAuth auth
+                                ( lobby, lobbyCmd ) =
+                                    Lobby.initWithAuth { gameCode = auth.claims.gc, section = Just Lobby.Spectate } auth
                             in
                             ( { model
-                                | page = Pages.Spectate spectate
+                                | page = Pages.Lobby lobby
                                 , shared = { shared | settings = settings }
                               }
-                            , Cmd.batch [ settingsCmd, spectateCmd ]
+                            , Cmd.batch [ settingsCmd, lobbyCmd ]
                             )
 
                         Err tokenDecodeError ->
@@ -325,10 +311,7 @@ view model =
                     Start.view model.shared m
 
                 Pages.Lobby m ->
-                    Lobby.view LobbyMsg SettingsMsg model.shared m
-
-                Pages.Spectate m ->
-                    Spectate.view SpectateMsg ChangePage model.shared m
+                    Lobby.view LobbyMsg SettingsMsg ChangePage model.shared m
 
                 Pages.Unknown m ->
                     Unknown.view model.shared m

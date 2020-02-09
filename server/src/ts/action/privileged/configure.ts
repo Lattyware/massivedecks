@@ -1,68 +1,55 @@
-import jsonPatch from "rfc6902";
+import Rfc6902 from "rfc6902";
 import { ReplaceOperation, TestOperation } from "rfc6902/diff";
-import jp from "rfc6902/patch";
-import { Action } from "../../action";
+import Rfc6902Patch from "rfc6902/patch";
+import * as Actions from "./../actions";
 import { ConfigEditConflictError } from "../../errors/action-execution-error";
 import { InvalidActionError } from "../../errors/validation";
-import * as event from "../../event";
-import * as configured from "../../events/lobby-event/configured";
-import * as sources from "../../games/cards/sources";
-import * as rules from "../../games/rules";
-import { Rules } from "../../games/rules";
-import * as houseRules from "../../games/rules/houseRules";
-import { HouseRules } from "../../games/rules/houseRules";
-import * as rando from "../../games/rules/rando";
-import { Rando } from "../../games/rules/rando";
-import { Lobby } from "../../lobby";
-import * as config from "../../lobby/config";
-import { Config } from "../../lobby/config";
+import * as Event from "../../event";
+import * as Configured from "../../events/lobby-event/configured";
+import * as Sources from "../../games/cards/sources";
+import * as Rules from "../../games/rules";
+import * as HouseRules from "../../games/rules/houseRules";
+import * as Rando from "../../games/rules/rando";
+import * as Lobby from "../../lobby";
+import * as Config from "../../lobby/config";
 import { GameCode } from "../../lobby/game-code";
 import { Task } from "../../task";
 import { LoadDeckSummary } from "../../task/load-deck-summary";
-import { Handler } from "../handler";
-import * as validation from "../validation.validator";
+import * as Handler from "../handler";
+import { Privileged } from "../privileged";
+import * as Validation from "../validation.validator";
 
 /**
  * An action to change the configuration of the lobby.
  */
-export type Configure = {
-  action: NameType;
+export interface Configure {
+  action: "Configure";
   /**
    * The changes to the config as a JSON patch.
    */
-  change: jsonPatch.Patch;
-};
-
-type NameType = "Configure";
-const name: NameType = "Configure";
-
-/**
- * Check if an action is a configure action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is Configure =>
-  action.action === name;
+  change: Rfc6902.Patch;
+}
 
 interface Result<T> {
   result: T;
-  events: Iterable<event.Distributor>;
+  events: Iterable<Event.Distributor>;
   tasks: Iterable<Task>;
 }
 
 function applyRando(
-  lobby: Lobby,
-  existing: Rando,
-  updated?: rando.Public
-): Result<Rando> {
-  const events = rando.change(lobby, existing, updated);
+  lobby: Lobby.Lobby,
+  existing: Rando.Rando,
+  updated?: Rando.Public
+): Result<Rando.Rando> {
+  const events = Rando.change(lobby, existing, updated);
   return { result: existing, events, tasks: [] };
 }
 
 function applyHouseRules(
-  lobby: Lobby,
-  existing: HouseRules,
-  updated: houseRules.Public
-): Result<HouseRules> {
+  lobby: Lobby.Lobby,
+  existing: HouseRules.HouseRules,
+  updated: HouseRules.Public
+): Result<HouseRules.HouseRules> {
   const { result, events, tasks } = applyRando(
     lobby,
     existing.rando,
@@ -76,10 +63,10 @@ function applyHouseRules(
 }
 
 function applyRules(
-  lobby: Lobby,
-  existing: Rules,
-  updated: rules.Public
-): Result<Rules> {
+  lobby: Lobby.Lobby,
+  existing: Rules.Rules,
+  updated: Rules.Public
+): Result<Rules.Rules> {
   const { result, events, tasks } = applyHouseRules(
     lobby,
     existing.houseRules,
@@ -94,10 +81,10 @@ function applyRules(
 
 function apply(
   gameCode: GameCode,
-  lobby: Lobby,
-  existing: Config,
-  updated: config.Public
-): Result<Config> {
+  lobby: Lobby.Lobby,
+  existing: Config.Config,
+  updated: Config.Public
+): Result<Config.Config> {
   const { result, events, tasks } = applyRules(
     lobby,
     existing.rules,
@@ -105,7 +92,7 @@ function apply(
   );
   const allTasks = [...tasks];
   for (const deck of updated.decks) {
-    const resolver = sources.limitedResolver(deck.source);
+    const resolver = Sources.limitedResolver(deck.source);
     const matching = existing.decks.find(ed => resolver.equals(ed.source));
     if (matching === undefined) {
       allTasks.push(new LoadDeckSummary(gameCode, deck.source));
@@ -123,7 +110,7 @@ function apply(
   };
 }
 
-const validate = (operation: jsonPatch.Operation): void => {
+const validate = (operation: Rfc6902.Operation): void => {
   const path = operation.path;
   if (path.startsWith("/decks/")) {
     switch (operation.op) {
@@ -146,44 +133,59 @@ const validate = (operation: jsonPatch.Operation): void => {
   }
 };
 
-const _validateConfig = validation.validate("PublicConfig");
+const _validateConfig = Validation.validate("PublicConfig");
 
-export const handle: Handler<Configure> = (auth, lobby, action) => {
-  const version = lobby.config.version;
-  for (const op of action.change) {
-    validate(op);
-  }
-  let validated = null;
-  const patched = JSON.parse(JSON.stringify(config.censor(lobby.config)));
-  for (const error of jsonPatch.applyPatch(patched, action.change)) {
-    if (error instanceof jp.TestError) {
-      throw new ConfigEditConflictError(action, error.expected, error.actual);
-    } else if (error !== null) {
-      throw new InvalidActionError(`${error.name}: ${error.message}`);
+class ConfigureActions extends Actions.Implementation<
+  Privileged,
+  Configure,
+  "Configure",
+  Lobby.Lobby
+> {
+  protected readonly name = "Configure";
+
+  protected handle: Handler.Custom<Configure, Lobby.Lobby> = (
+    auth,
+    lobby,
+    action
+  ) => {
+    const version = lobby.config.version;
+    for (const op of action.change) {
+      validate(op);
     }
-  }
-  validated = _validateConfig(patched);
-  const { result, events, tasks } = apply(
-    auth.gc,
-    lobby,
-    lobby.config,
-    validated
-  );
-  lobby.config = result;
-  const testVersion: TestOperation = {
-    op: "test",
-    path: "/version",
-    value: version.toString()
+    let validated = null;
+    const patched = JSON.parse(JSON.stringify(Config.censor(lobby.config)));
+    for (const error of Rfc6902.applyPatch(patched, action.change)) {
+      if (error instanceof Rfc6902Patch.TestError) {
+        throw new ConfigEditConflictError(action, error.expected, error.actual);
+      } else if (error !== null) {
+        throw new InvalidActionError(`${error.name}: ${error.message}`);
+      }
+    }
+    validated = _validateConfig(patched);
+    const { result, events, tasks } = apply(
+      auth.gc,
+      lobby,
+      lobby.config,
+      validated
+    );
+    lobby.config = result;
+    const testVersion: TestOperation = {
+      op: "test",
+      path: "/version",
+      value: version.toString()
+    };
+    const replaceVersion: ReplaceOperation = {
+      op: "replace",
+      path: "/version",
+      value: lobby.config.version.toString()
+    };
+    const patch = [testVersion, ...action.change, replaceVersion];
+    return {
+      lobby,
+      events: [Event.targetAll(Configured.of(patch)), ...events],
+      tasks: tasks
+    };
   };
-  const replaceVersion: ReplaceOperation = {
-    op: "replace",
-    path: "/version",
-    value: lobby.config.version.toString()
-  };
-  const patch = [testVersion, ...action.change, replaceVersion];
-  return {
-    lobby,
-    events: [event.targetAll(configured.of(patch)), ...events],
-    tasks: tasks
-  };
-};
+}
+
+export const actions = new ConfigureActions();

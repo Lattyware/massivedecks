@@ -1,17 +1,17 @@
-import * as user from "../../user";
+import * as User from "../../user";
 
 /**
- * Promotes a user to be privileged.
+ * Indicates a user's level of privilege has changed.
  */
 export interface PrivilegeChanged {
   event: "PrivilegeChanged";
-  user: user.Id;
-  privilege: user.Privilege;
+  user: User.Id;
+  privilege: User.Privilege;
 }
 
 export const of = (
-  user: user.Id,
-  privilege: user.Privilege
+  user: User.Id,
+  privilege: User.Privilege
 ): PrivilegeChanged => ({
   event: "PrivilegeChanged",
   user,

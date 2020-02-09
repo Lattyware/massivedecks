@@ -1,7 +1,7 @@
-import * as serverConfig from "./config";
-import * as decks from "./games/cards/decks";
-import * as deckSource from "./games/cards/source";
-import * as logging from "./logging";
+import * as ServerConfig from "./config";
+import * as Decks from "./games/cards/decks";
+import * as Source from "./games/cards/source";
+import * as Logging from "./logging";
 
 /**
  * A tag is used to check if there is a need to refresh the data in the cache.
@@ -38,15 +38,15 @@ export abstract class Cache {
   /**
    * The configuration for this cache.
    */
-  public abstract readonly config: serverConfig.Cache;
+  public abstract readonly config: ServerConfig.Cache;
 
   private async get<Always extends Tagged, Sometimes extends Tagged, Result>(
-    source: deckSource.Resolver,
+    source: Source.Resolver,
     getCachedAlways: (
-      source: deckSource.Resolver
+      source: Source.Resolver
     ) => Promise<Aged<Always> | undefined>,
-    cacheAlways: (source: deckSource.Resolver, value: Always) => void,
-    cacheSometimes: (source: deckSource.Resolver, value: Sometimes) => void,
+    cacheAlways: (source: Source.Resolver, value: Always) => void,
+    cacheSometimes: (source: Source.Resolver, value: Sometimes) => void,
     extract: (result: Result) => [Always, Sometimes | undefined],
     miss: () => Promise<Result>
   ): Promise<Always> {
@@ -64,7 +64,7 @@ export abstract class Cache {
   }
 
   private async cacheExpired(
-    source: deckSource.Resolver,
+    source: Source.Resolver,
     cached: Aged<Tagged>
   ): Promise<boolean> {
     if (
@@ -85,9 +85,9 @@ export abstract class Cache {
    *             to do so.
    */
   public async getSummary(
-    source: deckSource.Resolver,
-    miss: () => Promise<deckSource.AtLeastSummary>
-  ): Promise<deckSource.Summary> {
+    source: Source.Resolver,
+    miss: () => Promise<Source.AtLeastSummary>
+  ): Promise<Source.Summary> {
     return this.get(
       source,
       this.getCachedSummary.bind(this),
@@ -107,9 +107,9 @@ export abstract class Cache {
    *             to do so.
    */
   public async getTemplates(
-    source: deckSource.Resolver,
-    miss: () => Promise<deckSource.AtLeastTemplates>
-  ): Promise<decks.Templates> {
+    source: Source.Resolver,
+    miss: () => Promise<Source.AtLeastTemplates>
+  ): Promise<Decks.Templates> {
     return this.get(
       source,
       this.getCachedTemplates.bind(this),
@@ -124,20 +124,20 @@ export abstract class Cache {
    * Get the given summary from the cache.
    */
   public abstract async getCachedSummary(
-    source: deckSource.Resolver
-  ): Promise<Aged<deckSource.Summary> | undefined>;
+    source: Source.Resolver
+  ): Promise<Aged<Source.Summary> | undefined>;
 
   /**
    * Store the given summary in the cache.
    */
   public abstract async cacheSummary(
-    source: deckSource.Resolver,
-    summary: deckSource.Summary
+    source: Source.Resolver,
+    summary: Source.Summary
   ): Promise<void>;
 
   public cacheSummaryBackground(
-    source: deckSource.Resolver,
-    summary: deckSource.Summary
+    source: Source.Resolver,
+    summary: Source.Summary
   ): void {
     this.cacheSummary(source, summary).catch(Cache.logError);
   }
@@ -146,25 +146,25 @@ export abstract class Cache {
    * Get the given deck templates from the cache.
    */
   public abstract async getCachedTemplates(
-    source: deckSource.Resolver
-  ): Promise<Aged<decks.Templates> | undefined>;
+    source: Source.Resolver
+  ): Promise<Aged<Decks.Templates> | undefined>;
 
   /**
    * Store the given deck templates in the cache.
    */
   public abstract async cacheTemplates(
-    source: deckSource.Resolver,
-    templates: decks.Templates
+    source: Source.Resolver,
+    templates: Decks.Templates
   ): Promise<void>;
 
   public cacheTemplatesBackground(
-    source: deckSource.Resolver,
-    templates: decks.Templates
+    source: Source.Resolver,
+    templates: Decks.Templates
   ): void {
     this.cacheTemplates(source, templates).catch(Cache.logError);
   }
 
   private static logError = (error: Error): void => {
-    logging.logException("Error while caching.", error);
+    Logging.logException("Error while caching.", error);
   };
 }

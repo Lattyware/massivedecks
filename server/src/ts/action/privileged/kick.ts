@@ -1,35 +1,30 @@
-import { Action } from "../../action";
+import * as Actions from "./../actions";
 import { InvalidActionError } from "../../errors/validation";
-import * as event from "../../event";
-import * as presenceChanged from "../../events/lobby-event/presence-changed";
-import { Lobby } from "../../lobby";
+import * as Event from "../../event";
+import * as PresenceChanged from "../../events/lobby-event/presence-changed";
+import * as Lobby from "../../lobby";
 import { Change } from "../../lobby/change";
 import { ServerState } from "../../server-state";
-import { default as timeout, TimeoutAfter } from "../../timeout";
-import { User } from "../../user";
-import { Handler } from "../handler";
-import * as user from "../../user";
+import * as Timeout from "../../timeout";
+import * as User from "../../user";
+import * as Handler from "../handler";
+import { Privileged } from "../privileged";
 
 /**
  * A player asks to leave the game.
  */
 export interface Kick {
   action: "Kick";
-  user: user.Id;
+  user: User.Id;
 }
 
-type NameType = "Kick";
-const name: NameType = "Kick";
-
-export const is = (action: Action): action is Kick => action.action === name;
-
 export const removeUser = (
-  userId: user.Id,
-  lobby: Lobby,
+  userId: User.Id,
+  lobby: Lobby.Lobby,
   server: ServerState,
-  leaveReason: presenceChanged.LeaveReason
+  leaveReason: PresenceChanged.LeaveReason
 ): Change => {
-  const user = lobby.users.get(userId) as User;
+  const user = lobby.users.get(userId) as User.User;
   user.presence = "Left";
 
   if (user.control === "Computer") {
@@ -37,16 +32,16 @@ export const removeUser = (
   }
 
   const allEvents = [
-    event.targetAllAndPotentiallyClose(
-      presenceChanged.left(userId, leaveReason),
+    Event.targetAllAndPotentiallyClose(
+      PresenceChanged.left(userId, leaveReason),
       id => id === userId
     )
   ];
-  const allTimeouts: TimeoutAfter[] = [];
+  const allTimeouts: Timeout.After[] = [];
 
   const addResult = (eventsAndTimeouts: {
-    events?: Iterable<event.Distributor>;
-    timeouts?: Iterable<timeout.TimeoutAfter>;
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
   }): void => {
     const { events, timeouts } = eventsAndTimeouts;
     if (events) {
@@ -79,5 +74,20 @@ export const removeUser = (
   };
 };
 
-export const handle: Handler<Kick> = (auth, lobby, action, server) =>
-  removeUser(action.user, lobby, server, "Kicked");
+class KickActions extends Actions.Implementation<
+  Privileged,
+  Kick,
+  "Kick",
+  Lobby.Lobby
+> {
+  protected readonly name = "Kick";
+
+  protected handle: Handler.Custom<Kick, Lobby.Lobby> = (
+    auth,
+    lobby,
+    action,
+    server
+  ) => removeUser(action.user, lobby, server, "Kicked");
+}
+
+export const actions = new KickActions();

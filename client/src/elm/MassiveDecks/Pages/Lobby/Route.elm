@@ -20,14 +20,12 @@ type alias Route =
 type Section
     = Configure
     | Play
+    | Spectate
 
 
 route : List String -> Maybe String -> Maybe Route
 route parts _ =
     case parts of
-        _ :: _ :: "spectate" :: _ ->
-            Nothing
-
         name :: gameCode :: sectionName ->
             let
                 section =
@@ -36,6 +34,9 @@ route parts _ =
 
                     else if sectionName == [ playName ] then
                         Just Play
+
+                    else if sectionName == [ spectateName ] then
+                        Just Spectate
 
                     else
                         Nothing
@@ -81,6 +82,11 @@ playName =
     "play"
 
 
+spectateName : String
+spectateName =
+    "spectate"
+
+
 sectionToString : Section -> String
 sectionToString section =
     case section of
@@ -89,3 +95,6 @@ sectionToString section =
 
         Play ->
             playName
+
+        Spectate ->
+            spectateName

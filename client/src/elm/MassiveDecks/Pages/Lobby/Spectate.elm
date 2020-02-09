@@ -1,13 +1,10 @@
-module MassiveDecks.Pages.Spectate exposing
-    ( changeRoute
-    , init
-    , initWithAuth
-    , route
-    , subscriptions
+module MassiveDecks.Pages.Lobby.Spectate exposing
+    ( init
     , update
     , view
     )
 
+import Dict
 import FontAwesome.Attributes as Icon
 import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
@@ -15,125 +12,115 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Components as Component
-import MassiveDecks.Error.Model exposing (Error)
-import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Lobby as Lobby
+import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Auth)
+import MassiveDecks.Pages.Lobby.Route as Lobby
+import MassiveDecks.Pages.Lobby.Spectate.Messages exposing (Msg(..))
+import MassiveDecks.Pages.Lobby.Spectate.Model exposing (Model)
+import MassiveDecks.Pages.Lobby.Spectate.Stages.Postgame as Postgame
+import MassiveDecks.Pages.Lobby.Spectate.Stages.Pregame as Pregame
+import MassiveDecks.Pages.Lobby.Spectate.Stages.Round as Round
 import MassiveDecks.Pages.Route as Route
-import MassiveDecks.Pages.Spectate.Messages exposing (Msg(..))
-import MassiveDecks.Pages.Spectate.Model exposing (Model)
-import MassiveDecks.Pages.Spectate.Route exposing (Route)
-import MassiveDecks.Pages.Spectate.Stages.Postgame as Postgame
-import MassiveDecks.Pages.Spectate.Stages.Pregame as Pregame
-import MassiveDecks.Pages.Spectate.Stages.Round as Round
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.User as User
 import QRCode
 import Url exposing (Url)
 
 
-changeRoute : Route -> Model -> ( Model, Cmd Global.Msg )
-changeRoute r model =
-    let
-        ( lobby, cmd ) =
-            Lobby.changeRoute { gameCode = r.gameCode, section = Nothing } model.lobby
-    in
-    ( { model | lobby = lobby }, cmd )
+init : Model
+init =
+    { advertise = True }
 
 
-route : Model -> Route
-route model =
-    { gameCode = model.lobby.route.gameCode }
-
-
-init : Shared -> Route -> Maybe Auth -> Route.Fork ( Model, Cmd Global.Msg )
-init shared initialRoute auth =
-    case Lobby.init shared { gameCode = initialRoute.gameCode, section = Nothing } auth of
-        Route.Continue ( lobby, cmd ) ->
-            Route.Continue ( { lobby = lobby, advertise = True }, cmd )
-
-        Route.Redirect redirectTo ->
-            Route.Redirect redirectTo
-
-
-initWithAuth : Auth -> ( Model, Cmd Global.Msg )
-initWithAuth auth =
-    let
-        ( lobby, cmd ) =
-            Lobby.initWithAuth { gameCode = auth.claims.gc, section = Nothing } auth
-    in
-    ( { lobby = lobby, advertise = True }, cmd )
-
-
-view : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
-view wrap changePage shared model =
+view : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Lobby.Model -> List (Html msg)
+view wrap changePage shared lobby =
     let
         advert =
-            if model.advertise then
-                advertise shared model.lobby.route.gameCode
+            if lobby.spectate.advertise then
+                advertise shared lobby.route.gameCode
 
             else
                 []
     in
     [ Html.div [ HtmlA.id "spectate" ]
         (List.concat
-            [ viewSettings wrap changePage shared model
+            [ viewSettings wrap changePage shared lobby
             , advert
-            , viewStage shared model
+            , viewStage shared lobby
             ]
         )
     ]
 
 
-subscriptions : (Msg -> msg) -> (Error -> msg) -> Model -> Sub msg
-subscriptions wrap handleError model =
-    Lobby.subscriptions (LobbyMsg >> wrap) handleError model.lobby
-
-
-update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Model, Shared, Cmd msg )
-update wrap shared msg model =
+update : Msg -> Model -> ( Model, Cmd msg )
+update msg model =
     case msg of
-        LobbyMsg lobbyMsg ->
-            case Lobby.update (LobbyMsg >> wrap) shared lobbyMsg model.lobby of
-                ( Lobby.Stay newModel, newShared, cmd ) ->
-                    ( { model | lobby = newModel }, newShared, cmd )
-
-                _ ->
-                    ( model, shared, Cmd.none )
+        BecomePlayer ->
+            ( model, Actions.setUserRole User.Player )
 
         ToggleAdvert ->
-            ( { model | advertise = not model.advertise }, shared, Cmd.none )
+            ( { model | advertise = not model.advertise }, Cmd.none )
 
 
 
 {- Private -}
 
 
-viewSettings : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Model -> List (Html msg)
-viewSettings wrap changePage shared model =
+viewSettings : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Lobby.Model -> List (Html msg)
+viewSettings wrap changePage shared lobby =
     if not shared.remoteMode then
         let
             advertiseIcon =
-                if model.advertise then
+                if lobby.spectate.advertise then
                     Icon.eyeSlash
 
                 else
                     Icon.eye
+
+            route =
+                lobby.route
+
+            role l =
+                l.users |> Dict.get lobby.auth.claims.uid |> Maybe.map .role
+
+            ( backAction, backDescription ) =
+                case lobby.lobby |> Maybe.andThen role |> Maybe.withDefault User.Spectator of
+                    User.Player ->
+                        ( { route | section = Nothing } |> Route.Lobby |> changePage, Strings.ReturnViewToGameDescription )
+
+                    User.Spectator ->
+                        ( wrap BecomePlayer, Strings.BecomePlayerDescription )
         in
-        [ Component.iconButton [ model.lobby.route |> Route.Lobby |> changePage |> HtmlE.onClick ] Icon.arrowLeft
-        , Component.iconButton [ ToggleAdvert |> wrap |> HtmlE.onClick ] advertiseIcon
+        [ Html.div [ HtmlA.id "spectate-actions" ]
+            [ Component.iconButton
+                [ backAction |> HtmlE.onClick
+                , backDescription |> Lang.title shared
+                ]
+                Icon.arrowLeft
+            , Component.iconButton
+                [ { route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> HtmlE.onClick
+                , Strings.ViewConfgiurationDescription |> Lang.title shared
+                ]
+                Icon.cog
+            , Component.iconButton
+                [ ToggleAdvert |> wrap |> HtmlE.onClick
+                , Strings.ToggleAdvertDescription |> Lang.title shared
+                ]
+                advertiseIcon
+            ]
         ]
 
     else
         []
 
 
-viewStage : Shared -> Model -> List (Html msg)
-viewStage shared model =
-    case model.lobby.lobby of
+viewStage : Shared -> Lobby.Model -> List (Html msg)
+viewStage shared lobbyModel =
+    case lobbyModel.lobby of
         Just lobby ->
             case lobby.game of
                 Just game ->

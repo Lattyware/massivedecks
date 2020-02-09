@@ -1,13 +1,12 @@
-import * as source from "../games/cards/source";
-import { Rules } from "../games/rules";
-import * as rules from "../games/rules";
+import * as Source from "../games/cards/source";
+import * as Rules from "../games/rules";
 
 /**
  * Configuration for a lobby.
  */
 export interface Config {
   version: Version;
-  rules: Rules;
+  rules: Rules.Rules;
   public: boolean;
   password?: string;
   decks: ConfiguredSource[];
@@ -17,7 +16,7 @@ export type Version = number;
 
 export interface Public {
   version: string;
-  rules: rules.Public;
+  rules: Rules.Public;
   public?: boolean;
   password?: string;
   decks: ConfiguredSource[];
@@ -32,8 +31,8 @@ export type ConfiguredSource = SummarisedSource | FailedSource;
  * A deck source that is loading or has loaded.
  */
 export interface SummarisedSource {
-  source: source.External;
-  summary?: source.Summary;
+  source: Source.External;
+  summary?: Source.Summary;
 }
 
 /**
@@ -45,7 +44,7 @@ export type FailReason = "SourceFailure" | "NotFound";
  * A deck source that has failed to load.
  */
 export interface FailedSource {
-  source: source.External;
+  source: Source.External;
   failure: FailReason;
 }
 
@@ -54,7 +53,7 @@ export const isFailed = (source: ConfiguredSource): source is FailedSource =>
 
 export const censor = (config: Config): Public => ({
   version: config.version.toString(),
-  rules: rules.censor(config.rules),
+  rules: Rules.censor(config.rules),
   decks: config.decks,
   ...(config.public ? { public: true } : {}),
   ...(config.password !== undefined ? { password: config.password } : {})

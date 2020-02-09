@@ -1,14 +1,13 @@
-import * as user from "../../../user";
-import * as play from "../../cards/play";
-import { Play } from "../../cards/play";
+import * as User from "../../../user";
+import * as Play from "../../cards/play";
 import { Round } from "../round";
 
 export interface StoredPlay {
-  id: play.Id;
-  playedBy: user.Id;
-  play: Play;
+  id: Play.Id;
+  playedBy: User.Id;
+  play: Play.Play;
   revealed: boolean;
-  likes: Set<user.Id>;
+  likes: Set<User.Id>;
 }
 
 export type Unrevealed = StoredPlay & { revealed: false };

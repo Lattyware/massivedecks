@@ -1,115 +1,118 @@
-import { Action } from "../../../action";
 import { IncorrectUserRoleError } from "../../../errors/action-execution-error";
 import { InvalidActionError } from "../../../errors/validation";
-import * as event from "../../../event";
-import * as playSubmitted from "../../../events/game-event/play-submitted";
-import * as card from "../../../games/cards/card";
-import * as play from "../../../games/cards/play";
-import { Play } from "../../../games/cards/play";
-import * as round from "../../../games/game/round";
-import * as finishedPlaying from "../../../timeout/finished-playing";
-import * as gameAction from "../../game-action";
+import * as Event from "../../../event";
+import * as PlaySubmitted from "../../../events/game-event/play-submitted";
+import * as Card from "../../../games/cards/card";
+import * as Play from "../../../games/cards/play";
+import * as Round from "../../../games/game/round";
+import * as Lobby from "../../../lobby";
+import * as FinishedPlaying from "../../../timeout/finished-playing";
+import * as Actions from "../../actions";
+import * as Handler from "../../handler";
+import { Player } from "../player";
 
 /**
  * A player plays a white card into a round.
  */
 export interface Submit {
-  action: NameType;
-  play: (card.Id | FilledBlankCard)[];
+  action: "Submit";
+  play: (Card.Id | FilledBlankCard)[];
 }
 
 export interface FilledBlankCard {
-  id: card.Id;
+  id: Card.Id;
   text: string;
 }
 
 const isFilledBlankCard = (
-  card: card.Id | FilledBlankCard
+  card: Card.Id | FilledBlankCard
 ): card is FilledBlankCard => typeof card !== "string";
 
-type NameType = "Submit";
-const name: NameType = "Submit";
+class SubmitActions extends Actions.Implementation<
+  Player,
+  Submit,
+  "Submit",
+  Lobby.WithActiveGame
+> {
+  protected readonly name = "Submit";
 
-/**
- * Check if an action is a submit action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is Submit => action.action === name;
-
-export const handle: gameAction.Handler<Submit> = (
-  auth,
-  lobby,
-  action,
-  server
-) => {
-  const lobbyRound = lobby.game.round;
-  if (lobbyRound.verifyStage<round.Playing>(action, "Playing")) {
-    const playId = play.id();
-    const plays = lobbyRound.plays;
-    if (plays.find(play => play.playedBy === auth.uid)) {
-      throw new InvalidActionError("Already played into round.");
-    }
-    const playLength = action.play.length;
-    const slotCount = card.slotCount(lobbyRound.call);
-    if (playLength !== slotCount) {
-      throw new InvalidActionError(
-        "The play must have the same number of responses as the call " +
-          `has slots (expected ${slotCount}, got ${playLength}).`
-      );
-    }
-    const player = lobby.game.players.get(auth.uid);
-    if (player === undefined) {
-      throw new IncorrectUserRoleError(action, "Spectator", "Player");
-    }
-    const cards = new Set(action.play);
-    const extractedPlay: Play = [];
-    for (const playedCard of cards) {
-      const id = isFilledBlankCard(playedCard) ? playedCard.id : playedCard;
-      const played = player.hand.find(c => c.id === id);
-      if (played === undefined) {
+  protected handle: Handler.Custom<Submit, Lobby.WithActiveGame> = (
+    auth,
+    lobby,
+    action,
+    server
+  ) => {
+    const lobbyRound = lobby.game.round;
+    if (lobbyRound.verifyStage<Round.Playing>(action, "Playing")) {
+      const playId = Play.id();
+      const plays = lobbyRound.plays;
+      if (plays.find(play => play.playedBy === auth.uid)) {
+        throw new InvalidActionError("Already played into round.");
+      }
+      const playLength = action.play.length;
+      const slotCount = Card.slotCount(lobbyRound.call);
+      if (playLength !== slotCount) {
         throw new InvalidActionError(
-          "The given card doesn't exist or isn't in the player's hand."
+          "The play must have the same number of responses as the call " +
+            `has slots (expected ${slotCount}, got ${playLength}).`
         );
       }
-      if (card.isBlankResponse(played)) {
-        if (isFilledBlankCard(playedCard)) {
-          extractedPlay.push({
-            text: playedCard.text,
-            ...played
-          });
-        } else {
+      const player = lobby.game.players.get(auth.uid);
+      if (player === undefined) {
+        throw new IncorrectUserRoleError(action, "Spectator", "Player");
+      }
+      const cards = new Set(action.play);
+      const extractedPlay: Play.Play = [];
+      for (const playedCard of cards) {
+        const id = isFilledBlankCard(playedCard) ? playedCard.id : playedCard;
+        const played = player.hand.find(c => c.id === id);
+        if (played === undefined) {
           throw new InvalidActionError(
-            "The given card is blank, but the play didn't provide the value."
+            "The given card doesn't exist or isn't in the player's hand."
           );
         }
-      } else {
-        if (isFilledBlankCard(playedCard)) {
-          throw new InvalidActionError(
-            "The given card is not blank, but the play provided a value."
-          );
+        if (Card.isBlankResponse(played)) {
+          if (isFilledBlankCard(playedCard)) {
+            extractedPlay.push({
+              text: playedCard.text,
+              ...played
+            });
+          } else {
+            throw new InvalidActionError(
+              "The given card is blank, but the play didn't provide the value."
+            );
+          }
         } else {
-          extractedPlay.push(played);
+          if (isFilledBlankCard(playedCard)) {
+            throw new InvalidActionError(
+              "The given card is not blank, but the play provided a value."
+            );
+          } else {
+            extractedPlay.push(played);
+          }
         }
       }
-    }
-    plays.push({
-      id: playId,
-      play: extractedPlay,
-      playedBy: auth.uid,
-      revealed: false,
-      likes: new Set()
-    });
-    const events = [event.targetAll(playSubmitted.of(auth.uid))];
-    const timeouts = [];
-    const timeout = finishedPlaying.ifNeeded(lobbyRound);
-    if (timeout !== undefined) {
-      timeouts.push({
-        timeout: timeout,
-        after: server.config.timeouts.finishedPlayingDelay
+      plays.push({
+        id: playId,
+        play: extractedPlay,
+        playedBy: auth.uid,
+        revealed: false,
+        likes: new Set()
       });
+      const events = [Event.targetAll(PlaySubmitted.of(auth.uid))];
+      const timeouts = [];
+      const timeout = FinishedPlaying.ifNeeded(lobbyRound);
+      if (timeout !== undefined) {
+        timeouts.push({
+          timeout: timeout,
+          after: server.config.timeouts.finishedPlayingDelay
+        });
+      }
+      return { lobby, events, timeouts };
+    } else {
+      return {};
     }
-    return { lobby, events, timeouts };
-  } else {
-    return {};
-  }
-};
+  };
+}
+
+export const actions = new SubmitActions();

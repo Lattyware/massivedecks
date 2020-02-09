@@ -1,11 +1,11 @@
 import wu from "wu";
-import * as event from "../event";
-import * as startRevealing from "../events/game-event/start-revealing";
-import * as card from "../games/cards/card";
-import * as round from "../games/game/round";
-import * as timeout from "../timeout";
-import * as util from "../util";
-import * as roundStageTimerDone from "./round-stage-timer-done";
+import * as Event from "../event";
+import * as StartRevealing from "../events/game-event/start-revealing";
+import * as Card from "../games/cards/card";
+import * as Round from "../games/game/round";
+import * as Timeout from "../timeout";
+import * as Util from "../util";
+import * as RoundStageTimerDone from "./round-stage-timer-done";
 
 /**
  * Indicates that the round should start the judging phase if it is appropriate
@@ -15,19 +15,19 @@ export interface FinishedPlaying {
   timeout: "FinishedPlaying";
 }
 
-const isFinished = (round: round.Playing): boolean => {
+const isFinished = (round: Round.Playing): boolean => {
   const hasPlayed = new Set(wu(round.plays).map(play => play.playedBy));
-  return util.setEquals(round.players, hasPlayed);
+  return Util.setEquals(round.players, hasPlayed);
 };
 
 export const of = (): FinishedPlaying => ({
   timeout: "FinishedPlaying"
 });
 
-export const ifNeeded = (playing: round.Playing): FinishedPlaying | undefined =>
+export const ifNeeded = (playing: Round.Playing): FinishedPlaying | undefined =>
   isFinished(playing) ? of() : undefined;
 
-export const handle: timeout.Handler<FinishedPlaying> = (
+export const handle: Timeout.Handler<FinishedPlaying> = (
   server,
   timeout,
   gameCode,
@@ -49,7 +49,7 @@ export const handle: timeout.Handler<FinishedPlaying> = (
     responses.discard(play.play);
   }
 
-  const slotCount = card.slotCount(round.call);
+  const slotCount = Card.slotCount(round.call);
   const extraCards =
     slotCount > 2 ||
     (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
@@ -74,11 +74,11 @@ export const handle: timeout.Handler<FinishedPlaying> = (
     wu(game.round.plays).map(play => play.id)
   );
   const events = [
-    event.additionally(startRevealing.of(playsToBeRevealed), newCardsByPlayer)
+    Event.additionally(StartRevealing.of(playsToBeRevealed), newCardsByPlayer)
   ];
 
   const timeouts = [];
-  const timer = roundStageTimerDone.ifEnabled(
+  const timer = RoundStageTimerDone.ifEnabled(
     game.round,
     game.rules.timeLimits
   );

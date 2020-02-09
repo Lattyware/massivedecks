@@ -6,7 +6,6 @@ import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Route exposing (Route)
-import MassiveDecks.Pages.Spectate.Messages as Spectate
 import MassiveDecks.Pages.Start.Messages as Start
 import MassiveDecks.Settings.Messages as Settings
 import MassiveDecks.Speech as Speech
@@ -21,7 +20,6 @@ type Msg
     | JoinLobby String Lobby.Auth
     | StartMsg Start.Msg
     | LobbyMsg Lobby.Msg
-    | SpectateMsg Spectate.Msg
     | SettingsMsg Settings.Msg
     | ErrorMsg Error.Msg
     | SpeechMsg Speech.Msg

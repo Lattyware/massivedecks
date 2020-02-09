@@ -1,41 +1,50 @@
-import { Action } from "../../action";
+import * as Actions from "./../actions";
 import { InvalidActionError } from "../../errors/validation";
-import * as event from "../../event";
-import * as privilegeChanged from "../../events/lobby-event/privilege-changed";
-import * as user from "../../user";
-import { User } from "../../user";
-import { Handler } from "../handler";
+import * as Event from "../../event";
+import * as PrivilegeChanged from "../../events/lobby-event/privilege-changed";
+import * as Lobby from "../../lobby";
+import * as User from "../../user";
+import * as Handler from "../handler";
+import { Privileged } from "../privileged";
 
 /**
  * A privileged user asks to change the privilege of another user.
  */
 export interface SetPrivilege {
-  action: NameType;
-  user: user.Id;
-  privilege: user.Privilege;
+  action: "SetPrivilege";
+  user: User.Id;
+  privilege: User.Privilege;
 }
 
-type NameType = "SetPrivilege";
-const name: NameType = "SetPrivilege";
+class SetPrivilegeActions extends Actions.Implementation<
+  Privileged,
+  SetPrivilege,
+  "SetPrivilege",
+  Lobby.Lobby
+> {
+  protected readonly name = "SetPrivilege";
 
-export const is = (action: Action): action is SetPrivilege =>
-  action.action === name;
+  protected handle: Handler.Custom<SetPrivilege, Lobby.Lobby> = (
+    auth,
+    lobby,
+    action
+  ) => {
+    const user = lobby.users.get(action.user) as User.User;
 
-export const handle: Handler<SetPrivilege> = (auth, lobby, action) => {
-  const user = lobby.users.get(action.user) as User;
+    if (user.control === "Computer") {
+      throw new InvalidActionError("Can't do this with AIs.");
+    }
 
-  if (user.control === "Computer") {
-    throw new InvalidActionError("Can't do this with AIs.");
-  }
+    const privilege = action.privilege;
 
-  const privilege = action.privilege;
-
-  if (user.privilege !== privilege) {
-    user.privilege = privilege;
-    return {
-      lobby,
-      events: [event.targetAll(privilegeChanged.of(action.user, privilege))]
-    };
-  }
-  return {};
-};
+    if (user.privilege !== privilege) {
+      user.privilege = privilege;
+      return {
+        lobby,
+        events: [Event.targetAll(PrivilegeChanged.of(action.user, privilege))]
+      };
+    }
+    return {};
+  };
+}
+export const actions = new SetPrivilegeActions();

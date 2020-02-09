@@ -1,8 +1,8 @@
 import HttpStatus from "http-status-codes";
-import * as errors from "../errors";
+import * as Errors from "../errors";
 
-export abstract class GameStateError extends errors.MassiveDecksError<
-  errors.Details
+export abstract class GameStateError extends Errors.MassiveDecksError<
+  Errors.Details
 > {
   public readonly status: number = HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -20,7 +20,7 @@ export class OutOfCardsError extends GameStateError {
     Error.captureStackTrace(this, OutOfCardsError);
   }
 
-  public details = (): errors.Details => ({
+  public details = (): Errors.Details => ({
     error: "OutOfCards"
   });
 }

@@ -1,4 +1,4 @@
-module MassiveDecks.Pages.Spectate.Stages.Round exposing (view)
+module MassiveDecks.Pages.Lobby.Spectate.Stages.Round exposing (view)
 
 import Dict exposing (Dict)
 import FontAwesome.Icon as Icon

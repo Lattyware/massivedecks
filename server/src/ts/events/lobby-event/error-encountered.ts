@@ -1,4 +1,4 @@
-import * as errors from "../../errors";
+import * as Errors from "../../errors";
 
 /**
  * An error occurred in the lobby.
@@ -6,10 +6,10 @@ import * as errors from "../../errors";
  */
 export interface ErrorEncountered {
   event: "ErrorEncountered";
-  error: errors.Details;
+  error: Errors.Details;
 }
 
-export const of = (error: errors.Details): ErrorEncountered => ({
+export const of = (error: Errors.Details): ErrorEncountered => ({
   event: "ErrorEncountered",
   error
 });

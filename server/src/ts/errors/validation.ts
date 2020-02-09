@@ -1,11 +1,11 @@
 import HttpStatus from "http-status-codes";
-import * as errors from "../errors";
+import * as Errors from "../errors";
 
-export interface Details extends errors.Details {
+export interface Details extends Errors.Details {
   reason: string;
 }
 
-export class InvalidActionError extends errors.MassiveDecksError<Details> {
+export class InvalidActionError extends Errors.MassiveDecksError<Details> {
   public readonly status = HttpStatus.BAD_REQUEST;
   public readonly reason: string;
 

@@ -1,6 +1,6 @@
-import * as card from "./card";
+import * as Card from "./card";
 
 /**
  * A hand of cards.
  */
-export type Hand = card.PotentiallyBlankResponse[];
+export type Hand = Card.PotentiallyBlankResponse[];

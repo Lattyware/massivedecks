@@ -1,37 +1,44 @@
-import { Action } from "../../../action";
 import { InvalidActionError } from "../../../errors/validation";
-import * as event from "../../../event";
-import * as playTakenBack from "../../../events/game-event/play-taken-back";
-import * as round from "../../../games/game/round";
-import * as gameAction from "../../game-action";
+import * as Event from "../../../event";
+import * as PlayTakenBack from "../../../events/game-event/play-taken-back";
+import * as Round from "../../../games/game/round";
+import * as Lobby from "../../../lobby";
+import * as Actions from "../../actions";
+import * as Handler from "../../handler";
+import { Player } from "../player";
 
 /**
  * A player plays a white card into a round.
  */
 export interface TakeBack {
-  action: NameType;
+  action: "TakeBack";
 }
 
-type NameType = "TakeBack";
-const name: NameType = "TakeBack";
+class TakeBackActions extends Actions.Implementation<
+  Player,
+  TakeBack,
+  "TakeBack",
+  Lobby.WithActiveGame
+> {
+  protected readonly name = "TakeBack";
 
-/**
- * Check if an action is a take back action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is TakeBack =>
-  action.action === name;
-
-export const handle: gameAction.Handler<TakeBack> = (auth, lobby, action) => {
-  if (lobby.game.round.verifyStage<round.Playing>(action, "Playing")) {
-    const plays = lobby.game.round.plays;
-    const playIndex = plays.findIndex(play => play.playedBy === auth.uid);
-    if (playIndex < 0) {
-      throw new InvalidActionError("No play to take back.");
+  protected handle: Handler.Custom<TakeBack, Lobby.WithActiveGame> = (
+    auth,
+    lobby,
+    action
+  ) => {
+    if (lobby.game.round.verifyStage<Round.Playing>(action, "Playing")) {
+      const plays = lobby.game.round.plays;
+      const playIndex = plays.findIndex(play => play.playedBy === auth.uid);
+      if (playIndex < 0) {
+        throw new InvalidActionError("No play to take back.");
+      }
+      plays.splice(playIndex, 1);
+      return { lobby, events: [Event.targetAll(PlayTakenBack.of(auth.uid))] };
+    } else {
+      return {};
     }
-    plays.splice(playIndex, 1);
-    return { lobby, events: [event.targetAll(playTakenBack.of(auth.uid))] };
-  } else {
-    return {};
-  }
-};
+  };
+}
+
+export const actions = new TakeBackActions();

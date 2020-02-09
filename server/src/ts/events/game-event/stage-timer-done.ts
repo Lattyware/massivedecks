@@ -1,4 +1,4 @@
-import * as round from "../../games/game/round";
+import * as Round from "../../games/game/round";
 
 /**
  * Indicates that the stage timer has completed.
@@ -6,10 +6,10 @@ import * as round from "../../games/game/round";
 export interface StageTimerDone {
   event: "StageTimerDone";
   round: string;
-  stage: round.Stage;
+  stage: Round.Stage;
 }
 
-export const of = (roundId: round.Id, stage: round.Stage): StageTimerDone => ({
+export const of = (roundId: Round.Id, stage: Round.Stage): StageTimerDone => ({
   event: "StageTimerDone",
   round: roundId.toString(),
   stage

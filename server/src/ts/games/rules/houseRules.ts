@@ -1,6 +1,5 @@
 import { PackingHeat, Reboot, ComedyWriter } from "../rules";
-import * as rando from "./rando";
-import { Rando } from "./rando";
+import * as Rando from "./rando";
 
 /**
  * Non-standard rules that can be applied to a game.
@@ -9,7 +8,7 @@ export interface HouseRules {
   packingHeat?: PackingHeat;
   reboot?: Reboot;
   comedyWriter?: ComedyWriter;
-  rando: Rando;
+  rando: Rando.Rando;
 }
 
 /**
@@ -19,14 +18,14 @@ export interface Public {
   packingHeat?: PackingHeat;
   reboot?: Reboot;
   comedyWriter?: ComedyWriter;
-  rando?: rando.Public;
+  rando?: Rando.Public;
 }
 
 export const create = (): HouseRules => ({
-  rando: rando.create()
+  rando: Rando.create()
 });
 
 export const censor = (houseRules: HouseRules): Public => ({
   ...houseRules,
-  rando: rando.censor(houseRules.rando)
+  rando: Rando.censor(houseRules.rando)
 });

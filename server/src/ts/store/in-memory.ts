@@ -1,17 +1,13 @@
 import uuid from "uuid/v4";
 import wu from "wu";
 import { CreateLobby } from "../action/initial/create-lobby";
-import * as serverConfig from "../config";
+import * as ServerConfig from "../config";
 import { LobbyClosedError, LobbyDoesNotExistError } from "../errors/lobby";
-import * as gameLobby from "../lobby";
-import { Lobby } from "../lobby";
-import * as lobbyGameCode from "../lobby/game-code";
-import { GameCode } from "../lobby/game-code";
+import * as Lobby from "../lobby";
+import * as GameCode from "../lobby/game-code";
 import { Store, Transaction } from "../store";
-import * as timeout from "../timeout";
-import { Timeout } from "../timeout";
-import * as token from "../user/token";
-import { Token } from "../user/token";
+import * as Timeout from "../timeout";
+import * as Token from "../user/token";
 
 declare module "wu" {
   // Fix incorrect types.
@@ -22,8 +18,8 @@ declare module "wu" {
 }
 
 interface TimeoutMeta {
-  timeout: Timeout;
-  lobby: GameCode;
+  timeout: Timeout.Timeout;
+  lobby: GameCode.GameCode;
   after: number;
 }
 
@@ -31,13 +27,13 @@ interface TimeoutMeta {
  * A store where the data is stored in memory.
  */
 export class InMemoryStore extends Store {
-  public readonly config: serverConfig.InMemory;
+  public readonly config: ServerConfig.InMemory;
   private readonly _id: string;
-  private readonly lobbies: Map<GameCode, Lobby>;
-  private readonly timeouts: Map<timeout.Id, TimeoutMeta>;
+  private readonly lobbies: Map<GameCode.GameCode, Lobby.Lobby>;
+  private readonly timeouts: Map<Timeout.Id, TimeoutMeta>;
   private nextLobby: number;
 
-  public constructor(config: serverConfig.InMemory) {
+  public constructor(config: ServerConfig.InMemory) {
     super();
     this.config = config;
     this._id = uuid();
@@ -52,10 +48,10 @@ export class InMemoryStore extends Store {
     return this.lobbies.has(gameCode);
   }
 
-  public async *lobbySummaries(): AsyncIterableIterator<gameLobby.Summary> {
+  public async *lobbySummaries(): AsyncIterableIterator<Lobby.Summary> {
     const publicSummaries = wu(this.lobbies.entries())
       .filter(([_, l]) => l.config.public)
-      .spreadMap(gameLobby.summary);
+      .spreadMap(Lobby.summary);
     for (const summary of publicSummaries) {
       yield summary;
     }
@@ -64,14 +60,14 @@ export class InMemoryStore extends Store {
   public async newLobby(
     creation: CreateLobby,
     secret: string
-  ): Promise<{ gameCode: GameCode; token: Token }> {
-    const lobby = gameLobby.create(creation);
-    const gameCode = lobbyGameCode.encode(this.nextLobby);
+  ): Promise<{ gameCode: GameCode.GameCode; token: Token.Token }> {
+    const lobby = Lobby.create(creation);
+    const gameCode = GameCode.encode(this.nextLobby);
     this.nextLobby += 1;
     this.lobbies.set(gameCode, lobby);
     return {
       gameCode,
-      token: token.create(
+      token: Token.create(
         {
           gc: gameCode,
           uid: lobby.owner
@@ -82,12 +78,12 @@ export class InMemoryStore extends Store {
     };
   }
 
-  private async lobby(gameCode: GameCode): Promise<Lobby> {
+  private async lobby(gameCode: GameCode.GameCode): Promise<Lobby.Lobby> {
     const lobby = this.lobbies.get(gameCode.toUpperCase());
     if (lobby !== undefined) {
       return lobby;
     } else {
-      const lobbyNumber = lobbyGameCode.decode(gameCode);
+      const lobbyNumber = GameCode.decode(gameCode);
       if (lobbyNumber < this.nextLobby) {
         throw new LobbyClosedError(gameCode);
       } else {
@@ -97,8 +93,8 @@ export class InMemoryStore extends Store {
   }
 
   public async writeAndReturn<T>(
-    gameCode: GameCode,
-    write: (lobby: Lobby) => { transaction: Transaction; result: T }
+    gameCode: GameCode.GameCode,
+    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T }
   ): Promise<T> {
     const { transaction, result } = write(await this.lobby(gameCode));
     if (transaction.lobby !== undefined) {
@@ -120,7 +116,7 @@ export class InMemoryStore extends Store {
   }
 
   public async garbageCollect(): Promise<number> {
-    const toRemove = new Set<GameCode>();
+    const toRemove = new Set<GameCode.GameCode>();
     for (const [gameCode, lobby] of this.lobbies.entries()) {
       if (
         wu(lobby.users.values()).every(
@@ -136,7 +132,7 @@ export class InMemoryStore extends Store {
     return toRemove.size;
   }
 
-  public async delete(gameCode: GameCode): Promise<void> {
+  public async delete(gameCode: GameCode.GameCode): Promise<void> {
     this.lobbies.delete(gameCode);
     for (const [id, meta] of this.timeouts) {
       if (meta.lobby === gameCode) {
@@ -145,7 +141,7 @@ export class InMemoryStore extends Store {
     }
   }
 
-  public async *timedOut(): AsyncIterableIterator<timeout.TimedOut> {
+  public async *timedOut(): AsyncIterableIterator<Timeout.TimedOut> {
     const done = [];
     for (const [id, meta] of this.timeouts) {
       if (Date.now() > meta.after) {

@@ -31,9 +31,10 @@ type Event
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : Json.Patch }
       -- Not a game event because we don't need to be in a game
-    | GameStarted { round : Round.Playing, hand : List Card.PotentiallyBlankResponse }
+    | GameStarted { round : Round.Playing, hand : Maybe (List Card.PotentiallyBlankResponse) }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
+    | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.PotentiallyBlankResponse) }
     | ErrorEncountered { error : MdError.GameStateError }
 
 

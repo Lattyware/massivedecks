@@ -1,64 +1,66 @@
-import { Action } from "../../../action";
 import { InvalidActionError } from "../../../errors/validation";
-import * as event from "../../../event";
-import * as playRevealed from "../../../events/game-event/play-revealed";
-import * as play from "../../../games/cards/play";
-import * as round from "../../../games/game/round";
-import * as roundStageTimerDone from "../../../timeout/round-stage-timer-done";
-import * as gameAction from "../../game-action";
+import * as Event from "../../../event";
+import * as PlayRevealed from "../../../events/game-event/play-revealed";
+import * as Play from "../../../games/cards/play";
+import * as Round from "../../../games/game/round";
+import * as Lobby from "../../../lobby";
+import * as RoundStageTimerDone from "../../../timeout/round-stage-timer-done";
+import * as Handler from "../../handler";
+import { Czar } from "../czar";
+import * as Actions from "./../../actions";
 
 /**
  * A user judges the winning play for a round.
  */
 export interface Reveal {
-  action: NameType;
-  play: play.Id;
+  action: "Reveal";
+  play: Play.Id;
 }
 
-type NameType = "Reveal";
-const name: NameType = "Reveal";
+class RevealAction extends Actions.Implementation<
+  Czar,
+  Reveal,
+  "Reveal",
+  Lobby.WithActiveGame
+> {
+  protected readonly name = "Reveal";
 
-/**
- * Check if an action is a reveal action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is Reveal => action.action === name;
-
-/**
- * Handle a Judge action.
- * @param auth The claims for the user attempting to perform the action.
- * @param lobby The lobby the user is attempting to perform the action in.
- * @param action The action.
- */
-export const handle: gameAction.Handler<Reveal> = (auth, lobby, action) => {
-  const lobbyRound = lobby.game.round;
-  if (lobbyRound.verifyStage<round.Revealing>(action, "Revealing")) {
-    const play = lobbyRound.plays.find(play => play.id === action.play);
-    if (play === undefined) {
-      throw new InvalidActionError("Given play doesn't exist.");
-    }
-    if (play.revealed) {
+  protected handle: Handler.Custom<Reveal, Lobby.WithActiveGame> = (
+    auth,
+    lobby,
+    action
+  ) => {
+    const lobbyRound = lobby.game.round;
+    if (lobbyRound.verifyStage<Round.Revealing>(action, "Revealing")) {
+      const play = lobbyRound.plays.find(play => play.id === action.play);
+      if (play === undefined) {
+        throw new InvalidActionError("Given play doesn't exist.");
+      }
+      if (play.revealed) {
+        return {};
+      }
+      play.revealed = true;
+      const timeouts = [];
+      const advancedRound = lobbyRound.advance();
+      if (advancedRound !== null) {
+        lobby.game.round = advancedRound;
+        const timer = RoundStageTimerDone.ifEnabled(
+          lobbyRound,
+          lobby.game.rules.timeLimits
+        );
+        if (timer !== undefined) {
+          timeouts.push(timer);
+        }
+      }
+      return {
+        lobby,
+        events: [Event.targetAll(PlayRevealed.of(play.id, play.play))],
+        timeouts: timeouts
+      };
+    } else {
       return {};
     }
-    play.revealed = true;
-    const timeouts = [];
-    const advancedRound = lobbyRound.advance();
-    if (advancedRound !== null) {
-      lobby.game.round = advancedRound;
-      const timer = roundStageTimerDone.ifEnabled(
-        lobbyRound,
-        lobby.game.rules.timeLimits
-      );
-      if (timer !== undefined) {
-        timeouts.push(timer);
-      }
-    }
-    return {
-      lobby,
-      events: [event.targetAll(playRevealed.of(play.id, play.play))],
-      timeouts: timeouts
-    };
-  } else {
-    return {};
-  }
-};
+  };
+}
+
+export const actions = new RevealAction();

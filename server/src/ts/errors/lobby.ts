@@ -1,16 +1,16 @@
 import HttpStatus from "http-status-codes";
-import * as errors from "../errors";
+import * as Errors from "../errors";
 import { GameCode } from "../lobby/game-code";
 
 export type Reason = "Closed" | "DoesNotExist";
 
-export interface Details extends errors.Details {
+export interface Details extends Errors.Details {
   reason: Reason;
   gameCode: GameCode;
 }
 
 // Could happen on user typo.
-export abstract class LobbyNotFoundError extends errors.MassiveDecksError<
+export abstract class LobbyNotFoundError extends Errors.MassiveDecksError<
   Details
 > {
   abstract readonly reason: Reason;

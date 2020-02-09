@@ -1,23 +1,20 @@
 import { dealWithLostPlayer } from "../action/game-action/set-presence";
-import * as round from "../games/game/round";
-import { Round } from "../games/game/round";
+import * as Event from "../event";
+import * as StageTimerDone from "../events/game-event/stage-timer-done";
+import * as Round from "../games/game/round";
 import { RoundTimeLimits } from "../games/rules";
 import * as Lobby from "../lobby";
-import * as change from "../lobby/change";
-import { TimeoutAfter } from "../timeout";
-import * as timeout from "../timeout";
-import { assertNever } from "../util";
-import * as stageTimerDone from "../events/game-event/stage-timer-done";
-import * as event from "../event";
-import * as util from "../util";
+import * as Change from "../lobby/change";
+import * as Timeout from "../timeout";
+import * as Util from "../util";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
  */
 export interface RoundStageTimerDone {
   timeout: "RoundStageTimerDone";
-  round: round.Id;
-  stage: round.Stage;
+  round: Round.Id;
+  stage: Round.Stage;
 }
 
 /**
@@ -26,7 +23,7 @@ export interface RoundStageTimerDone {
  * @param timeLimits The time limits in use.
  */
 function timeFromConfig(
-  stage: round.Stage,
+  stage: Round.Stage,
   timeLimits: RoundTimeLimits
 ): number | undefined {
   switch (stage) {
@@ -39,7 +36,7 @@ function timeFromConfig(
     case "Complete":
       return undefined;
     default:
-      assertNever(stage);
+      Util.assertNever(stage);
   }
 }
 
@@ -49,9 +46,9 @@ function timeFromConfig(
  * @param timeLimits the active time limits.
  */
 export const ifEnabled = (
-  round: Round,
+  round: Round.Round,
   timeLimits: RoundTimeLimits | undefined
-): TimeoutAfter | undefined => {
+): Timeout.After | undefined => {
   if (timeLimits === undefined) {
     return undefined;
   }
@@ -69,7 +66,7 @@ export const ifEnabled = (
   };
 };
 
-export const handle: timeout.Handler<RoundStageTimerDone> = (
+export const handle: Timeout.Handler<RoundStageTimerDone> = (
   server,
   timeout,
   gameCode,
@@ -84,7 +81,7 @@ export const handle: timeout.Handler<RoundStageTimerDone> = (
   if (
     gameRound.id !== timeout.round ||
     gameRound.stage !== timeout.stage ||
-    !round.isTimed(gameRound) ||
+    !Round.isTimed(gameRound) ||
     gameRound.timedOut
   ) {
     return {};
@@ -98,15 +95,15 @@ export const handle: timeout.Handler<RoundStageTimerDone> = (
     case "Soft":
       return {
         events: [
-          event.targetAll(stageTimerDone.of(timeout.round, timeout.stage))
+          Event.targetAll(StageTimerDone.of(timeout.round, timeout.stage))
         ]
       };
     case "Hard":
-      return change.reduce(waitingFor, lobby as Lobby.WithActiveGame, (l, p) =>
+      return Change.reduce(waitingFor, lobby as Lobby.WithActiveGame, (l, p) =>
         dealWithLostPlayer(server, l, p)
       );
     default:
-      util.assertNever(timeLimits.mode);
+      Util.assertNever(timeLimits.mode);
   }
   return {};
 };

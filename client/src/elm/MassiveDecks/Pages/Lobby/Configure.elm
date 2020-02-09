@@ -199,9 +199,9 @@ view wrap wrapLobby shared return canEdit model gameCode lobby =
 
         returnButton msg =
             Wl.card []
-                [ Wl.button [ HtmlA.class "game-in-progress", HtmlE.onClick msg, Strings.ViewGameDescription |> Lang.title shared ]
+                [ Wl.button [ HtmlA.class "game-in-progress", HtmlE.onClick msg, Strings.ReturnViewToGameDescription |> Lang.title shared ]
                     [ Icon.play |> Icon.viewIcon
-                    , Strings.ViewGame |> Lang.html shared
+                    , Strings.ReturnViewToGame |> Lang.html shared
                     ]
                 ]
     in
@@ -490,8 +490,11 @@ startGameProblems wrap wrapLobby users model remote =
                 |> List.filter (\user -> user.role == User.Player && user.presence == User.Joined)
                 |> List.length
 
-        aiPlayers =
-            hr.rando |> Maybe.map .number |> Maybe.withDefault 0
+        humanPlayerCount =
+            users
+                |> Dict.values
+                |> List.filter (\user -> user.role == User.Player && user.presence == User.Joined && user.control == User.Human)
+                |> List.length
 
         playerIssues =
             [ Message.errorWithFix
@@ -503,7 +506,7 @@ startGameProblems wrap wrapLobby users model remote =
                 , { description = Strings.AddAnAiPlayer
                   , icon = Icon.robot
                   , action =
-                        { number = 3 - playerCount + aiPlayers }
+                        { number = max (3 - humanPlayerCount) 1 }
                             |> Rando.Set
                             |> HouseRule.RandoMsg
                             |> Rules.HouseRulesMsg
@@ -512,6 +515,14 @@ startGameProblems wrap wrapLobby users model remote =
                   }
                 ]
                 |> Maybe.justIf (playerCount < 3)
+            , Message.errorWithFix
+                Strings.NeedAtLeastOneHuman
+                [ { description = Strings.Invite
+                  , icon = Icon.bullhorn
+                  , action = wrapLobby Lobby.ToggleInviteDialog
+                  }
+                ]
+                |> Maybe.justIf (humanPlayerCount < 1)
             ]
 
         aisNoWriteGoodIssues =

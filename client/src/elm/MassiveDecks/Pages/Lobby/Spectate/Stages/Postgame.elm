@@ -1,4 +1,4 @@
-module MassiveDecks.Pages.Spectate.Stages.Postgame exposing (view)
+module MassiveDecks.Pages.Lobby.Spectate.Stages.Postgame exposing (view)
 
 import Dict exposing (Dict)
 import FontAwesome.Icon as Icon

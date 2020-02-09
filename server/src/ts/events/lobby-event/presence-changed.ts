@@ -1,5 +1,4 @@
-import * as user from "../../user";
-import { User } from "../../user";
+import * as User from "../../user";
 
 /**
  * An event for when connection state for a user changes.
@@ -7,7 +6,7 @@ import { User } from "../../user";
 export type PresenceChanged = Joined | Left;
 
 interface Base {
-  user: user.Id;
+  user: User.Id;
 }
 
 /**
@@ -15,12 +14,12 @@ interface Base {
  */
 export interface Joined extends Base {
   event: "Joined";
-  name: user.Name;
-  privilege?: user.Privilege;
-  control?: user.Control;
+  name: User.Name;
+  privilege?: User.Privilege;
+  control?: User.Control;
 }
 
-export const joined = (id: user.Id, user: User): Joined => ({
+export const joined = (id: User.Id, user: User.User): Joined => ({
   event: "Joined",
   user: id,
   name: user.name,
@@ -38,7 +37,7 @@ export interface Left extends Base {
   reason?: LeaveReason;
 }
 
-export const left = (user: user.Id, reason: LeaveReason): Left => ({
+export const left = (user: User.Id, reason: LeaveReason): Left => ({
   event: "Left",
   user,
   ...(reason !== "Left" ? { reason } : {})

@@ -1,66 +1,54 @@
-import wu from "wu";
 import { Action } from "../action";
 import { UnprivilegedError } from "../errors/action-execution-error";
-import * as util from "../util";
-import { Handler } from "./handler";
-import * as configure from "./privileged/configure";
-import { Configure } from "./privileged/configure";
-import * as endGame from "./privileged/end-game";
-import { EndGame } from "./privileged/end-game";
-import * as kick from "./privileged/kick";
-import { Kick } from "./privileged/kick";
-import * as setPlayerAway from "./privileged/set-player-away";
-import { SetPlayerAway } from "./privileged/set-player-away";
-import * as setPrivilege from "./privileged/set-privilege";
-import { SetPrivilege } from "./privileged/set-privilege";
-import * as startGame from "./privileged/start-game";
-import { StartGame } from "./privileged/start-game";
+import * as Lobby from "../lobby";
+import * as Token from "../user/token";
+import * as Actions from "./actions";
+import * as Configure from "./privileged/configure";
+import * as EndGame from "./privileged/end-game";
+import * as Kick from "./privileged/kick";
+import * as SetPlayerAway from "./privileged/set-player-away";
+import * as SetPrivilege from "./privileged/set-privilege";
+import * as StartGame from "./privileged/start-game";
 
 /**
  * An action only a privileged user can perform.
  */
 export type Privileged =
-  | Configure
-  | StartGame
-  | SetPlayerAway
-  | SetPrivilege
-  | Kick
-  | EndGame;
+  | Configure.Configure
+  | StartGame.StartGame
+  | SetPlayerAway.SetPlayerAway
+  | SetPrivilege.SetPrivilege
+  | Kick.Kick
+  | EndGame.EndGame;
 
-const possible = new Set([
-  configure.is,
-  startGame.is,
-  setPlayerAway.is,
-  setPrivilege.is,
-  kick.is,
-  endGame.is
-]);
-
-/**
- * Check if an action is a configure action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is Privileged =>
-  wu(possible).some(is => is(action));
-
-export const handle: Handler<Privileged> = (auth, lobby, action, server) => {
-  const user = lobby.users.get(auth.uid);
-  if (user === undefined || user.privilege !== "Privileged") {
-    throw new UnprivilegedError(action);
+class PrivilegedActions extends Actions.Group<
+  Action,
+  Privileged,
+  Lobby.Lobby,
+  Lobby.Lobby
+> {
+  constructor() {
+    super(
+      Configure.actions,
+      StartGame.actions,
+      SetPlayerAway.actions,
+      SetPrivilege.actions,
+      Kick.actions,
+      EndGame.actions
+    );
   }
-  if (configure.is(action)) {
-    return configure.handle(auth, lobby, action, server);
-  } else if (startGame.is(action)) {
-    return startGame.handle(auth, lobby, action, server);
-  } else if (setPlayerAway.is(action)) {
-    return setPlayerAway.handle(auth, lobby, action, server);
-  } else if (setPrivilege.is(action)) {
-    return setPrivilege.handle(auth, lobby, action, server);
-  } else if (kick.is(action)) {
-    return kick.handle(auth, lobby, action, server);
-  } else if (endGame.is(action)) {
-    return endGame.handle(auth, lobby, action, server);
-  } else {
-    return util.assertNever(action);
+
+  public limit(
+    auth: Token.Claims,
+    lobby: Lobby.Lobby,
+    action: Privileged
+  ): lobby is Lobby.WithActiveGame {
+    const user = lobby.users.get(auth.uid);
+    if (user === undefined || user.privilege !== "Privileged") {
+      throw new UnprivilegedError(action);
+    }
+    return true;
   }
-};
+}
+
+export const actions = new PrivilegedActions();

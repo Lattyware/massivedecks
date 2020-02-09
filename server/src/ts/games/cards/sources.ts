@@ -1,17 +1,16 @@
 import { Cache } from "../../cache";
-import * as deckSource from "./source";
-import { Source } from "./source";
-import * as cardcast from "./sources/cardcast";
-import * as player from "./sources/player";
-import * as util from "../../util";
+import * as Util from "../../util";
+import * as Source from "./source";
+import * as Cardcast from "./sources/cardcast";
+import * as Player from "./sources/player";
 
-function uncachedResolver(source: deckSource.External): deckSource.Resolver {
+function uncachedResolver(source: Source.External): Source.Resolver {
   switch (source.source) {
     case "Cardcast":
-      return new cardcast.Resolver(source);
+      return new Cardcast.Resolver(source);
 
     default:
-      util.assertNever(source.source);
+      Util.assertNever(source.source);
   }
 }
 
@@ -30,25 +29,25 @@ export class SourceServiceError extends Error {
  * Get the limited resolver for the given source.
  */
 export const limitedResolver = (
-  source: deckSource.External
-): deckSource.LimitedResolver => uncachedResolver(source);
+  source: Source.External
+): Source.LimitedResolver => uncachedResolver(source);
 
 /**
  * Get the resolver for the given source.
  */
 export const resolver = (
   cache: Cache,
-  source: deckSource.External
-): deckSource.Resolver =>
-  new deckSource.CachedResolver(cache, uncachedResolver(source));
+  source: Source.External
+): Source.Resolver =>
+  new Source.CachedResolver(cache, uncachedResolver(source));
 
 /**
  * Get the details for the given source.
  */
 export const details = async (
   cache: Cache,
-  source: Source
-): Promise<deckSource.Details> =>
+  source: Source.Source
+): Promise<Source.Details> =>
   source.source === "Player"
-    ? player.details(source)
+    ? Player.details(source)
     : await resolver(cache, source).details();

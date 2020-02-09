@@ -1,5 +1,4 @@
-import * as houseRules from "./rules/houseRules";
-import { HouseRules } from "./rules/houseRules";
+import * as HouseRules from "./rules/houseRules";
 
 /** The rules for a standard game.
  */
@@ -19,14 +18,14 @@ export interface Rules {
    * @maximum 10000
    */
   scoreLimit?: number;
-  houseRules: HouseRules;
+  houseRules: HouseRules.HouseRules;
   timeLimits: RoundTimeLimits;
 }
 
 export interface Public {
   handSize: number;
   scoreLimit?: number;
-  houseRules: houseRules.Public;
+  houseRules: HouseRules.Public;
   timeLimits: RoundTimeLimits;
 }
 
@@ -83,7 +82,7 @@ export const defaultTimeLimits = (): RoundTimeLimits => ({
 export const create = (): Rules => ({
   handSize: 10,
   scoreLimit: 25,
-  houseRules: houseRules.create(),
+  houseRules: HouseRules.create(),
   timeLimits: defaultTimeLimits()
 });
 
@@ -123,5 +122,5 @@ export interface ComedyWriter {
 
 export const censor = (rules: Rules): Public => ({
   ...rules,
-  houseRules: houseRules.censor(rules.houseRules)
+  houseRules: HouseRules.censor(rules.houseRules)
 });

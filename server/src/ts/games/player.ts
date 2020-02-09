@@ -1,4 +1,4 @@
-import * as user from "../user";
+import * as User from "../user";
 import { Hand } from "./cards/hand";
 import { Game } from "./game";
 
@@ -58,20 +58,20 @@ export class Player {
       likes: this.likes
     };
   }
+}
 
-  /**
-   * Get the given player's role in the current round, or null if they are not
-   * in the round.
-   * @param id The player's id.
-   * @param game The game.
-   */
-  public static role(id: user.Id, game: Game): Role | null {
-    if (game.round.czar === id) {
-      return "Czar";
-    } else if (game.round.players.has(id)) {
-      return "Player";
-    } else {
-      return null;
-    }
+/**
+ * Get the given player's role in the current round, or null if they are not
+ * in the round.
+ * @param id The player's id.
+ * @param game The game.
+ */
+export function role(id: User.Id, game: Game): Role | null {
+  if (game.round.czar === id) {
+    return "Czar";
+  } else if (game.round.players.has(id)) {
+    return "Player";
+  } else {
+    return null;
   }
 }

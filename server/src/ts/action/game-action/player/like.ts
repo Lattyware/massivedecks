@@ -1,47 +1,55 @@
-import { Action } from "../../../action";
-import * as round from "../../../games/game/round";
-import * as gameAction from "../../game-action";
-import * as play from "../../../games/cards/play";
+import * as Play from "../../../games/cards/play";
+import * as Round from "../../../games/game/round";
+import * as Lobby from "../../../lobby";
+import * as Actions from "../../actions";
+import * as Handler from "../../handler";
+import { Player } from "../player";
 
 /**
  * A player plays a white card into a round.
  */
 export interface Like {
-  action: NameType;
-  play: play.Id;
+  action: "Like";
+  play: Play.Id;
 }
 
-type NameType = "Like";
-const name: NameType = "Like";
+class LikeActions extends Actions.Implementation<
+  Player,
+  Like,
+  "Like",
+  Lobby.WithActiveGame
+> {
+  protected readonly name = "Like";
 
-/**
- * Check if an action is a take back action.
- * @param action The action to check.
- */
-export const is = (action: Action): action is Like => action.action === name;
-
-export const handle: gameAction.Handler<Like> = (auth, lobby, action) => {
-  if (
-    lobby.game.round.verifyStage<round.Revealing | round.Judging>(
-      action,
-      "Judging"
-    )
-  ) {
-    const cRound = lobby.game.round;
-    const target = cRound.plays.find(p => p.id === action.play);
+  protected handle: Handler.Custom<Like, Lobby.WithActiveGame> = (
+    auth,
+    lobby,
+    action
+  ) => {
     if (
-      target !== undefined &&
-      target.playedBy !== auth.uid &&
-      !target.likes.has(auth.uid)
+      lobby.game.round.verifyStage<Round.Revealing | Round.Judging>(
+        action,
+        "Judging"
+      )
     ) {
-      target.likes.add(auth.uid);
-      return {
-        lobby
-      };
+      const cRound = lobby.game.round;
+      const target = cRound.plays.find(p => p.id === action.play);
+      if (
+        target !== undefined &&
+        target.playedBy !== auth.uid &&
+        !target.likes.has(auth.uid)
+      ) {
+        target.likes.add(auth.uid);
+        return {
+          lobby
+        };
+      } else {
+        return {};
+      }
     } else {
       return {};
     }
-  } else {
-    return {};
-  }
-};
+  };
+}
+
+export const actions = new LikeActions();

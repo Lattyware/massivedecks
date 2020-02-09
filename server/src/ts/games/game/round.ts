@@ -1,14 +1,12 @@
 import wu from "wu";
 import { Action } from "../../action";
 import { IncorrectRoundStageError } from "../../errors/action-execution-error";
-import * as user from "../../user";
-import * as util from "../../util";
-import * as card from "../cards/card";
-import * as play from "../cards/play";
-import * as publicRound from "./round/public";
-import { Public as PublicRound } from "./round/public";
-import * as storedPlay from "./round/storedPlay";
-import { StoredPlay } from "./round/storedPlay";
+import * as User from "../../user";
+import * as Util from "../../util";
+import * as Card from "../cards/card";
+import * as Play from "../cards/play";
+import * as PublicRound from "./round/public";
+import * as StoredPlay from "./round/storedPlay";
 
 export type Round = Playing | Revealing | Judging | Complete;
 
@@ -19,21 +17,21 @@ export type Id = number;
 export abstract class Base<TStage extends Stage> {
   public abstract readonly stage: TStage;
   public abstract readonly id: Id;
-  public abstract readonly czar: user.Id;
-  public abstract readonly players: Set<user.Id>;
-  public abstract readonly call: card.Call;
-  public abstract readonly plays: StoredPlay[];
+  public abstract readonly czar: User.Id;
+  public abstract readonly players: Set<User.Id>;
+  public abstract readonly call: Card.Call;
+  public abstract readonly plays: StoredPlay.StoredPlay[];
   public readonly startedAt: number = Date.now();
 
   /**
    * The players that need to do something before this stage can advance.
    */
-  public abstract waitingFor(): Set<user.Id> | null;
+  public abstract waitingFor(): Set<User.Id> | null;
 
   /**
    * Get the public view of the round.
    */
-  public abstract public(): PublicRound;
+  public abstract public(): PublicRound.Public;
 
   /**
    * Verifies the user is on the right stage for this action, throwing if they
@@ -65,22 +63,22 @@ export class Complete extends Base<"Complete"> {
   }
 
   public readonly id: Id;
-  public readonly czar: card.Id;
+  public readonly czar: Card.Id;
 
-  public get players(): Set<user.Id> {
+  public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map(play => play.playedBy));
   }
 
-  public readonly call: card.Call;
-  public readonly plays: storedPlay.Revealed[];
-  public readonly winner: user.Id;
+  public readonly call: Card.Call;
+  public readonly plays: StoredPlay.Revealed[];
+  public readonly winner: User.Id;
 
   public constructor(
     id: Id,
-    czar: card.Id,
-    call: card.Call,
-    plays: storedPlay.Revealed[],
-    winner: user.Id
+    czar: Card.Id,
+    call: Card.Call,
+    plays: StoredPlay.Revealed[],
+    winner: User.Id
   ) {
     super();
     this.id = id;
@@ -90,11 +88,11 @@ export class Complete extends Base<"Complete"> {
     this.winner = winner;
   }
 
-  public waitingFor(): Set<user.Id> | null {
+  public waitingFor(): Set<User.Id> | null {
     return null;
   }
 
-  public public(): publicRound.Complete {
+  public public(): PublicRound.Complete {
     return {
       stage: this.stage,
       id: this.id.toString(),
@@ -108,8 +106,8 @@ export class Complete extends Base<"Complete"> {
     };
   }
 
-  public playDetails(): { [player: string]: publicRound.PlayDetails } {
-    const obj: { [player: string]: publicRound.PlayDetails } = {};
+  public playDetails(): { [player: string]: PublicRound.PlayDetails } {
+    const obj: { [player: string]: PublicRound.PlayDetails } = {};
     for (const roundPlay of this.plays) {
       obj[roundPlay.id] = {
         playedBy: roundPlay.playedBy,
@@ -119,8 +117,8 @@ export class Complete extends Base<"Complete"> {
     return obj;
   }
 
-  private playsObj(): { [player: string]: publicRound.PlayWithLikes } {
-    const obj: { [player: string]: publicRound.PlayWithLikes } = {};
+  private playsObj(): { [player: string]: PublicRound.PlayWithLikes } {
+    const obj: { [player: string]: PublicRound.PlayWithLikes } = {};
     for (const roundPlay of this.plays) {
       obj[roundPlay.playedBy] = {
         play: roundPlay.play,
@@ -137,21 +135,21 @@ export class Judging extends Base<"Judging"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: card.Id;
+  public readonly czar: Card.Id;
 
-  public get players(): Set<user.Id> {
+  public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map(play => play.playedBy));
   }
 
-  public readonly call: card.Call;
-  public readonly plays: storedPlay.Revealed[];
+  public readonly call: Card.Call;
+  public readonly plays: StoredPlay.Revealed[];
   public timedOut = false;
 
   public constructor(
     id: Id,
-    czar: card.Id,
-    call: card.Call,
-    plays: storedPlay.Revealed[]
+    czar: Card.Id,
+    call: Card.Call,
+    plays: StoredPlay.Revealed[]
   ) {
     super();
     this.id = id;
@@ -160,15 +158,15 @@ export class Judging extends Base<"Judging"> implements Timed {
     this.plays = plays;
   }
 
-  public advance(winner: user.Id): Complete {
+  public advance(winner: User.Id): Complete {
     return new Complete(this.id, this.czar, this.call, this.plays, winner);
   }
 
-  public waitingFor(): Set<user.Id> | null {
+  public waitingFor(): Set<User.Id> | null {
     return new Set(this.czar);
   }
 
-  public public(): publicRound.Judging {
+  public public(): PublicRound.Judging {
     return {
       stage: this.stage,
       id: this.id.toString(),
@@ -181,7 +179,7 @@ export class Judging extends Base<"Judging"> implements Timed {
     };
   }
 
-  private *revealedPlays(): Iterable<play.Revealed> {
+  private *revealedPlays(): Iterable<Play.Revealed> {
     for (const roundPlay of this.plays) {
       yield {
         id: roundPlay.id,
@@ -197,21 +195,21 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: card.Id;
+  public readonly czar: Card.Id;
 
-  public get players(): Set<user.Id> {
+  public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map(play => play.playedBy));
   }
 
-  public readonly call: card.Call;
-  public readonly plays: StoredPlay[];
+  public readonly call: Card.Call;
+  public readonly plays: StoredPlay.StoredPlay[];
   public timedOut = false;
 
   public constructor(
     id: Id,
-    czar: card.Id,
-    call: card.Call,
-    plays: StoredPlay[]
+    czar: Card.Id,
+    call: Card.Call,
+    plays: StoredPlay.StoredPlay[]
   ) {
     super();
     this.id = id;
@@ -221,18 +219,18 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   }
 
   public advance(): Judging | null {
-    if (storedPlay.allRevealed(this)) {
+    if (StoredPlay.allRevealed(this)) {
       return new Judging(this.id, this.czar, this.call, this.plays);
     } else {
       return null;
     }
   }
 
-  public waitingFor(): Set<user.Id> | null {
+  public waitingFor(): Set<User.Id> | null {
     return new Set(this.czar);
   }
 
-  public public(): publicRound.Revealing {
+  public public(): PublicRound.Revealing {
     return {
       stage: this.stage,
       id: this.id.toString(),
@@ -245,9 +243,9 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     };
   }
 
-  private *potentiallyRevealedPlays(): Iterable<play.PotentiallyRevealed> {
+  private *potentiallyRevealedPlays(): Iterable<Play.PotentiallyRevealed> {
     for (const roundPlay of this.plays) {
-      const potentiallyRevealed: play.PotentiallyRevealed = {
+      const potentiallyRevealed: Play.PotentiallyRevealed = {
         id: roundPlay.id
       };
       if (roundPlay.revealed) {
@@ -264,17 +262,17 @@ export class Playing extends Base<"Playing"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: card.Id;
-  public readonly players: Set<user.Id>;
-  public readonly call: card.Call;
-  public readonly plays: storedPlay.Unrevealed[];
+  public readonly czar: Card.Id;
+  public readonly players: Set<User.Id>;
+  public readonly call: Card.Call;
+  public readonly plays: StoredPlay.Unrevealed[];
   public timedOut = false;
 
   public constructor(
     id: Id,
-    czar: card.Id,
-    players: Set<user.Id>,
-    call: card.Call
+    czar: Card.Id,
+    players: Set<User.Id>,
+    call: Card.Call
   ) {
     super();
     this.id = id;
@@ -289,22 +287,22 @@ export class Playing extends Base<"Playing"> implements Timed {
       this.id,
       this.czar,
       this.call,
-      util.shuffled(this.plays)
+      Util.shuffled(this.plays)
     );
   }
 
-  public waitingFor(): Set<user.Id> | null {
+  public waitingFor(): Set<User.Id> | null {
     const done = new Set(
       wu(this.players).filter(p => !this.hasPlayed().has(p))
     );
     return done.size > 0 ? done : null;
   }
 
-  private hasPlayed(): Set<user.Id> {
+  private hasPlayed(): Set<User.Id> {
     return new Set(wu(this.plays).map(play => play.playedBy));
   }
 
-  public public(): publicRound.Playing {
+  public public(): PublicRound.Playing {
     return {
       stage: this.stage,
       id: this.id.toString(),

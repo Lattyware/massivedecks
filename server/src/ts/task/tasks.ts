@@ -1,6 +1,6 @@
 import { Lobby } from "../lobby";
 import { GameCode } from "../lobby/game-code";
-import * as logging from "../logging";
+import * as Logging from "../logging";
 import { ServerState } from "../server-state";
 import { Task } from "../task";
 import { LoadDeckSummary } from "./load-deck-summary";
@@ -79,11 +79,11 @@ export class Queue {
   }
 
   private start(server: ServerState, task: Task): void {
-    logging.logger.info("Task started:", { task });
+    Logging.logger.info("Task started:", { task });
     this.startedThisTick += 1;
     task
       .handle(server)
-      .catch(error => logging.logException("Error processing task:", error))
-      .then(() => logging.logger.info("Task complete:", { task }));
+      .catch(error => Logging.logException("Error processing task:", error))
+      .then(() => Logging.logger.info("Task complete:", { task }));
   }
 }

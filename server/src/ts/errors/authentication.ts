@@ -1,5 +1,5 @@
 import HttpStatus from "http-status-codes";
-import * as errors from "../errors";
+import * as Errors from "../errors";
 
 export type Reason =
   | "IncorrectIssuer"
@@ -9,12 +9,12 @@ export type Reason =
   | "InvalidLobbyPassword"
   | "AlreadyLeftError";
 
-export interface Details extends errors.Details {
+export interface Details extends Errors.Details {
   error: "AuthenticationFailure";
   reason: Reason;
 }
 
-abstract class AuthenticationFailureError extends errors.MassiveDecksError<
+abstract class AuthenticationFailureError extends Errors.MassiveDecksError<
   Details
 > {
   public readonly status = HttpStatus.FORBIDDEN;

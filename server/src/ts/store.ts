@@ -1,9 +1,8 @@
 import { CreateLobby } from "./action/initial/create-lobby";
-import * as serverConfig from "./config";
-import * as lobby from "./lobby";
-import { Lobby } from "./lobby";
+import * as ServerConfig from "./config";
+import * as Lobby from "./lobby";
 import { GameCode } from "./lobby/game-code";
-import * as timeout from "./timeout";
+import * as Timeout from "./timeout";
 import { Token } from "./user/token";
 
 /**
@@ -14,28 +13,28 @@ export interface Transaction {
   /**
    * New lobby data that should replace what is currently in the store.
    */
-  lobby?: Lobby;
+  lobby?: Lobby.Lobby;
   /**
    * If given, timeouts that should be added to the store.
    */
-  timeouts?: Iterable<timeout.TimeoutAfter>;
+  timeouts?: Iterable<Timeout.After>;
   /**
    * If given, the id of the timeout that this resolves, and so should be
    * removed from the store.
    */
-  executedTimeout?: timeout.Id;
+  executedTimeout?: Timeout.Id;
 }
 
 export type ReadOnlyTransaction = Transaction & {
   lobby?: undefined;
-  timeouts?: Iterable<timeout.TimeoutAfter & { after: Exclude<number, 0> }>;
+  timeouts?: Iterable<Timeout.After & { after: Exclude<number, 0> }>;
 };
 
 export abstract class Store {
   /**
    * The configuration for this store.
    */
-  public abstract readonly config: serverConfig.Storage;
+  public abstract readonly config: ServerConfig.Storage;
 
   /**
    * A unique id for the store - this *must* be unique to the store, otherwise
@@ -66,7 +65,9 @@ export abstract class Store {
    */
   public async read<T>(
     gameCode: GameCode,
-    read: (lobby: Lobby) => { transaction: ReadOnlyTransaction; result: T }
+    read: (
+      lobby: Lobby.Lobby
+    ) => { transaction: ReadOnlyTransaction; result: T }
   ): Promise<T> {
     return this.writeAndReturn(gameCode, read);
   }
@@ -79,9 +80,9 @@ export abstract class Store {
    */
   public async write(
     gameCode: GameCode,
-    write: (lobby: Lobby) => Transaction
+    write: (lobby: Lobby.Lobby) => Transaction
   ): Promise<void> {
-    await this.writeAndReturn(gameCode, (lobby: Lobby) => ({
+    await this.writeAndReturn(gameCode, (lobby: Lobby.Lobby) => ({
       transaction: write(lobby),
       result: undefined
     }));
@@ -89,16 +90,16 @@ export abstract class Store {
 
   public abstract async writeAndReturn<T>(
     gameCode: GameCode,
-    write: (lobby: Lobby) => { transaction: Transaction; result: T }
+    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T }
   ): Promise<T>;
 
   /** Get a list of summaries for all the public lobbies in the store.*/
-  public abstract lobbySummaries(): AsyncIterableIterator<lobby.Summary>;
+  public abstract lobbySummaries(): AsyncIterableIterator<Lobby.Summary>;
 
   /**
    * Get all timed out timeouts from the store.
    */
-  public abstract timedOut(): AsyncIterableIterator<timeout.TimedOut>;
+  public abstract timedOut(): AsyncIterableIterator<Timeout.TimedOut>;
 
   /**
    * Delete the given lobby and all associated timeouts.

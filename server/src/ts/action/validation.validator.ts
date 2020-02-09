@@ -31,46 +31,34 @@ export const Schema = {
           $ref: "#/definitions/SetPresence"
         },
         {
-          $ref: "#/definitions/Judge"
-        },
-        {
-          $ref: "#/definitions/Reveal"
-        },
-        {
-          $ref: "#/definitions/EnforceTimeLimit"
-        },
-        {
-          $ref: "#/definitions/Like"
-        },
-        {
           $ref: "#/definitions/Submit"
         },
         {
           $ref: "#/definitions/TakeBack"
         },
         {
+          $ref: "#/definitions/Like"
+        },
+        {
+          $ref: "#/definitions/Judge"
+        },
+        {
+          $ref: "#/definitions/Reveal"
+        },
+        {
           $ref: "#/definitions/Redraw"
         },
         {
-          additionalProperties: false,
-          defaultProperties: [],
-          properties: {
-            action: {
-              $ref: "#/definitions/NameType_5"
-            },
-            change: {
-              $ref: "#/definitions/Patch",
-              description: "The changes to the config as a JSON patch."
-            }
-          },
-          required: ["action", "change"],
-          type: "object"
+          $ref: "#/definitions/EnforceTimeLimit"
         },
         {
-          $ref: "#/definitions/EndGame"
+          $ref: "#/definitions/Authenticate"
         },
         {
-          $ref: "#/definitions/Kick"
+          $ref: "#/definitions/Configure"
+        },
+        {
+          $ref: "#/definitions/StartGame"
         },
         {
           $ref: "#/definitions/SetPlayerAway"
@@ -79,10 +67,13 @@ export const Schema = {
           $ref: "#/definitions/SetPrivilege"
         },
         {
-          $ref: "#/definitions/StartGame"
+          $ref: "#/definitions/Kick"
         },
         {
-          $ref: "#/definitions/Authenticate"
+          $ref: "#/definitions/EndGame"
+        },
+        {
+          $ref: "#/definitions/SetUserRole"
         },
         {
           $ref: "#/definitions/Leave"
@@ -138,7 +129,7 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_9"
+          $ref: "#/definitions/NameType"
         },
         token: {
           $ref: "#/definitions/Token"
@@ -197,6 +188,23 @@ export const Schema = {
         }
       },
       required: ["exclusive", "number"],
+      type: "object"
+    },
+    Configure: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "An action to change the configuration of the lobby.",
+      properties: {
+        action: {
+          enum: ["Configure"],
+          type: "string"
+        },
+        change: {
+          $ref: "#/definitions/Patch",
+          description: "The changes to the config as a JSON patch."
+        }
+      },
+      required: ["action", "change"],
       type: "object"
     },
     CopyOperation: {
@@ -258,7 +266,8 @@ export const Schema = {
       description: "End the current game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_6"
+          enum: ["EndGame"],
+          type: "string"
         }
       },
       required: ["action"],
@@ -322,7 +331,7 @@ export const Schema = {
       type: "object"
     },
     Id: {
-      description: "A unique id for a play.",
+      description: "A unique id for an instance of a card.",
       type: "string"
     },
     Judge: {
@@ -331,7 +340,8 @@ export const Schema = {
       description: "A user declares the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType"
+          enum: ["Judge"],
+          type: "string"
         },
         winner: {
           $ref: "#/definitions/Id"
@@ -375,7 +385,8 @@ export const Schema = {
       description: "A player plays a white card into a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_2"
+          enum: ["Like"],
+          type: "string"
         },
         play: {
           $ref: "#/definitions/Id"
@@ -409,42 +420,6 @@ export const Schema = {
       type: "string"
     },
     NameType: {
-      enum: ["Judge"],
-      type: "string"
-    },
-    NameType_1: {
-      enum: ["Reveal"],
-      type: "string"
-    },
-    NameType_2: {
-      enum: ["Like"],
-      type: "string"
-    },
-    NameType_3: {
-      enum: ["Submit"],
-      type: "string"
-    },
-    NameType_4: {
-      enum: ["TakeBack"],
-      type: "string"
-    },
-    NameType_5: {
-      enum: ["Configure"],
-      type: "string"
-    },
-    NameType_6: {
-      enum: ["EndGame"],
-      type: "string"
-    },
-    NameType_7: {
-      enum: ["SetPrivilege"],
-      type: "string"
-    },
-    NameType_8: {
-      enum: ["StartGame"],
-      type: "string"
-    },
-    NameType_9: {
       enum: ["Authenticate"],
       type: "string"
     },
@@ -657,7 +632,8 @@ export const Schema = {
       description: "A user judges the winning play for a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_1"
+          enum: ["Reveal"],
+          type: "string"
         },
         play: {
           $ref: "#/definitions/Id"
@@ -665,6 +641,11 @@ export const Schema = {
       },
       required: ["action", "play"],
       type: "object"
+    },
+    Role: {
+      description: "If the user is a spectator or a player.",
+      enum: ["Player", "Spectator"],
+      type: "string"
     },
     RoundTimeLimits: {
       additionalProperties: false,
@@ -734,7 +715,8 @@ export const Schema = {
         "A privileged user asks to change the privilege of another user.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_7"
+          enum: ["SetPrivilege"],
+          type: "string"
         },
         privilege: {
           $ref: "#/definitions/Privilege"
@@ -744,6 +726,22 @@ export const Schema = {
         }
       },
       required: ["action", "privilege", "user"],
+      type: "object"
+    },
+    SetUserRole: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A player asks to leave the game.",
+      properties: {
+        action: {
+          enum: ["SetUserRole"],
+          type: "string"
+        },
+        role: {
+          $ref: "#/definitions/Role"
+        }
+      },
+      required: ["action", "role"],
       type: "object"
     },
     Stage: {
@@ -756,7 +754,8 @@ export const Schema = {
       description: "Start a game in the lobby if possible.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_8"
+          enum: ["StartGame"],
+          type: "string"
         }
       },
       required: ["action"],
@@ -768,7 +767,8 @@ export const Schema = {
       description: "A player plays a white card into a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_3"
+          enum: ["Submit"],
+          type: "string"
         },
         play: {
           items: {
@@ -841,7 +841,8 @@ export const Schema = {
       description: "A player plays a white card into a round.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType_4"
+          enum: ["TakeBack"],
+          type: "string"
         }
       },
       required: ["action"],

@@ -1,142 +1,54 @@
 import wu from "wu";
 import { InvalidActionError } from "../errors/validation";
-import * as event from "../event";
-import * as gameStarted from "../events/game-event/game-started";
-import * as pauseStateChanged from "../events/game-event/pause-state-changed";
-import * as playSubmitted from "../events/game-event/play-submitted";
-import * as roundStarted from "../events/game-event/round-started";
+import * as Event from "../event";
+import * as GameStarted from "../events/game-event/game-started";
+import * as PauseStateChanged from "../events/game-event/pause-state-changed";
+import * as PlaySubmitted from "../events/game-event/play-submitted";
+import * as RoundStarted from "../events/game-event/round-started";
 import { Lobby } from "../lobby";
 import { ServerState } from "../server-state";
-import * as timeout from "../timeout";
-import * as finishedPlaying from "../timeout/finished-playing";
-import * as roundStageTimerDone from "../timeout/round-stage-timer-done";
-import * as user from "../user";
-import { User } from "../user";
-import * as util from "../util";
-import * as card from "./cards/card";
-import * as decks from "./cards/decks";
-import { Decks, Templates } from "./cards/decks";
-import * as play from "./cards/play";
-import * as round from "./game/round";
-import { Playing, Round, Stage } from "./game/round";
-import * as publicRound from "./game/round/public";
-import { Public as PublicRound } from "./game/round/public";
-import * as player from "./player";
-import { Player } from "./player";
-import * as rules from "./rules";
-import { Rules } from "./rules";
+import * as Timeout from "../timeout";
+import * as FinishedPlaying from "../timeout/finished-playing";
+import * as RoundStageTimerDone from "../timeout/round-stage-timer-done";
+import * as User from "../user";
+import * as Util from "../util";
+import * as Card from "./cards/card";
+import * as Decks from "./cards/decks";
+import * as Play from "./cards/play";
+import * as Round from "./game/round";
+import * as PublicRound from "./game/round/public";
+import * as Player from "./player";
+import * as Rules from "./rules";
 
 export interface Public {
-  round: PublicRound;
-  history: publicRound.Complete[];
-  playerOrder: user.Id[];
-  players: { [id: string]: player.Public };
-  rules: rules.Public;
+  round: PublicRound.Public;
+  history: PublicRound.Complete[];
+  playerOrder: User.Id[];
+  players: { [id: string]: Player.Public };
+  rules: Rules.Public;
   winner?: string[];
   paused?: boolean;
 }
-
-export const atStartOfRound = (
-  server: ServerState,
-  first: boolean,
-  game: Game & { round: round.Playing }
-): {
-  game: Game & { round: round.Playing };
-  events?: Iterable<event.Distributor>;
-  timeouts?: Iterable<timeout.TimeoutAfter>;
-} => {
-  const slotCount = card.slotCount(game.round.call);
-
-  const events = [];
-  if (
-    slotCount > 2 ||
-    (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
-  ) {
-    const responseDeck = game.decks.responses;
-    const drawnByPlayer = new Map();
-    for (const [id, playerState] of game.players) {
-      if (Player.role(id, game) === "Player") {
-        const drawn = responseDeck.draw(slotCount - 1);
-        drawnByPlayer.set(id, { drawn });
-        playerState.hand.push(...drawn);
-      }
-    }
-    if (!first) {
-      events.push(
-        event.additionally(roundStarted.of(game.round), drawnByPlayer)
-      );
-    }
-  } else {
-    if (!first) {
-      events.push(event.targetAll(roundStarted.of(game.round)));
-    }
-  }
-
-  if (first) {
-    events.push(
-      event.playerSpecificAddition(
-        gameStarted.of(game.round),
-        (id, user, player) => ({
-          hand: player.hand
-        })
-      )
-    );
-  }
-
-  const ais = game.rules.houseRules.rando.current;
-  for (const ai of ais) {
-    const player = game.players.get(ai) as Player;
-    const plays = game.round.plays;
-    const playId = play.id();
-    plays.push({
-      id: playId,
-      play: player.hand.slice(0, slotCount) as card.Response[],
-      playedBy: ai,
-      revealed: false,
-      likes: new Set()
-    });
-    events.push(event.targetAll(playSubmitted.of(ai)));
-  }
-
-  const timeouts = [];
-  const finishedTimeout = finishedPlaying.ifNeeded(game.round);
-  if (finishedTimeout !== undefined) {
-    timeouts.push({
-      timeout: finishedTimeout,
-      after: server.config.timeouts.finishedPlayingDelay
-    });
-  }
-
-  const timer = roundStageTimerDone.ifEnabled(
-    game.round,
-    game.rules.timeLimits
-  );
-  if (timer !== undefined) {
-    timeouts.push(timer);
-  }
-
-  return { game, events, timeouts };
-};
 
 /**
  * The state of a game.
  */
 export class Game {
-  public round: Round;
-  public readonly history: publicRound.Complete[];
-  public readonly playerOrder: user.Id[];
-  public readonly players: Map<user.Id, Player>;
-  public readonly decks: Decks;
-  public readonly rules: Rules;
-  public winner?: user.Id[];
+  public round: Round.Round;
+  public readonly history: PublicRound.Complete[];
+  public readonly playerOrder: User.Id[];
+  public readonly players: Map<User.Id, Player.Player>;
+  public readonly decks: Decks.Decks;
+  public readonly rules: Rules.Rules;
+  public winner?: User.Id[];
   public paused: boolean;
 
   private constructor(
-    round: Round,
-    playerOrder: user.Id[],
-    players: Map<user.Id, Player>,
-    decks: Decks,
-    rules: Rules
+    round: Round.Round,
+    playerOrder: User.Id[],
+    players: Map<User.Id, Player.Player>,
+    decks: Decks.Decks,
+    rules: Rules.Rules
   ) {
     this.round = round;
     this.history = [];
@@ -147,7 +59,10 @@ export class Game {
     this.paused = false;
   }
 
-  private static activePlayer(user: User, player?: Player): boolean {
+  private static activePlayer(
+    user: User.User,
+    player?: Player.Player
+  ): boolean {
     return (
       user.presence === "Joined" &&
       user.role === "Player" &&
@@ -156,15 +71,28 @@ export class Game {
     );
   }
 
-  private static canBeCzar(user: User, player?: Player): boolean {
+  private static canBeCzar(user: User.User, player?: Player.Player): boolean {
     return user.control !== "Computer" && Game.activePlayer(user, player);
   }
 
-  public nextCzar(users: Map<user.Id, User>): user.Id | undefined {
+  public nextCzar(users: Map<User.Id, User.User>): User.Id | undefined {
     const current = this.round.czar;
     const playerOrder = this.playerOrder;
     const currentIndex = playerOrder.findIndex(id => id === current);
+    return Game.internalNextCzar(
+      currentIndex,
+      users,
+      this.players,
+      playerOrder
+    );
+  }
 
+  public static internalNextCzar(
+    currentIndex: number,
+    users: Map<User.Id, User.User>,
+    players: Map<User.Id, Player.Player>,
+    playerOrder: User.Id[]
+  ): User.Id | undefined {
     let nextIndex = currentIndex;
     function incrementIndex(): void {
       nextIndex += 1;
@@ -180,8 +108,8 @@ export class Game {
       const potentialCzar = playerOrder[nextIndex];
       if (
         Game.canBeCzar(
-          users.get(potentialCzar) as User,
-          this.players.get(potentialCzar)
+          users.get(potentialCzar) as User.User,
+          players.get(potentialCzar)
         )
       ) {
         return potentialCzar;
@@ -192,18 +120,18 @@ export class Game {
   }
 
   public static start(
-    templates: Iterable<Templates>,
-    users: Map<user.Id, User>,
-    rules: Rules
-  ): Game & { round: round.Playing } {
-    let allTemplates: Iterable<Templates>;
+    templates: Iterable<Decks.Templates>,
+    users: Map<User.Id, User.User>,
+    rules: Rules.Rules
+  ): Game & { round: Round.Playing } {
+    let allTemplates: Iterable<Decks.Templates>;
     const cw = rules.houseRules.comedyWriter;
     if (cw !== undefined) {
-      const blanks: Templates = {
+      const blanks: Decks.Templates = {
         calls: new Set(),
         responses: new Set(
           wu.repeat({}, cw.number).map(() => ({
-            id: card.id(),
+            id: Card.id(),
             source: { source: "Player" }
           }))
         )
@@ -212,7 +140,7 @@ export class Game {
         ...(cw.exclusive
           ? wu(templates).map(t => ({
               calls: t.calls,
-              responses: new Set<card.PotentiallyBlankResponse>()
+              responses: new Set<Card.PotentiallyBlankResponse>()
             }))
           : templates),
         blanks
@@ -220,31 +148,37 @@ export class Game {
     } else {
       allTemplates = templates;
     }
-    const gameDecks = decks.decks(allTemplates);
+    const gameDecks = Decks.decks(allTemplates);
     const playerOrder = wu(users.entries())
-      .filter(([_, user]) => user.role === "Player")
       .map(([id, _]) => id)
       .toArray();
-    const czar = playerOrder[0];
     const playerMap = new Map(
-      wu(playerOrder).map(id => [
-        id,
-        new Player(gameDecks.responses.draw(rules.handSize))
-      ])
+      wu(users.entries())
+        .filter(([_, user]) => user.role === "Player")
+        .map(([id, _]) => [
+          id,
+          new Player.Player(gameDecks.responses.draw(rules.handSize))
+        ])
     );
+    const czar = Game.internalNextCzar(0, users, playerMap, playerOrder);
+    if (czar === undefined) {
+      throw new Error(
+        "Game was allowed to start with too few players to have a czar."
+      );
+    }
     const [call] = gameDecks.calls.draw(1);
     const playersInRound = new Set(
       wu(playerOrder).filter(id =>
-        Game.isPlayerInRound(czar, playerMap, id, users.get(id) as User)
+        Game.isPlayerInRound(czar, playerMap, id, users.get(id) as User.User)
       )
     );
     return new Game(
-      new round.Playing(0, czar, playersInRound, call),
+      new Round.Playing(0, czar, playersInRound, call),
       playerOrder,
       playerMap,
       gameDecks,
       rules
-    ) as Game & { round: round.Playing };
+    ) as Game & { round: Round.Playing };
   }
 
   public public(): Public {
@@ -252,11 +186,11 @@ export class Game {
       round: this.round.public(),
       history: this.history,
       playerOrder: this.playerOrder,
-      players: util.mapObjectValues(
-        util.mapToObject(this.players),
-        (p: Player) => p.public()
+      players: Util.mapObjectValues(
+        Util.mapToObject(this.players),
+        (p: Player.Player) => p.public()
       ),
-      rules: rules.censor(this.rules),
+      rules: Rules.censor(this.rules),
       ...(this.winner === undefined ? {} : { winner: this.winner }),
       ...(this.paused ? { paused: true } : {})
     };
@@ -271,21 +205,21 @@ export class Game {
     server: ServerState,
     lobby: Lobby
   ): {
-    events?: Iterable<event.Distributor>;
-    timeouts?: Iterable<timeout.TimeoutAfter>;
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
   } {
     const czar = this.nextCzar(lobby.users);
     const events = [];
     if (czar === undefined) {
       if (!this.paused) {
         this.paused = true;
-        return { events: [event.targetAll(pauseStateChanged.paused)] };
+        return { events: [Event.targetAll(PauseStateChanged.paused)] };
       } else {
         return {};
       }
     } else if (this.paused) {
       this.paused = false;
-      events.push(event.targetAll(pauseStateChanged.continued));
+      events.push(Event.targetAll(PauseStateChanged.continued));
     }
     const [call] = this.decks.calls.replace(this.round.call);
     const roundId = this.round.id + 1;
@@ -295,16 +229,16 @@ export class Game {
           czar,
           this.players,
           id,
-          lobby.users.get(id) as User
+          lobby.users.get(id) as User.User
         )
       )
     );
     this.decks.responses.discard(
-      (this.round as round.Base<Stage>).plays.flatMap(play => play.play)
+      (this.round as Round.Base<Round.Stage>).plays.flatMap(play => play.play)
     );
-    this.round = new Playing(roundId, czar, playersInRound, call);
-    const updatedGame = this as Game & { round: Playing };
-    const atStart = atStartOfRound(server, false, updatedGame);
+    this.round = new Round.Playing(roundId, czar, playersInRound, call);
+    const updatedGame = this as Game & { round: Round.Playing };
+    const atStart = Game.atStartOfRound(server, false, updatedGame);
     return {
       events: [
         ...events,
@@ -320,16 +254,16 @@ export class Game {
    * @param server The server context.
    */
   public removeFromRound(
-    toRemove: user.Id,
+    toRemove: User.Id,
     server: ServerState
-  ): { timeouts?: Iterable<timeout.TimeoutAfter> } {
+  ): { timeouts?: Iterable<Timeout.After> } {
     const player = this.players.get(toRemove);
     if (player !== undefined) {
       const play = this.round.plays.find(p => p.playedBy === toRemove);
       if (play === undefined) {
         this.round.players.delete(toRemove);
         const timeouts = [];
-        const timeout = finishedPlaying.ifNeeded(this.round as round.Playing);
+        const timeout = FinishedPlaying.ifNeeded(this.round as Round.Playing);
         if (timeout !== undefined) {
           timeouts.push({
             timeout: timeout,
@@ -345,15 +279,97 @@ export class Game {
   }
 
   private static isPlayerInRound(
-    czar: user.Id,
-    players: Map<user.Id, Player>,
-    playerId: user.Id,
-    user: User
+    czar: User.Id,
+    players: Map<User.Id, Player.Player>,
+    playerId: User.Id,
+    user: User.User
   ): boolean {
-    if (playerId === czar) {
+    if (playerId === czar || user.role !== "Player") {
       return false;
     }
     const player = players.get(playerId);
     return Game.activePlayer(user, player);
+  }
+
+  static atStartOfRound(
+    server: ServerState,
+    first: boolean,
+    game: Game & { round: Round.Playing }
+  ): {
+    game: Game & { round: Round.Playing };
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
+  } {
+    const slotCount = Card.slotCount(game.round.call);
+
+    const events = [];
+    if (
+      slotCount > 2 ||
+      (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
+    ) {
+      const responseDeck = game.decks.responses;
+      const drawnByPlayer = new Map();
+      for (const [id, playerState] of game.players) {
+        if (Player.role(id, game) === "Player") {
+          const drawn = responseDeck.draw(slotCount - 1);
+          drawnByPlayer.set(id, { drawn });
+          playerState.hand.push(...drawn);
+        }
+      }
+      if (!first) {
+        events.push(
+          Event.additionally(RoundStarted.of(game.round), drawnByPlayer)
+        );
+      }
+    } else {
+      if (!first) {
+        events.push(Event.targetAll(RoundStarted.of(game.round)));
+      }
+    }
+
+    if (first) {
+      events.push(
+        Event.playerSpecificAddition(
+          GameStarted.of(game.round),
+          (id, user, player) => ({
+            hand: player.hand
+          })
+        )
+      );
+    }
+
+    const ais = game.rules.houseRules.rando.current;
+    for (const ai of ais) {
+      const player = game.players.get(ai) as Player.Player;
+      const plays = game.round.plays;
+      const playId = Play.id();
+      plays.push({
+        id: playId,
+        play: player.hand.slice(0, slotCount) as Card.Response[],
+        playedBy: ai,
+        revealed: false,
+        likes: new Set()
+      });
+      events.push(Event.targetAll(PlaySubmitted.of(ai)));
+    }
+
+    const timeouts = [];
+    const finishedTimeout = FinishedPlaying.ifNeeded(game.round);
+    if (finishedTimeout !== undefined) {
+      timeouts.push({
+        timeout: finishedTimeout,
+        after: server.config.timeouts.finishedPlayingDelay
+      });
+    }
+
+    const timer = RoundStageTimerDone.ifEnabled(
+      game.round,
+      game.rules.timeLimits
+    );
+    if (timer !== undefined) {
+      timeouts.push(timer);
+    }
+
+    return { game, events, timeouts };
   }
 }

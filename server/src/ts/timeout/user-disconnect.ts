@@ -1,22 +1,22 @@
-import * as event from "../event";
-import * as connectionChanged from "../events/lobby-event/connection-changed";
-import * as timeout from "../timeout";
-import * as user from "../user";
+import * as Event from "../event";
+import * as ConnectionChanged from "../events/lobby-event/connection-changed";
+import * as Timeout from "../timeout";
+import * as User from "../user";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
  */
 export interface UserDisconnect {
   timeout: "UserDisconnect";
-  user: user.Id;
+  user: User.Id;
 }
 
-export const of = (user: user.Id): UserDisconnect => ({
+export const of = (user: User.Id): UserDisconnect => ({
   timeout: "UserDisconnect",
   user
 });
 
-export const handle: timeout.Handler<UserDisconnect> = (
+export const handle: Timeout.Handler<UserDisconnect> = (
   server,
   timeout,
   gameCode,
@@ -33,7 +33,7 @@ export const handle: timeout.Handler<UserDisconnect> = (
       userData.connection = "Disconnected";
       const events =
         userData.presence !== "Left"
-          ? [event.targetAll(connectionChanged.disconnected(id))]
+          ? [Event.targetAll(ConnectionChanged.disconnected(id))]
           : [];
       return {
         lobby,

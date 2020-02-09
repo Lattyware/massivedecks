@@ -1,17 +1,16 @@
-import * as user from "../../../user";
-import * as card from "../../cards/card";
-import { Play } from "../../cards/play";
-import * as play from "../../cards/play";
-import * as player from "../../player";
+import * as User from "../../../user";
+import * as Card from "../../cards/card";
+import * as Play from "../../cards/play";
+import * as Player from "../../player";
 
 export type Public = Playing | Revealing | Judging | Complete;
 
 interface Base {
   stage: string;
   id: string;
-  czar: user.Id;
-  players: user.Id[];
-  call: card.Call;
+  czar: User.Id;
+  players: User.Id[];
+  call: Card.Call;
   startedAt: number;
 }
 
@@ -21,32 +20,32 @@ interface Timed {
 
 export interface Playing extends Base, Timed {
   stage: "Playing";
-  played: user.Id[];
+  played: User.Id[];
 }
 
 export interface Revealing extends Base, Timed {
   stage: "Revealing";
-  plays: play.PotentiallyRevealed[];
+  plays: Play.PotentiallyRevealed[];
 }
 
 export interface Judging extends Base, Timed {
   stage: "Judging";
-  plays: play.Revealed[];
+  plays: Play.Revealed[];
 }
 
 export interface PlayWithLikes {
-  play: Play;
+  play: Play.Play;
   likes?: number;
 }
 
 export interface Complete extends Base {
   stage: "Complete";
-  winner: user.Id;
+  winner: User.Id;
   plays: { [player: string]: PlayWithLikes };
-  playOrder: user.Id[];
+  playOrder: User.Id[];
 }
 
 export interface PlayDetails {
-  playedBy: user.Id;
-  likes?: player.Likes;
+  playedBy: User.Id;
+  likes?: Player.Likes;
 }

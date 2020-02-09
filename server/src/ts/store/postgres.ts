@@ -1,12 +1,10 @@
 // import { Client } from "ts-postgres/src/client";
 import { CreateLobby } from "../action/initial/create-lobby";
-import * as config from "../config";
-import * as lobby from "../lobby";
-import { Lobby } from "../lobby";
+import * as Config from "../config";
+import * as Lobby from "../lobby";
 import { GameCode } from "../lobby/game-code";
-import * as store from "../store";
-import { Store } from "../store";
-import * as timeout from "../timeout";
+import * as Store from "../store";
+import * as Timeout from "../timeout";
 import { Token } from "../user/token";
 
 // const idColumn = "id";
@@ -15,15 +13,15 @@ import { Token } from "../user/token";
 /**
  * A store where the data is stored in a PostgreSQL database.
  */
-export class PostgresStore extends Store {
+export class PostgresStore extends Store.Store {
   private static readonly version = 0;
 
-  public readonly config: config.PostgreSQL;
+  public readonly config: Config.PostgreSQL;
   // private readonly pool: Pool<Client>;
   private readonly cachedId: string;
 
   public static async create(
-    config: config.PostgreSQL
+    config: Config.PostgreSQL
   ): Promise<PostgresStore> {
     throw new Error();
     // const client = await this.newClient(config.connection);
@@ -65,7 +63,7 @@ export class PostgresStore extends Store {
   //   await client.end();
   // }
   //
-  private constructor(id: string, config: config.PostgreSQL) {
+  private constructor(id: string, config: Config.PostgreSQL) {
     super();
     this.cachedId = id;
     this.config = config;
@@ -98,7 +96,7 @@ export class PostgresStore extends Store {
     return 0;
   }
 
-  public async *lobbySummaries(): AsyncIterableIterator<lobby.Summary> {
+  public async *lobbySummaries(): AsyncIterableIterator<Lobby.Summary> {
     // // TODO: Caching.
     // const client = await this.pool.acquire();
     // try {
@@ -120,7 +118,7 @@ export class PostgresStore extends Store {
     // }
   }
 
-  public async *timedOut(): AsyncIterableIterator<timeout.TimedOut> {
+  public async *timedOut(): AsyncIterableIterator<Timeout.TimedOut> {
     // const client = await this.pool.acquire();
     // try {
     //   return;
@@ -131,7 +129,7 @@ export class PostgresStore extends Store {
 
   public async writeAndReturn<T>(
     gameCode: string,
-    write: (lobby: Lobby) => { transaction: store.Transaction; result: T }
+    write: (lobby: Lobby.Lobby) => { transaction: Store.Transaction; result: T }
   ): Promise<T> {
     // const client = await this.pool.acquire();
     // try {

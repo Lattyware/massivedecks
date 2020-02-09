@@ -11,6 +11,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , setPlayerAway
     , setPresence
     , setPrivilege
+    , setUserRole
     , startGame
     , submit
     , takeBack
@@ -80,6 +81,11 @@ setPlayerAway player =
 setPrivilege : User.Id -> User.Privilege -> Cmd msg
 setPrivilege player privilege =
     action "SetPrivilege" [ ( "user", player |> Json.string ), ( "privilege", privilege |> Encoders.privilege ) ]
+
+
+setUserRole : User.Role -> Cmd msg
+setUserRole role =
+    action "SetUserRole" [ ( "role", role |> Encoders.userRole ) ]
 
 
 kick : User.Id -> Cmd msg
