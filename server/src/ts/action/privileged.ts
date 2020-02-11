@@ -43,7 +43,7 @@ class PrivilegedActions extends Actions.Group<
     lobby: Lobby.Lobby,
     action: Privileged
   ): lobby is Lobby.WithActiveGame {
-    const user = lobby.users.get(auth.uid);
+    const user = lobby.users[auth.uid];
     if (user === undefined || user.privilege !== "Privileged") {
       throw new UnprivilegedError(action);
     }

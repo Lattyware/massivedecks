@@ -31,7 +31,7 @@ class SetUserRoleActions extends Actions.Implementation<
     server
   ) => {
     const userId = auth.uid;
-    const callingUser = lobby.users.get(userId) as User.User;
+    const callingUser = lobby.users[userId];
     const oldRole = callingUser.role;
     const newRole = action.role;
     const additionalMap = new Map();
@@ -63,17 +63,17 @@ class SetUserRoleActions extends Actions.Implementation<
           if (game.round.czar === userId) {
             addResult(game.startNewRound(server, lobby));
           }
-          const player = game.players.get(userId);
+          const player = game.players[userId];
           if (player !== undefined) {
             game.decks.responses.discard(player.hand);
-            game.players.delete(userId);
+            delete game.players[userId];
           }
         }
         if (newRole === "Player") {
-          if (!game.players.has(userId)) {
+          if (!game.players.hasOwnProperty(userId)) {
             const hand = game.decks.responses.draw(game.rules.handSize);
             additionalMap.set(auth.uid, { hand });
-            game.players.set(userId, new Player.Player(hand));
+            game.players[userId] = Player.initial(hand);
           }
         }
       }

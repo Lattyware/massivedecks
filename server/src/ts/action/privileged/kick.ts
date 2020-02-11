@@ -24,7 +24,7 @@ export const removeUser = (
   server: ServerState,
   leaveReason: PresenceChanged.LeaveReason
 ): Change => {
-  const user = lobby.users.get(userId) as User.User;
+  const user = lobby.users[userId];
   user.presence = "Left";
 
   if (user.control === "Computer") {
@@ -54,7 +54,7 @@ export const removeUser = (
 
   const game = lobby.game;
   if (game !== undefined) {
-    const player = game.players.get(userId);
+    const player = game.players[userId];
     if (player !== undefined) {
       addResult(
         game.round.czar === userId ? game.startNewRound(server, lobby) : {}

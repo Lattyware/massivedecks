@@ -59,6 +59,11 @@ export interface AtLeastTemplates {
  */
 export abstract class Resolver implements LimitedResolver {
   /**
+   * The source in question.
+   */
+  public abstract source: Source;
+
+  /**
    * A unique id for the source as a whole.
    */
   public abstract id(): string;
@@ -150,6 +155,10 @@ export class CachedResolver extends Resolver {
     super();
     this.cache = cache;
     this.resolver = resolver;
+  }
+
+  public get source(): Source {
+    return this.resolver.source;
   }
 
   public id(): string {

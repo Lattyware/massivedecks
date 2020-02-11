@@ -111,7 +111,7 @@ export class Complete extends Base<"Complete"> {
     for (const roundPlay of this.plays) {
       obj[roundPlay.id] = {
         playedBy: roundPlay.playedBy,
-        ...(roundPlay.likes.size > 0 ? { likes: roundPlay.likes.size } : {})
+        ...(roundPlay.likes.length > 0 ? { likes: roundPlay.likes.length } : {})
       };
     }
     return obj;
@@ -122,10 +122,21 @@ export class Complete extends Base<"Complete"> {
     for (const roundPlay of this.plays) {
       obj[roundPlay.playedBy] = {
         play: roundPlay.play,
-        ...(roundPlay.likes.size > 0 ? { likes: roundPlay.likes.size } : {})
+        ...(roundPlay.likes.length > 0 ? { likes: roundPlay.likes.length } : {})
       };
     }
     return obj;
+  }
+
+  toJSON(): object {
+    return {
+      stage: this.stage,
+      id: this.id,
+      czar: this.czar,
+      call: this.call,
+      plays: this.plays,
+      winner: this.winner
+    };
   }
 }
 
@@ -143,19 +154,21 @@ export class Judging extends Base<"Judging"> implements Timed {
 
   public readonly call: Card.Call;
   public readonly plays: StoredPlay.Revealed[];
-  public timedOut = false;
+  public timedOut: boolean;
 
   public constructor(
     id: Id,
     czar: Card.Id,
     call: Card.Call,
-    plays: StoredPlay.Revealed[]
+    plays: StoredPlay.Revealed[],
+    timedOut = false
   ) {
     super();
     this.id = id;
     this.czar = czar;
     this.call = call;
     this.plays = plays;
+    this.timedOut = timedOut;
   }
 
   public advance(winner: User.Id): Complete {
@@ -187,6 +200,17 @@ export class Judging extends Base<"Judging"> implements Timed {
       };
     }
   }
+
+  toJSON(): object {
+    return {
+      stage: this.stage,
+      id: this.id,
+      czar: this.czar,
+      call: this.call,
+      plays: this.plays,
+      timedOut: this.timedOut
+    };
+  }
 }
 
 export class Revealing extends Base<"Revealing"> implements Timed {
@@ -203,19 +227,21 @@ export class Revealing extends Base<"Revealing"> implements Timed {
 
   public readonly call: Card.Call;
   public readonly plays: StoredPlay.StoredPlay[];
-  public timedOut = false;
+  public timedOut: boolean;
 
   public constructor(
     id: Id,
     czar: Card.Id,
     call: Card.Call,
-    plays: StoredPlay.StoredPlay[]
+    plays: StoredPlay.StoredPlay[],
+    timedOut = false
   ) {
     super();
     this.id = id;
     this.czar = czar;
     this.call = call;
     this.plays = plays;
+    this.timedOut = timedOut;
   }
 
   public advance(): Judging | null {
@@ -254,6 +280,17 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       yield potentiallyRevealed;
     }
   }
+
+  toJSON(): object {
+    return {
+      stage: this.stage,
+      id: this.id,
+      czar: this.czar,
+      call: this.call,
+      plays: this.plays,
+      timedOut: this.timedOut
+    };
+  }
 }
 
 export class Playing extends Base<"Playing"> implements Timed {
@@ -266,20 +303,23 @@ export class Playing extends Base<"Playing"> implements Timed {
   public readonly players: Set<User.Id>;
   public readonly call: Card.Call;
   public readonly plays: StoredPlay.Unrevealed[];
-  public timedOut = false;
+  public timedOut: boolean;
 
   public constructor(
     id: Id,
     czar: Card.Id,
     players: Set<User.Id>,
-    call: Card.Call
+    call: Card.Call,
+    plays: StoredPlay.Unrevealed[] | undefined = undefined,
+    timedOut = false
   ) {
     super();
     this.id = id;
     this.czar = czar;
     this.players = players;
     this.call = call;
-    this.plays = [];
+    this.plays = plays === undefined ? [] : plays;
+    this.timedOut = timedOut;
   }
 
   public advance(): Revealing {
@@ -314,4 +354,36 @@ export class Playing extends Base<"Playing"> implements Timed {
       startedAt: this.startedAt
     };
   }
+
+  toJSON(): object {
+    return {
+      stage: this.stage,
+      id: this.id,
+      czar: this.czar,
+      players: Array.from(this.players),
+      call: this.call,
+      plays: this.plays,
+      timedOut: this.timedOut
+    };
+  }
 }
+
+export const fromJSON = (r: Round): Round => {
+  switch (r.stage) {
+    case "Playing":
+      return new Playing(
+        r.id,
+        r.czar,
+        new Set(r.players),
+        r.call,
+        r.plays,
+        r.timedOut
+      );
+    case "Revealing":
+      return new Revealing(r.id, r.czar, r.call, r.plays, r.timedOut);
+    case "Judging":
+      return new Judging(r.id, r.czar, r.call, r.plays, r.timedOut);
+    case "Complete":
+      return new Complete(r.id, r.czar, r.call, r.plays, r.winner);
+  }
+};

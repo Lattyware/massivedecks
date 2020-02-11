@@ -41,6 +41,7 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User
+import MassiveDecks.Util.Maybe as Maybe
 
 
 userRole : User.Role -> Json.Value
@@ -60,13 +61,12 @@ userRole role =
 config : Config -> Json.Value
 config c =
     Json.object
-        (List.concat
-            [ [ ( "rules", c.rules |> rules )
-              , ( "decks", c.decks |> decks )
-              , ( "version", c.version |> Json.string )
-              , ( "public", c.privacy.public |> Json.bool )
-              ]
-            , c.privacy.password |> Maybe.map (\p -> [ ( "password", p |> Json.string ) ]) |> Maybe.withDefault []
+        (List.filterMap identity
+            [ Just ( "rules", c.rules |> rules )
+            , Just ( "decks", c.decks |> decks )
+            , Just ( "version", c.version |> Json.string )
+            , ( "public", True |> Json.bool ) |> Maybe.justIf c.privacy.public
+            , c.privacy.password |> Maybe.map (\p -> ( "password", p |> Json.string ))
             ]
         )
 

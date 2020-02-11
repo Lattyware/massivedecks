@@ -2,6 +2,7 @@ import wu from "wu";
 import * as Cache from "../../cache";
 import { OutOfCardsError } from "../../errors/game-state-error";
 import * as Util from "../../util";
+import { BaseCard } from "./card";
 import * as Card from "./card";
 
 const union = <T>(sets: Iterable<Set<T>>): Set<T> => {
@@ -27,10 +28,17 @@ export class Deck<C extends Card.BaseCard> {
    */
   public readonly discarded: Set<C>;
 
-  public constructor(template: Iterable<Template<C>>) {
-    this.cards = [];
-    this.discarded = union(template);
-    this.reshuffle();
+  public static fromTemplates<C extends Card.BaseCard>(
+    template: Iterable<Template<C>>
+  ): Deck<C> {
+    const deck = new Deck([], union(template));
+    deck.reshuffle();
+    return deck;
+  }
+
+  private constructor(cards: C[], discarded: Iterable<C>) {
+    this.cards = cards;
+    this.discarded = new Set(discarded);
   }
 
   public discard(cards: Iterable<C>): void;
@@ -68,6 +76,17 @@ export class Deck<C extends Card.BaseCard> {
     this.cards.push(...Util.shuffled(this.discarded));
     this.discarded.clear();
   }
+
+  static fromJSON<C extends BaseCard>(deck: Deck<C>): Deck<C> {
+    return new Deck(deck.cards, deck.discarded);
+  }
+
+  public toJSON(): object {
+    return {
+      cards: this.cards,
+      discarded: Array.from(this.discarded)
+    };
+  }
 }
 
 /**
@@ -92,6 +111,8 @@ export interface Templates extends Cache.Tagged {
 }
 
 export const decks = (templates: Iterable<Templates>): Decks => ({
-  calls: new Deck(wu(templates).map(template => template.calls)),
-  responses: new Deck(wu(templates).map(template => template.responses))
+  calls: Deck.fromTemplates(wu(templates).map(template => template.calls)),
+  responses: Deck.fromTemplates(
+    wu(templates).map(template => template.responses)
+  )
 });

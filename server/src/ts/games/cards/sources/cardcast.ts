@@ -78,7 +78,8 @@ export interface Cardcast {
 export type PlayCode = string;
 
 const nextWordShouldBeCapitalizedRegex = /[.?!]\s*$/;
-const nextWordShouldBeCapitalized = (previously: string): boolean =>
+const nextWordShouldBeCapitalized = (previously: string | null): boolean =>
+  previously === null ||
   previously.match(nextWordShouldBeCapitalizedRegex) !== null;
 
 /**
@@ -93,13 +94,11 @@ function* parts(call: CCCard): Iterable<Card.Part> {
   let first = true;
   let previous: string | null = null;
   for (const text of call.text) {
-    if (previous !== null) {
-      const capitalize: Slot =
-        nextWordShouldBeCapitalized(previous) || first
-          ? { transform: "Capitalize" }
-          : {};
-      yield { ...capitalize, ...upper };
-    }
+    const capitalize: Slot =
+      nextWordShouldBeCapitalized(previous) || first
+        ? { transform: "Capitalize" }
+        : {};
+    yield { ...capitalize, ...upper };
     if (text !== "") {
       yield text;
     }

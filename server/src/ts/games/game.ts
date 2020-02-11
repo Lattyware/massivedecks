@@ -18,6 +18,7 @@ import * as Play from "./cards/play";
 import * as Round from "./game/round";
 import * as PublicRound from "./game/round/public";
 import * as Player from "./player";
+import { Deck } from "./cards/decks";
 import * as Rules from "./rules";
 
 export interface Public {
@@ -37,7 +38,7 @@ export class Game {
   public round: Round.Round;
   public readonly history: PublicRound.Complete[];
   public readonly playerOrder: User.Id[];
-  public readonly players: Map<User.Id, Player.Player>;
+  public readonly players: { [id: string]: Player.Player };
   public readonly decks: Decks.Decks;
   public readonly rules: Rules.Rules;
   public winner?: User.Id[];
@@ -46,18 +47,46 @@ export class Game {
   private constructor(
     round: Round.Round,
     playerOrder: User.Id[],
-    players: Map<User.Id, Player.Player>,
+    players: { [id: string]: Player.Player },
     decks: Decks.Decks,
-    rules: Rules.Rules
+    rules: Rules.Rules,
+    paused = false,
+    history: PublicRound.Complete[] | undefined = undefined
   ) {
     this.round = round;
-    this.history = [];
+    this.history = history === undefined ? [] : history;
     this.playerOrder = playerOrder;
     this.players = players;
     this.decks = decks;
     this.rules = rules;
-    this.paused = false;
+    this.paused = paused;
   }
+
+  public toJSON(): object {
+    return {
+      round: this.round,
+      playerOrder: this.playerOrder,
+      players: this.players,
+      decks: this.decks,
+      rules: this.rules,
+      paused: this.paused,
+      history: this.history
+    };
+  }
+
+  public static fromJSON = (game: Game): Game =>
+    new Game(
+      Round.fromJSON(game.round),
+      game.playerOrder,
+      game.players,
+      {
+        responses: Deck.fromJSON(game.decks.responses),
+        calls: Deck.fromJSON(game.decks.calls)
+      },
+      game.rules,
+      game.paused,
+      game.history
+    );
 
   private static activePlayer(
     user: User.User,
@@ -75,7 +104,7 @@ export class Game {
     return user.control !== "Computer" && Game.activePlayer(user, player);
   }
 
-  public nextCzar(users: Map<User.Id, User.User>): User.Id | undefined {
+  public nextCzar(users: { [id: string]: User.User }): User.Id | undefined {
     const current = this.round.czar;
     const playerOrder = this.playerOrder;
     const currentIndex = playerOrder.findIndex(id => id === current);
@@ -89,8 +118,8 @@ export class Game {
 
   public static internalNextCzar(
     currentIndex: number,
-    users: Map<User.Id, User.User>,
-    players: Map<User.Id, Player.Player>,
+    users: { [id: string]: User.User },
+    players: { [id: string]: Player.Player },
     playerOrder: User.Id[]
   ): User.Id | undefined {
     let nextIndex = currentIndex;
@@ -106,12 +135,7 @@ export class Game {
         triedEveryone = true;
       }
       const potentialCzar = playerOrder[nextIndex];
-      if (
-        Game.canBeCzar(
-          users.get(potentialCzar) as User.User,
-          players.get(potentialCzar)
-        )
-      ) {
+      if (Game.canBeCzar(users[potentialCzar], players[potentialCzar])) {
         return potentialCzar;
       }
       incrementIndex();
@@ -121,7 +145,7 @@ export class Game {
 
   public static start(
     templates: Iterable<Decks.Templates>,
-    users: Map<User.Id, User.User>,
+    users: { [id: string]: User.User },
     rules: Rules.Rules
   ): Game & { round: Round.Playing } {
     let allTemplates: Iterable<Decks.Templates>;
@@ -149,15 +173,15 @@ export class Game {
       allTemplates = templates;
     }
     const gameDecks = Decks.decks(allTemplates);
-    const playerOrder = wu(users.entries())
+    const playerOrder = wu(Object.entries(users))
       .map(([id, _]) => id)
       .toArray();
-    const playerMap = new Map(
-      wu(users.entries())
+    const playerMap = Object.fromEntries(
+      wu(Object.entries(users))
         .filter(([_, user]) => user.role === "Player")
         .map(([id, _]) => [
           id,
-          new Player.Player(gameDecks.responses.draw(rules.handSize))
+          Player.initial(gameDecks.responses.draw(rules.handSize))
         ])
     );
     const czar = Game.internalNextCzar(0, users, playerMap, playerOrder);
@@ -169,7 +193,7 @@ export class Game {
     const [call] = gameDecks.calls.draw(1);
     const playersInRound = new Set(
       wu(playerOrder).filter(id =>
-        Game.isPlayerInRound(czar, playerMap, id, users.get(id) as User.User)
+        Game.isPlayerInRound(czar, playerMap, id, users[id])
       )
     );
     return new Game(
@@ -186,9 +210,8 @@ export class Game {
       round: this.round.public(),
       history: this.history,
       playerOrder: this.playerOrder,
-      players: Util.mapObjectValues(
-        Util.mapToObject(this.players),
-        (p: Player.Player) => p.public()
+      players: Util.mapObjectValues(this.players, (p: Player.Player) =>
+        Player.censor(p)
       ),
       rules: Rules.censor(this.rules),
       ...(this.winner === undefined ? {} : { winner: this.winner }),
@@ -225,12 +248,7 @@ export class Game {
     const roundId = this.round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter(id =>
-        Game.isPlayerInRound(
-          czar,
-          this.players,
-          id,
-          lobby.users.get(id) as User.User
-        )
+        Game.isPlayerInRound(czar, this.players, id, lobby.users[id])
       )
     );
     this.decks.responses.discard(
@@ -257,7 +275,7 @@ export class Game {
     toRemove: User.Id,
     server: ServerState
   ): { timeouts?: Iterable<Timeout.After> } {
-    const player = this.players.get(toRemove);
+    const player = this.players[toRemove];
     if (player !== undefined) {
       const play = this.round.plays.find(p => p.playedBy === toRemove);
       if (play === undefined) {
@@ -280,14 +298,14 @@ export class Game {
 
   private static isPlayerInRound(
     czar: User.Id,
-    players: Map<User.Id, Player.Player>,
+    players: { [id: string]: Player.Player },
     playerId: User.Id,
     user: User.User
   ): boolean {
     if (playerId === czar || user.role !== "Player") {
       return false;
     }
-    const player = players.get(playerId);
+    const player = players[playerId];
     return Game.activePlayer(user, player);
   }
 
@@ -309,7 +327,7 @@ export class Game {
     ) {
       const responseDeck = game.decks.responses;
       const drawnByPlayer = new Map();
-      for (const [id, playerState] of game.players) {
+      for (const [id, playerState] of Object.entries(game.players)) {
         if (Player.role(id, game) === "Player") {
           const drawn = responseDeck.draw(slotCount - 1);
           drawnByPlayer.set(id, { drawn });
@@ -340,7 +358,7 @@ export class Game {
 
     const ais = game.rules.houseRules.rando.current;
     for (const ai of ais) {
-      const player = game.players.get(ai) as Player.Player;
+      const player = game.players[ai] as Player.Player;
       const plays = game.round.plays;
       const playId = Play.id();
       plays.push({
@@ -348,7 +366,7 @@ export class Game {
         play: player.hand.slice(0, slotCount) as Card.Response[],
         playedBy: ai,
         revealed: false,
-        likes: new Set()
+        likes: []
       });
       events.push(Event.targetAll(PlaySubmitted.of(ai)));
     }

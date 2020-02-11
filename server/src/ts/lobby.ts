@@ -17,12 +17,20 @@ export interface Lobby {
   name: string;
   public: boolean;
   nextUserId: number;
-  users: Map<User.Id, User.User>;
+  users: { [id: string]: User.User };
   owner: User.Id;
   config: Config.Config;
   game?: Game.Game;
   errors: Errors.Details[];
 }
+
+export const fromJSON = (object: Lobby): Lobby =>
+  ({
+    ...object,
+    ...(object.game !== undefined
+      ? { game: Game.Game.fromJSON(object.game) }
+      : {})
+  } as Lobby);
 
 /**
  * A lobby with an active game.
@@ -84,7 +92,7 @@ export function create(creation: CreateLobby): Lobby {
     name: creation.name ? creation.name : `${creation.owner.name}'s Game`,
     public: false,
     nextUserId: 1,
-    users: new Map([[id, User.create(creation.owner, "Privileged")]]),
+    users: { [id]: User.create(creation.owner, "Privileged") },
     owner: id,
     config: defaultConfig(),
     errors: []
@@ -115,7 +123,7 @@ export const summary = (gameCode: GameCode, lobby: Lobby): Summary => ({
 
 function usersObj(lobby: Lobby): { [id: string]: User.Public } {
   const obj: { [id: string]: User.Public } = {};
-  for (const [id, lobbyUser] of lobby.users.entries()) {
+  for (const [id, lobbyUser] of Object.entries(lobby.users)) {
     obj[id] = User.censor(lobbyUser);
   }
   return obj;
@@ -143,7 +151,7 @@ export const addUser = (
   const changedUser = change === undefined ? newUser : change(newUser);
   const id = lobby.nextUserId.toString();
   lobby.nextUserId += 1;
-  lobby.users.set(id, changedUser);
+  lobby.users[id] = changedUser;
   return {
     user: id,
     events: [Event.targetAll(PresenceChanged.joined(id, changedUser))]

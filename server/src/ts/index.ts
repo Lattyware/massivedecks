@@ -10,36 +10,36 @@ import JSON5 from "json5";
 import sourceMapSupport from "source-map-support";
 import { promisify } from "util";
 import wu from "wu";
-import * as checkAlive from "./action/initial/check-alive";
-import * as createLobby from "./action/initial/create-lobby";
-import * as registerUser from "./action/initial/register-user";
-import * as serverConfig from "./config";
+import * as CheckAlive from "./action/initial/check-alive";
+import * as CreateLobby from "./action/initial/create-lobby";
+import * as RegisterUser from "./action/initial/register-user";
+import * as ServerConfig from "./config";
 import { MassiveDecksError } from "./errors";
 import { InvalidLobbyPasswordError } from "./errors/authentication";
 import { UsernameAlreadyInUseError } from "./errors/registration";
-import * as event from "./event";
-import * as presenceChanged from "./events/lobby-event/presence-changed";
-import { Player } from "./games/player";
-import * as change from "./lobby/change";
+import * as Event from "./event";
+import * as PresenceChanged from "./events/lobby-event/presence-changed";
+import * as Player from "./games/player";
+import * as Change from "./lobby/change";
 import { GameCode } from "./lobby/game-code";
-import * as logging from "./logging";
-import * as serverState from "./server-state";
-import * as timeout from "./timeout";
-import * as userDisconnect from "./timeout/user-disconnect";
-import * as user from "./user";
-import * as token from "./user/token";
+import * as Logging from "./logging";
+import * as ServerState from "./server-state";
+import * as Timeout from "./timeout";
+import * as UserDisconnect from "./timeout/user-disconnect";
+import * as User from "./user";
+import * as Token from "./user/token";
 
 sourceMapSupport.install();
 
 process.on("uncaughtException", function(error) {
-  logging.logException("Uncaught exception: ", error);
+  Logging.logException("Uncaught exception: ", error);
 });
 
 process.on("unhandledRejection", function(reason, promise) {
   if (reason instanceof Error) {
-    logging.logException(`Unhandled rejection for ${promise}.`, reason);
+    Logging.logException(`Unhandled rejection for ${promise}.`, reason);
   } else {
-    logging.logger.error(`Unhandled rejection at ${promise}: ${reason}`);
+    Logging.logger.error(`Unhandled rejection at ${promise}: ${reason}`);
   }
 });
 
@@ -49,10 +49,10 @@ function getConfigFilePath(): string {
 }
 
 async function main(): Promise<void> {
-  const config = serverConfig.parse(
+  const config = ServerConfig.parse(
     JSON5.parse(
       (await promisify(fs.readFile)(getConfigFilePath())).toString()
-    ) as serverConfig.Unparsed
+    ) as ServerConfig.Unparsed
   );
 
   const { app } = ws(express());
@@ -69,13 +69,13 @@ async function main(): Promise<void> {
     );
   }
 
-  const state = await serverState.create(config);
+  const state = await ServerState.create(config);
 
   app.use(bodyParser.json());
 
   app.use(
     expressWinston.logger({
-      winstonInstance: logging.logger
+      winstonInstance: Logging.logger
     })
   );
 
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
 
   app.post("/api/games", async (req, res) => {
     const { gameCode, token } = await state.store.newLobby(
-      createLobby.validate(req.body),
+      CreateLobby.validate(req.body),
       config.secret
     );
     res.append(
@@ -103,9 +103,9 @@ async function main(): Promise<void> {
 
   app.post("/api/alive", async (req, res) => {
     const result: { [key: string]: boolean } = {};
-    for (const current of checkAlive.validate(req.body).tokens) {
+    for (const current of CheckAlive.validate(req.body).tokens) {
       try {
-        const claims = token.validate(
+        const claims = Token.validate(
           current,
           await state.store.id(),
           state.config.secret
@@ -121,25 +121,26 @@ async function main(): Promise<void> {
   app.post("/api/games/:gameCode", async (req, res) => {
     const gameCode: GameCode = req.params.gameCode;
 
-    const registration = registerUser.validate(req.body);
-    const newUser = user.create(registration);
-    const id = await change.applyAndReturn(state, gameCode, lobby => {
+    const registration = RegisterUser.validate(req.body);
+    const newUser = User.create(registration);
+    const id = await Change.applyAndReturn(state, gameCode, lobby => {
       if (lobby.config.password !== registration.password) {
         throw new InvalidLobbyPasswordError();
       }
-      if (wu(lobby.users.values()).find(u => u.name === registration.name)) {
+      if (
+        wu(Object.values(lobby.users)).find(u => u.name === registration.name)
+      ) {
         throw new UsernameAlreadyInUseError(registration.name);
       }
       const id = lobby.nextUserId.toString();
       lobby.nextUserId += 1;
-      lobby.users.set(id, newUser);
+      lobby.users[id] = newUser;
       const game = lobby.game;
       if (game !== undefined) {
         game.playerOrder.push(id);
         if (newUser.role === "Player") {
-          game.players.set(
-            id,
-            new Player(game.decks.responses.draw(game.rules.handSize))
+          game.players[id] = Player.initial(
+            game.decks.responses.draw(game.rules.handSize)
           );
         }
       }
@@ -153,12 +154,12 @@ async function main(): Promise<void> {
         change: {
           lobby,
           events: [
-            event.targetAll(presenceChanged.joined(id, newUser)),
+            Event.targetAll(PresenceChanged.joined(id, newUser)),
             ...(unpause.events !== undefined ? unpause.events : [])
           ],
           timeouts: [
             {
-              timeout: userDisconnect.of(id),
+              timeout: UserDisconnect.of(id),
               after: config.timeouts.disconnectionGracePeriod
             },
             ...(unpause.timeouts !== undefined ? unpause.timeouts : [])
@@ -167,11 +168,11 @@ async function main(): Promise<void> {
         returnValue: id
       };
     });
-    const claims: token.Claims = {
+    const claims: Token.Claims = {
       gc: gameCode,
       uid: id
     };
-    res.json(token.create(claims, await state.store.id(), config.secret));
+    res.json(Token.create(claims, await state.store.id(), config.secret));
   });
 
   app.ws("/api/games/:gameCode", async (socket, req) => {
@@ -184,7 +185,7 @@ async function main(): Promise<void> {
       next(error);
     }
     if (error instanceof MassiveDecksError) {
-      logging.logger.warn("Bad request:", error.details());
+      Logging.logger.warn("Bad request:", error.details());
       res.status(error.status).json(error.details());
     } else {
       next(error);
@@ -193,7 +194,7 @@ async function main(): Promise<void> {
 
   app.use(
     expressWinston.errorLogger({
-      winstonInstance: logging.logger,
+      winstonInstance: Logging.logger,
       msg: "{{err.message}}"
     })
   );
@@ -211,18 +212,18 @@ async function main(): Promise<void> {
     try {
       const lobbies = await state.store.garbageCollect();
       if (lobbies > 0) {
-        logging.logger.info(`Collected ${lobbies} ended/abandoned lobbies.`);
+        Logging.logger.info(`Collected ${lobbies} ended/abandoned lobbies.`);
       }
     } catch (error) {
-      logging.logException("Error garbage collecting:", error);
+      Logging.logException("Error garbage collecting:", error);
     }
   }, config.storage.garbageCollectionFrequency);
 
   setInterval(async () => {
     try {
-      await timeout.handle(state);
+      await Timeout.handle(state);
     } catch (error) {
-      logging.logException("Error running timeout:", error);
+      Logging.logException("Error running timeout:", error);
     }
   }, config.timeouts.timeoutCheckFrequency);
 
@@ -230,16 +231,16 @@ async function main(): Promise<void> {
     try {
       await state.tasks.process(state);
     } catch (error) {
-      logging.logException("Error processing task queue:", error);
+      Logging.logException("Error processing task queue:", error);
     }
   }, config.tasks.processTickFrequency);
 
   state.tasks
     .loadFromStore(state)
-    .catch(error => logging.logException("Error running store tasks:", error));
+    .catch(error => Logging.logException("Error running store tasks:", error));
 
   app.listen(config.listenOn, async () => {
-    logging.logger.info(`Listening on ${config.listenOn}.`);
+    Logging.logger.info(`Listening on ${config.listenOn}.`);
     if (config.touchOnStart !== null) {
       const f = await promisify(fs.open)(config.touchOnStart, "w");
       await promisify(fs.close)(f);
@@ -248,6 +249,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(error => {
-  logging.logException("Application exception:", error);
+  Logging.logException("Application exception:", error);
   process.exit(1);
 });

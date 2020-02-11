@@ -27,7 +27,7 @@ export type Distributor = (
  */
 export const targetAll = (event: Event): Distributor => (lobby, send) => {
   const rendered = JSON.stringify(event);
-  for (const id of lobby.users.keys()) {
+  for (const id of Object.keys(lobby.users)) {
     send(id, rendered, false);
   }
 };
@@ -43,7 +43,7 @@ export const targetOnly = (
 ): Distributor => (lobby, send) => {
   const rendered = JSON.stringify(event);
   const targetSet = new Set(targets);
-  for (const id of lobby.users.keys()) {
+  for (const id of Object.keys(lobby.users)) {
     if (targetSet.has(id)) {
       send(id, rendered, false);
     }
@@ -61,7 +61,7 @@ export const additionally = <T extends Event>(
   additions: Map<User.Id, Partial<T>>
 ): Distributor => (lobby, send) => {
   const basicRendered = JSON.stringify(event);
-  for (const id of lobby.users.keys()) {
+  for (const id of Object.keys(lobby.users)) {
     const addition = additions.get(id);
     if (addition !== undefined) {
       const full: T = { ...event, ...addition };
@@ -87,7 +87,7 @@ export const conditionally = <T extends Event>(
   const basicRendered = JSON.stringify(event);
   const full: T = { ...event, ...addition };
   const fullRendered = JSON.stringify(full);
-  for (const [id, user] of lobby.users.entries()) {
+  for (const [id, user] of Object.entries(lobby.users)) {
     send(id, condition(id, user) ? fullRendered : basicRendered, false);
   }
 };
@@ -105,12 +105,12 @@ export const playerSpecificAddition = <T extends Event, U extends Partial<T>>(
   const basicRendered = JSON.stringify(event);
   const game = lobby.game;
   if (game === undefined) {
-    for (const id of lobby.users.keys()) {
+    for (const id of Object.keys(lobby.users)) {
       send(id, basicRendered, false);
     }
   } else {
-    for (const [id, user] of lobby.users.entries()) {
-      const player = game.players.get(id);
+    for (const [id, user] of Object.entries(lobby.users)) {
+      const player = game.players[id];
       if (player !== undefined) {
         const toAdd = addition(id, user, player);
         const full: T = { ...event, ...toAdd };
@@ -133,7 +133,7 @@ export const targetAllAndPotentiallyClose = (
   close: (userId: User.Id) => boolean
 ): Distributor => (lobby, send) => {
   const rendered = JSON.stringify(event);
-  for (const id of lobby.users.keys()) {
+  for (const id of Object.keys(lobby.users)) {
     send(id, rendered, close(id));
   }
 };

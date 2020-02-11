@@ -79,7 +79,7 @@ export class Queue {
   }
 
   private start(server: ServerState, task: Task): void {
-    Logging.logger.info("Task started:", { task });
+    Logging.logger.debug("Task started:", { task });
     this.startedThisTick += 1;
     task
       .handle(server)

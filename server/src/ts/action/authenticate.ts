@@ -45,7 +45,7 @@ export async function handle(
     throw new Authentication.InvalidAuthenticationError("wrong game code");
   }
   await Change.apply(server, gameCode, lobby => {
-    const user = lobby.users.get(claims.uid);
+    const user = lobby.users[claims.uid];
     if (user === undefined) {
       throw new Authentication.InvalidAuthenticationError("no such user");
     }

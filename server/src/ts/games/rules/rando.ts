@@ -91,11 +91,7 @@ export const createIfNeeded = (
   if (isId(ai)) {
     return {
       user: ai,
-      events: [
-        Event.targetAll(
-          PresenceChanged.joined(ai, inLobby.users.get(ai) as User.User)
-        )
-      ]
+      events: [Event.targetAll(PresenceChanged.joined(ai, inLobby.users[ai]))]
     };
   } else {
     return Lobby.addUser(inLobby, ai, user => ({
@@ -125,7 +121,7 @@ export function* change(
       .splice(0, toAdd)
       .map(ai => createIfNeeded(inLobby, ai));
     for (const { user, events } of added) {
-      const userData = inLobby.users.get(user) as User.User;
+      const userData = inLobby.users[user];
       userData.presence = "Joined";
       config.current.push(user);
       eventsCollection.push(...events);
@@ -137,7 +133,7 @@ export function* change(
       toRemove
     );
     for (const ai of removed) {
-      const user = inLobby.users.get(ai) as User.User;
+      const user = inLobby.users[ai];
       user.presence = "Left";
       eventsCollection.push(Event.targetAll(PresenceChanged.left(ai, "Left")));
     }

@@ -134,7 +134,7 @@ export class SocketManager {
               let hand = undefined;
               let play = undefined;
               if (lobby.game !== undefined) {
-                const player = lobby.game.players.get(uid);
+                const player = lobby.game.players[uid];
                 if (player !== undefined) {
                   hand = player.hand;
                 }
@@ -146,7 +146,7 @@ export class SocketManager {
                 }
               }
 
-              const user = lobby.users.get(uid) as User.User;
+              const user = lobby.users[uid];
               user.connection = "Connected";
               return {
                 lobby,

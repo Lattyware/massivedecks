@@ -25,7 +25,7 @@ export const handle: Timeout.Handler<UserDisconnect> = (
   const id = timeout.user;
   const socket = server.socketManager.sockets.get(gameCode, id);
   if (socket === undefined) {
-    const userData = lobby.users.get(id);
+    const userData = lobby.users[id];
     if (userData === undefined) {
       throw new Error("Player not in lobby.");
     }

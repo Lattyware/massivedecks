@@ -37,9 +37,9 @@ class LikeActions extends Actions.Implementation<
       if (
         target !== undefined &&
         target.playedBy !== auth.uid &&
-        !target.likes.has(auth.uid)
+        target.likes.find(id => id === auth.uid) === undefined
       ) {
-        target.likes.add(auth.uid);
+        target.likes.push(auth.uid);
         return {
           lobby
         };

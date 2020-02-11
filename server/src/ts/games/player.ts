@@ -38,27 +38,25 @@ export type Presence = "Active" | "Away";
 /**
  * A player in the game.
  */
-export class Player {
-  public hand: Hand;
-  public score: Score;
-  public presence: Presence;
-  public likes: Likes;
-
-  public constructor(hand: Hand) {
-    this.hand = hand;
-    this.score = 0;
-    this.likes = 0;
-    this.presence = "Active";
-  }
-
-  public public(): Public {
-    return {
-      score: this.score,
-      presence: this.presence,
-      likes: this.likes
-    };
-  }
+export interface Player {
+  hand: Hand;
+  score: Score;
+  presence: Presence;
+  likes: Likes;
 }
+
+export const initial = (hand: Hand): Player => ({
+  hand: hand,
+  score: 0,
+  likes: 0,
+  presence: "Active"
+});
+
+export const censor = (player: Player): Public => ({
+  score: player.score,
+  presence: player.presence,
+  likes: player.likes
+});
 
 /**
  * Get the given player's role in the current round, or null if they are not

@@ -32,7 +32,7 @@ class EndGameActions extends Actions.Implementation<
     }
     let max = 0;
     const winners = [];
-    for (const [id, player] of lobby.game.players) {
+    for (const [id, player] of Object.entries(lobby.game.players)) {
       if (player.score > max) {
         max = player.score;
         winners.length = 0;

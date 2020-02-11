@@ -33,13 +33,13 @@ class SetPlayerAwayActions extends Actions.Implementation<
       throw new InvalidActionError("Must be in a game.");
     }
 
-    const user = lobby.users.get(action.player) as User.User;
+    const user = lobby.users[action.player];
     if (user.control === "Computer") {
       throw new InvalidActionError("Can't do this with AIs.");
     }
 
     const playerId = action.player;
-    const player = game.players.get(playerId);
+    const player = game.players[playerId];
     if (player === undefined) {
       throw new InvalidActionError("Must be a player to set away.");
     }

@@ -19,7 +19,8 @@
     "dev": "nodemon --es-module-specifier-resolution=node .",
     "debug": "nodemon --inspect --es-module-specifier-resolution=node .",
     "generate-json-validators": "bash generate-validators.sh",
-    "generate-secret": "npm run prestart && node dist/secret.js"
+    "generate-secret": "npm run prestart && node --es-module-specifier-resolution=node dist/secret.js",
+    "postgres-setup": "npm run prestart && node dist/postgres-setup.js"
   },
   "files": [
     "dist/*",
@@ -41,6 +42,7 @@
     "json5": "^2.1.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
+    "pg": "^7.18.1",
     "rfc6902": "^3.0.4",
     "source-map-support": "^0.5.13",
     "uuid": "^3.4.0",
@@ -57,6 +59,7 @@
     "@types/helmet": "^0.0.45",
     "@types/json5": "0.0.30",
     "@types/jsonwebtoken": "^8.3.7",
+    "@types/pg": "^7.14.1",
     "@types/source-map-support": "^0.5.1",
     "@types/uuid": "^3.4.7",
     "@types/wu": "^2.1.40",

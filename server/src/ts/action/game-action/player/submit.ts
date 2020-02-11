@@ -57,7 +57,7 @@ class SubmitActions extends Actions.Implementation<
             `has slots (expected ${slotCount}, got ${playLength}).`
         );
       }
-      const player = lobby.game.players.get(auth.uid);
+      const player = lobby.game.players[auth.uid];
       if (player === undefined) {
         throw new IncorrectUserRoleError(action, "Spectator", "Player");
       }
@@ -97,7 +97,7 @@ class SubmitActions extends Actions.Implementation<
         play: extractedPlay,
         playedBy: auth.uid,
         revealed: false,
-        likes: new Set()
+        likes: []
       });
       const events = [Event.targetAll(PlaySubmitted.of(auth.uid))];
       const timeouts = [];

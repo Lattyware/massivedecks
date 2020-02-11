@@ -3,7 +3,6 @@ import * as Event from "../../../event";
 import * as RoundFinished from "../../../events/game-event/round-finished";
 import * as Play from "../../../games/cards/play";
 import * as Round from "../../../games/game/round";
-import { Player } from "../../../games/player";
 import * as Lobby from "../../../lobby";
 import * as RoundStart from "../../../timeout/round-start";
 import * as Handler from "../../handler";
@@ -37,9 +36,9 @@ class JudgeAction extends Actions.Implementation<
     if (round.verifyStage<Round.Judging>(action, "Judging")) {
       let winningPlay = undefined;
       for (const play of plays) {
-        if (play.likes.size > 0) {
-          const player = game.players.get(play.playedBy) as Player;
-          player.likes += play.likes.size;
+        if (play.likes.length > 0) {
+          const player = game.players[play.playedBy];
+          player.likes += play.likes.length;
         }
         if (play.id === action.winner) {
           winningPlay = play;
@@ -48,7 +47,7 @@ class JudgeAction extends Actions.Implementation<
       if (winningPlay === undefined) {
         throw new InvalidActionError("Given play doesn't exist.");
       }
-      const player = game.players.get(winningPlay.playedBy) as Player;
+      const player = game.players[winningPlay.playedBy];
       player.score += 1;
       const completedRound = round.advance(winningPlay.playedBy);
       game.round = completedRound;

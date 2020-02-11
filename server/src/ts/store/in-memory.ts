@@ -119,7 +119,7 @@ export class InMemoryStore extends Store {
     const toRemove = new Set<GameCode.GameCode>();
     for (const [gameCode, lobby] of this.lobbies.entries()) {
       if (
-        wu(lobby.users.values()).every(
+        wu(Object.values(lobby.users)).every(
           u => u.control === "Computer" || u.presence === "Left"
         )
       ) {
@@ -127,7 +127,7 @@ export class InMemoryStore extends Store {
       }
     }
     for (const gameCode of toRemove) {
-      this.delete(gameCode);
+      await this.delete(gameCode);
     }
     return toRemove.size;
   }

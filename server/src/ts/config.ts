@@ -56,6 +56,7 @@ export interface PostgreSqlConnection {
 
 interface StorageBase<D extends Duration> {
   type: string;
+  abandonedTime: D;
   garbageCollectionFrequency: D;
 }
 
@@ -89,7 +90,7 @@ interface BasePostgreSQLCache<D extends Duration> extends CacheBase<D> {
   type: "PostgreSQL";
   connection: PostgreSqlConnection;
 }
-export type PostgreSQLCache = BasePostgreSQL<ParsedDuration>;
+export type PostgreSQLCache = BasePostgreSQLCache<ParsedDuration>;
 
 const parseDuration = (unparsed: UnparsedDuration): ParsedDuration =>
   Moment.duration(unparsed).asMilliseconds();
@@ -98,6 +99,7 @@ export const parseStorage = (
   storage: BaseStorage<UnparsedDuration>
 ): BaseStorage<ParsedDuration> => ({
   ...storage,
+  abandonedTime: parseDuration(storage.abandonedTime),
   garbageCollectionFrequency: parseDuration(storage.garbageCollectionFrequency)
 });
 

@@ -26,7 +26,7 @@ export const dealWithLostPlayer = (
 ): ConstrainedChange<Lobby.WithActiveGame> => {
   const game = lobby.game;
 
-  const player = game.players.get(playerId);
+  const player = game.players[playerId];
   if (player === undefined) {
     throw new InvalidActionError("Must be a player.");
   }
@@ -74,7 +74,7 @@ class SetPresenceActions extends Actions.Implementation<
   ) => {
     const game = lobby.game;
     const playerId = auth.uid;
-    const player = game.players.get(playerId);
+    const player = game.players[playerId];
     if (player === undefined) {
       throw new InvalidActionError("Must be a player to set away.");
     }

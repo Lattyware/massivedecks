@@ -60,6 +60,8 @@
     //   keepAlive: false,
     // },
 
+    // How long to allow without any activity before garbage collecting the game.
+    abandonedTime: "PT15M",
     // How often to delete abandoned/finished games (an ISO 8601 duration).
     garbageCollectionFrequency: "PT5M"
   },

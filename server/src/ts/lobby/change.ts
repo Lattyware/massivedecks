@@ -181,8 +181,13 @@ export async function apply(
   handler: Handler,
   timeoutId?: Timeout.Id
 ): Promise<void> {
-  await applyAndReturn(server, gameCode, lobby => ({
-    change: handler(lobby),
-    returnValue: undefined
-  }));
+  await applyAndReturn(
+    server,
+    gameCode,
+    lobby => ({
+      change: handler(lobby),
+      returnValue: undefined
+    }),
+    timeoutId
+  );
 }

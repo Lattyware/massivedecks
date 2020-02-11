@@ -29,7 +29,7 @@ class SetPrivilegeActions extends Actions.Implementation<
     lobby,
     action
   ) => {
-    const user = lobby.users.get(action.user) as User.User;
+    const user = lobby.users[action.user];
 
     if (user.control === "Computer") {
       throw new InvalidActionError("Can't do this with AIs.");

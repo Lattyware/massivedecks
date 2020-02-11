@@ -6,6 +6,7 @@ import * as FinishedPlaying from "./timeout/finished-playing";
 import * as RoundStageTimerDone from "./timeout/round-stage-timer-done";
 import * as RoundStart from "./timeout/round-start";
 import * as UserDisconnect from "./timeout/user-disconnect";
+import * as Logging from "./logging";
 
 /**
  * A timeout represents something that must happen after a delay in-game.
@@ -50,6 +51,9 @@ export const handler: Handler<Timeout> = (server, timeout, gameCode, lobby) => {
  */
 export async function handle(server: ServerState): Promise<void> {
   for await (const { id, lobby, timeout } of server.store.timedOut()) {
+    Logging.logger.debug(
+      `Timeout executing: ${id} (${JSON.stringify(timeout)}) in ${lobby}`
+    );
     await Change.apply(
       server,
       lobby,

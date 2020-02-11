@@ -29,7 +29,7 @@ export const handle: Timeout.Handler<RoundStart> = (
     if (scoreLimit !== undefined) {
       let max = scoreLimit;
       const winners = [];
-      for (const [id, player] of lobbyGame.players) {
+      for (const [id, player] of Object.entries(lobbyGame.players)) {
         if (player.score > max) {
           max = player.score;
           winners.length = 0;
@@ -52,7 +52,7 @@ export const handle: Timeout.Handler<RoundStart> = (
     if (gameRound.stage === "Complete") {
       const result = lobbyGame.startNewRound(server, inLobby);
       return {
-        inLobby,
+        lobby: inLobby,
         ...result
       };
     }

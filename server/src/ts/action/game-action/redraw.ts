@@ -33,7 +33,7 @@ class RedrawActions extends Actions.Implementation<
       throw new InvalidActionError("Redraw house rule not enabled.");
     }
     const cost = reboot.cost;
-    const player = game.players.get(auth.uid);
+    const player = game.players[auth.uid];
     if (player === undefined) {
       throw new IncorrectUserRoleError(action, "Spectator", "Player");
     }

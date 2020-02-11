@@ -58,7 +58,7 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
   const newCardsByPlayer = new Map();
   for (const play of round.plays) {
     const idSet = new Set(play.play.map(c => c.id));
-    const player = game.players.get(play.playedBy);
+    const player = game.players[play.playedBy];
     if (player !== undefined) {
       player.hand = player.hand.filter(card => !idSet.has(card.id));
       const toDraw = play.play.length - extraCards;
