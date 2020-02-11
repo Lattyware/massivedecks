@@ -19,8 +19,7 @@
     "dev": "nodemon --es-module-specifier-resolution=node .",
     "debug": "nodemon --inspect --es-module-specifier-resolution=node .",
     "generate-json-validators": "bash generate-validators.sh",
-    "generate-secret": "npm run prestart && node --es-module-specifier-resolution=node dist/secret.js",
-    "postgres-setup": "npm run prestart && node dist/postgres-setup.js"
+    "generate-secret": "npm run prestart && node --es-module-specifier-resolution=node dist/secret.js"
   },
   "files": [
     "dist/*",

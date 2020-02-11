@@ -60,6 +60,21 @@ export class Postgres {
   }
 
   /**
+   * Perform the given action with a client from the pool, releasing it when
+   * done.
+   */
+  public async *withClientIterator<Result>(
+    f: (client: Pg.PoolClient) => AsyncIterableIterator<Result>
+  ): AsyncIterableIterator<Result> {
+    const client = await this.pool.connect();
+    try {
+      return await f(client);
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Try to perform the given function in a transaction, and if there is an
    * exception roll back all the database operations performed.
    * @param f the function to execute.
