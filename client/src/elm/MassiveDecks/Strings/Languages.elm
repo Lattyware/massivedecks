@@ -25,6 +25,7 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages.En as EnLang
+import MassiveDecks.Strings.Languages.It as ItLang
 import MassiveDecks.Strings.Languages.Model exposing (..)
 import MassiveDecks.Strings.Render as Render
 import MassiveDecks.Strings.Translation as Translation
@@ -38,6 +39,7 @@ import Weightless.Attributes as WlA
 languages : List Language
 languages =
     [ En
+    , It
     ]
 
 
@@ -164,3 +166,5 @@ pack language =
     case language of
         En ->
             EnLang.pack
+        It ->
+            ItLang.pack
