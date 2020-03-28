@@ -503,7 +503,7 @@ languageOption currentLanguage language =
 
             else
                 [ autonym |> Html.text
-                , Html.text "("
+                , Html.text " ("
                 , nameInCurrentLanguage |> Html.text
                 , Html.text ")"
                 ]
