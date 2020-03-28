@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+import uuid from "uuid";
 import wu from "wu";
 import { Source } from "./source";
 import { Player } from "./sources/player";
@@ -69,7 +69,7 @@ export type Part = string | Slot;
 /**
  * Create a new user id.
  */
-export const id: () => Id = uuid;
+export const id: () => Id = uuid.v4;
 
 /**
  * If the given card is a call.

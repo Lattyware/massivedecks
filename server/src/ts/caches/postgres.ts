@@ -5,7 +5,7 @@ import * as Decks from "../games/cards/decks";
 import * as Source from "../games/cards/source";
 import * as Postgres from "../util/postgres";
 import * as Card from "../games/cards/card";
-import uuid from "uuid/v4";
+import uuid from "uuid";
 
 class To0 extends Postgres.Upgrade<undefined, 0> {
   public readonly to = 0;
@@ -60,7 +60,7 @@ class To0 extends Postgres.Upgrade<undefined, 0> {
   }
 }
 
-const upgrades: Postgres.Upgrades = version => {
+const upgrades: Postgres.Upgrades = (version) => {
   switch (version) {
     case undefined:
       return new To0(version);
@@ -100,7 +100,7 @@ export class PostgresCache extends Cache.Cache {
     source: Source.Resolver,
     summary: Source.Summary
   ): Promise<void> {
-    await this.pg.inTransaction(async client => {
+    await this.pg.inTransaction(async (client) => {
       await client.query(
         `
           INSERT INTO mdcache.decks (source, id) VALUES (
@@ -126,7 +126,7 @@ export class PostgresCache extends Cache.Cache {
           summary.calls,
           summary.responses,
           Date.now(),
-          summary.tag
+          summary.tag,
         ]
       );
     });
@@ -136,7 +136,7 @@ export class PostgresCache extends Cache.Cache {
     source: Source.Resolver,
     templates: Decks.Templates
   ): Promise<void> {
-    await this.pg.inTransaction(async client => {
+    await this.pg.inTransaction(async (client) => {
       await client.query(
         `
           INSERT INTO mdcache.decks (source, id, cards_updated, cards_tag) VALUES (
@@ -176,7 +176,7 @@ export class PostgresCache extends Cache.Cache {
   public async getCachedSummary(
     source: Source.Resolver
   ): Promise<Cache.Aged<Source.Summary> | undefined> {
-    return await this.pg.withClient(async client => {
+    return await this.pg.withClient(async (client) => {
       const result = await client.query(
         `
           SELECT name, url, calls, responses, updated 
@@ -190,12 +190,12 @@ export class PostgresCache extends Cache.Cache {
           cached: {
             details: {
               name: row["name"],
-              url: row["url"]
+              url: row["url"],
             },
             calls: row["calls"],
-            responses: row["responses"]
+            responses: row["responses"],
           },
-          age: row["updated"]
+          age: row["updated"],
         };
       } else {
         return undefined;
@@ -206,7 +206,7 @@ export class PostgresCache extends Cache.Cache {
   public async getCachedTemplates(
     source: Source.Resolver
   ): Promise<Cache.Aged<Decks.Templates> | undefined> {
-    return await this.pg.withClient(async client => {
+    return await this.pg.withClient(async (client) => {
       const about = await client.query(
         `
           SELECT cards_updated, cards_tag FROM mdcache.decks WHERE source = $1 AND id = $2
@@ -226,9 +226,9 @@ export class PostgresCache extends Cache.Cache {
 
         for (const c of callsResult.rows) {
           calls.add({
-            id: uuid(),
+            id: uuid.v4(),
             source: source.source,
-            parts: c["parts"]
+            parts: c["parts"],
           });
         }
 
@@ -241,9 +241,9 @@ export class PostgresCache extends Cache.Cache {
 
         for (const r of responsesResult.rows) {
           responses.add({
-            id: uuid(),
+            id: uuid.v4(),
             source: source.source,
-            text: r["text"]
+            text: r["text"],
           });
         }
 
@@ -252,9 +252,9 @@ export class PostgresCache extends Cache.Cache {
           cached: {
             calls,
             responses,
-            tag: aboutRow["cards_tag"]
+            tag: aboutRow["cards_tag"],
           },
-          age: aboutRow["cards_updated"]
+          age: aboutRow["cards_updated"],
         };
       } else {
         return undefined;

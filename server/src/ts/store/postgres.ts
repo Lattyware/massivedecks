@@ -1,5 +1,5 @@
 import Pg from "pg";
-import uuid from "uuid/v4";
+import uuid from "uuid";
 import { CreateLobby } from "../action/initial/create-lobby";
 import * as Config from "../config";
 import { LobbyClosedError } from "../errors/lobby";
@@ -50,13 +50,13 @@ class To0 extends Postgres.Upgrade<undefined, 0> {
         `);
     await client.query("INSERT INTO massivedecks.meta VALUES ($1, $2);", [
       this.to,
-      uuid()
+      uuid.v4(),
     ]);
     return this.to;
   }
 }
 
-const upgrades: Postgres.Upgrades = version => {
+const upgrades: Postgres.Upgrades = (version) => {
   switch (version) {
     case undefined:
       return new To0(version);
@@ -84,7 +84,7 @@ export class PostgresStore extends Store.Store {
 
     await pg.ensureCurrent();
 
-    return await pg.withClient(async client => {
+    return await pg.withClient(async (client) => {
       const rows = await client.query(`SELECT id FROM massivedecks.meta`);
 
       return new PostgresStore(rows.rows[0]["id"], config, pg);
@@ -109,7 +109,7 @@ export class PostgresStore extends Store.Store {
   public async exists(gameCode: GameCode.GameCode): Promise<boolean> {
     const lobbyId = GameCode.decode(gameCode);
     return await this.pg.withClient(
-      async client =>
+      async (client) =>
         (
           await client.query(
             "SELECT EXISTS (SELECT id FROM massivedecks.lobbies WHERE id = $1)",
@@ -122,15 +122,15 @@ export class PostgresStore extends Store.Store {
   public async delete(gameCode: GameCode.GameCode): Promise<void> {
     const lobbyId = GameCode.decode(gameCode);
     await this.pg.withClient(
-      async client =>
+      async (client) =>
         await client.query("DELETE FROM massivedecks.lobbies WHERE id = $1", [
-          lobbyId
+          lobbyId,
         ])
     );
   }
 
   public async garbageCollect(): Promise<number> {
-    return await this.pg.withClient(async client => {
+    return await this.pg.withClient(async (client) => {
       const result = await client.query(
         `
           DELETE FROM massivedecks.lobbies WHERE
@@ -160,9 +160,9 @@ export class PostgresStore extends Store.Store {
         state: !started || ended ? "SettingUp" : "Playing",
         users: {
           players: users["Player"] || 0,
-          spectators: users["Spectator"] || 0
+          spectators: users["Spectator"] || 0,
         },
-        password
+        password,
       };
     }
   }
@@ -171,7 +171,7 @@ export class PostgresStore extends Store.Store {
     creation: CreateLobby,
     secret: string
   ): Promise<{ gameCode: GameCode.GameCode; token: Token.Token }> {
-    return await this.pg.withClient(async client => {
+    return await this.pg.withClient(async (client) => {
       const lobby = Lobby.create(creation);
       const result = await client.query(
         "INSERT INTO massivedecks.lobbies VALUES (DEFAULT, $1) RETURNING id",
@@ -183,11 +183,11 @@ export class PostgresStore extends Store.Store {
         token: Token.create(
           {
             gc: gameCode,
-            uid: lobby.owner
+            uid: lobby.owner,
           },
           await this.id(),
           secret
-        )
+        ),
       };
     });
   }
@@ -207,7 +207,7 @@ export class PostgresStore extends Store.Store {
       yield {
         id: row["id"],
         lobby: GameCode.encode(row["lobby"]),
-        timeout: row["timeout"]
+        timeout: row["timeout"],
       };
     }
   }
@@ -217,7 +217,7 @@ export class PostgresStore extends Store.Store {
     write: (lobby: Lobby.Lobby) => { transaction: Store.Transaction; result: T }
   ): Promise<T> {
     const lobbyId = GameCode.decode(gameCode);
-    return await this.pg.inTransaction(async client => {
+    return await this.pg.inTransaction(async (client) => {
       const get = await client.query(
         "SELECT lobby FROM massivedecks.lobbies WHERE id = $1;",
         [lobbyId]
@@ -244,7 +244,7 @@ export class PostgresStore extends Store.Store {
       }
       if (transaction.executedTimeout !== undefined) {
         await client.query("DELETE FROM massivedecks.timeouts WHERE id = $1", [
-          transaction.executedTimeout
+          transaction.executedTimeout,
         ]);
       }
       return result;

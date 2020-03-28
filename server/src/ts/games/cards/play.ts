@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+import uuid from "uuid";
 import { Response } from "./card";
 
 /** A series of cards played into a round.*/
@@ -26,4 +26,4 @@ export type Revealed = PotentiallyRevealed & { play: Play; likes?: number };
 /**
  * Create a new user id.
  */
-export const id: () => Id = uuid;
+export const id: () => Id = uuid.v4;

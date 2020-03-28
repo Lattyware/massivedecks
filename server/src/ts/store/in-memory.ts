@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+import uuid from "uuid";
 import wu from "wu";
 import { CreateLobby } from "../action/initial/create-lobby";
 import * as ServerConfig from "../config";
@@ -36,7 +36,7 @@ export class InMemoryStore extends Store {
   public constructor(config: ServerConfig.InMemory) {
     super();
     this.config = config;
-    this._id = uuid();
+    this._id = uuid.v4();
     this.nextLobby = 0;
     this.lobbies = new Map();
     this.timeouts = new Map();
@@ -70,11 +70,11 @@ export class InMemoryStore extends Store {
       token: Token.create(
         {
           gc: gameCode,
-          uid: lobby.owner
+          uid: lobby.owner,
         },
         this._id,
         secret
-      )
+      ),
     };
   }
 
@@ -102,10 +102,10 @@ export class InMemoryStore extends Store {
     }
     if (transaction.timeouts !== undefined) {
       for (const timeout of transaction.timeouts) {
-        this.timeouts.set(uuid(), {
+        this.timeouts.set(uuid.v4(), {
           timeout: timeout.timeout,
           lobby: gameCode,
-          after: Date.now() + timeout.after
+          after: Date.now() + timeout.after,
         });
       }
     }
@@ -120,7 +120,7 @@ export class InMemoryStore extends Store {
     for (const [gameCode, lobby] of this.lobbies.entries()) {
       if (
         wu(Object.values(lobby.users)).every(
-          u => u.control === "Computer" || u.presence === "Left"
+          (u) => u.control === "Computer" || u.presence === "Left"
         )
       ) {
         toRemove.add(gameCode);
@@ -148,7 +148,7 @@ export class InMemoryStore extends Store {
         yield {
           id,
           timeout: meta.timeout,
-          lobby: meta.lobby
+          lobby: meta.lobby,
         };
         done.push(id);
       }

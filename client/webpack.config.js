@@ -152,7 +152,21 @@ module.exports = (env, argv) => {
           use: [
             {
               loader: "html-loader",
-              options: { attrs: ["img:src", "link:href"] }
+              options: {
+                attributes: {
+                  list: [
+                    {
+                      tag: 'img',
+                      attribute: 'src',
+                      type: 'src',
+                    }, {
+                      tag: 'link',
+                      attribute: 'href',
+                      type: 'src',
+                    }
+                  ]
+                }
+              }
             }
           ]
         },
