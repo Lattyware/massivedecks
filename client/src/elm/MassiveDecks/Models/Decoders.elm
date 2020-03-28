@@ -108,7 +108,7 @@ spectateCommand =
 flags : Json.Decoder Flags
 flags =
     Json.map3 Flags
-        (Json.field "settings" settings)
+        (Json.maybe (Json.field "settings" settings))
         (Json.field "browserLanguages" (Json.list Json.string))
         (Json.maybe (Json.field "remoteMode" Json.bool) |> Json.map (Maybe.withDefault False))
 

@@ -1,8 +1,8 @@
-import { InboundPort, Settings } from "../elm/MassiveDecks";
+import { InboundPort } from "../elm/MassiveDecks";
 
 export const flags = () => ({ settings: SettingsStorage.load() });
 
-export const register = (storeSettings: InboundPort<Settings>) => {
+export const register = (storeSettings: InboundPort<object>) => {
   storeSettings.subscribe(SettingsStorage.save);
 };
 
@@ -12,26 +12,20 @@ export const register = (storeSettings: InboundPort<Settings>) => {
 class SettingsStorage {
   static readonly storage = window.localStorage;
   static readonly key: string = "settings";
-  static readonly default: Settings = {
-    tokens: [],
-    lastUsedName: null,
-    recentDecks: [],
-    chosenLanguage: null
-  };
 
   /**
    * Load settings from local storage.
    */
   static load() {
     const rawSettings = SettingsStorage.storage.getItem(SettingsStorage.key);
-    return rawSettings ? JSON.parse(rawSettings) : SettingsStorage.default;
+    return rawSettings ? JSON.parse(rawSettings) : undefined;
   }
 
   /**
    * Save the given settings to local storage.
    * @param settings The settings.
    */
-  static save(settings: Settings) {
+  static save(settings: object) {
     SettingsStorage.storage.setItem(
       SettingsStorage.key,
       JSON.stringify(settings)

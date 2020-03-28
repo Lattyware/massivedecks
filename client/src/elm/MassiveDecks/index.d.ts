@@ -6,15 +6,8 @@ import {
 
 type Token = string;
 
-interface Settings {
-  tokens: Token[];
-  lastUsedName: string | null;
-  recentDecks: string[];
-  chosenLanguage: string | null;
-}
-
 interface Flags {
-  settings: Settings;
+  settings: object;
   browserLanguages: string[];
   remoteMode?: boolean;
 }
@@ -61,7 +54,7 @@ export namespace Elm {
         notificationCommands: InboundPort<NotificationCommand>;
         speechCommands: InboundPort<Say>;
         speechVoices: OutboundPort<Array<Voice>>;
-        storeSettings: InboundPort<Settings>;
+        storeSettings: InboundPort<object>;
         tryCast: InboundPort<RemoteControlCommand>;
         castStatus: OutboundPort<CastStatus>;
         serverRecv: OutboundPort<string>;

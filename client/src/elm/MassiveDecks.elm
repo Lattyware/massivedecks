@@ -67,10 +67,10 @@ init flags url key =
         { settings, browserLanguages, remoteMode } =
             Json.decodeValue Decoders.flags flags
                 |> Result.toMaybe
-                |> Maybe.withDefault (Flags Settings.defaults [] False)
+                |> Maybe.withDefault (Flags Nothing [] False)
 
         ( initialisedSettings, settingsCmd ) =
-            Settings.init SettingsMsg settings
+            Settings.init SettingsMsg (settings |> Maybe.withDefault Settings.defaults)
 
         ( speech, speechCmd ) =
             Speech.init

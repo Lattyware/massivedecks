@@ -34,15 +34,27 @@ translate mdString =
         Plural { singular, amount } ->
             if amount == Just 1 then
                 [ Raw singular ]
+
             else
                 -- Not ideal, but pluralization is not trivial in Italian, su we just handle the very few cases
                 case singular of
-                    Call -> [ Text "Carte Nere" ]
-                    Response -> [ Text "Carte Bianche" ]
-                    Point -> [ Text "Punti" ]
-                    Player -> [ Text "Giocatori" ]
-                    Spectator -> [ Text "Spettatori" ]
-                    _ -> [ Raw singular]                
+                    Call ->
+                        [ Text "Carte Nere" ]
+
+                    Response ->
+                        [ Text "Carte Bianche" ]
+
+                    Point ->
+                        [ Text "Punti" ]
+
+                    Player ->
+                        [ Text "Giocatori" ]
+
+                    Spectator ->
+                        [ Text "Spettatori" ]
+
+                    _ ->
+                        [ Raw singular ]
 
         -- Start screen.
         Version { versionNumber } ->

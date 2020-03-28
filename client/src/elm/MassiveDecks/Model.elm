@@ -29,7 +29,7 @@ type alias Shared =
 {-| Flags passed to the application from init code.
 -}
 type alias Flags =
-    { settings : Settings
+    { settings : Maybe Settings
     , browserLanguages : List String
     , remoteMode : Bool
     }

@@ -40,6 +40,8 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
+import MassiveDecks.Util.Html.Attributes as HtmlA
+import MassiveDecks.Util.Maybe as Maybe
 import Weightless as Wl
 import Weightless.Attributes as WlA
 import Weightless.Slider as Slider
@@ -509,7 +511,9 @@ languageOption currentLanguage language =
                 ]
     in
     Html.option
-        [ language |> Lang.code |> HtmlA.value, HtmlA.selected (currentLanguage == language) ]
+        [ WlA.selected |> Maybe.justIf (currentLanguage == language) |> Maybe.withDefault HtmlA.nothing
+        , language |> Lang.code |> HtmlA.value
+        ]
         name
 
 
