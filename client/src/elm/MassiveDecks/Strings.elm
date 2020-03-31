@@ -313,3 +313,4 @@ type MdString
     | English -- The name of the English language (no specific dialect).
     | BritishEnglish -- The name of the British dialect of the English language.
     | Italian -- The name of the Italian language.
+    | BrazilianPortuguese -- The name of the Brazilian dialect of the Portuguese language.
