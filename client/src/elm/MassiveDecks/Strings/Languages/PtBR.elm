@@ -69,9 +69,9 @@ translate mdString =
             , Ref CardsAgainstHumanity
             , Text ", desenvolvido por "
             , Ref RereadGames
-            , Text " e outros contribuidores—o jogo é código aberto sobre "
+            , Text " e outros contribuidores—o jogo é código aberto sobre a "
             , Ref License
-            , Text ", então você pode ajudar a melhorar o jogo, acessar o código fonte, ou apenas descobrir mais em "
+            , Text ", então você pode ajudar a melhorar o jogo, acessar o código fonte, ou apenas descobrir mais no "
             , Ref MDProject
             , Text "."
             ]
@@ -101,10 +101,10 @@ translate mdString =
             [ Text "Um livro rodeado por uma flecha de reciclagem." ]
 
         MDProject ->
-            [ Text "o projeto GitHub" ]
+            [ Text "projeto GitHub" ]
 
         License ->
-            [ Text "a licença AGPLv3" ]
+            [ Text "licença AGPLv3" ]
 
         DevelopedByReread ->
             [ Text "Desenvolvido por ", Ref RereadGames, Text "." ]
@@ -143,7 +143,7 @@ translate mdString =
         RulesCzar ->
             [ Text "O primeiro jogador começa como "
             , Ref Czar
-            , Text ". o "
+            , Text ". O "
             , Ref Czar
             , Text " lê a pergunta ou frase para preencher na "
             , Ref Call
@@ -185,7 +185,7 @@ translate mdString =
             [ Ref (Plural { singular = Call, amount = Nothing })
             , Text " cartas como essa precisam de mais "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text ", mas te dão mais para escolher."
+            , Text ", mas te dão mais cartas para escolher."
             ]
 
         RulesDraw ->
@@ -228,7 +228,7 @@ translate mdString =
             ]
 
         HouseRuleRebootCost ->
-            [ Text "Custo de ", Ref Point  ]
+            [ Text "Custo de ", Ref (Plural { singular = Point, amount = Nothing })  ]
 
         HouseRuleRebootCostDescription ->
             [ Text "Quantos ", Ref (Plural { singular = Point, amount = Nothing }), Text " custa para trocar as cartas." ]
@@ -279,7 +279,7 @@ translate mdString =
         HouseRuleRandoCardrissianDescription ->
             [ Text "A cada partida, a primeira "
             , Ref Response
-            , Text " no deque será jogada como uma resposta. Esta jogada pertencerá a um jogador IA chamado "
+            , Text " no deck será jogada como uma resposta. Esta jogada pertencerá a um jogador IA chamado "
             , Text "Rando Cardrissian, e se ele vencer o jogo, todos os jogadores vão para casa em um estado de vergonha eterna."
             ]
 
@@ -338,8 +338,7 @@ translate mdString =
             [ Text "Notificações de Navegador" ]
 
         NotificationsExplanation ->
-            [ Text "Alertar quando você precisar fazer algo no jogo usando as notificações do navegador."
-            ]
+            [ Text "Alertar quando você precisar fazer algo no jogo usando as notificações do navegador."]
 
         NotificationsUnsupportedExplanation ->
             [ Text "Seu navegador não suporta notificações." ]
@@ -357,7 +356,7 @@ translate mdString =
             [ Text "Enviar notificações apenas quando você não está olhando para a página (ex.: em outra aba ou minimizado)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Seu navegador não suporta a checar a visibilidade da página." ]
+            [ Text "Seu navegador não suporta checar a visibilidade da página." ]
 
         -- Terms
         Czar ->
@@ -403,10 +402,10 @@ translate mdString =
             [ Text "Dê este código de jogo para seus amigos e eles poderão entrar no jogo." ]
 
         GameCodeHowToAcquire ->
-            [ Text "Pergunte a quem convidou você ao jogo ", Ref GameCodeTerm, Text "." ]
+            [ Text "Pergunte a quem convidou você ao jogo o ", Ref GameCodeTerm, Text "." ]
 
         Deck ->
-            [ Text "Deque" ]
+            [ Text "Deck" ]
 
         StillPlaying ->
             [ Text "Jogando" ]
@@ -441,7 +440,7 @@ translate mdString =
             [ Text "Entre no jogo!" ]
 
         ToggleAdvertDescription ->
-            [ Text "Alterne a notificação de entrarem no jogo." ]
+            [ Text "Alterne a notificação ao entrarem no jogo." ]
 
         -- Cards
         Pick numberOfCards ->
@@ -544,7 +543,7 @@ translate mdString =
             [ Text "Dono" ]
 
         PrivilegedDescription ->
-            [ Text "este usuário pode alterar as configurações do jogo." ]
+            [ Text "Este usuário pode alterar as configurações do jogo." ]
 
         Ai ->
             [ Text "IA" ]
@@ -623,7 +622,7 @@ translate mdString =
             [ Text "Retornar" ]
 
         ReturnViewToGameDescription ->
-            [ Text "Retornar para a avisualização principal do jogo." ]
+            [ Text "Retornar para a visualização principal do jogo." ]
 
         ViewConfgiuration ->
             [ Text "Configurar" ]
@@ -638,7 +637,7 @@ translate mdString =
             [ Text "Promover" ]
 
         Demote ->
-            [ Text "rebaixar" ]
+            [ Text "Rebaixar" ]
 
         -- Notifications
         UserConnected { username } ->
@@ -664,21 +663,21 @@ translate mdString =
             [ Text "Configuração do Jogo" ]
 
         NoDecks ->
-            [ Segment [ Text "Sem deques. " ]
+            [ Segment [ Text "Sem decks. " ]
             , Text " "
-            , Segment [ Text "Você precisa adicionar ao menos um deque ao jogo." ]
+            , Segment [ Text "Você precisa adicionar ao menos um deck ao jogo." ]
             ]
 
         NoDecksHint ->
-            [ Text "Não tem certeza? Adicione o deque original de ", Raw CardsAgainstHumanity, Text " (em inglês)." ]
+            [ Text "Não tem certeza? Adicione o deck original de ", Raw CardsAgainstHumanity, Text " (em inglês)." ]
 
         WaitForDecks ->
-            [ Text "Os deques devem carregar antes de que você possa iniciar o jogo." ]
+            [ Text "Os decks devem carregar antes de que você possa iniciar o jogo." ]
 
         MissingCardType { cardType } ->
-            [ Text "Nenhum de seus deques possui "
+            [ Text "Nenhum de seus decks possui "
             , Ref (Plural { singular = cardType, amount = Nothing })
-            , Text ". Você precisa de um deque que as possoa para iniciar o jogo."
+            , Text ". Você precisa de um deck que as possoa para iniciar o jogo."
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
@@ -692,16 +691,16 @@ translate mdString =
             ]
 
         AddDeck ->
-            [ Text "Adicionar deque." ]
+            [ Text "Adicionar deck." ]
 
         RemoveDeck ->
-            [ Text "Remover deque." ]
+            [ Text "Remover deck." ]
 
         SourceNotFound { source } ->
-            [ Ref source, Text " não reconhece o deque pedido. Cheque se os detalhes que você forneceu estão corretos." ]
+            [ Ref source, Text " não reconhece o deck pedido. Cheque se os detalhes que você forneceu estão corretos." ]
 
         SourceServiceFailure { source } ->
-            [ Ref source, Text " falhou ao providenciar o deque. Por favor tente novamente com outra fonte." ]
+            [ Ref source, Text " falhou ao providenciar o deck. Por favor tente novamente com outra fonte." ]
 
         Cardcast ->
             [ Text "Cardcast" ]
@@ -710,16 +709,16 @@ translate mdString =
             [ Text "Código de Jogo ", Ref Cardcast ]
 
         CardcastEmptyPlayCode ->
-            [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deque que você queira adicionar." ]
+            [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deck que você queira adicionar." ]
 
         APlayer ->
             [ Text "Um jogador" ]
 
         DeckAlreadyAdded ->
-            [ Text "Este deque já está no jogo." ]
+            [ Text "Este deck já está no jogo." ]
 
         ConfigureDecks ->
-            [ Text "Deques" ]
+            [ Text "Decks" ]
 
         ConfigureRules ->
             [ Text "Regras" ]
@@ -737,7 +736,7 @@ translate mdString =
             [ Text "O número base de cartas que cada jogador possui em suas mãos durante o jogo." ]
 
         ScoreLimit ->
-            [ Text "Limite de ", Ref Point ]
+            [ Text "Limite de ", Ref (Plural { singular = Point, amount = Nothing }) ]
 
         ScoreLimitDescription ->
             [ Segment
@@ -761,7 +760,7 @@ translate mdString =
             [ Text "Descartar suas alterações não salvas." ]
 
         NeedAtLeastOneDeck ->
-            [ Text "Você precisa de um deque de cartas adicionado ao jogo." ]
+            [ Text "Você precisa de um deck de cartas adicionado ao jogo." ]
 
         NeedAtLeastThreePlayers ->
             [ Text "Você precisa de pelo menos três jogadores para iniciar o jogo." ]
@@ -783,7 +782,7 @@ translate mdString =
             [ Text "Desativar ", Ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
-            [ Text "Adicionar um jogador IAao jogo." ]
+            [ Text "Adicionar um jogador IA ao jogo." ]
 
         PasswordShared ->
             [ Text "Qualquer um no jogo pode ver a senha! "
@@ -793,7 +792,7 @@ translate mdString =
         PasswordNotSecured ->
             [ Text "Senhas do jogo "
             , Em [ Text "não" ]
-            , Text " são armazenadas seguramente—por isso, por favor "
+            , Text " são armazenadas seguramente—por isso, por favor, "
             , Em [ Text "não" ]
             , Text " use senhas sérias que você usaria um outros lugares!"
             ]
@@ -831,7 +830,7 @@ translate mdString =
             ]
 
         TimeLimit { stage } ->
-            [ Ref stage, Text " Tempo Limite" ]
+            [ Text " Tempo Limite quando estiver ", Ref stage ]
 
         PlayingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) os ", Ref Players, Text " terão para fazer suas jogadas." ]
@@ -861,10 +860,10 @@ translate mdString =
 
         -- Game
         SubmitPlay ->
-            [ Text "dar essas cartas ao ", Ref Czar, Text " como sua jogada da partida." ]
+            [ Text "Dar essas cartas ao ", Ref Czar, Text " como sua jogada da partida." ]
 
         TakeBackPlay ->
-            [ Text "pegar de volta suas cartas para mudar sua jogada da partida." ]
+            [ Text "Pegar de volta suas cartas para mudar sua jogada da partida." ]
 
         JudgePlay ->
             [ Text "Escolher essa jogada como vencedora da partida." ]
@@ -960,7 +959,7 @@ translate mdString =
 
         -- Errors
         Error ->
-            [ Text "Erri" ]
+            [ Text "Erro" ]
 
         ErrorHelp ->
             [ Text "O servidor do jogo talvez tenha caído, ou isto talvez seja um bug. Atualizar a página deve ajudar "
@@ -1054,7 +1053,7 @@ translate mdString =
         LobbyDoesNotExistError { gameCode } ->
             [ Text "O código do jogo que você forneceu ("
             , Ref (GameCode { code = gameCode })
-            , Text ") Não existe. "
+            , Text ") não existe. "
             , Text "Tente digitar novamente, e se ainda não funcionar, pergunte novamente a pessoa que te convidou."
             ]
 
@@ -1071,20 +1070,20 @@ translate mdString =
             [ Text "Algo de errado aconteceu no jogo." ]
 
         OutOfCardsError ->
-            [ Text "Não há cartas suficientes no deque para dar uma mão a todo mundo! Tente adicionar mais deques nas configurações do jogo." ]
+            [ Text "Não há cartas suficientes no deck para dar uma mão a todo mundo! Tente adicionar mais decks nas configurações do jogo." ]
 
         -- Language Names
         English ->
             [ Text "Inglês" ]
 
         BritishEnglish ->
-            [ Text "Inglês (britânico)" ]
+            [ Text "Inglês (Britânico)" ]
 
         Italian ->
             [ Text "Italiano" ]
 
         BrazilianPortuguese ->
-            [ Text "Português (brasileiro)" ]
+            [ Text "Português (Brasileiro)" ]
 
 
 an : Maybe Int -> String
