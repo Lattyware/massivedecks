@@ -18,7 +18,7 @@ pack =
 {- Private -}
 
 
-{-| The English translation
+{-| The Italian translation
 -}
 translate : MdString -> List Translation.Result
 translate mdString =

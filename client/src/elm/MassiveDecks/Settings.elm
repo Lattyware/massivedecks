@@ -285,7 +285,7 @@ cardSize wrap shared =
                 , Slider.step 1
                 , Slider.min 1
                 , Slider.max 3
-                , WlA.label "Card Size"
+                , Strings.CardSizeSetting |> Lang.string shared |> WlA.label
                 , WlA.outlined
                 , Slider.thumbLabel True
                 , String.toInt
@@ -500,7 +500,7 @@ languageOption currentLanguage language =
             language |> Lang.languageName |> Lang.givenLanguageString currentLanguage
 
         name =
-            if autonym == nameInCurrentLanguage then
+            if language == currentLanguage then
                 [ autonym |> Html.text ]
 
             else

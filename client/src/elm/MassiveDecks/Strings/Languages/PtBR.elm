@@ -1,7 +1,6 @@
 module MassiveDecks.Strings.Languages.PtBR exposing (pack)
 
-{-| General English-language translation.
-This is the primary language, strings here are the canonical representation, and are suitable to translate from.
+{-| Brazilian Portuguese translation.
 -}
 
 import MassiveDecks.Strings exposing (MdString(..))
@@ -20,7 +19,7 @@ pack =
 {- Private -}
 
 
-{-| The English translation
+{-| The Brazilian Portuguese translation
 -}
 translate : MdString -> List Translation.Result
 translate mdString =
@@ -42,14 +41,19 @@ translate mdString =
                 case singular of
                     Call ->
                         [ Text "Cartas Pretas" ]
+
                     Response ->
                         [ Text "Cartas Brancas" ]
+
                     Point ->
                         [ Text "Pontos Incríveis" ]
+
                     Player ->
                         [ Text "Jogadores" ]
+
                     Spectator ->
                         [ Text "Espectadores" ]
+
                     _ ->
                         [ Raw singular, Text "s" ]
 
@@ -221,14 +225,14 @@ translate mdString =
 
         HouseRuleRebootAction { cost } ->
             [ Text "Gastar "
-            , Text (asWord cost "male")
+            , Text (asWord cost Male)
             , Text " "
             , Ref (Plural { singular = Point, amount = Just cost })
             , Text " para trocar sua mão por uma nova."
             ]
 
         HouseRuleRebootCost ->
-            [ Text "Custo de ", Ref (Plural { singular = Point, amount = Nothing })  ]
+            [ Text "Custo de ", Ref (Plural { singular = Point, amount = Nothing }) ]
 
         HouseRuleRebootCostDescription ->
             [ Text "Quantos ", Ref (Plural { singular = Point, amount = Nothing }), Text " custa para trocar as cartas." ]
@@ -338,7 +342,7 @@ translate mdString =
             [ Text "Notificações de Navegador" ]
 
         NotificationsExplanation ->
-            [ Text "Alertar quando você precisar fazer algo no jogo usando as notificações do navegador."]
+            [ Text "Alertar quando você precisar fazer algo no jogo usando as notificações do navegador." ]
 
         NotificationsUnsupportedExplanation ->
             [ Text "Seu navegador não suporta notificações." ]
@@ -451,7 +455,7 @@ translate mdString =
 
         PickDescription { numberOfCards } ->
             [ Text "Você precisa escolher "
-            , Text (asWord numberOfCards "female")
+            , Text (asWord numberOfCards Female)
             , Text " "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
             , Text "."
@@ -459,7 +463,7 @@ translate mdString =
 
         DrawDescription { numberOfCards } ->
             [ Text "Você ganha mais "
-            , Text (asWord numberOfCards "female")
+            , Text (asWord numberOfCards Female)
             , Text " "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
             , Text " antes de jogar."
@@ -915,7 +919,7 @@ translate mdString =
         -- Instructions
         PlayInstruction { numberOfCards } ->
             [ Text "Você precisa escolher mais "
-            , Text (asWord numberOfCards "female")
+            , Text (asWord numberOfCards Female)
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
             , Text " da sua mão nesta partida antes de enviar sua jogada."
             ]
@@ -1106,27 +1110,38 @@ a amount =
             ""
 
 
-{-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
-    For portuguese, one and two are gender dependent, so "male" if the word refers to a male noun, and "female" for a female noun.
+{-| The grammatical gender of a noun.
 -}
+type Gender
+    = Male
+    | Female
 
-asWord : Int -> String -> String
+
+{-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
+For portuguese, one and two are gender dependent, so Male if the word refers to a male noun, and Female for a female
+noun.
+-}
+asWord : Int -> Gender -> String
 asWord number gender =
     case number of
         0 ->
             "zero"
 
         1 ->
-            if gender == "male" then
-                "um"
-            else
-                "uma"
+            case gender of
+                Male ->
+                    "um"
+
+                Female ->
+                    "uma"
 
         2 ->
-            if gender == "male" then
-                "dois"
-            else
-                "duas"
+            case gender of
+                Male ->
+                    "dois"
+
+                Female ->
+                    "duas"
 
         3 ->
             "três"
