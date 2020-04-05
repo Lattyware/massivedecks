@@ -24,16 +24,16 @@ module.exports = (env, argv) => {
       options: {
         name: "[name].[hash].css",
         outputPath: "assets/styles",
-        esModule: false
-      }
+        esModule: false,
+      },
     },
     {
-      loader: "extract-loader"
+      loader: "extract-loader",
     },
     // Load CSS to inline styles.
     {
       loader: "css-loader",
-      options: { sourceMap: dev, importLoaders: 2 }
+      options: { sourceMap: dev, importLoaders: 2 },
     },
     // Transform CSS for compatibility.
     {
@@ -41,12 +41,12 @@ module.exports = (env, argv) => {
       options: {
         sourceMap: dev,
         ident: "postcss",
-        plugins: loader => [
+        plugins: (loader) => [
           require("postcss-import")({ root: loader.resourcePath }),
           require("postcss-preset-env")(),
-          require("cssnano")()
-        ]
-      }
+          require("cssnano")(),
+        ],
+      },
     },
     // Load SASS to CSS.
     {
@@ -56,11 +56,11 @@ module.exports = (env, argv) => {
         sassOptions: {
           includePaths: ["node_modules"],
           functions: {
-            "inline-svg": inliner("./", { encodingFormat: "uri" })
-          }
-        }
-      }
-    }
+            "inline-svg": inliner("./", { encodingFormat: "uri" }),
+          },
+        },
+      },
+    },
   ];
 
   const elmLoaders = [
@@ -72,9 +72,9 @@ module.exports = (env, argv) => {
         optimize: prod,
         debug: dev,
         forceWatch: dev,
-        cwd: __dirname
-      }
-    }
+        cwd: __dirname,
+      },
+    },
   ];
 
   const plugins = [
@@ -83,15 +83,15 @@ module.exports = (env, argv) => {
       filename: "index.html",
       inject: "body",
       excludeChunks: ["cast"],
-      test: /\.html$/
+      test: /\.html$/,
     }),
     new HtmlWebpackPlugin({
       template: "src/html/cast.html",
       filename: "cast.html",
       inject: "body",
       excludeChunks: ["index"],
-      test: /\.html$/
-    })
+      test: /\.html$/,
+    }),
   ];
 
   if (dev) {
@@ -99,8 +99,8 @@ module.exports = (env, argv) => {
     cssLoaders.unshift({
       loader: "css-hot-loader",
       options: {
-        reloadAll: true
-      }
+        reloadAll: true,
+      },
     });
     // Load elm without refreshing in a dev env.
     // Disable if working with chromecasts.
@@ -113,7 +113,7 @@ module.exports = (env, argv) => {
     plugins.push(new CleanWebpackPlugin());
     plugins.push(
       new CompressionPlugin({
-        test: /\.(js|css|html|webmanifest|svg)$/
+        test: /\.(js|css|html|webmanifest|svg)$/,
       }) //,
       // new CompressionPlugin({
       //   test: /\.(js|css|html|webmanifest|svg)$/,
@@ -131,7 +131,7 @@ module.exports = (env, argv) => {
       // Main entry point.
       index: "./src/ts/index.ts",
       // Chromecast entry point.
-      cast: "./src/ts/cast.ts"
+      cast: "./src/ts/cast.ts",
     },
     // Source maps only in development.
     devtool: prod ? undefined : "eval-source-map",
@@ -141,7 +141,7 @@ module.exports = (env, argv) => {
       filename:
         mode === "production"
           ? "assets/scripts/[name].[chunkhash].js"
-          : "assets/scripts/[name].[hash].js"
+          : "assets/scripts/[name].[hash].js",
     },
     module: {
       rules: [
@@ -156,38 +156,39 @@ module.exports = (env, argv) => {
                 attributes: {
                   list: [
                     {
-                      tag: 'img',
-                      attribute: 'src',
-                      type: 'src',
-                    }, {
-                      tag: 'link',
-                      attribute: 'href',
-                      type: 'src',
-                    }
-                  ]
-                }
-              }
-            }
-          ]
+                      tag: "img",
+                      attribute: "src",
+                      type: "src",
+                    },
+                    {
+                      tag: "link",
+                      attribute: "href",
+                      type: "src",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
         },
         // Elm scripts.
         {
           test: /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
-          use: elmLoaders
+          use: elmLoaders,
         },
         // Typescript scripts.
         {
           test: /\.ts$/,
           exclude: [/elm-stuff/, /node_modules/],
           use: "ts-loader",
-          include: src
+          include: src,
         },
         // Styles.
         {
           test: /\.s?css$/,
           exclude: [/elm-stuff/, /node_modules/],
-          use: cssLoaders
+          use: cssLoaders,
         },
         // Image assets.
         {
@@ -195,8 +196,8 @@ module.exports = (env, argv) => {
           loader: "file-loader",
           options: {
             name: "assets/images/[name].[hash].[ext]",
-            esModule: false
-          }
+            esModule: false,
+          },
         },
         // Font assets.
         {
@@ -205,8 +206,8 @@ module.exports = (env, argv) => {
           options: {
             name: "assets/fonts/[name].[hash].[ext]",
             publicPath: "/",
-            esModule: false
-          }
+            esModule: false,
+          },
         },
         // App manifest.
         {
@@ -218,19 +219,19 @@ module.exports = (env, argv) => {
               options: {
                 name: "assets/[name].[hash].[ext]",
                 publicPath: "/",
-                esModule: false
-              }
+                esModule: false,
+              },
             },
             {
-              loader: "app-manifest-loader"
-            }
-          ]
-        }
-      ]
+              loader: "app-manifest-loader",
+            },
+          ],
+        },
+      ],
     },
     resolve: {
       extensions: [".js", ".ts", ".elm", ".scss"],
-      modules: ["node_modules"]
+      modules: ["node_modules"],
     },
     plugins: plugins,
     optimization: {
@@ -240,9 +241,9 @@ module.exports = (env, argv) => {
           vendors: {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
-            chunks: "all"
-          }
-        }
+            chunks: "all",
+          },
+        },
       },
       minimizer: [
         // Typescript
@@ -252,43 +253,53 @@ module.exports = (env, argv) => {
           parallel: true,
           terserOptions: {
             output: {
-              comments: false
-            }
-          }
+              comments: false,
+            },
+          },
         }),
         // Elm - we can do otherwise dangerous optimisation thanks to the purity.
         new UglifyJsPlugin({
           test: /assets\/scripts\/massive-decks\..*\.js$/,
-          uglifyOptions: {
-            compress: {
-              pure_funcs: [
-                "F2",
-                "F3",
-                "F4",
-                "F5",
-                "F6",
-                "F7",
-                "F8",
-                "F9",
-                "A2",
-                "A3",
-                "A4",
-                "A5",
-                "A6",
-                "A7",
-                "A8",
-                "A9"
-              ],
-              pure_getters: true,
-              keep_fargs: false,
-              unsafe_comps: true,
-              unsafe: true,
-              passes: 3
-            },
-            mangle: true
-          }
-        })
-      ]
+          minify: (file, _) => {
+            const uglify = require("uglify-js");
+            const { error, map, code, warnings } = uglify.minify(file, {
+              compress: {
+                pure_funcs: [
+                  "F2",
+                  "F3",
+                  "F4",
+                  "F5",
+                  "F6",
+                  "F7",
+                  "F8",
+                  "F9",
+                  "A2",
+                  "A3",
+                  "A4",
+                  "A5",
+                  "A6",
+                  "A7",
+                  "A8",
+                  "A9",
+                ],
+                pure_getters: true,
+                keep_fargs: false,
+                unsafe_comps: true,
+                unsafe: true,
+              },
+              mangle: false,
+            });
+
+            if (error) {
+              return { error, map, code, warnings };
+            }
+
+            return uglify.minify(code, {
+              mangle: true,
+            });
+          },
+        }),
+      ],
     },
     devServer: {
       hot: true,
@@ -297,17 +308,17 @@ module.exports = (env, argv) => {
         // Forward to the server.
         "/api/**": {
           target: "http://localhost:8081",
-          ws: true
+          ws: true,
         },
         // As we are an SPA, this lets us route all requests to the index.
         "**": {
           target: "http://localhost:8080",
           pathRewrite: {
             cast: "cast.html",
-            ".*": ""
-          }
-        }
-      }
-    }
+            ".*": "",
+          },
+        },
+      },
+    },
   };
 };

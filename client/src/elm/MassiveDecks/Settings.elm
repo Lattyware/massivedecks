@@ -500,7 +500,7 @@ languageOption currentLanguage language =
             language |> Lang.languageName |> Lang.givenLanguageString currentLanguage
 
         name =
-            if language == currentLanguage then
+            if currentLanguage == language then
                 [ autonym |> Html.text ]
 
             else
