@@ -1,0 +1,62 @@
+# This docker compose file is for building and running a production version of Massive Decks.
+# This uses the built images from the docker hub.
+# This version also configures a postgres server for data storage.
+
+version: "3"
+
+networks:
+    internal:
+
+# You may not want docker to manage your data like this. 
+# Please see Docker's documentation for more on managing volumes: https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+volumes:
+    storage-volume:
+
+services:
+    storage:
+        container_name: storage
+        image: "postgres:12"
+        # See the postgres image's documentation for more on configuring it.
+        # https://hub.docker.com/_/postgres
+        environment:
+            - POSTGRES_USER=massivedecks
+            # This should be changed to a secret value, matched to the config.
+            - POSTGRES_PASSWORD=CHANGE ME
+        networks:
+            - internal
+        volumes:
+            - storage-volume:/var/lib/postgresql/data
+        restart: unless-stopped
+    
+    server:
+        container_name: server
+        # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
+        # Make sure you always deploy the same tag for client and server.
+        image: "massivedecks/server:latest"
+        depends_on:
+            - storage
+        environment:
+            - NODE_ENV=production
+            # This needs to be changed to a secret value.
+            # You can run `npm run generate-secret` in the server project to generate an appropriate value.
+            - MD_SECRET=CHANGE ME
+        networks:
+            - internal
+        volumes:
+            # This mounts a new configuration file over the default one, which is easier than building a whole new image on top of the normal one with a new config file.
+            # Note the path to the local file will need changing to the real location.
+            - /host/path/to/config.json5:/md/config.json5:ro
+        restart: unless-stopped
+
+    client:
+        container_name: client
+        # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
+        # Make sure you always deploy the same tag for client and server.
+        image: "massivedecks/client:latest"
+        depends_on:
+            - server
+        ports:
+            - "80:8080"
+        networks:
+            - internal
+        restart: unless-stopped

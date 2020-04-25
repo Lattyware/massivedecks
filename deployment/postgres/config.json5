@@ -1,0 +1,90 @@
+{
+  // In a production environment, be sure to change this value to a random secret for security.
+  // You can use `npm run generate-secret` to generate a suitable value.
+  // Note that changes to this value will kick all users from all games.
+  secret: "CHANGE ME",
+  // This will be overwritten by the environment variable MD_SECRET, if set.
+
+  // The port to serve on. Note this should always be behind a reverse proxy.
+  listenOn: 8081,
+  // It is also possible to listen on a unix socket.
+  // listenOn: "/tmp/sock",
+  // This will be overwritten by the environment variable MD_LISTEN_ON, if set.
+
+  // The path this is hosted behind - only relevant when behind a reverse proxy, this won't actually host on a different
+  // path. This should always have a trailing slash if it isn't empty, and never one at the start.
+  basePath: "",
+  // This will be overwritten by the environment variable MD_BASE_PATH, if set.
+
+  // Timeouts determine how long the server waits before taking certain actions.
+  // These values are all ISO 8601 durations.
+  timeouts: {
+    // How long to wait in between checking timeouts.
+    // Note that this will effectively determine the resolution of all other timeouts, so should be kept low.
+    // Increasing the value will decrease server load, however.
+    // Zero-durations elsewhere will result in instant execution, regardless of frequency here.
+    timeoutCheckFrequency: "PT1S",
+
+    // How long to wait before marking a player as disconnected.
+    disconnectionGracePeriod: "PT2S",
+
+    // How long to wait after everyone has played to begin the revealing phase. Having this as a non-zero value lets
+    // the last person playing
+    finishedPlayingDelay: "PT2S"
+  },
+
+  // Tasks are things that take some time to happen (e.g: requesting data from external card services).
+  // These are queued, and the settings here will determine server load and game responsiveness when under load.
+  tasks: {
+    // The number of tasks that can be processed at once. Limiting this stops the server getting overloaded, but setting
+    // too low a value will result in games being slowed down.
+    rateLimit: 20,
+    // How often to process queued tasks. Setting this too high will result in games being slowed down a lot when the
+    // rate limit is hit (an ISO 8601 duration).
+    processTickFrequency: "PT0.5S"
+  },
+
+  // How to store game data.
+  storage: {
+    // Example of a configuration using a postgres database.
+    type: "PostgreSQL",
+    connection: {
+      host: "storage",
+      port: 5432 ,
+      user: "massivedecks",
+      database: "massivedecks",
+      password: "CHANGE ME",
+      keepAlive: false,
+    },
+
+    // How long to allow without any activity before garbage collecting the game.
+    abandonedTime: "PT15M",
+    // How often to delete abandoned/finished games (an ISO 8601 duration).
+    garbageCollectionFrequency: "PT5M"
+  },
+
+  // How to cache game data.
+  cache: {
+    // Example of a configuration using a postgres database.
+    type: "PostgreSQL",
+    connection: {
+      host: "storage",
+      port: 5432 ,
+      user: "massivedecks",
+      database: "massivedecks",
+      password: "CHANGE ME",
+      keepAlive: false,
+    },
+
+    // How old a cached value should be before we check to see if we should update it on a hit.
+    checkAfter: "PT5M"
+  },
+
+  // A file to touch when the server is started. If null, we won't touch any files.
+  touchOnStart: null,
+  // This will be overwritten by the environment variable MD_TOUCH_ON_START, if set.
+
+  // The version of Massive Decks.
+  version: "dev"
+  // This will be overwritten by the environment variable MD_VERSION, if set.
+}

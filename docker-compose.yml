@@ -1,3 +1,7 @@
+# This docker compose file is for building and running a development version of Massive Decks.
+# If you want to deploy a production instance, please see 
+# https://github.com/Lattyware/massivedecks/wiki/Deploying for important steps you should take.
+
 version: "3"
 
 networks:

@@ -1,29 +1,41 @@
 # [Massive Decks ![Massive Decks](https://raw.githubusercontent.com/Lattyware/massivedecks/master/client/assets/images/icon.png)][hosted]
 
 [![Build Status](https://img.shields.io/github/workflow/status/Lattyware/massivedecks/Build%20and%20publish%20docker%20images.)](https://github.com/Lattyware/massivedecks/actions)
-![License](https://img.shields.io/github/license/Lattyware/massivedecks)
+[![License](https://img.shields.io/github/license/Lattyware/massivedecks)](LICENSE)
 
-Massive Decks is a comedy party game based on [Cards against Humanity][cah]. Play with friends! It works great with a
-bunch of people in the same room on phones, or on voice chat online.
+Massive Decks is a free, open source comedy party game based on [Cards against Humanity][cah]. Play with friends!
 
 **[Play Massive Decks][hosted]**
 
 [hosted]: https://md.rereadgames.com/
 [cah]: https://cardsagainsthumanity.com/
 
+## Features
+
+ - Play together in the same room or online.
+ - Use any device (Mobile phone, PC, Chromecast, anything with a web browser).
+ - You can set up a central screen, but you don't need to (no need to stream anything for other players online).
+ - Custom decks.
+ - Customise the rules:
+  - Custom cards.
+  - House rules.
+  - AI players.
+  - Custom time limits if you want them.
+ - Spectators.
+ - Keeps your game private by default, you can also set a game password if needed.
+
 ## About
 
-The game is open source software available under [the AGPLv3 license][license].
+The game is open source software available under [the AGPLv3 license](LICENSE).
 
 The web client for the game is written in [Elm][elm], while the back-end is written in [Typescript][typescript].
 
 [elm]: https://elm-lang.org/
 [typescript]: https://www.typescriptlang.org/
-[license]: https://github.com/Lattyware/massivedecks/blob/master/LICENSE
 
 ## Deploying
 
-If you would like to run an instance of Massive Decks, there are a couple of options.
+If you would like to run a production instance of Massive Decks, there are a couple of options.
 
 It is suggested you read the [deployment guide on the wiki][deployment-guide].
 
@@ -31,15 +43,18 @@ It is suggested you read the [deployment guide on the wiki][deployment-guide].
 
 ### Docker
 
-[Server](https://hub.docker.com/r/massivedecks/server) / [Client](https://hub.docker.com/r/massivedecks/client)
+The Docker images can be found on Docker Hub: [Server](https://hub.docker.com/r/massivedecks/server) / [Client](https://hub.docker.com/r/massivedecks/client).
 
-Also see [`docker-compose.yml`](https://github.com/Lattyware/massivedecks/blob/master/docker-compose.yml). The client image
-is an nginx server that both serves the static web client and acts as a proxy for the server. As such, the server should
-not be exposed publicly directly.
+There are example docker deployments in [the deployment folder](deployment).
 
 ### Heroku
 
+You can deploy to Heroku with the button below:
+
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Lattyware/massivedecks)
+
+If you want to customise the deployment further, you can deploy through heroku from your own fork of the project with
+modification (note the button above is hard-coded to this repository).
 
 ## Contributing
 

@@ -1,0 +1,35 @@
+# This docker compose file is for building and running a production version of Massive Decks.
+# This uses the built images from the docker hub.
+
+version: "3"
+
+networks:
+    internal:
+
+services:
+    server:
+        container_name: server
+        # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
+        # Make sure you always deploy the same tag for client and server.
+        image: "massivedecks/server:latest"
+        environment:
+            - NODE_ENV=production
+            # This needs to be changed to a secret value.
+            # You can run `npm run generate-secret` in the server project to generate an appropriate value.
+            - MD_SECRET=CHANGE ME
+        networks:
+            - internal
+        restart: unless-stopped
+
+    client:
+        container_name: client
+        depends_on:
+            - server
+        # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
+        # Make sure you always deploy the same tag for client and server.
+        image: "massivedecks/client:latest"
+        ports:
+            - "80:8080"
+        networks:
+            - internal
+        restart: unless-stopped
