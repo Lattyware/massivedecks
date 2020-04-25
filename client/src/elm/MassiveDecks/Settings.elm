@@ -32,6 +32,7 @@ import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Token as Token
+import MassiveDecks.Ports as Ports
 import MassiveDecks.Requests.Api as Api
 import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Settings.Messages exposing (..)
@@ -59,11 +60,14 @@ init wrap settings =
                     |> Dict.values
                     |> Api.checkAlive (Request.map (ignore wrap) (ignore wrap) (RemoveInvalid >> wrap))
                     |> Http.request
+
+        langChanged =
+            settings.chosenLanguage |> Maybe.map (Lang.code >> Ports.languageChanged)
     in
     ( { settings = settings
       , open = False
       }
-    , cmd
+    , [ Just cmd, langChanged ] |> List.filterMap identity |> Cmd.batch
     )
 
 
@@ -92,7 +96,14 @@ update shared msg =
             ( { model | open = not model.open }, Cmd.none )
 
         ChangeLang language ->
-            changeSettings (\s -> { s | chosenLanguage = language }) model
+            let
+                ( newModel, cmd ) =
+                    changeSettings (\s -> { s | chosenLanguage = language }) model
+
+                langCmd =
+                    language |> Maybe.map (Lang.code >> Ports.languageChanged)
+            in
+            ( newModel, [ Just cmd, langCmd ] |> List.filterMap identity |> Cmd.batch )
 
         ChangeCardSize size ->
             changeSettings (\s -> { s | cardSize = size }) model

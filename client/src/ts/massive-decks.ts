@@ -28,6 +28,7 @@ export function load(remoteMode: boolean) {
           app.ports.notificationState,
           app.ports.notificationCommands
         );
+        language.register(app.ports.languageChanged);
         import(/* webpackChunkName: "cast-client" */ "./cast/client").then(
           cast => {
             cast.register(app.ports.tryCast, app.ports.castStatus);

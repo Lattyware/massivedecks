@@ -1,6 +1,7 @@
 port module MassiveDecks.Ports exposing
     ( castStatus
     , copyText
+    , languageChanged
     , notificationCommands
     , notificationState
     , remoteControl
@@ -46,3 +47,6 @@ port notificationState : (Json.Value -> msg) -> Sub msg
 
 
 port remoteControl : (Json.Value -> msg) -> Sub msg
+
+
+port languageChanged : String -> Cmd msg

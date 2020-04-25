@@ -61,6 +61,7 @@ export namespace Elm {
         serverSend: InboundPort<ConnectionCommand>;
         copyText: InboundPort<string>;
         remoteControl: OutboundPort<RemoteControlCommand>;
+        languageChanged: InboundPort<string>
       };
     }
     export function init(options: {
