@@ -23,6 +23,7 @@ module MassiveDecks.Models.Decoders exposing
 
 import Dict exposing (Dict)
 import Json.Decode as Json
+import Json.Decode.Pipeline as Json
 import Json.Patch
 import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
@@ -115,15 +116,16 @@ flags =
 
 settings : Json.Decoder Settings
 settings =
-    Json.map8 Settings
-        (Json.field "tokens" (Json.dict lobbyToken))
-        (Json.field "openUserList" Json.bool)
-        (Json.maybe (Json.field "lastUsedName" Json.string))
-        (Json.field "recentDecks" (Json.list externalSource))
-        (Json.maybe (Json.field "chosenLanguage" language))
-        (Json.field "compactCards" cardSize)
-        (Json.maybe (Json.field "speech" speech) |> Json.map (Maybe.withDefault Speech.default))
-        (Json.maybe (Json.field "notifications" notifications) |> Json.map (Maybe.withDefault Notifications.default))
+    Json.succeed Settings
+        |> Json.required "tokens" (Json.dict lobbyToken)
+        |> Json.required "openUserList" Json.bool
+        |> Json.optional "lastUsedName" (Json.string |> Json.map Just) Nothing
+        |> Json.required "recentDecks" (Json.list externalSource)
+        |> Json.optional "chosenLanguage" (language |> Json.map Just) Nothing
+        |> Json.required "compactCards" cardSize
+        |> Json.optional "speech" speech Speech.default
+        |> Json.optional "notifications" notifications Notifications.default
+        |> Json.optional "autoAdvance" (Json.bool |> Json.map Just) Nothing
 
 
 notifications : Json.Decoder Notifications.Settings
@@ -142,7 +144,14 @@ speech =
 
 cardSize : Json.Decoder Settings.CardSize
 cardSize =
-    Json.int |> Json.andThen (\i -> i |> Settings.cardSizeFromValue |> Maybe.map Json.succeed |> Maybe.withDefault (unknownValue "card size" (String.fromInt i)))
+    let
+        toCardSize i =
+            i
+                |> Settings.cardSizeFromValue
+                |> Maybe.map Json.succeed
+                |> Maybe.withDefault (unknownValue "card size" (String.fromInt i))
+    in
+    Json.int |> Json.andThen toCardSize
 
 
 gameCode : Json.Decoder GameCode

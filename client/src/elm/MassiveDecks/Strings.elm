@@ -83,6 +83,8 @@ type MdString
     | TranslationBeg -- A request for help translating the game.
     | CardSizeSetting -- The label for the "Card Size" setting.
     | CardSizeExplanation -- An explanation of what the card size does (changes the size of the card).
+    | AutoAdvanceSetting -- The label for the "Automatically Advance Round" setting.
+    | AutoAdvanceExplanation -- An explanation of what the auto advance setting does (automatically advances past the completed round screen to the new round).
     | SpeechSetting -- The label for the speech setting.
     | SpeechExplanation -- An explanation of what the speech setting does (enables TTS on cards).
     | SpeechNotSupportedExplanation -- An explanation that speech can't be enabled because the user's browser doesn't support it.

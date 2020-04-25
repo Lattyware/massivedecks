@@ -77,6 +77,7 @@ defaults =
     , cardSize = Full
     , speech = Speech.default
     , notifications = Notifications.default
+    , autoAdvance = Nothing
     }
 
 
@@ -120,6 +121,9 @@ update shared msg =
                     model.settings.speech |> Speech.selectVoice voice
             in
             changeSettings (\s -> { s | speech = newSpeechSettings }) model
+
+        ToggleAutoAdvance enabled ->
+            changeSettings (\s -> { s | autoAdvance = Just enabled }) model
 
         ToggleNotifications enabled ->
             let
@@ -166,6 +170,7 @@ view wrap shared =
                     (List.intersperse (Html.hr [] [])
                         [ languageSelector wrap shared
                         , cardSize wrap shared
+                        , autoAdvanceRound wrap shared
                         , speechVoiceSelector wrap shared
                         , notificationsSwitch wrap shared
                         ]
@@ -316,6 +321,30 @@ cardSizeThumb size =
 
         Full ->
             Icon.viewIcon Icon.callCard
+
+
+autoAdvanceRound : (Msg -> msg) -> Shared -> Html msg
+autoAdvanceRound wrap shared =
+    let
+        settings =
+            shared.settings.settings
+    in
+    Form.section shared
+        "auto-advance"
+        (Html.div
+            [ HtmlA.class "multipart" ]
+            [ Wl.switch
+                [ HtmlE.onCheck (ToggleAutoAdvance >> wrap)
+                , HtmlA.checked (settings.autoAdvance |> Maybe.withDefault False)
+                ]
+            , Html.label []
+                [ Icon.viewIcon Icon.commentDots
+                , Html.text " "
+                , Strings.AutoAdvanceSetting |> Lang.html shared
+                ]
+            ]
+        )
+        [ Message.info Strings.AutoAdvanceExplanation ]
 
 
 speechVoiceSelector : (Msg -> msg) -> Shared -> Html msg

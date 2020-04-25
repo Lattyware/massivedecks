@@ -509,12 +509,16 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                 Cmd.none
 
                         completeRound =
-                            case model.game.round of
-                                Round.C c ->
-                                    Just c
+                            if shared.settings.settings.autoAdvance |> Maybe.withDefault False then
+                                Nothing
 
-                                _ ->
-                                    Nothing
+                            else
+                                case model.game.round of
+                                    Round.C c ->
+                                        Just c
+
+                                    _ ->
+                                        Nothing
                     in
                     ( { model
                         | game = { game | round = Round.P newRound }

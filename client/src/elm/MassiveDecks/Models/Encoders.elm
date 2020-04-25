@@ -261,6 +261,9 @@ settings s =
         cl =
             s.chosenLanguage |> Maybe.map (\l -> [ ( "chosenLanguage", language l ) ]) |> Maybe.withDefault []
 
+        aa =
+            s.autoAdvance |> Maybe.map (\e -> [ ( "autoAdvance", Json.bool e ) ]) |> Maybe.withDefault []
+
         fields =
             List.concat
                 [ [ ( "tokens", s.tokens |> Dict.toList |> List.map (\( gc, t ) -> ( gc, Json.string t )) |> Json.object )
@@ -272,6 +275,7 @@ settings s =
                   ]
                 , lun
                 , cl
+                , aa
                 ]
     in
     Json.object fields

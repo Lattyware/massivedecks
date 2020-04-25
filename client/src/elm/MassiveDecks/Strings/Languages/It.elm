@@ -325,6 +325,14 @@ translate mdString =
         CardSizeExplanation ->
             [ Text "Modifica quanto sono grandi le carte—questo può essere utile su schermi piccoli per scorrere meno lo schermo." ]
 
+        -- TODO: Translate
+        AutoAdvanceSetting ->
+            [ Text "Automatically Advance Round" ]
+
+        -- TODO: Translate
+        AutoAdvanceExplanation ->
+            [ Text "When a round ends, automatically advance to the next one rather than waiting." ]
+
         SpeechSetting ->
             [ Text "Sintesi vocale" ]
 

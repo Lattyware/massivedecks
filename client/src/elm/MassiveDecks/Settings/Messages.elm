@@ -13,6 +13,7 @@ type Msg
     | ToggleOpen
     | RemoveInvalid (Dict Lobby.Token Bool)
     | ToggleSpeech Bool
+    | ToggleAutoAdvance Bool
     | ChangeSpeech String
     | ToggleNotifications Bool
     | ToggleOnlyWhenHidden Bool

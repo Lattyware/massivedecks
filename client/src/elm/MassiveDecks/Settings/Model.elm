@@ -34,6 +34,7 @@ type alias Settings =
     , cardSize : CardSize
     , speech : Speech.Settings
     , notifications : Notifications.Settings
+    , autoAdvance : Maybe Bool
     }
 
 
