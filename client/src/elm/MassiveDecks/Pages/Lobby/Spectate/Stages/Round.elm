@@ -48,7 +48,7 @@ viewPlaying shared config playStyles round =
             round.call |> Call.slotCount
     in
     [ viewCall shared config Nothing round.call
-    , viewUnknownPlays slots playStyles round.players round.played
+    , viewUnknownPlays shared slots playStyles round.players round.played
     ]
 
 
@@ -103,8 +103,8 @@ viewCall shared config fillWith call =
         ]
 
 
-viewUnknownPlays : Int -> Game.PlayStyles -> Set User.Id -> Set User.Id -> Html msg
-viewUnknownPlays slotCount playStyles players played =
+viewUnknownPlays : Shared -> Int -> Game.PlayStyles -> Set User.Id -> Set User.Id -> Html msg
+viewUnknownPlays shared slotCount playStyles players played =
     let
         angle =
             players |> Set.size |> anglePerPlay
@@ -115,7 +115,7 @@ viewUnknownPlays slotCount playStyles players played =
     Html.ul [ HtmlA.id "plays" ]
         (players
             |> Set.toList
-            |> List.indexedMap (\i -> \u -> viewUnknownPlay (toFloat i * angle) (getPlayStyle u) (Set.member u played))
+            |> List.indexedMap (\i -> \u -> viewUnknownPlay shared (toFloat i * angle) (getPlayStyle u) (Set.member u played))
         )
 
 
@@ -174,14 +174,14 @@ viewPlay shared config slotCount angle playedBy isWinner play =
                 ]
                 (play
                     |> Maybe.map (.play >> List.map (\response -> Html.li [] [ Response.view shared config Card.Front [] response ]))
-                    |> Maybe.withDefault (List.repeat slotCount (Html.li [] [ Response.viewUnknown [] ]))
+                    |> Maybe.withDefault (List.repeat slotCount (Html.li [] [ Response.viewUnknown shared [] ]))
                 )
             ]
         ]
 
 
-viewUnknownPlay : Float -> Game.PlayStyle -> Bool -> Html msg
-viewUnknownPlay angle playStyle played =
+viewUnknownPlay : Shared -> Float -> Game.PlayStyle -> Bool -> Html msg
+viewUnknownPlay shared angle playStyle played =
     let
         distance =
             if played then
@@ -197,7 +197,7 @@ viewUnknownPlay angle playStyle played =
             , Html.ol
                 [ HtmlA.classList [ ( "play", True ), ( "card-set", True ) ]
                 ]
-                (playStyle |> List.map (\cardStyle -> Html.li [] [ Response.viewUnknown [ rotated cardStyle.rotation ] ]))
+                (playStyle |> List.map (\cardStyle -> Html.li [] [ Response.viewUnknown shared [ rotated cardStyle.rotation ] ]))
             ]
         ]
 

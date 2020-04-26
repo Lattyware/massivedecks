@@ -2,7 +2,6 @@ module MassiveDecks.Card exposing
     ( asResponse
     , asResponseFromDict
     , details
-    , frontSide
     , view
     , viewUnknown
     )
@@ -15,6 +14,8 @@ import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Configure
+import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 
@@ -40,15 +41,15 @@ view cardTypeClass shared getSummary visibleSide attributes viewBody viewInstruc
             ]
             :: attributes
         )
-        [ Html.div [ HtmlA.class "aspect" ] [ front shared getSummary viewBody viewInstructions source, back ] ]
+        [ Html.div [ HtmlA.class "aspect" ] [ front shared getSummary viewBody viewInstructions source, back shared ] ]
 
 
 {-| Render an unknown card to HTML, face-down.
 -}
-viewUnknown : String -> List (Html.Attribute msg) -> Html msg
-viewUnknown cardTypeClass attributes =
+viewUnknown : Shared -> String -> List (Html.Attribute msg) -> Html msg
+viewUnknown shared cardTypeClass attributes =
     Html.div (HtmlA.class "game-card face-down" :: (HtmlA.class cardTypeClass :: attributes))
-        [ Html.div [ HtmlA.class "aspect" ] [ back ] ]
+        [ Html.div [ HtmlA.class "aspect" ] [ back shared ] ]
 
 
 {-| Fill a blank response into a normal one from a dictionary, falling back to nothing if the card id isn't in it.
@@ -84,17 +85,6 @@ details potentiallyBlankResponse =
             b.details
 
 
-{-| Get a side from a boolean test.
--}
-frontSide : Bool -> Side
-frontSide isFront =
-    if isFront then
-        Front
-
-    else
-        Back
-
-
 
 {- Private -}
 
@@ -104,11 +94,15 @@ cardSide side content =
     Html.div [ HtmlA.classList [ ( "side", True ), ( "front", side == Front ), ( "back", side == Back ) ] ] content
 
 
-back : Html msg
-back =
+back : Shared -> Html msg
+back shared =
+    let
+        renderWord word =
+            Html.p [] [ Html.span [] [ Html.text word ] ]
+    in
     cardSide Back
         [ Html.div [ HtmlA.class "content" ]
-            [ Html.p [] [ Html.span [] [ Html.text "Massive" ] ], Html.p [] [ Html.span [] [ Html.text "Decks" ] ] ]
+            (Strings.MassiveDecks |> Lang.string shared |> String.words |> List.map renderWord)
         ]
 
 

@@ -37,9 +37,9 @@ viewFilled shared config side attributes fillWith call =
 
 {-| Render an unknown response to HTML, face-down.
 -}
-viewUnknown : List (Html.Attribute msg) -> Html msg
-viewUnknown attributes =
-    Card.viewUnknown "call" attributes
+viewUnknown : Shared -> List (Html.Attribute msg) -> Html msg
+viewUnknown shared attributes =
+    Card.viewUnknown shared "call" attributes
 
 
 

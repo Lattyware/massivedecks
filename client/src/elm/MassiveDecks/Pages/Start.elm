@@ -191,7 +191,7 @@ view shared model =
     [ Html.div [ HtmlA.class "page start" ]
         [ overlay shared model.overlay
         , Html.header [ HtmlA.class "title-card" ]
-            [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Call.viewUnknown [] ] ]
+            [ Html.h1 [] [ Html.div [ HtmlA.class "card-slicer" ] [ Call.viewUnknown shared [] ] ]
             , Html.div [ HtmlA.class "subtitle" ]
                 [ Html.div [ HtmlA.class "card-slicer" ]
                     [ Response.view shared Configure.fake Card.Front [] (subtitleCard shared)

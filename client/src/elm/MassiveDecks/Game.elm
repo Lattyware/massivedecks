@@ -103,8 +103,13 @@ update wrap shared msg model =
 
                         newRound =
                             Round.P { playingRound | pick = { picks | cards = picked |> List.drop extra } }
+
+                        focus =
+                            Dom.focus played.id
+                                |> Task.onError (\_ -> Task.succeed ())
+                                |> Task.perform (\_ -> wrap NoOp)
                     in
-                    ( { model | game = { game | round = newRound } }, Cmd.none )
+                    ( { model | game = { game | round = newRound } }, focus )
 
                 _ ->
                     ( model, Cmd.none )
@@ -112,7 +117,7 @@ update wrap shared msg model =
         EditBlank id text ->
             case game.round of
                 Round.P playingRound ->
-                    if playingRound.pick.cards |> List.all (\p -> p.id /= id) then
+                    if playingRound.pick.state /= Round.Submitted then
                         ( { model | filledCards = model.filledCards |> Dict.insert id text }, Cmd.none )
 
                     else

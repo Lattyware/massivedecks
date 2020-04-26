@@ -34,9 +34,9 @@ view shared config side attributes response =
 
 {-| Render an unknown response to HTML, face-down.
 -}
-viewUnknown : List (Html.Attribute msg) -> Html msg
-viewUnknown attributes =
-    Card.viewUnknown "response" attributes
+viewUnknown : Shared -> List (Html.Attribute msg) -> Html msg
+viewUnknown shared attributes =
+    Card.viewUnknown shared "response" attributes
 
 
 {-| Render a potentially blank card to HTML.
@@ -61,7 +61,7 @@ viewBlank shared config side update attributes response fill =
         (config.decks |> Decks.getSummary)
         side
         attributes
-        (viewBlankBody update fill)
+        (viewBlankBody response.details.id update fill)
         viewInstructions
         response.details.source
 
@@ -75,12 +75,13 @@ viewBody response =
     ViewBody (\() -> [ Html.p [] [ Html.span [] [ response.body |> String.capitalise |> Html.text ] ] ])
 
 
-viewBlankBody : (String -> msg) -> Maybe String -> ViewBody msg
-viewBlankBody update value =
+viewBlankBody : String -> (String -> msg) -> Maybe String -> ViewBody msg
+viewBlankBody id update value =
     ViewBody
         (\() ->
             [ Html.textarea
-                [ value |> Maybe.withDefault "" |> HtmlA.value
+                [ HtmlA.id id
+                , value |> Maybe.withDefault "" |> HtmlA.value
                 , update |> HtmlE.onInput
                 ]
                 []

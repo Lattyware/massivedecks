@@ -61,6 +61,6 @@ playDetails wrap shared config slots isCzar { id, responses } =
         cards =
             responses
                 |> Maybe.map (List.map (\r -> Response.view shared config Card.Front [] r))
-                |> Maybe.withDefault (List.repeat slots (Response.viewUnknown []))
+                |> Maybe.withDefault (List.repeat slots (Response.viewUnknown shared []))
     in
     Plays.Details id cards (Reveal id |> wrap |> Maybe.justIf isCzar) []

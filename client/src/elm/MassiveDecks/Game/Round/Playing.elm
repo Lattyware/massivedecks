@@ -79,7 +79,7 @@ view wrap auth shared config users model round =
 
         backgroundPlays =
             Html.div [ HtmlA.class "background-plays" ]
-                (round.players |> Set.toList |> List.map (viewBackgroundPlay model.playStyles slots round.played))
+                (round.players |> Set.toList |> List.map (viewBackgroundPlay shared model.playStyles slots round.played))
 
         picked =
             round.pick.cards
@@ -130,24 +130,24 @@ viewHandCard wrap shared config filled picked response =
     )
 
 
-viewBackgroundPlay : PlayStyles -> Int -> Set User.Id -> User.Id -> Html msg
-viewBackgroundPlay playStyles slots played for =
+viewBackgroundPlay : Shared -> PlayStyles -> Int -> Set User.Id -> User.Id -> Html msg
+viewBackgroundPlay shared playStyles slots played for =
     let
         -- TODO: Move to css variable --rotation when possible.
         cards =
             playStyles
                 |> Dict.get for
                 |> Maybe.withDefault (List.repeat slots { rotation = 0 })
-                |> List.map viewBackgroundPlayCard
+                |> List.map (viewBackgroundPlayCard shared)
     in
     Html.div
         [ HtmlA.classList [ ( "play", True ), ( "played", Set.member for played ) ] ]
         cards
 
 
-viewBackgroundPlayCard : CardStyle -> Html msg
-viewBackgroundPlayCard playStyle =
-    Response.viewUnknown
+viewBackgroundPlayCard : Shared -> CardStyle -> Html msg
+viewBackgroundPlayCard shared playStyle =
+    Response.viewUnknown shared
         [ "rotate(" ++ String.fromFloat playStyle.rotation ++ "turn)" |> HtmlA.style "transform"
         , HtmlA.class "ignore-minimal-card-size"
         ]
