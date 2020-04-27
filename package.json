@@ -7,7 +7,7 @@
     "private": true,
     "repository": "github:Lattyware/massivedecks",
     "engines": {
-        "node": ">=13 <14"
+        "node": "13.x.x"
     },
     "scripts": {
         "build": "npm run buildServer && npm run buildClient",

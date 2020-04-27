@@ -17,10 +17,10 @@ Massive Decks is a free, open source comedy party game based on [Cards against H
  - You can set up a central screen, but you don't need to (no need to stream anything for other players online).
  - Custom decks.
  - Customise the rules:
-  - Custom cards.
-  - House rules.
-  - AI players.
-  - Custom time limits if you want them.
+   - Custom cards.
+   - House rules.
+   - AI players.
+   - Custom time limits if you want them.
  - Spectators.
  - Keeps your game private by default, you can also set a game password if needed.
 
