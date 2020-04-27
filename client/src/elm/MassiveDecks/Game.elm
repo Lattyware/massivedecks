@@ -15,11 +15,11 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
-import MassiveDecks.Card as Card
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
 import MassiveDecks.Game.Action.Model exposing (Action)
@@ -53,7 +53,7 @@ import Weightless.Attributes as WlA
 import Weightless.ProgressBar as ProgressBar
 
 
-init : (Msg -> msg) -> Game -> List Card.PotentiallyBlankResponse -> Round.Pick -> ( Model, Cmd msg )
+init : (Msg -> msg) -> Game -> List Card.Response -> Round.Pick -> ( Model, Cmd msg )
 init wrap game hand pick =
     let
         model =
@@ -92,8 +92,8 @@ update wrap shared msg model =
                             playingRound.pick
 
                         picked =
-                            if picks.cards |> List.map .id |> List.member played.id then
-                                List.filter (\p -> p.id /= played.id) picks.cards
+                            if picks.cards |> List.member played then
+                                List.filter (\p -> p /= played) picks.cards
 
                             else
                                 picks.cards ++ [ played ]
@@ -105,7 +105,7 @@ update wrap shared msg model =
                             Round.P { playingRound | pick = { picks | cards = picked |> List.drop extra } }
 
                         focus =
-                            Dom.focus played.id
+                            Dom.focus played
                                 |> Task.onError (\_ -> Task.succeed ())
                                 |> Task.perform (\_ -> wrap NoOp)
                     in
@@ -125,6 +125,25 @@ update wrap shared msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        Fill id text ->
+            let
+                changed response =
+                    response.details.id == id && response.body /= text
+            in
+            if List.any changed model.hand then
+                let
+                    updateCard response =
+                        if response.details.id == id then
+                            { response | body = text }
+
+                        else
+                            response
+                in
+                ( { model | hand = model.hand |> List.map updateCard }, Actions.fill id text )
+
+            else
+                ( model, Cmd.none )
 
         PickPlay id ->
             let
@@ -153,10 +172,38 @@ update wrap shared msg model =
                         picks =
                             playingRound.pick
 
+                        fillIfNeeded card =
+                            if card.details.source == Source.Custom then
+                                let
+                                    id =
+                                        card.details.id
+                                in
+                                if List.member id picks.cards then
+                                    let
+                                        value =
+                                            Dict.get id model.filledCards |> Maybe.withDefault ""
+                                    in
+                                    if value /= card.body then
+                                        Just (Actions.fill id value)
+
+                                    else
+                                        Nothing
+
+                                else
+                                    Nothing
+
+                            else
+                                Nothing
+
+                        fills =
+                            model.hand |> List.filterMap fillIfNeeded
+
                         newRound =
                             Round.P { playingRound | pick = { picks | state = Round.Submitted } }
                     in
-                    ( { model | game = { game | round = newRound } }, Actions.submit picks.cards )
+                    ( { model | game = { game | round = newRound } }
+                    , Cmd.batch (fills ++ [ Actions.submit picks.cards ])
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -404,11 +451,11 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                         |> Round.R
 
                                 picked =
-                                    r.pick.cards |> List.map .id |> Set.fromList
+                                    r.pick.cards |> Set.fromList
 
                                 newHand =
                                     model.hand
-                                        |> List.filter (\c -> not (Set.member (Card.details c).id picked))
+                                        |> List.filter (\c -> not (Set.member c.details.id picked))
                                         |> (\h -> h ++ (drawn |> Maybe.withDefault []))
 
                                 role =
@@ -438,7 +485,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                         playersWithWinner =
                             game.players |> Dict.update winner (Maybe.map (\p -> { p | score = p.score + 1 }))
 
-                        { newRound, history, speech, newPlayers } =
+                        { newRound, history, speech, newPlayers, filledCards } =
                             case game.round of
                                 Round.J r ->
                                     let
@@ -459,6 +506,12 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                                 winner
                                                 time
 
+                                        handIds =
+                                            model.hand |> List.map (.details >> .id) |> Set.fromList
+
+                                        isStillInHand id _ =
+                                            Set.member id handIds
+
                                         tts =
                                             Dict.get winner playsDict
                                                 |> Maybe.map (\p -> speak shared r.call (Just p.play))
@@ -471,6 +524,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                     , history = complete :: game.history
                                     , speech = tts
                                     , newPlayers = ps
+                                    , filledCards = model.filledCards |> Dict.filter isStillInHand
                                     }
 
                                 _ ->
@@ -479,6 +533,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                     , history = game.history
                                     , speech = Cmd.none
                                     , newPlayers = playersWithWinner
+                                    , filledCards = model.filledCards
                                     }
                     in
                     ( { model
@@ -488,6 +543,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                 , players = newPlayers
                                 , history = history
                             }
+                        , filledCards = filledCards
                       }
                     , speech
                     )
@@ -634,7 +690,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
             ( { model | game = { game | winner = Just winner } }, Cmd.none )
 
 
-applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.PotentiallyBlankResponse -> ( Model, Cmd msg )
+applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
 applyGameStarted wrap lobby round hand =
     let
         users =

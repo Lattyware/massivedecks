@@ -83,9 +83,8 @@ view wrap auth shared config users model round =
 
         picked =
             round.pick.cards
-                |> List.map (\p -> List.find (\c -> (Card.details c).id == p.id) model.hand)
-                |> List.filterMap identity
-                |> List.map (Card.asResponseFromDict model.filledCards)
+                |> List.filterMap (\p -> List.find (\c -> c.details.id == p) model.hand)
+                |> List.map (Card.fillFromDict model.filledCards)
     in
     { instruction = Just instruction
     , action = action
@@ -102,28 +101,21 @@ view wrap auth shared config users model round =
 {- Private -}
 
 
-viewHandCard : (Msg -> msg) -> Shared -> Config -> Dict Card.Id String -> List Card.Played -> Card.PotentiallyBlankResponse -> ( String, Html msg )
+viewHandCard : (Msg -> msg) -> Shared -> Config -> Dict Card.Id String -> List Card.Id -> Card.Response -> ( String, Html msg )
 viewHandCard wrap shared config filled picked response =
     let
         details =
-            Card.details response
-
-        fill =
-            case details.source of
-                Source.Player ->
-                    (filled |> Dict.get details.id) |> Maybe.withDefault "" |> Just
-
-                _ ->
-                    Nothing
+            response.details
     in
     ( details.id
-    , Response.viewPotentiallyBlank
+    , Response.viewPotentiallyCustom
         shared
         config
         Card.Front
         (\v -> Game.EditBlank details.id v |> wrap)
-        [ HtmlA.classList [ ( "picked", picked |> List.map .id |> List.member details.id ) ]
-        , Card.Played details.id fill |> Game.Pick |> wrap |> HtmlE.onClick
+        (\v -> Game.Fill details.id v |> wrap)
+        [ HtmlA.classList [ ( "picked", picked |> List.member details.id ) ]
+        , details.id |> Game.Pick |> wrap |> HtmlE.onClick
         ]
         filled
         response

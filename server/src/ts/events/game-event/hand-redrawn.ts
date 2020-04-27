@@ -5,7 +5,7 @@ import * as User from "../../user";
  * Indicates a player has paid to redraw their hand under the Reboot house rule.
  */
 export interface HandRedrawn extends Public {
-  hand?: Card.PotentiallyBlankResponse[];
+  hand?: Card.Response[];
 }
 
 export interface Public {
@@ -13,11 +13,8 @@ export interface Public {
   player: User.Id;
 }
 
-export const of = (
-  player: User.Id,
-  hand?: Card.PotentiallyBlankResponse[]
-): HandRedrawn => ({
+export const of = (player: User.Id, hand?: Card.Response[]): HandRedrawn => ({
   event: "HandRedrawn",
   player,
-  ...(hand !== undefined ? { hand } : {})
+  ...(hand !== undefined ? { hand } : {}),
 });

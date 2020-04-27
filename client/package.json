@@ -27,7 +27,7 @@
     "weightless": "0.0.37"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.104",
+    "@types/chrome": "^0.0.106",
     "@types/chromecast-caf-receiver": "^5.0.4",
     "@types/chromecast-caf-sender": "^1.0.3",
     "app-manifest-loader": "^2.4.1",

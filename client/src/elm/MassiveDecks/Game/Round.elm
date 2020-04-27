@@ -210,7 +210,7 @@ type alias Data specific =
 {-| The user's pick for the round.
 -}
 type alias Pick =
-    { state : PickState, cards : List Card.Played }
+    { state : PickState, cards : List Card.Id }
 
 
 noPick =

@@ -1,12 +1,12 @@
 import * as Cache from "../../cache";
 import * as Decks from "./decks";
 import { Cardcast } from "./sources/cardcast";
-import { Player } from "./sources/player";
+import { Custom } from "./sources/custom";
 
 /**
  * A source for a card or deck.
  */
-export type Source = External | Player;
+export type Source = External | Custom;
 
 /**
  * An external source for a card or deck.
@@ -187,7 +187,7 @@ export class CachedResolver extends Resolver {
       summary: await this.cache.getSummary(
         this.resolver,
         async () => await this.resolver.atLeastSummary()
-      )
+      ),
     };
   }
 
@@ -196,7 +196,7 @@ export class CachedResolver extends Resolver {
       templates: await this.cache.getTemplates(
         this.resolver,
         async () => await this.resolver.atLeastTemplates()
-      )
+      ),
     };
   }
 
@@ -220,7 +220,7 @@ export class CachedResolver extends Resolver {
         templates:
           cachedTemplates !== undefined
             ? cachedTemplates.cached
-            : await this.templates()
+            : await this.templates(),
       };
     }
   }

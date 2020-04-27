@@ -18,10 +18,10 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Card.Source.Cardcast as Cardcast
+import MassiveDecks.Card.Source.Custom as Player
 import MassiveDecks.Card.Source.Fake as Fake
 import MassiveDecks.Card.Source.Methods exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
-import MassiveDecks.Card.Source.Player as Player
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
@@ -185,7 +185,7 @@ methods source =
             , defaultDetails = ms.defaultDetails
             }
 
-        Player ->
+        Custom ->
             Player.methods
 
         Fake ->

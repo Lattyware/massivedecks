@@ -158,7 +158,7 @@ export class PostgresCache extends Cache.Cache {
       }
 
       for (const response of templates.responses) {
-        if (Card.isBlankResponse(response)) {
+        if (Card.isCustomResponse(response)) {
           throw Error("Can't have blank cards in a cached deck.");
         }
         await client.query(
@@ -215,7 +215,7 @@ export class PostgresCache extends Cache.Cache {
       );
       if (about.rowCount > 0 && about.rows[0]["cards_updated"] !== undefined) {
         const calls = new Set<Card.Call>();
-        const responses = new Set<Card.PotentiallyBlankResponse>();
+        const responses = new Set<Card.Response>();
 
         const callsResult = await client.query(
           `

@@ -7,7 +7,6 @@ module MassiveDecks.Models.Encoders exposing
     , lobbyCreation
     , lobbyToken
     , packingHeat
-    , playedCard
     , playerPresence
     , privilege
     , rando
@@ -24,7 +23,6 @@ module MassiveDecks.Models.Encoders exposing
 
 import Dict
 import Json.Encode as Json
-import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -189,16 +187,6 @@ failureReason reason =
 
         Source.NotFound ->
             Json.string "NotFound"
-
-
-playedCard : Card.Played -> Json.Value
-playedCard pc =
-    case pc.text of
-        Nothing ->
-            Json.string pc.id
-
-        Just text ->
-            Json.object [ ( "id", Json.string pc.id ), ( "text", Json.string text ) ]
 
 
 timeLimitMode : Rules.TimeLimitMode -> Json.Value

@@ -8,11 +8,11 @@ export interface UserRoleChanged {
   event: "UserRoleChanged";
   user: User.Id;
   role: User.Role;
-  hand?: Card.PotentiallyBlankResponse[];
+  hand?: Card.Response[];
 }
 
 export const of = (user: User.Id, role: User.Role): UserRoleChanged => ({
   event: "UserRoleChanged",
   user,
-  role
+  role,
 });

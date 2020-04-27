@@ -645,14 +645,19 @@ applySync :
     -> Shared
     -> Model
     -> Lobby
-    -> Maybe (List Card.PotentiallyBlankResponse)
-    -> Maybe (List Card.Played)
+    -> Maybe (List Card.Response)
+    -> Maybe (List Card.Id)
     -> Time.PartialAnchor
     -> ( Change, Shared, Cmd msg )
 applySync wrap shared model state hand pick partialTimeAnchor =
     let
         play =
             pick |> Maybe.map (\cards -> { state = Round.Submitted, cards = cards }) |> Maybe.withDefault Round.noPick
+
+        -- We keep fills over syncs to try and preserve user input if possible.
+        -- If things have changed, it won't matter, we'll just clear them at the end of the next round.
+        keptFills =
+            model.lobby |> Maybe.andThen .game |> Maybe.map .filledCards
 
         ( game, gameCmd ) =
             case state.game of
@@ -661,7 +666,7 @@ applySync wrap shared model state hand pick partialTimeAnchor =
                         ( newGame, cmd ) =
                             Game.init (GameMsg >> wrap) g.game (hand |> Maybe.withDefault []) play
                     in
-                    ( Just newGame, cmd )
+                    ( Just { newGame | filledCards = keptFills |> Maybe.withDefault newGame.filledCards }, cmd )
 
                 Nothing ->
                     ( Nothing, Cmd.none )

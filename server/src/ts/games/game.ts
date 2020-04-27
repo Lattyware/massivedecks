@@ -18,7 +18,6 @@ import * as Play from "./cards/play";
 import * as Round from "./game/round";
 import * as PublicRound from "./game/round/public";
 import * as Player from "./player";
-import { Deck } from "./cards/decks";
 import * as Rules from "./rules";
 
 export interface Public {
@@ -70,7 +69,7 @@ export class Game {
       decks: this.decks,
       rules: this.rules,
       paused: this.paused,
-      history: this.history
+      history: this.history,
     };
   }
 
@@ -80,8 +79,8 @@ export class Game {
       game.playerOrder,
       game.players,
       {
-        responses: Deck.fromJSON(game.decks.responses),
-        calls: Deck.fromJSON(game.decks.calls)
+        responses: Decks.Responses.fromJSON(game.decks.responses),
+        calls: Decks.Calls.fromJSON(game.decks.calls),
       },
       game.rules,
       game.paused,
@@ -107,7 +106,7 @@ export class Game {
   public nextCzar(users: { [id: string]: User.User }): User.Id | undefined {
     const current = this.round.czar;
     const playerOrder = this.playerOrder;
-    const currentIndex = playerOrder.findIndex(id => id === current);
+    const currentIndex = playerOrder.findIndex((id) => id === current);
     return Game.internalNextCzar(
       currentIndex,
       users,
@@ -156,18 +155,19 @@ export class Game {
         responses: new Set(
           wu.repeat({}, cw.number).map(() => ({
             id: Card.id(),
-            source: { source: "Player" }
+            source: { source: "Custom" },
+            text: "",
           }))
-        )
+        ),
       };
       allTemplates = [
         ...(cw.exclusive
-          ? wu(templates).map(t => ({
+          ? wu(templates).map((t) => ({
               calls: t.calls,
-              responses: new Set<Card.PotentiallyBlankResponse>()
+              responses: new Set<Card.Response>(),
             }))
           : templates),
-        blanks
+        blanks,
       ];
     } else {
       allTemplates = templates;
@@ -181,7 +181,7 @@ export class Game {
         .filter(([_, user]) => user.role === "Player")
         .map(([id, _]) => [
           id,
-          Player.initial(gameDecks.responses.draw(rules.handSize))
+          Player.initial(gameDecks.responses.draw(rules.handSize)),
         ])
     );
     const czar = Game.internalNextCzar(0, users, playerMap, playerOrder);
@@ -192,7 +192,7 @@ export class Game {
     }
     const [call] = gameDecks.calls.draw(1);
     const playersInRound = new Set(
-      wu(playerOrder).filter(id =>
+      wu(playerOrder).filter((id) =>
         Game.isPlayerInRound(czar, playerMap, id, users[id])
       )
     );
@@ -215,7 +215,7 @@ export class Game {
       ),
       rules: Rules.censor(this.rules),
       ...(this.winner === undefined ? {} : { winner: this.winner }),
-      ...(this.paused ? { paused: true } : {})
+      ...(this.paused ? { paused: true } : {}),
     };
   }
 
@@ -247,12 +247,12 @@ export class Game {
     const [call] = this.decks.calls.replace(this.round.call);
     const roundId = this.round.id + 1;
     const playersInRound = new Set(
-      wu(this.playerOrder).filter(id =>
+      wu(this.playerOrder).filter((id) =>
         Game.isPlayerInRound(czar, this.players, id, lobby.users[id])
       )
     );
     this.decks.responses.discard(
-      (this.round as Round.Base<Round.Stage>).plays.flatMap(play => play.play)
+      (this.round as Round.Base<Round.Stage>).plays.flatMap((play) => play.play)
     );
     this.round = new Round.Playing(roundId, czar, playersInRound, call);
     const updatedGame = this as Game & { round: Round.Playing };
@@ -260,9 +260,9 @@ export class Game {
     return {
       events: [
         ...events,
-        ...(atStart.events !== undefined ? atStart.events : [])
+        ...(atStart.events !== undefined ? atStart.events : []),
       ],
-      timeouts: atStart.timeouts
+      timeouts: atStart.timeouts,
     };
   }
 
@@ -277,7 +277,7 @@ export class Game {
   ): { timeouts?: Iterable<Timeout.After> } {
     const player = this.players[toRemove];
     if (player !== undefined) {
-      const play = this.round.plays.find(p => p.playedBy === toRemove);
+      const play = this.round.plays.find((p) => p.playedBy === toRemove);
       if (play === undefined) {
         this.round.players.delete(toRemove);
         const timeouts = [];
@@ -285,7 +285,7 @@ export class Game {
         if (timeout !== undefined) {
           timeouts.push({
             timeout: timeout,
-            after: server.config.timeouts.finishedPlayingDelay
+            after: server.config.timeouts.finishedPlayingDelay,
           });
         }
         return { timeouts };
@@ -350,7 +350,7 @@ export class Game {
         Event.playerSpecificAddition(
           GameStarted.of(game.round),
           (id, user, player) => ({
-            hand: player.hand
+            hand: player.hand,
           })
         )
       );
@@ -366,7 +366,7 @@ export class Game {
         play: player.hand.slice(0, slotCount) as Card.Response[],
         playedBy: ai,
         revealed: false,
-        likes: []
+        likes: [],
       });
       events.push(Event.targetAll(PlaySubmitted.of(ai)));
     }
@@ -376,7 +376,7 @@ export class Game {
     if (finishedTimeout !== undefined) {
       timeouts.push({
         timeout: finishedTimeout,
-        after: server.config.timeouts.finishedPlayingDelay
+        after: server.config.timeouts.finishedPlayingDelay,
       });
     }
 

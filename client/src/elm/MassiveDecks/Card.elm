@@ -1,7 +1,5 @@
 module MassiveDecks.Card exposing
-    ( asResponse
-    , asResponseFromDict
-    , details
+    ( fillFromDict
     , view
     , viewUnknown
     )
@@ -54,35 +52,14 @@ viewUnknown shared cardTypeClass attributes =
 
 {-| Fill a blank response into a normal one from a dictionary, falling back to nothing if the card id isn't in it.
 -}
-asResponseFromDict : Dict Id String -> PotentiallyBlankResponse -> Response
-asResponseFromDict values response =
-    case response of
-        Normal r ->
-            r
+fillFromDict : Dict Id String -> Response -> Response
+fillFromDict values response =
+    case response.details.source of
+        Source.Custom ->
+            { response | body = values |> Dict.get response.details.id |> Maybe.withDefault response.body }
 
-        Blank b ->
-            values |> Dict.get b.details.id |> Maybe.withDefault "" |> asResponse b
-
-
-{-| Fill a blank response into a normal one.
--}
-asResponse : BlankResponse -> String -> Response
-asResponse blank text =
-    { details = blank.details
-    , body = text
-    }
-
-
-{-| Get the details for a potentially blank card.
--}
-details : PotentiallyBlankResponse -> Details
-details potentiallyBlankResponse =
-    case potentiallyBlankResponse of
-        Normal r ->
-            r.details
-
-        Blank b ->
-            b.details
+        _ ->
+            response
 
 
 

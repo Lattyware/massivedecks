@@ -1,7 +1,7 @@
 module MassiveDecks.Card.Response exposing
     ( view
-    , viewBlank
-    , viewPotentiallyBlank
+    , viewCustom
+    , viewPotentiallyCustom
     , viewUnknown
     )
 
@@ -11,6 +11,7 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model exposing (..)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
@@ -41,27 +42,27 @@ viewUnknown shared attributes =
 
 {-| Render a potentially blank card to HTML.
 -}
-viewPotentiallyBlank : Shared -> Config -> Side -> (String -> msg) -> List (Html.Attribute msg) -> Dict Id String -> PotentiallyBlankResponse -> Html msg
-viewPotentiallyBlank shared config side update attributes fills response =
-    case response of
-        Normal r ->
-            view shared config side attributes r
+viewPotentiallyCustom : Shared -> Config -> Side -> (String -> msg) -> (String -> msg) -> List (Html.Attribute msg) -> Dict Id String -> Response -> Html msg
+viewPotentiallyCustom shared config side update canonicalize attributes fills response =
+    case response.details.source of
+        Source.Custom ->
+            viewCustom shared config side update canonicalize attributes response (fills |> Dict.get response.details.id)
 
-        Blank b ->
-            viewBlank shared config side update attributes b (fills |> Dict.get b.details.id)
+        _ ->
+            view shared config side attributes response
 
 
 {-| Render a blank card to HTML.
 -}
-viewBlank : Shared -> Config -> Side -> (String -> msg) -> List (Html.Attribute msg) -> BlankResponse -> Maybe String -> Html msg
-viewBlank shared config side update attributes response fill =
+viewCustom : Shared -> Config -> Side -> (String -> msg) -> (String -> msg) -> List (Html.Attribute msg) -> Response -> Maybe String -> Html msg
+viewCustom shared config side update canonicalize attributes response fill =
     Card.view
         "response"
         shared
         (config.decks |> Decks.getSummary)
         side
         attributes
-        (viewBlankBody response.details.id update fill)
+        (viewCustomBody response.details.id update canonicalize response.body fill)
         viewInstructions
         response.details.source
 
@@ -75,14 +76,19 @@ viewBody response =
     ViewBody (\() -> [ Html.p [] [ Html.span [] [ response.body |> String.capitalise |> Html.text ] ] ])
 
 
-viewBlankBody : String -> (String -> msg) -> Maybe String -> ViewBody msg
-viewBlankBody id update value =
+viewCustomBody : String -> (String -> msg) -> (String -> msg) -> String -> Maybe String -> ViewBody msg
+viewCustomBody id update canonicalize canonicalValue value =
+    let
+        mostRecentValue =
+            value |> Maybe.withDefault canonicalValue
+    in
     ViewBody
         (\() ->
             [ Html.textarea
                 [ HtmlA.id id
-                , value |> Maybe.withDefault "" |> HtmlA.value
+                , mostRecentValue |> HtmlA.value
                 , update |> HtmlE.onInput
+                , mostRecentValue |> canonicalize |> HtmlE.onBlur
                 ]
                 []
             ]

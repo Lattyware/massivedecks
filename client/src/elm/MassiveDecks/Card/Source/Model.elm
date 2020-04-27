@@ -18,7 +18,7 @@ import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 -}
 type Source
     = Ex External
-    | Player
+    | Custom
     | Fake
 
 

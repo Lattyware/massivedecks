@@ -1,15 +1,11 @@
 module MassiveDecks.Card.Model exposing
-    ( BlankResponse
-    , Call
+    ( Call
     , Details
     , Id
-    , Played
-    , PotentiallyBlankResponse(..)
     , Response
     , Side(..)
     , ViewBody(..)
     , ViewInstructions(..)
-    , blankResponse
     , call
     , response
     )
@@ -62,28 +58,6 @@ response text id source =
     }
 
 
-{-| A blank response, only valid in certain situations.
--}
-type alias BlankResponse =
-    Card ()
-
-
-{-| A simple constructor for a response card.
--}
-blankResponse : Id -> Source -> BlankResponse
-blankResponse id source =
-    { details = { source = source, id = id }
-    , body = ()
-    }
-
-
-{-| Either a normal response or a blank one.
--}
-type PotentiallyBlankResponse
-    = Normal Response
-    | Blank BlankResponse
-
-
 {-| The data for a type of card.
 -}
 type alias Card body =
@@ -110,11 +84,3 @@ type ViewBody msg
 -}
 type ViewInstructions msg
     = ViewInstructions (() -> List (Html msg))
-
-
-{-| A card played into a round. This can be either a normal card or a filled blank card.
--}
-type alias Played =
-    { id : Id
-    , text : Maybe String
-    }

@@ -2,6 +2,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     ( configure
     , endGame
     , enforceTimeLimit
+    , fill
     , judge
     , kick
     , leave
@@ -38,9 +39,14 @@ startGame =
     action "StartGame" []
 
 
-submit : List Card.Played -> Cmd msg
+fill : Card.Id -> String -> Cmd msg
+fill card text =
+    action "Fill" [ ( "card", card |> Json.string ), ( "text", text |> Json.string ) ]
+
+
+submit : List Card.Id -> Cmd msg
 submit play =
-    action "Submit" [ ( "play", play |> Json.list Encoders.playedCard ) ]
+    action "Submit" [ ( "play", play |> Json.list Json.string ) ]
 
 
 takeBack : Cmd msg

@@ -1,7 +1,7 @@
 import uuid from "uuid";
 import wu from "wu";
 import { Source } from "./source";
-import { Player } from "./sources/player";
+import { Custom } from "./sources/custom";
 
 /**
  * A game card.
@@ -17,11 +17,6 @@ export interface Call extends BaseCard {
 }
 
 /**
- * A response or a blank response.
- */
-export type PotentiallyBlankResponse = Response | BlankResponse;
-
-/**
  * A response (some text) played into slots.
  */
 export interface Response extends BaseCard {
@@ -31,16 +26,18 @@ export interface Response extends BaseCard {
 }
 
 /**
- * A response (some text) played into slots. This is a special blank response
- * only valid in limited circumstances.
+ * A custom response is special in that it is mutable by the player holding it.
  */
-export interface BlankResponse extends BaseCard {
-  source: Player;
+export interface CustomResponse extends Response {
+  source: Custom;
 }
 
-export const isBlankResponse = (
-  response: PotentiallyBlankResponse
-): response is BlankResponse => !response.hasOwnProperty("text");
+/**
+ * If the response is a custom one, and therefore mutable.
+ */
+export const isCustomResponse = (
+  response: Response
+): response is CustomResponse => response.source.source == "Custom";
 
 /** A unique id for an instance of a card.*/
 export type Id = string;

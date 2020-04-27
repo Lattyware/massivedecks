@@ -6,7 +6,7 @@ import {
   CreateLobby,
   Action,
   CheckAlive,
-  PublicConfig
+  PublicConfig,
 } from "./validation";
 export const ajv = new Ajv({
   allErrors: false,
@@ -15,7 +15,7 @@ export const ajv = new Ajv({
   nullable: true,
   unicode: true,
   uniqueItems: true,
-  useDefaults: true
+  useDefaults: true,
 });
 
 import metaSchema from "ajv/lib/refs/json-schema-draft-06.json";
@@ -28,57 +28,60 @@ export const Schema = {
     Action: {
       anyOf: [
         {
-          $ref: "#/definitions/SetPresence"
+          $ref: "#/definitions/SetPresence",
         },
         {
-          $ref: "#/definitions/Submit"
+          $ref: "#/definitions/Submit",
         },
         {
-          $ref: "#/definitions/TakeBack"
+          $ref: "#/definitions/TakeBack",
         },
         {
-          $ref: "#/definitions/Like"
+          $ref: "#/definitions/Like",
         },
         {
-          $ref: "#/definitions/Judge"
+          $ref: "#/definitions/Fill",
         },
         {
-          $ref: "#/definitions/Reveal"
+          $ref: "#/definitions/Judge",
         },
         {
-          $ref: "#/definitions/Redraw"
+          $ref: "#/definitions/Reveal",
         },
         {
-          $ref: "#/definitions/EnforceTimeLimit"
+          $ref: "#/definitions/Redraw",
         },
         {
-          $ref: "#/definitions/Authenticate"
+          $ref: "#/definitions/EnforceTimeLimit",
         },
         {
-          $ref: "#/definitions/Configure"
+          $ref: "#/definitions/Authenticate",
         },
         {
-          $ref: "#/definitions/StartGame"
+          $ref: "#/definitions/Configure",
         },
         {
-          $ref: "#/definitions/SetPlayerAway"
+          $ref: "#/definitions/StartGame",
         },
         {
-          $ref: "#/definitions/SetPrivilege"
+          $ref: "#/definitions/SetPlayerAway",
         },
         {
-          $ref: "#/definitions/Kick"
+          $ref: "#/definitions/SetPrivilege",
         },
         {
-          $ref: "#/definitions/EndGame"
+          $ref: "#/definitions/Kick",
         },
         {
-          $ref: "#/definitions/SetUserRole"
+          $ref: "#/definitions/EndGame",
         },
         {
-          $ref: "#/definitions/Leave"
-        }
-      ]
+          $ref: "#/definitions/SetUserRole",
+        },
+        {
+          $ref: "#/definitions/Leave",
+        },
+      ],
     },
     AddOperation: {
       additionalProperties: false,
@@ -88,40 +91,40 @@ export const Schema = {
       properties: {
         op: {
           enum: ["add"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
+          type: "string",
         },
-        value: {}
+        value: {},
       },
       required: ["op", "path", "value"],
-      type: "object"
+      type: "object",
     },
     Array: {
       items: {
         anyOf: [
           {
-            $ref: "#/definitions/AddOperation"
+            $ref: "#/definitions/AddOperation",
           },
           {
-            $ref: "#/definitions/RemoveOperation"
+            $ref: "#/definitions/RemoveOperation",
           },
           {
-            $ref: "#/definitions/ReplaceOperation"
+            $ref: "#/definitions/ReplaceOperation",
           },
           {
-            $ref: "#/definitions/MoveOperation"
+            $ref: "#/definitions/MoveOperation",
           },
           {
-            $ref: "#/definitions/CopyOperation"
+            $ref: "#/definitions/CopyOperation",
           },
           {
-            $ref: "#/definitions/TestOperation"
-          }
-        ]
+            $ref: "#/definitions/TestOperation",
+          },
+        ],
       },
-      type: "array"
+      type: "array",
     },
     Authenticate: {
       additionalProperties: false,
@@ -129,14 +132,14 @@ export const Schema = {
       description: "Authenticate with the game.",
       properties: {
         action: {
-          $ref: "#/definitions/NameType"
+          $ref: "#/definitions/NameType",
         },
         token: {
-          $ref: "#/definitions/Token"
-        }
+          $ref: "#/definitions/Token",
+        },
       },
       required: ["action", "token"],
-      type: "object"
+      type: "object",
     },
     Cardcast: {
       additionalProperties: false,
@@ -144,15 +147,15 @@ export const Schema = {
       description: "A source for Cardcast.",
       properties: {
         playCode: {
-          $ref: "#/definitions/PlayCode"
+          $ref: "#/definitions/PlayCode",
         },
         source: {
           enum: ["Cardcast"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["playCode", "source"],
-      type: "object"
+      type: "object",
     },
     CheckAlive: {
       additionalProperties: false,
@@ -161,16 +164,16 @@ export const Schema = {
       properties: {
         tokens: {
           items: {
-            type: "string"
+            type: "string",
           },
-          type: "array"
-        }
+          type: "array",
+        },
       },
       required: ["tokens"],
-      type: "object"
+      type: "object",
     },
     ComedyWriter: {
-      $ref: "#/definitions/ComedyWriter_1"
+      $ref: "#/definitions/ComedyWriter_1",
     },
     ComedyWriter_1: {
       additionalProperties: false,
@@ -178,17 +181,17 @@ export const Schema = {
       properties: {
         exclusive: {
           description: "If only blank cards will be used.",
-          type: "boolean"
+          type: "boolean",
         },
         number: {
           description: "The number of blank cards to add.",
           maximum: 99999,
           minimum: 1,
-          type: "number"
-        }
+          type: "number",
+        },
       },
       required: ["exclusive", "number"],
-      type: "object"
+      type: "object",
     },
     Configure: {
       additionalProperties: false,
@@ -197,33 +200,33 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Configure"],
-          type: "string"
+          type: "string",
         },
         change: {
           $ref: "#/definitions/Patch",
-          description: "The changes to the config as a JSON patch."
-        }
+          description: "The changes to the config as a JSON patch.",
+        },
       },
       required: ["action", "change"],
-      type: "object"
+      type: "object",
     },
     CopyOperation: {
       additionalProperties: false,
       defaultProperties: [],
       properties: {
         from: {
-          type: "string"
+          type: "string",
         },
         op: {
           enum: ["copy"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["from", "op", "path"],
-      type: "object"
+      type: "object",
     },
     CreateLobby: {
       additionalProperties: false,
@@ -233,15 +236,15 @@ export const Schema = {
         name: {
           description:
             'The name of the lobby, if not given, will default to "Name\'s Game".',
-          type: "string"
+          type: "string",
         },
         owner: {
           $ref: "#/definitions/RegisterUser",
-          description: "The registration for the owner of the lobby."
-        }
+          description: "The registration for the owner of the lobby.",
+        },
       },
       required: ["owner"],
-      type: "object"
+      type: "object",
     },
     Details: {
       additionalProperties: false,
@@ -250,15 +253,15 @@ export const Schema = {
       properties: {
         name: {
           description: "A name for the source.",
-          type: "string"
+          type: "string",
         },
         url: {
           description: "A link to more information about the source.",
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["name"],
-      type: "object"
+      type: "object",
     },
     EndGame: {
       additionalProperties: false,
@@ -267,11 +270,11 @@ export const Schema = {
       properties: {
         action: {
           enum: ["EndGame"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["action"],
-      type: "object"
+      type: "object",
     },
     EnforceTimeLimit: {
       additionalProperties: false,
@@ -280,26 +283,26 @@ export const Schema = {
       properties: {
         action: {
           enum: ["EnforceTimeLimit"],
-          type: "string"
+          type: "string",
         },
         round: {
-          type: "string"
+          type: "string",
         },
         stage: {
-          $ref: "#/definitions/Stage"
-        }
+          $ref: "#/definitions/Stage",
+        },
       },
       required: ["action", "round", "stage"],
-      type: "object"
+      type: "object",
     },
     External: {
       $ref: "#/definitions/Cardcast",
-      description: "A source for Cardcast."
+      description: "A source for Cardcast.",
     },
     FailReason: {
       description: "The reason a deck could not be loaded.",
       enum: ["NotFound", "SourceFailure"],
-      type: "string"
+      type: "string",
     },
     FailedSource: {
       additionalProperties: false,
@@ -307,32 +310,38 @@ export const Schema = {
       description: "A deck source that has failed to load.",
       properties: {
         failure: {
-          $ref: "#/definitions/FailReason"
+          $ref: "#/definitions/FailReason",
         },
         source: {
-          $ref: "#/definitions/External"
-        }
+          $ref: "#/definitions/External",
+        },
       },
       required: ["failure", "source"],
-      type: "object"
+      type: "object",
     },
-    FilledBlankCard: {
+    Fill: {
       additionalProperties: false,
       defaultProperties: [],
+      description:
+        "Indicates the user has changed the value of a blank card in their hand.",
       properties: {
-        id: {
-          $ref: "#/definitions/Id"
+        action: {
+          enum: ["Fill"],
+          type: "string",
+        },
+        card: {
+          $ref: "#/definitions/Id",
         },
         text: {
-          type: "string"
-        }
+          type: "string",
+        },
       },
-      required: ["id", "text"],
-      type: "object"
+      required: ["action", "card", "text"],
+      type: "object",
     },
     Id: {
-      description: "A unique id for an instance of a card.",
-      type: "string"
+      description: "A unique id for a play.",
+      type: "string",
     },
     Judge: {
       additionalProperties: false,
@@ -341,14 +350,14 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Judge"],
-          type: "string"
+          type: "string",
         },
         winner: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "winner"],
-      type: "object"
+      type: "object",
     },
     Kick: {
       additionalProperties: false,
@@ -357,14 +366,14 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Kick"],
-          type: "string"
+          type: "string",
         },
         user: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "user"],
-      type: "object"
+      type: "object",
     },
     Leave: {
       additionalProperties: false,
@@ -373,11 +382,11 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Leave"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["action"],
-      type: "object"
+      type: "object",
     },
     Like: {
       additionalProperties: false,
@@ -386,90 +395,90 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Like"],
-          type: "string"
+          type: "string",
         },
         play: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "play"],
-      type: "object"
+      type: "object",
     },
     MoveOperation: {
       additionalProperties: false,
       defaultProperties: [],
       properties: {
         from: {
-          type: "string"
+          type: "string",
         },
         op: {
           enum: ["move"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["from", "op", "path"],
-      type: "object"
+      type: "object",
     },
     Name: {
       description: "The name the user goes by.",
       maxLength: 100,
       minLength: 1,
-      type: "string"
+      type: "string",
     },
     NameType: {
       enum: ["Authenticate"],
-      type: "string"
+      type: "string",
     },
     PackingHeat: {
       $ref: "#/definitions/PackingHeat_1",
-      description: 'Configuration for the "Packing Heat" house rule.'
+      description: 'Configuration for the "Packing Heat" house rule.',
     },
     PackingHeat_1: {
       additionalProperties: false,
       defaultProperties: [],
       description: 'Configuration for the "Packing Heat" house rule.',
-      type: "object"
+      type: "object",
     },
     Patch: {
-      $ref: "#/definitions/Array"
+      $ref: "#/definitions/Array",
     },
     PlayCode: {
       description: "A Cardcast play code for a deck.",
-      type: "string"
+      type: "string",
     },
     Presence: {
       description:
         "If the player is active in the game or has been marked as away.",
       enum: ["Active", "Away"],
-      type: "string"
+      type: "string",
     },
     Privilege: {
       description: "The level of privilege a user has.",
       enum: ["Privileged", "Unprivileged"],
-      type: "string"
+      type: "string",
     },
     Public: {
       additionalProperties: false,
       defaultProperties: [],
       properties: {
         handSize: {
-          type: "number"
+          type: "number",
         },
         houseRules: {
-          $ref: "#/definitions/Public_1"
+          $ref: "#/definitions/Public_1",
         },
         scoreLimit: {
-          type: "number"
+          type: "number",
         },
         timeLimits: {
-          $ref: "#/definitions/RoundTimeLimits"
-        }
+          $ref: "#/definitions/RoundTimeLimits",
+        },
       },
       required: ["handSize", "houseRules", "timeLimits"],
-      type: "object"
+      type: "object",
     },
     PublicConfig: {
       additionalProperties: false,
@@ -479,30 +488,30 @@ export const Schema = {
           items: {
             anyOf: [
               {
-                $ref: "#/definitions/SummarisedSource"
+                $ref: "#/definitions/SummarisedSource",
               },
               {
-                $ref: "#/definitions/FailedSource"
-              }
-            ]
+                $ref: "#/definitions/FailedSource",
+              },
+            ],
           },
-          type: "array"
+          type: "array",
         },
         password: {
-          type: "string"
+          type: "string",
         },
         public: {
-          type: "boolean"
+          type: "boolean",
         },
         rules: {
-          $ref: "#/definitions/Public"
+          $ref: "#/definitions/Public",
         },
         version: {
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["decks", "rules", "version"],
-      type: "object"
+      type: "object",
     },
     Public_1: {
       additionalProperties: false,
@@ -510,23 +519,23 @@ export const Schema = {
       description: "The public view of the internal model.",
       properties: {
         comedyWriter: {
-          $ref: "#/definitions/ComedyWriter"
+          $ref: "#/definitions/ComedyWriter",
         },
         packingHeat: {
-          $ref: "#/definitions/PackingHeat"
+          $ref: "#/definitions/PackingHeat",
         },
         rando: {
-          $ref: "#/definitions/Public_2"
+          $ref: "#/definitions/Public_2",
         },
         reboot: {
-          $ref: "#/definitions/Reboot"
-        }
+          $ref: "#/definitions/Reboot",
+        },
       },
-      type: "object"
+      type: "object",
     },
     Public_2: {
       $ref: "#/definitions/Public_3",
-      description: "The public view of the Rando house rule."
+      description: "The public view of the Rando house rule.",
     },
     Public_3: {
       additionalProperties: false,
@@ -537,16 +546,16 @@ export const Schema = {
           description: "The number of AI players to add to the game.",
           maximum: 10,
           minimum: 1,
-          type: "number"
-        }
+          type: "number",
+        },
       },
       required: ["number"],
-      type: "object"
+      type: "object",
     },
     Reboot: {
       $ref: "#/definitions/Reboot_1",
       description:
-        'Configuration for the "Reboot the Universe" house rule.\nThis rule allows players to draw a new hand by sacrificing a given number\nof points.'
+        'Configuration for the "Reboot the Universe" house rule.\nThis rule allows players to draw a new hand by sacrificing a given number\nof points.',
     },
     Reboot_1: {
       additionalProperties: false,
@@ -558,11 +567,11 @@ export const Schema = {
           description: "The cost to redrawing.",
           maximum: 50,
           minimum: 1,
-          type: "number"
-        }
+          type: "number",
+        },
       },
       required: ["cost"],
-      type: "object"
+      type: "object",
     },
     Redraw: {
       additionalProperties: false,
@@ -571,11 +580,11 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Redraw"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["action"],
-      type: "object"
+      type: "object",
     },
     RegisterUser: {
       additionalProperties: false,
@@ -584,16 +593,16 @@ export const Schema = {
       properties: {
         name: {
           $ref: "#/definitions/Name",
-          description: "The name the user wishes to use."
+          description: "The name the user wishes to use.",
         },
         password: {
           description:
             "The lobby password, if there is one, this must be given and correct.",
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["name"],
-      type: "object"
+      type: "object",
     },
     RemoveOperation: {
       additionalProperties: false,
@@ -601,14 +610,14 @@ export const Schema = {
       properties: {
         op: {
           enum: ["remove"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["op", "path"],
-      type: "object"
+      type: "object",
     },
     ReplaceOperation: {
       additionalProperties: false,
@@ -616,15 +625,15 @@ export const Schema = {
       properties: {
         op: {
           enum: ["replace"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
+          type: "string",
         },
-        value: {}
+        value: {},
       },
       required: ["op", "path", "value"],
-      type: "object"
+      type: "object",
     },
     Reveal: {
       additionalProperties: false,
@@ -633,19 +642,19 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Reveal"],
-          type: "string"
+          type: "string",
         },
         play: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "play"],
-      type: "object"
+      type: "object",
     },
     Role: {
       description: "If the user is a spectator or a player.",
       enum: ["Player", "Spectator"],
-      type: "string"
+      type: "string",
     },
     RoundTimeLimits: {
       additionalProperties: false,
@@ -655,26 +664,26 @@ export const Schema = {
         complete: {
           $ref: "#/definitions/TimeLimit_1",
           description:
-            "The amount of time in seconds after one round completes the next one\nstarts."
+            "The amount of time in seconds after one round completes the next one\nstarts.",
         },
         judging: {
           $ref: "#/definitions/TimeLimit",
-          description: "The time limit for the judge to pick a winner."
+          description: "The time limit for the judge to pick a winner.",
         },
         mode: {
-          $ref: "#/definitions/TimeLimitMode"
+          $ref: "#/definitions/TimeLimitMode",
         },
         playing: {
           $ref: "#/definitions/TimeLimit",
-          description: "The time limit for players to make their play."
+          description: "The time limit for players to make their play.",
         },
         revealing: {
           $ref: "#/definitions/TimeLimit",
-          description: "The time limit for the judge  to reveal the plays."
-        }
+          description: "The time limit for the judge  to reveal the plays.",
+        },
       },
       required: ["complete", "mode"],
-      type: "object"
+      type: "object",
     },
     SetPlayerAway: {
       additionalProperties: false,
@@ -683,14 +692,14 @@ export const Schema = {
       properties: {
         action: {
           enum: ["SetPlayerAway"],
-          type: "string"
+          type: "string",
         },
         player: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "player"],
-      type: "object"
+      type: "object",
     },
     SetPresence: {
       additionalProperties: false,
@@ -699,14 +708,14 @@ export const Schema = {
       properties: {
         action: {
           enum: ["SetPresence"],
-          type: "string"
+          type: "string",
         },
         presence: {
-          $ref: "#/definitions/Presence"
-        }
+          $ref: "#/definitions/Presence",
+        },
       },
       required: ["action", "presence"],
-      type: "object"
+      type: "object",
     },
     SetPrivilege: {
       additionalProperties: false,
@@ -716,17 +725,17 @@ export const Schema = {
       properties: {
         action: {
           enum: ["SetPrivilege"],
-          type: "string"
+          type: "string",
         },
         privilege: {
-          $ref: "#/definitions/Privilege"
+          $ref: "#/definitions/Privilege",
         },
         user: {
-          $ref: "#/definitions/Id"
-        }
+          $ref: "#/definitions/Id",
+        },
       },
       required: ["action", "privilege", "user"],
-      type: "object"
+      type: "object",
     },
     SetUserRole: {
       additionalProperties: false,
@@ -735,18 +744,18 @@ export const Schema = {
       properties: {
         action: {
           enum: ["SetUserRole"],
-          type: "string"
+          type: "string",
         },
         role: {
-          $ref: "#/definitions/Role"
-        }
+          $ref: "#/definitions/Role",
+        },
       },
       required: ["action", "role"],
-      type: "object"
+      type: "object",
     },
     Stage: {
       enum: ["Complete", "Judging", "Playing", "Revealing"],
-      type: "string"
+      type: "string",
     },
     StartGame: {
       additionalProperties: false,
@@ -755,11 +764,11 @@ export const Schema = {
       properties: {
         action: {
           enum: ["StartGame"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["action"],
-      type: "object"
+      type: "object",
     },
     Submit: {
       additionalProperties: false,
@@ -768,24 +777,17 @@ export const Schema = {
       properties: {
         action: {
           enum: ["Submit"],
-          type: "string"
+          type: "string",
         },
         play: {
           items: {
-            anyOf: [
-              {
-                $ref: "#/definitions/FilledBlankCard"
-              },
-              {
-                type: "string"
-              }
-            ]
+            type: "string",
           },
-          type: "array"
-        }
+          type: "array",
+        },
       },
       required: ["action", "play"],
-      type: "object"
+      type: "object",
     },
     SummarisedSource: {
       additionalProperties: false,
@@ -793,17 +795,17 @@ export const Schema = {
       description: "A deck source that is loading or has loaded.",
       properties: {
         source: {
-          $ref: "#/definitions/External"
+          $ref: "#/definitions/External",
         },
         summary: {
-          $ref: "#/definitions/Summary"
-        }
+          $ref: "#/definitions/Summary",
+        },
       },
       required: ["source"],
-      type: "object"
+      type: "object",
     },
     Summary: {
-      $ref: "#/definitions/Summary_1"
+      $ref: "#/definitions/Summary_1",
     },
     Summary_1: {
       additionalProperties: false,
@@ -811,29 +813,29 @@ export const Schema = {
       properties: {
         calls: {
           description: "The number of calls in the deck.",
-          type: "number"
+          type: "number",
         },
         details: {
           $ref: "#/definitions/Details",
-          description: "Details about the deck."
+          description: "Details about the deck.",
         },
         responses: {
           description: "The number of responses in the deck.",
-          type: "number"
+          type: "number",
         },
         tag: {
           $ref: "#/definitions/Tag",
           description:
-            "A tag which should change if the underlying templates change."
-        }
+            "A tag which should change if the underlying templates change.",
+        },
       },
       required: ["calls", "details", "responses"],
-      type: "object"
+      type: "object",
     },
     Tag: {
       description:
         "A tag is used to check if there is a need to refresh the data in the cache.",
-      type: "string"
+      type: "string",
     },
     TakeBack: {
       additionalProperties: false,
@@ -842,11 +844,11 @@ export const Schema = {
       properties: {
         action: {
           enum: ["TakeBack"],
-          type: "string"
-        }
+          type: "string",
+        },
       },
       required: ["action"],
-      type: "object"
+      type: "object",
     },
     TestOperation: {
       additionalProperties: false,
@@ -854,39 +856,39 @@ export const Schema = {
       properties: {
         op: {
           enum: ["test"],
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
+          type: "string",
         },
-        value: {}
+        value: {},
       },
       required: ["op", "path", "value"],
-      type: "object"
+      type: "object",
     },
     TimeLimit: {
       description: "The amount of time in seconds to limit to.",
       maximum: 900,
       minimum: 0,
-      type: "number"
+      type: "number",
     },
     TimeLimitMode: {
       description:
         'Indicated what happens when the time limit runs out.\n"Hard": Non-ready players are automatically set to away.\n"Soft": Ready players are given the option to set non-ready players to away.',
       enum: ["Hard", "Soft"],
-      type: "string"
+      type: "string",
     },
     TimeLimit_1: {
       description: "The amount of time in seconds to limit to.",
       maximum: 900,
       minimum: 0,
-      type: "number"
+      type: "number",
     },
     Token: {
       description: "A token that contains the encoded claims of a user.",
-      type: "string"
-    }
-  }
+      type: "string",
+    },
+  },
 };
 ajv.addSchema(Schema, "Schema");
 export function validate(

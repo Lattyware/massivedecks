@@ -11,17 +11,14 @@ export interface RoundStarted {
   czar: User.Id;
   players: User.Id[];
   call: Card.Call;
-  drawn?: Card.PotentiallyBlankResponse[];
+  drawn?: Card.Response[];
 }
 
-export const of = (
-  round: Round,
-  drawn?: Card.PotentiallyBlankResponse[]
-): RoundStarted => ({
+export const of = (round: Round, drawn?: Card.Response[]): RoundStarted => ({
   event: "RoundStarted",
   id: round.id.toString(),
   czar: round.czar,
   players: Array.from(round.players.keys()),
   call: round.call,
-  ...(drawn === undefined ? {} : { drawn })
+  ...(drawn === undefined ? {} : { drawn }),
 });

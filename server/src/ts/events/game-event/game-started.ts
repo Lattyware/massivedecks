@@ -8,14 +8,14 @@ import * as PublicRound from "../../games/game/round/public";
 export interface GameStarted {
   event: "GameStarted";
   round: PublicRound.Playing;
-  hand?: Card.PotentiallyBlankResponse[];
+  hand?: Card.Response[];
 }
 
 export const of = (
   startedRound: Round.Playing,
-  hand?: Card.PotentiallyBlankResponse[]
+  hand?: Card.Response[]
 ): GameStarted => ({
   event: "GameStarted",
   round: startedRound.public(),
-  ...(hand !== undefined ? { hand } : {})
+  ...(hand !== undefined ? { hand } : {}),
 });

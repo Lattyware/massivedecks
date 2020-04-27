@@ -16,17 +16,8 @@ import { Player } from "../player";
  */
 export interface Submit {
   action: "Submit";
-  play: (Card.Id | FilledBlankCard)[];
+  play: Card.Id[];
 }
-
-export interface FilledBlankCard {
-  id: Card.Id;
-  text: string;
-}
-
-const isFilledBlankCard = (
-  card: Card.Id | FilledBlankCard
-): card is FilledBlankCard => typeof card !== "string";
 
 class SubmitActions extends Actions.Implementation<
   Player,
@@ -46,7 +37,7 @@ class SubmitActions extends Actions.Implementation<
     if (lobbyRound.verifyStage<Round.Playing>(action, "Playing")) {
       const playId = Play.id();
       const plays = lobbyRound.plays;
-      if (plays.find(play => play.playedBy === auth.uid)) {
+      if (plays.find((play) => play.playedBy === auth.uid)) {
         throw new InvalidActionError("Already played into round.");
       }
       const playLength = action.play.length;
@@ -61,43 +52,22 @@ class SubmitActions extends Actions.Implementation<
       if (player === undefined) {
         throw new IncorrectUserRoleError(action, "Spectator", "Player");
       }
-      const cards = new Set(action.play);
       const extractedPlay: Play.Play = [];
-      for (const playedCard of cards) {
-        const id = isFilledBlankCard(playedCard) ? playedCard.id : playedCard;
-        const played = player.hand.find(c => c.id === id);
+      for (const playedCard of action.play) {
+        const played = player.hand.find((c) => c.id === playedCard);
         if (played === undefined) {
           throw new InvalidActionError(
             "The given card doesn't exist or isn't in the player's hand."
           );
         }
-        if (Card.isBlankResponse(played)) {
-          if (isFilledBlankCard(playedCard)) {
-            extractedPlay.push({
-              text: playedCard.text,
-              ...played
-            });
-          } else {
-            throw new InvalidActionError(
-              "The given card is blank, but the play didn't provide the value."
-            );
-          }
-        } else {
-          if (isFilledBlankCard(playedCard)) {
-            throw new InvalidActionError(
-              "The given card is not blank, but the play provided a value."
-            );
-          } else {
-            extractedPlay.push(played);
-          }
-        }
+        extractedPlay.push(played);
       }
       plays.push({
         id: playId,
         play: extractedPlay,
         playedBy: auth.uid,
         revealed: false,
-        likes: []
+        likes: [],
       });
       const events = [Event.targetAll(PlaySubmitted.of(auth.uid))];
       const timeouts = [];
@@ -105,7 +75,7 @@ class SubmitActions extends Actions.Implementation<
       if (timeout !== undefined) {
         timeouts.push({
           timeout: timeout,
-          after: server.config.timeouts.finishedPlayingDelay
+          after: server.config.timeouts.finishedPlayingDelay,
         });
       }
       return { lobby, events, timeouts };

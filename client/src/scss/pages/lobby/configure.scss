@@ -38,6 +38,11 @@
     right: 0;
     bottom: 0;
     margin: 1em;
+    pointer-events: none;
+
+    .action {
+      pointer-events: all;
+    }
   }
 }
 

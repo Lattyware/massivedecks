@@ -25,7 +25,7 @@ import Set exposing (Set)
 -}
 type alias Model =
     { game : Game
-    , hand : List Card.PotentiallyBlankResponse
+    , hand : List Card.Response
     , filledCards : Dict Card.Id String
     , playStyles : PlayStyles
     , completeRound : Maybe Round.Complete

@@ -23,18 +23,18 @@ import Set exposing (Set)
 type Event
     = Sync
         { state : Lobby
-        , hand : Maybe (List Card.PotentiallyBlankResponse)
-        , play : Maybe (List Card.Played)
+        , hand : Maybe (List Card.Response)
+        , play : Maybe (List Card.Id)
         , partialTimeAnchor : Time.PartialAnchor
         }
     | Connection { user : User.Id, state : User.Connection }
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : Json.Patch }
       -- Not a game event because we don't need to be in a game
-    | GameStarted { round : Round.Playing, hand : Maybe (List Card.PotentiallyBlankResponse) }
+    | GameStarted { round : Round.Playing, hand : Maybe (List Card.Response) }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
-    | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.PotentiallyBlankResponse) }
+    | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.Response) }
     | ErrorEncountered { error : MdError.GameStateError }
 
 
@@ -46,7 +46,7 @@ type PresenceState
 
 
 type GameEvent
-    = HandRedrawn { player : User.Id, hand : Maybe (List Card.PotentiallyBlankResponse) }
+    = HandRedrawn { player : User.Id, hand : Maybe (List Card.Response) }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }
     | PlayerAway { player : User.Id }
@@ -69,8 +69,8 @@ type TimedGameEvent
         , czar : User.Id
         , players : Set User.Id
         , call : Card.Call
-        , drawn : Maybe (List Card.PotentiallyBlankResponse)
+        , drawn : Maybe (List Card.Response)
         }
-    | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.PotentiallyBlankResponse) }
+    | StartRevealing { plays : List Play.Id, drawn : Maybe (List Card.Response) }
     | RoundFinished { winner : User.Id, playedBy : Dict Play.Id Play.Details }
     | PlayRevealed { id : Play.Id, play : List Card.Response }

@@ -1,4 +1,4 @@
-module MassiveDecks.Card.Source.Player exposing (..)
+module MassiveDecks.Card.Source.Custom exposing (..)
 
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Model exposing (Shared)
