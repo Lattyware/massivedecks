@@ -71,7 +71,7 @@ translate mdString =
             [ Ref MassiveDecks
             , Text " é um jogo de festa de comédia baseado em "
             , Ref CardsAgainstHumanity
-            , Text ", desenvolvido por "
+            , Text ", desenvolvido pela "
             , Ref RereadGames
             , Text " e outros contribuidores—o jogo é código aberto sobre a "
             , Ref License
@@ -241,7 +241,7 @@ translate mdString =
             [ Text "Calor da Embalagem" ]
 
         HouseRulePackingHeatDescription ->
-            [ Text "Qualquer "
+            [ Text "Quaisquer "
             , Ref (Plural { singular = Call, amount = Nothing })
             , Text " com "
             , Ref (Pick { numberOfCards = 2 })
@@ -321,18 +321,16 @@ translate mdString =
             ]
 
         CardSizeSetting ->
-            [ Text "Cartas Compactas" ]
+            [ Text "Tamanho das Cartas" ]
 
         CardSizeExplanation ->
             [ Text "Ajuste o tamanho das cartas—isto pode ser útil em telas pequeneas para menos rolagem." ]
 
-        -- TODO: Translate
         AutoAdvanceSetting ->
-            [ Text "Automatically Advance Round" ]
+            [ Text "Avançar partida automaticamente" ]
 
-        -- TODO: Translate
         AutoAdvanceExplanation ->
-            [ Text "When a round ends, automatically advance to the next one rather than waiting." ]
+            [ Text "Quando uma partida acabar, automaticamente pula para a próxima ao invés de aguardar." ]
 
         SpeechSetting ->
             [ Text "Texto para Fala" ]
@@ -439,7 +437,7 @@ translate mdString =
             [ Text "Sem jogos públicos disponíveis." ]
 
         PlayingGame ->
-            [ Text "Jogos que estão em progresso." ]
+            [ Text "Jogos que estão em andamento." ]
 
         SettingUpGame ->
             [ Text "Jogos que ainda não iniciaram." ]
@@ -540,10 +538,10 @@ translate mdString =
             [ Text "Usuários que deixaram o jogo." ]
 
         Away ->
-            [ Text "Fora" ]
+            [ Text "Ausente" ]
 
         AwayDescription ->
-            [ Text "Este usuário está temporariamente fora do jogo." ]
+            [ Text "Este usuário está temporariamente ausente do jogo." ]
 
         Disconnected ->
             [ Text "Desconectado" ]
@@ -595,10 +593,10 @@ translate mdString =
             [ Text "Adquira o código do jogo/link/código QR para deixar outros entrarem no jogo." ]
 
         SetAway ->
-            [ Text "Marcar como Fora" ]
+            [ Text "Marcar como Ausente" ]
 
         SetBack ->
-            [ Text "Marcar como Jogando" ]
+            [ Text "Voltar a jogar" ]
 
         LeaveGame ->
             [ Text "Sair do jogo" ]
@@ -613,7 +611,7 @@ translate mdString =
             [ Text "Abrir a visualização de espectador do jogo em uma nova aba/janela." ]
 
         BecomeSpectator ->
-            [ Text "Espectar" ]
+            [ Text "Espectador" ]
 
         BecomeSpectatorDescription ->
             [ Text "Apenas assistir o jogo sem jogar." ]
@@ -834,10 +832,10 @@ translate mdString =
             [ Text "Este valor não é válido." ]
 
         Automatic ->
-            [ Text "Automaticamente marcar jogadores como fora do jogo" ]
+            [ Text "Automaticamente marcar jogadores como ausentes do jogo" ]
 
         AutomaticDescription ->
-            [ Text "Se ativado, quando o tempo limite acabar, jogadores serão marcados automaticamente como forado jogo. "
+            [ Text "Se ativado, quando o tempo limite acabar, jogadores serão marcados automaticamente como ausente do jogo. "
             , Text "De outra forma, alguém terá que apertar o botão para fazer isso."
             ]
 
@@ -905,7 +903,7 @@ translate mdString =
             [ Text "Ajuda" ]
 
         EnforceTimeLimitAction ->
-            [ Text "Definir todos os jogadores como fora e pulá-los até eles retornarem." ]
+            [ Text "Definir todos os jogadores como ausentes e pulá-los até eles retornarem." ]
 
         Blank ->
             [ Text "Vazia" ]
@@ -922,7 +920,7 @@ translate mdString =
             ]
 
         ClientAway ->
-            [ Text "Você está atualmente definido como fora do jogo, e não está jogando." ]
+            [ Text "Você está atualmente definido como ausente do jogo, e não está jogando." ]
 
         -- Instructions
         PlayInstruction { numberOfCards } ->
@@ -947,7 +945,7 @@ translate mdString =
             ]
 
         NotInRoundInstruction ->
-            [ Text "Você não está nessa partida. Você jogará na próxima, exceto se estiver definido como fora do jogo." ]
+            [ Text "Você não está nessa partida. Você jogará na próxima, exceto se estiver definido como ausente do jogo." ]
 
         RevealPlaysInstruction ->
             [ Text "Clique nas jogadas para exibi-las, e escolha a que você acha a melhor." ]
