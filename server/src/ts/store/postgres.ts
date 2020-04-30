@@ -1,5 +1,5 @@
 import Pg from "pg";
-import uuid from "uuid";
+import * as uuid from "uuid";
 import { CreateLobby } from "../action/initial/create-lobby";
 import * as Config from "../config";
 import { LobbyClosedError } from "../errors/lobby";

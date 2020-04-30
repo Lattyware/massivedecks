@@ -32,15 +32,14 @@ export abstract class Deck<C extends Card.BaseCard> {
     this.discarded = new Set(discarded);
   }
 
-  public discard(cards: Iterable<C>): void;
-  public discard(firstCard: C, ...cards: C[]): void;
-  public discard(firstCard: C | Iterable<C>, ...cards: C[]): void {
-    const resolvedCards: Iterable<C> = Util.isIterable(firstCard)
-      ? cards
-      : [firstCard, ...cards];
-    for (const c of resolvedCards) {
-      this.discarded.add(c);
+  public discard(cards: Iterable<C>): void {
+    for (const c of cards) {
+      this.discardSingle(c);
     }
+  }
+
+  protected discardSingle(card: C): void {
+    this.discarded.add(card);
   }
 
   public draw(cards: number): C[] {
@@ -96,20 +95,12 @@ export class Calls extends Deck<Card.Call> {
  * (in the case of custom cards).
  */
 export class Responses extends Deck<Card.Response> {
-  public discard(
-    firstCard: Card.Response | Iterable<Card.Response>,
-    ...cards: Card.Response[]
-  ): void {
-    const resolvedCards: Iterable<Card.Response> = Util.isIterable(firstCard)
-      ? cards
-      : [firstCard, ...cards];
-    for (const c of resolvedCards) {
-      c.id = Card.id();
-      if (Card.isCustomResponse(c)) {
-        c.text = "";
-      }
-      this.discarded.add(c);
+  protected discardSingle(card: Card.Response): void {
+    card.id = Card.id();
+    if (Card.isCustomResponse(card)) {
+      card.text = "";
     }
+    this.discarded.add(card);
   }
 
   public static fromTemplates(

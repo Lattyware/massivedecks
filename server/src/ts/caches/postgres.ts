@@ -5,7 +5,7 @@ import * as Decks from "../games/cards/decks";
 import * as Source from "../games/cards/source";
 import * as Postgres from "../util/postgres";
 import * as Card from "../games/cards/card";
-import uuid from "uuid";
+import * as uuid from "uuid";
 
 class To0 extends Postgres.Upgrade<undefined, 0> {
   public readonly to = 0;

@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import * as uuid from "uuid";
 import wu from "wu";
 import { CreateLobby } from "../action/initial/create-lobby";
 import * as ServerConfig from "../config";

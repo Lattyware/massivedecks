@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import * as uuid from "uuid";
 import wu from "wu";
 import { Source } from "./source";
 import { Custom } from "./sources/custom";
