@@ -27,7 +27,8 @@ import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Component)
-import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption
+import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator
+import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption exposing (ConfigOption)
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (Deck)
 import MassiveDecks.Pages.Lobby.Configure.Diff as Diff
@@ -70,6 +71,13 @@ init =
 update : Shared -> Msg -> Model -> Config -> ( Model, Shared, Cmd msg )
 update shared msg model config =
     case msg of
+        NameChange updatedName ->
+            let
+                localConfig =
+                    model.localConfig
+            in
+            ( { model | localConfig = { localConfig | name = updatedName } }, shared, Cmd.none )
+
         PrivacyMsg privacyMsg ->
             let
                 localConfig =
@@ -209,8 +217,8 @@ view wrap wrapLobby shared return canEdit model gameCode lobby =
         [ return |> Maybe.map returnButton |> Maybe.withDefault Html.nothing
         , Wl.card []
             [ Html.div [ HtmlA.class "title" ]
-                [ Html.h2 [] [ lobby.name |> Html.text ]
-                , Html.div []
+                [ Component.view (componentById NameId) wrap shared model model.localConfig lobby.config (wrap NoOp) canEdit ConfigOption.Local |> Maybe.withDefault Html.nothing
+                , Html.div [ HtmlA.class "joining" ]
                     [ Invite.button wrapLobby shared
                     , Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared
                     ]
@@ -327,7 +335,8 @@ resolveButton wrap shared conflict source description =
 
 default : Config
 default =
-    { decks = Decks.default
+    { name = ""
+    , decks = Decks.default
     , privacy = Privacy.default
     , rules = Rules.default
     , version = ""
@@ -338,7 +347,8 @@ all : Component Config Model Id Msg msg
 all =
     Component.group All
         Nothing
-        [ Decks.All |> DecksId |> componentById
+        [ NameId |> componentById
+        , Decks.All |> DecksId |> componentById
         , Privacy.All |> PrivacyId |> componentById
         , TimeLimits.All |> TimeLimitsId |> componentById
         , Rules.All |> RulesId |> componentById
@@ -350,6 +360,9 @@ componentById id =
     case id of
         All ->
             all
+
+        NameId ->
+            name |> Component.liftConfig .name (\n -> \c -> { c | name = n })
 
         DecksId decksId ->
             decksId
@@ -376,6 +389,34 @@ componentById id =
             rulesId
                 |> Rules.componentById
                 |> Component.lift RulesId RulesMsg .rules (\r -> \c -> { c | rules = r }) .rules
+
+
+name : Component String Model Id Msg msg
+name =
+    Component.value
+        NameId
+        (ConfigOption.view nameOption)
+        (always False)
+        Validator.nonEmpty
+
+
+nameOption : ConfigOption Model String Msg msg
+nameOption =
+    { id = "name-option"
+    , toggleable = Nothing
+    , primaryEditor =
+        \_ ->
+            ConfigOption.TextField
+                { placeholder = Strings.LobbyNameLabel
+                , inputType = Nothing
+                , toString = Just
+                , fromString = Just
+                , attrs = [ WlA.minLength 1, WlA.maxLength 100 ]
+                }
+    , extraEditor = \_ -> \_ -> \_ -> Nothing
+    , set = ConfigOption.wrappedSetter NameChange
+    , messages = \_ -> []
+    }
 
 
 mergeChange : Config -> Config -> Config -> Model -> Model

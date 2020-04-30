@@ -13,10 +13,22 @@
   .title {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
 
     .game-code {
       font-size: 1.5em;
+    }
+
+    #name-option {
+      flex-grow: 1;
+      flex-basis: 6em;
+    }
+
+    .joining {
+      display: flex;
+      align-items: center;
     }
   }
 

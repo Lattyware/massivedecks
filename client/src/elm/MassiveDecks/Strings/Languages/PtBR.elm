@@ -479,6 +479,12 @@ translate mdString =
             [ Text (String.fromInt numberOfCards) ]
 
         -- Lobby
+        LobbyNameLabel ->
+            [ Text "Game Name" ]
+
+        DefaultLobbyName { owner } ->
+            [ Text owner, Text "'s Game" ]
+
         Invite ->
             [ Text "Convide pessoas ao jogo." ]
 

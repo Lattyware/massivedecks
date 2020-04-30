@@ -58,7 +58,7 @@ function applyHouseRules(
   return {
     result: { ...updated, rando: result },
     events,
-    tasks
+    tasks,
   };
 }
 
@@ -75,7 +75,7 @@ function applyRules(
   return {
     result: { ...updated, houseRules: result },
     events,
-    tasks
+    tasks,
   };
 }
 
@@ -93,7 +93,7 @@ function apply(
   const allTasks = [...tasks];
   for (const deck of updated.decks) {
     const resolver = Sources.limitedResolver(deck.source);
-    const matching = existing.decks.find(ed => resolver.equals(ed.source));
+    const matching = existing.decks.find((ed) => resolver.equals(ed.source));
     if (matching === undefined) {
       allTasks.push(new LoadDeckSummary(gameCode, deck.source));
     }
@@ -103,10 +103,10 @@ function apply(
       ...updated,
       version: existing.version + 1,
       rules: result,
-      public: updated.public !== undefined ? updated.public : false
+      public: updated.public !== undefined ? updated.public : false,
     },
     events,
-    tasks: allTasks
+    tasks: allTasks,
   };
 }
 
@@ -172,18 +172,18 @@ class ConfigureActions extends Actions.Implementation<
     const testVersion: TestOperation = {
       op: "test",
       path: "/version",
-      value: version.toString()
+      value: version.toString(),
     };
     const replaceVersion: ReplaceOperation = {
       op: "replace",
       path: "/version",
-      value: lobby.config.version.toString()
+      value: lobby.config.version.toString(),
     };
     const patch = [testVersion, ...action.change, replaceVersion];
     return {
       lobby,
       events: [Event.targetAll(Configured.of(patch)), ...events],
-      tasks: tasks
+      tasks: tasks,
     };
   };
 }

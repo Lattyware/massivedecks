@@ -8,7 +8,8 @@ import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model as TimeLimits
 
 
 type Msg
-    = DecksMsg Decks.Msg
+    = NameChange String
+    | DecksMsg Decks.Msg
     | PrivacyMsg Privacy.Msg
     | TimeLimitsMsg TimeLimits.Msg
     | RulesMsg Rules.Msg

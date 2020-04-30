@@ -8,10 +8,14 @@ import * as Validation from "../validation.validator";
 export interface RegisterUser {
   /**
    * The name the user wishes to use.
+   * @minLength 1
+   * @maxLength 100
    */
   name: User.Name;
   /**
    * The lobby password, if there is one, this must be given and correct.
+   * @minLength 1
+   * @maxLength 100
    */
   password?: string;
 }

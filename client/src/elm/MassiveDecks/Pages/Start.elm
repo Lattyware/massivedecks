@@ -128,7 +128,10 @@ update shared msg model =
         StartGame httpDataMsg ->
             let
                 ( nlr, cmd ) =
-                    HttpData.update (startGameRequest model.name) httpDataMsg model.newLobbyRequest
+                    HttpData.update
+                        (startGameRequest (Strings.DefaultLobbyName { owner = model.name } |> Lang.string shared) model.name)
+                        httpDataMsg
+                        model.newLobbyRequest
             in
             ( { model | newLobbyRequest = nlr }, cmd )
 
@@ -257,13 +260,13 @@ overlay shared content =
             Html.nothing
 
 
-startGameRequest : String -> HttpData.Pull Global.Msg
-startGameRequest name =
+startGameRequest : String -> String -> HttpData.Pull Global.Msg
+startGameRequest gameName userName =
     Api.newLobby
         ((HttpData.Response >> StartGame >> Global.StartMsg)
-            |> Request.intercept Request.passthrough Request.passthrough (Request.replace (Global.JoinLobby name))
+            |> Request.intercept Request.passthrough Request.passthrough (Request.replace (Global.JoinLobby userName))
         )
-        { owner = { name = name, password = Nothing } }
+        { name = gameName, owner = { name = userName, password = Nothing } }
         |> Http.request
 
 

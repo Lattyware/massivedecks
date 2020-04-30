@@ -30,5 +30,6 @@ type alias Model =
 {-| A request to create a new lobby.
 -}
 type alias LobbyCreation =
-    { owner : User.Registration
+    { name : String
+    , owner : User.Registration
     }

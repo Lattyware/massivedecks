@@ -30,6 +30,7 @@ type Tab
 
 type Id
     = All
+    | NameId
     | DecksId Decks.Id
     | PrivacyId Privacy.Id
     | TimeLimitsId TimeLimits.Id
@@ -50,7 +51,8 @@ type alias Model =
 {-| Configuration for a lobby.
 -}
 type alias Config =
-    { rules : Rules
+    { name : String
+    , rules : Rules
     , decks : Decks.Config
     , privacy : Privacy.Config
     , version : String
@@ -61,7 +63,8 @@ type alias Config =
 -}
 fake : Config
 fake =
-    { rules =
+    { name = "A Game"
+    , rules =
         { handSize = 0
         , scoreLimit = Nothing
         , houseRules =

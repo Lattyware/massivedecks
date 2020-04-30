@@ -6,6 +6,7 @@ import * as Rules from "../games/rules";
  */
 export interface Config {
   version: Version;
+  name: string;
   rules: Rules.Rules;
   public: boolean;
   password?: string;
@@ -16,8 +17,18 @@ export type Version = number;
 
 export interface Public {
   version: string;
+  /**
+   * The name of the lobby.
+   * @minLength 1
+   * @maxLength 100
+   */
+  name: string;
   rules: Rules.Public;
   public?: boolean;
+  /**
+   * The password for the lobby.
+   * @maxLength 100
+   */
   password?: string;
   decks: ConfiguredSource[];
 }
@@ -53,8 +64,9 @@ export const isFailed = (source: ConfiguredSource): source is FailedSource =>
 
 export const censor = (config: Config): Public => ({
   version: config.version.toString(),
+  name: config.name,
   rules: Rules.censor(config.rules),
   decks: config.decks,
   ...(config.public ? { public: true } : {}),
-  ...(config.password !== undefined ? { password: config.password } : {})
+  ...(config.password !== undefined ? { password: config.password } : {}),
 });

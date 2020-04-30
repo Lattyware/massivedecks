@@ -133,6 +133,8 @@ type MdString
     | DrawDescription { numberOfCards : Int } -- A description of game rules where the user gets to draw more cards.
     | NumberOfCards { numberOfCards : Int } -- A number of cards as a single-digit number. This will be enhanced to render specially as a circle with the number in.
       -- Lobby
+    | LobbyNameLabel -- A label for a lobby name field.
+    | DefaultLobbyName { owner : String } -- The string that is used for the name of a new game by default, given the owner's username.
     | Invite -- A description of the action of inviting players to the game.
     | InviteExplanation { gameCode : String, password : Maybe String } -- An explanation of how players can join the game using the given game code and, potentially, password.
     | InviteLinkHelp -- An explanation that the users can send the link to people to invite them to the game.

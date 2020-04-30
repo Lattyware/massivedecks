@@ -52,8 +52,7 @@ type alias Model =
 {-| A lobby.
 -}
 type alias Lobby =
-    { name : String
-    , public : Bool
+    { public : Bool
     , users : Dict User.Id User
     , owner : User.Id
     , config : Configure.Config

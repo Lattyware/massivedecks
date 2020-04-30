@@ -389,7 +389,7 @@ view wrap wrapSettings changePage shared model =
             let
                 viewContent _ auth timeAnchor lobby =
                     lobby.game
-                        |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.name lobby.config lobby.users)
+                        |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.config.name lobby.config lobby.users)
                         |> Maybe.withDefault (Html.div [] [ Strings.GameNotStartedError |> Lang.html shared ])
             in
             viewWithUsers wrap wrapSettings shared s viewContent model

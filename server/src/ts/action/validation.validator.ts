@@ -234,8 +234,7 @@ export const Schema = {
       description: "The details needed to create a new lobby.",
       properties: {
         name: {
-          description:
-            'The name of the lobby, if not given, will default to "Name\'s Game".',
+          description: "The name of the lobby.",
           type: "string",
         },
         owner: {
@@ -243,7 +242,7 @@ export const Schema = {
           description: "The registration for the owner of the lobby.",
         },
       },
-      required: ["owner"],
+      required: ["name", "owner"],
       type: "object",
     },
     Details: {
@@ -497,7 +496,15 @@ export const Schema = {
           },
           type: "array",
         },
+        name: {
+          description: "The name of the lobby.",
+          maxLength: 100,
+          minLength: 1,
+          type: "string",
+        },
         password: {
+          description: "The password for the lobby.",
+          maxLength: 100,
           type: "string",
         },
         public: {
@@ -510,7 +517,7 @@ export const Schema = {
           type: "string",
         },
       },
-      required: ["decks", "rules", "version"],
+      required: ["decks", "name", "rules", "version"],
       type: "object",
     },
     Public_1: {
@@ -594,10 +601,14 @@ export const Schema = {
         name: {
           $ref: "#/definitions/Name",
           description: "The name the user wishes to use.",
+          maxLength: 100,
+          minLength: 1,
         },
         password: {
           description:
             "The lobby password, if there is one, this must be given and correct.",
+          maxLength: 100,
+          minLength: 1,
           type: "string",
         },
       },

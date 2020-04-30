@@ -7,9 +7,9 @@ import { RegisterUser } from "./register-user";
  */
 export interface CreateLobby {
   /**
-   * The name of the lobby, if not given, will default to "Name's Game".
+   * The name of the lobby.
    */
-  name?: string;
+  name: string;
   /**
    * The registration for the owner of the lobby.
    */

@@ -60,7 +60,8 @@ config : Config -> Json.Value
 config c =
     Json.object
         (List.filterMap identity
-            [ Just ( "rules", c.rules |> rules )
+            [ Just ( "name", c.name |> Json.string )
+            , Just ( "rules", c.rules |> rules )
             , Just ( "decks", c.decks |> decks )
             , Just ( "version", c.version |> Json.string )
             , ( "public", True |> Json.bool ) |> Maybe.justIf c.privacy.public
@@ -300,7 +301,7 @@ cardSize =
 lobbyCreation : Start.LobbyCreation -> Json.Value
 lobbyCreation c =
     Json.object
-        [ ( "owner", c.owner |> userRegistration ) ]
+        [ ( "name", c.name |> Json.string ), ( "owner", c.owner |> userRegistration ) ]
 
 
 remoteControlCommand : Cast.RemoteControlCommand -> Json.Value

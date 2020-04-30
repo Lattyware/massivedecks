@@ -214,8 +214,7 @@ languageFromCode code =
 
 lobby : Json.Decoder Lobby
 lobby =
-    Json.map7 Lobby
-        (Json.field "name" Json.string)
+    Json.map6 Lobby
         (Json.field "public" Json.bool)
         (Json.field "users" users)
         (Json.field "owner" userId)
@@ -238,7 +237,8 @@ game =
 
 config : Json.Decoder Configure.Config
 config =
-    Json.map4 Configure.Config
+    Json.map5 Configure.Config
+        (Json.field "name" Json.string)
         (Json.field "rules" rules)
         (Json.field "decks" (Json.list deckOrError))
         privacyConfig

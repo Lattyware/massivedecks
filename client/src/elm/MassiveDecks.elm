@@ -336,7 +336,7 @@ view model =
         title =
             case model.page of
                 Pages.Lobby m ->
-                    m.lobby |> Maybe.map (\l -> l.name ++ " (" ++ (m.auth.claims.gc |> GameCode.toString) ++ ")")
+                    m.lobby |> Maybe.map (\l -> l.config.name ++ " (" ++ (m.auth.claims.gc |> GameCode.toString) ++ ")")
 
                 _ ->
                     Nothing

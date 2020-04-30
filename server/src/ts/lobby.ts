@@ -14,7 +14,6 @@ import * as Util from "./util";
  * A game lobby.
  */
 export interface Lobby {
-  name: string;
   public: boolean;
   nextUserId: number;
   users: { [id: string]: User.User };
@@ -29,7 +28,7 @@ export const fromJSON = (object: Lobby): Lobby =>
     ...object,
     ...(object.game !== undefined
       ? { game: Game.Game.fromJSON(object.game) }
-      : {})
+      : {}),
   } as Lobby);
 
 /**
@@ -47,7 +46,6 @@ export const hasActiveGame = (lobby: Lobby): lobby is WithActiveGame =>
  * A game lobby containing only state all users can see.
  */
 export interface Public {
-  name: string;
   public: boolean;
   users: { [id: string]: User.Public };
   owner: User.Id;
@@ -75,11 +73,12 @@ export interface Summary {
 /**
  * Create a config with default values.
  */
-export const defaultConfig = (): Config.Config => ({
+export const defaultConfig = (name: string): Config.Config => ({
   version: 0,
+  name,
   rules: Rules.create(),
   decks: [],
-  public: false
+  public: false,
 });
 
 /**
@@ -89,13 +88,12 @@ export const defaultConfig = (): Config.Config => ({
 export function create(creation: CreateLobby): Lobby {
   const id = (0).toString();
   return {
-    name: creation.name ? creation.name : `${creation.owner.name}'s Game`,
     public: false,
     nextUserId: 1,
     users: { [id]: User.create(creation.owner, "Privileged") },
     owner: id,
-    config: defaultConfig(),
-    errors: []
+    config: defaultConfig(creation.name),
+    errors: [],
   };
 }
 
@@ -111,14 +109,14 @@ export const state = (lobby: Lobby): State =>
  * @param lobby The lobby.
  */
 export const summary = (gameCode: GameCode, lobby: Lobby): Summary => ({
-  name: lobby.name,
+  name: lobby.config.name,
   gameCode: gameCode,
   state: state(lobby),
   users: Util.counts(Object.values(lobby.users), {
     players: User.isPlaying,
-    spectators: User.isSpectating
+    spectators: User.isSpectating,
   }),
-  ...(lobby.config.password !== undefined ? { password: true } : {})
+  ...(lobby.config.password !== undefined ? { password: true } : {}),
 });
 
 function usersObj(lobby: Lobby): { [id: string]: User.Public } {
@@ -130,13 +128,12 @@ function usersObj(lobby: Lobby): { [id: string]: User.Public } {
 }
 
 export const censor = (lobby: Lobby): Public => ({
-  name: lobby.name,
   public: lobby.public,
   users: usersObj(lobby),
   owner: lobby.owner,
   config: Config.censor(lobby.config),
   ...(lobby.game === undefined ? {} : { game: lobby.game.public() }),
-  ...(lobby.errors.length === 0 ? {} : { errors: lobby.errors })
+  ...(lobby.errors.length === 0 ? {} : { errors: lobby.errors }),
 });
 
 export const addUser = (
@@ -154,6 +151,6 @@ export const addUser = (
   lobby.users[id] = changedUser;
   return {
     user: id,
-    events: [Event.targetAll(PresenceChanged.joined(id, changedUser))]
+    events: [Event.targetAll(PresenceChanged.joined(id, changedUser))],
   };
 };
