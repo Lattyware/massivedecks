@@ -15,7 +15,6 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Json.Patch as Json
 import MassiveDecks.Card.Source as Source
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
@@ -84,7 +83,7 @@ view _ { wrap, shared, model, remote, canEdit } =
         hint =
             if canEdit then
                 Components.linkButton
-                    [ "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> Add |> wrap |> HtmlE.onClick
+                    [ shared |> Lang.recommended |> Add |> wrap |> HtmlE.onClick
                     ]
                     [ Strings.NoDecksHint |> Lang.html shared ]
 

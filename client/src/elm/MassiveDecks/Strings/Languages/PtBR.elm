@@ -3,6 +3,8 @@ module MassiveDecks.Strings.Languages.PtBR exposing (pack)
 {-| Brazilian Portuguese translation.
 -}
 
+import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
@@ -12,6 +14,7 @@ pack =
     { code = "ptBR"
     , name = BrazilianPortuguese
     , translate = translate
+    , recommended = "CAHBS" |> Cardcast.playCode |> Source.Cardcast
     }
 
 

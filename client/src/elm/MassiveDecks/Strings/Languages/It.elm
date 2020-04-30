@@ -2,6 +2,8 @@ module MassiveDecks.Strings.Languages.It exposing (pack)
 
 {- General Italian translation -}
 
+import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
@@ -11,6 +13,7 @@ pack =
     { code = "it"
     , name = Italian
     , translate = translate
+    , recommended = "CAHBS" |> Cardcast.playCode |> Source.Cardcast
     }
 
 

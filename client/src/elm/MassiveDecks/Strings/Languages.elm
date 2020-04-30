@@ -12,6 +12,7 @@ module MassiveDecks.Strings.Languages exposing
     , languageName
     , languages
     , placeholder
+    , recommended
     , string
     , title
     )
@@ -22,6 +23,7 @@ module MassiveDecks.Strings.Languages exposing
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages.En as EnLang
@@ -147,6 +149,13 @@ alt shared =
 label : Shared -> MdString -> Html.Attribute msg
 label shared =
     string shared >> String.capitalise >> WlA.label
+
+
+{-| Get a deck to recommend to the user if they haven't added any.
+-}
+recommended : Shared -> Source.External
+recommended shared =
+    currentLanguage shared |> pack |> .recommended
 
 
 

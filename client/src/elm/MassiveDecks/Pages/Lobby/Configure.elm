@@ -443,7 +443,7 @@ startGameSegment wrap wrapLobby shared canEdit model lobby =
             lobby.config
 
         startErrors =
-            startGameProblems wrap wrapLobby lobby.users model config
+            startGameProblems shared wrap wrapLobby lobby.users model config
 
         startGameAttrs =
             if List.isEmpty startErrors && canEdit then
@@ -458,8 +458,8 @@ startGameSegment wrap wrapLobby shared canEdit model lobby =
         (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
 
 
-startGameProblems : (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Model -> Config -> List (Message msg)
-startGameProblems wrap wrapLobby users model remote =
+startGameProblems : Shared -> (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Model -> Config -> List (Message msg)
+startGameProblems shared wrap wrapLobby users model remote =
     let
         config =
             model.localConfig
@@ -504,7 +504,7 @@ startGameProblems wrap wrapLobby users model remote =
                     Strings.NeedAtLeastOneDeck
                     [ { description = Strings.NoDecksHint
                       , icon = Icon.plus
-                      , action = "CAHBS" |> Cardcast.playCode |> Source.Cardcast |> Decks.Add |> DecksMsg |> wrap
+                      , action = shared |> Lang.recommended |> Decks.Add |> DecksMsg |> wrap
                       }
                     ]
                     |> Just

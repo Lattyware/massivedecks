@@ -3,6 +3,7 @@ module MassiveDecks.Strings.Translation exposing
     , Result(..)
     )
 
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString)
 
 
@@ -27,4 +28,7 @@ type alias Pack =
 
     -- The name that describes the language.
     , name : MdString
+
+    -- A deck to recommend to users if they haven't added one.
+    , recommended : Source.External
     }
