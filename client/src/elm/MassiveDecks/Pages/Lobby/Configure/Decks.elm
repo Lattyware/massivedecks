@@ -43,9 +43,9 @@ componentById id =
             all
 
 
-init : Model
-init =
-    { toAdd = Source.default }
+init : Shared -> Model
+init shared =
+    { toAdd = Source.default shared }
 
 
 default : Config
@@ -66,7 +66,7 @@ update shared msg model =
                 ( settings, settingsCmd ) =
                     Settings.onAddDeck source shared.settings
             in
-            ( { model | toAdd = Source.emptyMatching source }
+            ( { model | toAdd = Source.emptyMatching shared source }
             , { shared | settings = settings }
             , Cmd.batch [ Actions.configure (addDeck source), settingsCmd ]
             )
@@ -226,7 +226,7 @@ submitDeckAction wrap existing deckToAdd =
     let
         potentialProblems =
             if List.any (getSource >> Source.equals deckToAdd) existing then
-                [ Strings.DeckAlreadyAdded |> Message.error ]
+                [ Strings.DeckAlreadyAdded |> Message.info ]
 
             else
                 Source.problems deckToAdd
@@ -308,7 +308,7 @@ name wrap shared canEdit index source loading maybeError details =
                 |> Maybe.justIf canEdit
 
         ( maybeId, tooltip ) =
-            source |> Source.Ex |> Source.tooltip |> Maybe.decompose
+            source |> Source.Ex |> Source.tooltip shared |> Maybe.decompose
 
         attrs =
             maybeId |> Maybe.map (\id -> [ HtmlA.id id ]) |> Maybe.withDefault []

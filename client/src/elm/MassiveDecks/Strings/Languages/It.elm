@@ -1,8 +1,8 @@
 module MassiveDecks.Strings.Languages.It exposing (pack)
 
-{- General Italian translation -}
+{- Italian translation -}
 
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
@@ -13,7 +13,7 @@ pack =
     { code = "it"
     , name = Italian
     , translate = translate
-    , recommended = "CAHBS" |> Cardcast.playCode |> Source.Cardcast
+    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
     }
 
 
@@ -482,9 +482,11 @@ translate mdString =
             [ Text (String.fromInt numberOfCards) ]
 
         -- Lobby
+        -- TODO: Translate
         LobbyNameLabel ->
             [ Text "Game Name" ]
 
+        -- TODO: Translate
         DefaultLobbyName { owner } ->
             [ Text owner, Text "'s Game" ]
 
@@ -729,6 +731,10 @@ translate mdString =
 
         CardcastEmptyPlayCode ->
             [ Text "Inserisci il ", Ref CardcastPlayCode, Text " per il mazzo che vuoi aggiungere." ]
+
+        -- TODO: Translate
+        BuiltIn ->
+            [ Text "Built-in" ]
 
         APlayer ->
             [ Text "Un giocatore" ]

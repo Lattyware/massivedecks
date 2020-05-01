@@ -10,7 +10,7 @@ const environmental: (keyof EnvironmentalConfig)[] = [
   "listenOn",
   "basePath",
   "version",
-  "touchOnStart"
+  "touchOnStart",
 ];
 
 export interface EnvironmentalConfig {
@@ -22,6 +22,7 @@ export interface EnvironmentalConfig {
 }
 
 export interface Config<D extends Duration> extends EnvironmentalConfig {
+  sources: BaseSources<D>;
   timeouts: Timeouts<D>;
   tasks: Tasks<D>;
   storage: BaseStorage<D>;
@@ -41,6 +42,23 @@ type Tasks<D extends Duration> = {
   rateLimit: number;
   processTickFrequency: D;
 };
+
+export interface BuiltIn {
+  basePath: string;
+  decks: string[];
+}
+
+interface BaseCardcast<D extends Duration> {
+  timeout: D;
+  simultaneousConnections: number;
+}
+export type Cardcast = BaseCardcast<ParsedDuration>;
+
+interface BaseSources<D extends Duration> {
+  builtIn?: BuiltIn;
+  cardcast?: BaseCardcast<D>;
+}
+export type Sources = BaseSources<ParsedDuration>;
 
 type BaseStorage<D extends Duration> = BaseInMemory<D> | BasePostgreSQL<D>;
 export type Storage = BaseStorage<ParsedDuration>;
@@ -100,14 +118,14 @@ export const parseStorage = (
 ): BaseStorage<ParsedDuration> => ({
   ...storage,
   abandonedTime: parseDuration(storage.abandonedTime),
-  garbageCollectionFrequency: parseDuration(storage.garbageCollectionFrequency)
+  garbageCollectionFrequency: parseDuration(storage.garbageCollectionFrequency),
 });
 
 export const parseCache = (
   cache: BaseCache<UnparsedDuration>
 ): BaseCache<ParsedDuration> => ({
   ...cache,
-  checkAfter: parseDuration(cache.checkAfter)
+  checkAfter: parseDuration(cache.checkAfter),
 });
 
 export const parseTimeouts = (
@@ -121,7 +139,19 @@ export const parseTasks = (
   tasks: Tasks<UnparsedDuration>
 ): Tasks<ParsedDuration> => ({
   ...tasks,
-  processTickFrequency: parseDuration(tasks.processTickFrequency)
+  processTickFrequency: parseDuration(tasks.processTickFrequency),
+});
+
+const parseCardcast = (cardcast: BaseCardcast<UnparsedDuration>): Cardcast => ({
+  ...cardcast,
+  timeout: parseDuration(cardcast.timeout),
+});
+
+const parseSources = (sources: BaseSources<UnparsedDuration>): Sources => ({
+  ...(sources.builtIn !== undefined ? { builtIn: sources.builtIn } : {}),
+  ...(sources.cardcast !== undefined
+    ? { cardcast: parseCardcast(sources.cardcast) }
+    : {}),
 });
 
 export const pullFromEnvironment = (config: Parsed): Parsed => {
@@ -141,8 +171,9 @@ export const pullFromEnvironment = (config: Parsed): Parsed => {
 export const parse = (config: Unparsed): Parsed =>
   pullFromEnvironment({
     ...config,
+    sources: parseSources(config.sources),
     timeouts: parseTimeouts(config.timeouts),
     tasks: parseTasks(config.tasks),
     storage: parseStorage(config.storage),
-    cache: parseCache(config.cache)
+    cache: parseCache(config.cache),
   });

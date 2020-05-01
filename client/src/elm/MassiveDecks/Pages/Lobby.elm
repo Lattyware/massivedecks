@@ -82,16 +82,16 @@ init shared r auth =
                 ]
     in
     fallbackAuth
-        |> Maybe.map (initWithAuth r >> Route.Continue)
+        |> Maybe.map (initWithAuth shared r >> Route.Continue)
         |> Maybe.withDefault (Route.Redirect (Route.Start { section = Start.Join (Just r.gameCode) }))
 
 
-initWithAuth : Route -> Auth -> ( Model, Cmd msg )
-initWithAuth r auth =
+initWithAuth : Shared -> Route -> Auth -> ( Model, Cmd msg )
+initWithAuth shared r auth =
     ( { route = r
       , auth = auth
       , lobby = Nothing
-      , configure = Configure.init
+      , configure = Configure.init shared
       , notificationId = 0
       , notifications = []
       , inviteDialogOpen = False

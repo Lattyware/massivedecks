@@ -13,5 +13,5 @@ methods =
             { name = ""
             , url = Nothing
             }
-    , tooltip = \() -> Nothing
+    , tooltip = \_ -> Nothing
     }

@@ -16,6 +16,7 @@ module MassiveDecks.Models.Decoders exposing
     , remoteControlCommand
     , revealingRound
     , settings
+    , sourceInfo
     , tokenValidity
     , userId
     , userSummary
@@ -28,6 +29,7 @@ import Json.Patch
 import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -52,6 +54,26 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User exposing (User)
 import Set exposing (Set)
+
+
+sourceInfo : Json.Decoder Source.Info
+sourceInfo =
+    Json.succeed Source.Info
+        |> Json.optional "builtIn" (builtInInfo |> Json.map Just) Nothing
+        |> Json.optional "cardcast" Json.bool False
+
+
+builtInInfo : Json.Decoder Source.BuiltInInfo
+builtInInfo =
+    Json.succeed Source.BuiltInInfo
+        |> Json.required "decks" (Json.list builtInDeck)
+
+
+builtInDeck : Json.Decoder Source.BuiltInDeck
+builtInDeck =
+    Json.succeed Source.BuiltInDeck
+        |> Json.required "name" Json.string
+        |> Json.required "id" (Json.string |> Json.map BuiltIn.Id)
 
 
 unknownValue : String -> String -> Json.Decoder a
@@ -182,6 +204,9 @@ externalSource =
 externalSourceByName : String -> Json.Decoder Source.External
 externalSourceByName name =
     case name of
+        "BuiltIn" ->
+            Json.field "id" Json.string |> Json.map (BuiltIn.Id >> Source.BuiltIn)
+
         "Cardcast" ->
             Json.field "playCode" Json.string |> Json.map (Cardcast.playCode >> Source.Cardcast)
 
@@ -869,32 +894,60 @@ parts =
 part : Json.Decoder Part
 part =
     Json.oneOf
-        [ Json.string |> Json.map Parts.Text
-        , transform |> Json.map Parts.Slot
+        [ Json.string |> Json.map (\t -> Parts.Text t Parts.NoStyle)
+        , styled
+        , slot
         ]
+
+
+slot : Json.Decoder Parts.Part
+slot =
+    Json.succeed Parts.Slot
+        |> Json.optional "transform" transform Parts.NoTransform
+        |> Json.optional "style" style Parts.NoStyle
+
+
+styled : Json.Decoder Parts.Part
+styled =
+    Json.succeed Parts.Text
+        |> Json.required "text" Json.string
+        |> Json.optional "style" style Parts.NoStyle
 
 
 transform : Json.Decoder Parts.Transform
 transform =
-    Json.maybe (Json.field "transform" Json.string) |> Json.andThen transformByName
+    Json.string |> Json.andThen transformByName
 
 
-transformByName : Maybe String -> Json.Decoder Parts.Transform
-transformByName maybeName =
-    case maybeName of
-        Nothing ->
-            Json.succeed Parts.Stay
+transformByName : String -> Json.Decoder Parts.Transform
+transformByName name =
+    case name of
+        "UpperCase" ->
+            Json.succeed Parts.UpperCase
 
-        Just name ->
-            case name of
-                "UpperCase" ->
-                    Json.succeed Parts.UpperCase
+        "Capitalize" ->
+            Json.succeed Parts.Capitalize
 
-                "Capitalize" ->
-                    Json.succeed Parts.Capitalize
+        _ ->
+            unknownValue "transform" name
 
-                _ ->
-                    unknownValue "transform" name
+
+style : Json.Decoder Parts.Style
+style =
+    Json.string |> Json.andThen styleByName
+
+
+styleByName : String -> Json.Decoder Parts.Style
+styleByName name =
+    case name of
+        "Em" ->
+            Json.succeed Parts.Em
+
+        "Strong" ->
+            Json.succeed Parts.Strong
+
+        _ ->
+            unknownValue "style" name
 
 
 round : Json.Decoder Round

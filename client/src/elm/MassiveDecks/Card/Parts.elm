@@ -1,6 +1,7 @@
 module MassiveDecks.Card.Parts exposing
     ( Part(..)
     , Parts
+    , Style(..)
     , Transform(..)
     , fromList
     , map
@@ -19,16 +20,24 @@ import MassiveDecks.Util.String as String
 {-| A transform to apply to the value in a slot.
 -}
 type Transform
-    = UpperCase
+    = NoTransform
+    | UpperCase
     | Capitalize
-    | Stay
+
+
+{-| A style to be applied to some text.
+-}
+type Style
+    = NoStyle
+    | Em
+    | Strong
 
 
 {-| A part of a call's text. This is either just text or a position for a call to be inserted in-game.
 -}
 type Part
-    = Text String
-    | Slot Transform
+    = Text String Style
+    | Slot Transform Style
 
 
 {-| Represents a line as a part of a part. Between each one the text will be forced to line break.
@@ -48,10 +57,10 @@ type Parts
 isSlot : Part -> Bool
 isSlot part =
     case part of
-        Text _ ->
+        Text _ _ ->
             False
 
-        Slot _ ->
+        Slot _ _ ->
             True
 
 
@@ -136,18 +145,18 @@ viewLinesString blankPhrase =
     viewLines (\s -> \p -> viewPartsString blankPhrase s p |> String.join "")
 
 
-viewParts : (Bool -> String -> List a) -> a -> List String -> List Part -> List a
+viewParts : (Bool -> String -> Style -> List a) -> a -> List String -> List Part -> List a
 viewParts viewText emptySlot play parts =
     case parts of
         firstPart :: restParts ->
             case firstPart of
-                Text string ->
-                    viewText False string ++ viewParts viewText emptySlot play restParts
+                Text string style ->
+                    viewText False string style ++ viewParts viewText emptySlot play restParts
 
-                Slot transform ->
+                Slot transform style ->
                     case play of
                         firstPlay :: restPlay ->
-                            viewText True (applyTransform transform firstPlay) ++ viewParts viewText emptySlot restPlay restParts
+                            viewText True (applyTransform transform firstPlay) style ++ viewParts viewText emptySlot restPlay restParts
 
                         [] ->
                             emptySlot :: viewParts viewText emptySlot [] restParts
@@ -163,27 +172,38 @@ viewPartsHtml =
 
 viewPartsString : String -> List String -> List Part -> List String
 viewPartsString blankPhrase =
-    viewParts (\_ -> \s -> [ s ]) blankPhrase
+    viewParts (\_ -> \s -> \_ -> [ s ]) blankPhrase
 
 
 applyTransform : Transform -> String -> String
 applyTransform transform value =
     case transform of
+        NoTransform ->
+            value
+
         UpperCase ->
             String.toUpper value
 
         Capitalize ->
             String.capitalise value
 
-        Stay ->
-            value
 
-
-viewTextHtml : Bool -> String -> List (Html msg)
-viewTextHtml slot string =
+viewTextHtml : Bool -> String -> Style -> List (Html msg)
+viewTextHtml slot string style =
     let
+        element =
+            case style of
+                NoStyle ->
+                    Html.span
+
+                Em ->
+                    Html.em
+
+                Strong ->
+                    Html.strong
+
         words =
-            string |> splitWords |> List.map (\word -> Html.span [] [ Html.text word ])
+            string |> splitWords |> List.map (\word -> element [] [ Html.text word ])
     in
     if slot then
         [ Html.span [ HtmlA.class "slot" ] words ]

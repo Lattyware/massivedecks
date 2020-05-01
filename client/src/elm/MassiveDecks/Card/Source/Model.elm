@@ -1,11 +1,15 @@
 module MassiveDecks.Card.Source.Model exposing
-    ( Details
+    ( BuiltInDeck
+    , BuiltInInfo
+    , Details
     , External(..)
+    , Info
     , LoadFailureReason(..)
     , Source(..)
     , Summary
     )
 
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 
 
@@ -31,7 +35,8 @@ sources are more limited and specific.
 
 -}
 type External
-    = Cardcast Cardcast.PlayCode
+    = BuiltIn BuiltIn.Id
+    | Cardcast Cardcast.PlayCode
 
 
 {-| A summary of the contents of the source deck.
@@ -56,3 +61,19 @@ type alias Details =
 type LoadFailureReason
     = SourceFailure
     | NotFound
+
+
+{-| Information about what sources are available from the server.
+-}
+type alias Info =
+    { builtIn : Maybe BuiltInInfo
+    , cardcast : Bool
+    }
+
+
+type alias BuiltInInfo =
+    { decks : List BuiltInDeck }
+
+
+type alias BuiltInDeck =
+    { name : String, id : BuiltIn.Id }

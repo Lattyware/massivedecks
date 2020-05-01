@@ -3,7 +3,7 @@ module MassiveDecks.Strings.Languages.PtBR exposing (pack)
 {-| Brazilian Portuguese translation.
 -}
 
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
@@ -14,7 +14,7 @@ pack =
     { code = "ptBR"
     , name = BrazilianPortuguese
     , translate = translate
-    , recommended = "CAHBS" |> Cardcast.playCode |> Source.Cardcast
+    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
     }
 
 
@@ -482,9 +482,11 @@ translate mdString =
             [ Text (String.fromInt numberOfCards) ]
 
         -- Lobby
+        -- TODO: Translate
         LobbyNameLabel ->
             [ Text "Game Name" ]
 
+        -- TODO: Translate
         DefaultLobbyName { owner } ->
             [ Text owner, Text "'s Game" ]
 
@@ -729,6 +731,10 @@ translate mdString =
 
         CardcastEmptyPlayCode ->
             [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deck que você queira adicionar." ]
+
+        -- TODO: Translate
+        BuiltIn ->
+            [ Text "Built-in" ]
 
         APlayer ->
             [ Text "Um jogador" ]

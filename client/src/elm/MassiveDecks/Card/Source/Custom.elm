@@ -15,7 +15,7 @@ methods =
             { name = name shared
             , url = Nothing
             }
-    , tooltip = \() -> Nothing
+    , tooltip = \_ -> Nothing
     }
 
 

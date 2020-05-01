@@ -16,6 +16,7 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Util.String as String
+import Regex exposing (Regex)
 
 
 {-| Render the response to HTML.
@@ -71,9 +72,23 @@ viewCustom shared config side update canonicalize attributes response fill =
 {- Private -}
 
 
+punctuation : Regex
+punctuation =
+    -- TODO: This should probably get localized.
+    Regex.fromString "[.?!]$" |> Maybe.withDefault Regex.never
+
+
 viewBody : Response -> ViewBody msg
 viewBody response =
-    ViewBody (\() -> [ Html.p [] [ Html.span [] [ response.body |> String.capitalise |> Html.text ] ] ])
+    let
+        end =
+            if response.body |> Regex.contains punctuation then
+                []
+
+            else
+                [ Html.text "." ]
+    in
+    ViewBody (\() -> [ Html.p [] [ Html.span [] ((response.body |> String.capitalise |> Html.text) :: end) ] ])
 
 
 viewCustomBody : String -> (String -> msg) -> (String -> msg) -> String -> Maybe String -> ViewBody msg

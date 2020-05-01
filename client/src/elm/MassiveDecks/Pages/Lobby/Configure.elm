@@ -56,11 +56,11 @@ import Weightless as Wl
 import Weightless.Attributes as WlA
 
 
-init : Model
-init =
+init : Shared -> Model
+init shared =
     { localConfig = default
     , tab = Decks
-    , decks = Decks.init
+    , decks = Decks.init shared
     , privacy = Privacy.init
     , timeLimits = TimeLimits.init
     , rules = Rules.init

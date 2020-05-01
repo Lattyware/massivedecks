@@ -74,7 +74,7 @@ type alias ExternalGeneralMethods msg =
 -}
 type alias IsSpecific general msg =
     { general
-        | tooltip : () -> Maybe ( String, Html msg )
+        | tooltip : Shared -> Maybe ( String, Html msg )
         , defaultDetails : Shared -> Details
     }
 
@@ -93,5 +93,6 @@ type alias IsSpecificExternal general msg =
 -}
 type alias IsGeneralExternal rest =
     { rest
-        | empty : () -> External
+        | empty : Shared -> External
+        , id : () -> String
     }

@@ -23,6 +23,7 @@ module MassiveDecks.Models.Encoders exposing
 
 import Dict
 import Json.Encode as Json
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -325,6 +326,9 @@ source s =
     case s of
         Source.Cardcast (Cardcast.PlayCode playCode) ->
             Json.object [ ( "source", "Cardcast" |> Json.string ), ( "playCode", playCode |> Json.string ) ]
+
+        Source.BuiltIn (BuiltIn.Id id) ->
+            Json.object [ ( "source", "BuiltIn" |> Json.string ), ( "id", id |> Json.string ) ]
 
 
 language : Language -> Json.Value

@@ -6,6 +6,7 @@ import * as Errors from "../errors";
 import * as Round from "../games/game/round";
 import * as Player from "../games/player";
 import * as User from "../user";
+import * as Source from "../games/cards/source";
 
 abstract class ActionExecutionError extends Errors.MassiveDecksError<
   Errors.Details
@@ -31,7 +32,7 @@ export class GameNotStartedError extends ActionExecutionError {
   }
 
   public details = (): Errors.Details => ({
-    error: "GameNotStarted"
+    error: "GameNotStarted",
   });
 }
 
@@ -49,7 +50,7 @@ export class UnprivilegedError extends ActionExecutionError {
   }
 
   public details = (): Errors.Details => ({
-    error: "Unprivileged"
+    error: "Unprivileged",
   });
 }
 
@@ -81,7 +82,7 @@ export class IncorrectPlayerRoleError extends ActionExecutionError {
   public details = (): IncorrectPlayerRoleDetails => ({
     error: "IncorrectPlayerRole",
     role: this.role,
-    expected: this.expected
+    expected: this.expected,
   });
 }
 
@@ -109,7 +110,7 @@ export class IncorrectUserRoleError extends ActionExecutionError {
   public details = (): IncorrectUserRoleDetails => ({
     error: "IncorrectUserRole",
     role: this.role,
-    expected: this.expected
+    expected: this.expected,
   });
 }
 
@@ -141,7 +142,7 @@ export class IncorrectRoundStageError extends ActionExecutionError {
   public details = (): IncorrectRoundStageDetails => ({
     error: "IncorrectRoundStage",
     stage: this.stage,
-    expected: this.expected
+    expected: this.expected,
   });
 }
 
@@ -170,6 +171,48 @@ export class ConfigEditConflictError extends ActionExecutionError {
   public details = (): ConfigEditConflictDetails => ({
     error: "ConfigEditConflict",
     version: this.version,
-    expected: this.expected
+    expected: this.expected,
+  });
+}
+
+interface SourceErrorDetails extends Errors.Details {
+  source: Source.External;
+}
+
+// Happens if the user asks for a deck that doesn't exist.
+export class SourceNotFoundError extends ActionExecutionError {
+  public readonly source: Source.External;
+
+  public constructor(source: Source.External) {
+    super(
+      `The given deck (${source}) was not found at the source.`,
+      (undefined as unknown) as Action
+    );
+    this.source = source;
+    Error.captureStackTrace(this, SourceNotFoundError);
+  }
+
+  public details = (): SourceErrorDetails => ({
+    error: "SourceServiceError",
+    source: this.source,
+  });
+}
+
+// Happens if the deck service is down.
+export class SourceServiceError extends ActionExecutionError {
+  public readonly source: Source.External;
+
+  public constructor(source: Source.External) {
+    super(
+      `The given deck source (${source.source}) was not available.`,
+      (undefined as unknown) as Action
+    );
+    this.source = source;
+    Error.captureStackTrace(this, SourceServiceError);
+  }
+
+  public details = (): SourceErrorDetails => ({
+    error: "SourceServiceError",
+    source: this.source,
   });
 }

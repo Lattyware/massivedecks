@@ -141,6 +141,22 @@ export const Schema = {
       required: ["action", "token"],
       type: "object",
     },
+    BuiltIn: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A source for built-in decks..",
+      properties: {
+        id: {
+          type: "string",
+        },
+        source: {
+          enum: ["BuiltIn"],
+          type: "string",
+        },
+      },
+      required: ["id", "source"],
+      type: "object",
+    },
     Cardcast: {
       additionalProperties: false,
       defaultProperties: [],
@@ -295,8 +311,15 @@ export const Schema = {
       type: "object",
     },
     External: {
-      $ref: "#/definitions/Cardcast",
-      description: "A source for Cardcast.",
+      anyOf: [
+        {
+          $ref: "#/definitions/BuiltIn",
+        },
+        {
+          $ref: "#/definitions/Cardcast",
+        },
+      ],
+      description: "An external source for a card or deck.",
     },
     FailReason: {
       description: "The reason a deck could not be loaded.",

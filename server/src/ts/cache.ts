@@ -40,13 +40,16 @@ export abstract class Cache {
    */
   public abstract readonly config: ServerConfig.Cache;
 
-  private async get<Always extends Tagged, Sometimes extends Tagged, Result>(
-    source: Source.Resolver,
-    getCachedAlways: (
-      source: Source.Resolver
-    ) => Promise<Aged<Always> | undefined>,
-    cacheAlways: (source: Source.Resolver, value: Always) => void,
-    cacheSometimes: (source: Source.Resolver, value: Sometimes) => void,
+  private async get<
+    Always extends Tagged,
+    Sometimes extends Tagged,
+    Resolver extends Source.Resolver<Source.External>,
+    Result
+  >(
+    source: Resolver,
+    getCachedAlways: (source: Resolver) => Promise<Aged<Always> | undefined>,
+    cacheAlways: (source: Resolver, value: Always) => void,
+    cacheSometimes: (source: Resolver, value: Sometimes) => void,
     extract: (result: Result) => [Always, Sometimes | undefined],
     miss: () => Promise<Result>
   ): Promise<Always> {
@@ -64,7 +67,7 @@ export abstract class Cache {
   }
 
   private async cacheExpired(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     cached: Aged<Tagged>
   ): Promise<boolean> {
     if (
@@ -85,7 +88,7 @@ export abstract class Cache {
    *             to do so.
    */
   public async getSummary(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     miss: () => Promise<Source.AtLeastSummary>
   ): Promise<Source.Summary> {
     return this.get(
@@ -93,7 +96,7 @@ export abstract class Cache {
       this.getCachedSummary.bind(this),
       this.cacheSummaryBackground.bind(this),
       this.cacheTemplatesBackground.bind(this),
-      result => [result.summary, result.templates],
+      (result) => [result.summary, result.templates],
       miss
     );
   }
@@ -107,7 +110,7 @@ export abstract class Cache {
    *             to do so.
    */
   public async getTemplates(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     miss: () => Promise<Source.AtLeastTemplates>
   ): Promise<Decks.Templates> {
     return this.get(
@@ -115,7 +118,7 @@ export abstract class Cache {
       this.getCachedTemplates.bind(this),
       this.cacheTemplatesBackground.bind(this),
       this.cacheSummaryBackground.bind(this),
-      result => [result.templates, result.summary],
+      (result) => [result.templates, result.summary],
       miss
     );
   }
@@ -124,19 +127,19 @@ export abstract class Cache {
    * Get the given summary from the cache.
    */
   public abstract async getCachedSummary(
-    source: Source.Resolver
+    source: Source.Resolver<Source.External>
   ): Promise<Aged<Source.Summary> | undefined>;
 
   /**
    * Store the given summary in the cache.
    */
   public abstract async cacheSummary(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     summary: Source.Summary
   ): Promise<void>;
 
   public cacheSummaryBackground(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     summary: Source.Summary
   ): void {
     this.cacheSummary(source, summary).catch(Cache.logError);
@@ -146,19 +149,19 @@ export abstract class Cache {
    * Get the given deck templates from the cache.
    */
   public abstract async getCachedTemplates(
-    source: Source.Resolver
+    source: Source.Resolver<Source.External>
   ): Promise<Aged<Decks.Templates> | undefined>;
 
   /**
    * Store the given deck templates in the cache.
    */
   public abstract async cacheTemplates(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     templates: Decks.Templates
   ): Promise<void>;
 
   public cacheTemplatesBackground(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     templates: Decks.Templates
   ): void {
     this.cacheTemplates(source, templates).catch(Cache.logError);

@@ -2,6 +2,7 @@ import * as Cache from "../../cache";
 import * as Decks from "./decks";
 import { Cardcast } from "./sources/cardcast";
 import { Custom } from "./sources/custom";
+import { BuiltIn } from "./sources/builtIn";
 
 /**
  * A source for a card or deck.
@@ -11,7 +12,7 @@ export type Source = External | Custom;
 /**
  * An external source for a card or deck.
  */
-export type External = Cardcast;
+export type External = BuiltIn | Cardcast;
 
 /**
  * More information that can be looked up given a source.
@@ -55,13 +56,25 @@ export interface AtLeastTemplates {
 }
 
 /**
+ * A resolver that only allows access to properties that don't require store
+ * access.
+ */
+export interface LimitedResolver<S extends External> {
+  id: () => string;
+  deckId: () => string;
+  loadingDetails: () => Details;
+  equals: (source: External) => boolean;
+}
+
+/**
  * Resolve information about the given source.
  */
-export abstract class Resolver implements LimitedResolver {
+export abstract class Resolver<S extends External>
+  implements LimitedResolver<S> {
   /**
    * The source in question.
    */
-  public abstract source: Source;
+  public abstract source: S;
 
   /**
    * A unique id for the source as a whole.
@@ -134,30 +147,19 @@ export abstract class Resolver implements LimitedResolver {
 }
 
 /**
- * A resolver that only allows access to properties that don't require store
- * access.
- */
-export interface LimitedResolver {
-  id: () => string;
-  deckId: () => string;
-  loadingDetails: () => Details;
-  equals: (source: External) => boolean;
-}
-
-/**
  * A resolver that caches expensive responses in the store.
  */
-export class CachedResolver extends Resolver {
-  private readonly resolver: Resolver;
+export class CachedResolver<S extends External> extends Resolver<S> {
+  private readonly resolver: Resolver<S>;
   private readonly cache: Cache.Cache;
 
-  public constructor(cache: Cache.Cache, resolver: Resolver) {
+  public constructor(cache: Cache.Cache, resolver: Resolver<S>) {
     super();
     this.cache = cache;
     this.resolver = resolver;
   }
 
-  public get source(): Source {
+  public get source(): S {
     return this.resolver.source;
   }
 
@@ -224,4 +226,12 @@ export class CachedResolver extends Resolver {
       };
     }
   }
+}
+
+/**
+ * Get resolvers for the given source type.
+ */
+export interface MetaResolver<S extends External> {
+  limitedResolver(source: S): LimitedResolver<S>;
+  resolver(source: S): Resolver<S>;
 }

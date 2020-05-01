@@ -19,8 +19,8 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
 
   protected async begin(server: ServerState): Promise<Decks.Templates[]> {
     return Promise.all(
-      wu(this.decks).map(deck =>
-        Sources.resolver(server.cache, deck).templates()
+      wu(this.decks).map((deck) =>
+        server.sources.resolver(server.cache, deck).templates()
       )
     );
   }
@@ -42,7 +42,7 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
     return {
       lobby,
       events: atStartOfRound.events,
-      timeouts: atStartOfRound.timeouts
+      timeouts: atStartOfRound.timeouts,
     };
   }
 

@@ -25,6 +25,7 @@ methods playCode =
     { name = name
     , logo = logo
     , empty = empty
+    , id = id
     , problems = problems playCode
     , defaultDetails = details playCode
     , tooltip = tooltip playCode
@@ -38,6 +39,7 @@ generalMethods =
     { name = name
     , logo = logo
     , empty = empty
+    , id = id
     }
 
 
@@ -45,13 +47,18 @@ generalMethods =
 {- Private -}
 
 
+id : () -> String
+id () =
+    "Cardcast"
+
+
 name : () -> MdString
 name () =
     Strings.Cardcast
 
 
-empty : () -> Source.External
-empty () =
+empty : Shared -> Source.External
+empty shared =
     "" |> playCode |> Source.Cardcast
 
 
@@ -60,6 +67,9 @@ equals (PlayCode pc) source =
     case source of
         Source.Cardcast (PlayCode other) ->
             pc == other
+
+        _ ->
+            False
 
 
 problems : PlayCode -> () -> List (Message msg)
@@ -92,6 +102,9 @@ editor (PlayCode pc) shared existing update =
                     in
                     playCode |> Maybe.justIf (existing |> List.all notSameDeck)
 
+                _ ->
+                    Nothing
+
         recentDeck (PlayCode recent) =
             Html.option [ HtmlA.value recent ] []
     in
@@ -116,8 +129,8 @@ details (PlayCode pc) shared =
     }
 
 
-tooltip : PlayCode -> () -> Maybe ( String, Html msg )
-tooltip (PlayCode pc) () =
+tooltip : PlayCode -> Shared -> Maybe ( String, Html msg )
+tooltip (PlayCode pc) _ =
     ( "cardcast-" ++ pc, Html.span [] [ logoInternal, Html.text pc ] ) |> Just
 
 

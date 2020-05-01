@@ -18,6 +18,7 @@ import { LoadDeckSummary } from "../../task/load-deck-summary";
 import * as Handler from "../handler";
 import { Privileged } from "../privileged";
 import * as Validation from "../validation.validator";
+import { ServerState } from "../../server-state";
 
 /**
  * An action to change the configuration of the lobby.
@@ -80,6 +81,7 @@ function applyRules(
 }
 
 function apply(
+  server: ServerState,
   gameCode: GameCode,
   lobby: Lobby.Lobby,
   existing: Config.Config,
@@ -92,7 +94,7 @@ function apply(
   );
   const allTasks = [...tasks];
   for (const deck of updated.decks) {
-    const resolver = Sources.limitedResolver(deck.source);
+    const resolver = server.sources.limitedResolver(deck.source);
     const matching = existing.decks.find((ed) => resolver.equals(ed.source));
     if (matching === undefined) {
       allTasks.push(new LoadDeckSummary(gameCode, deck.source));
@@ -146,7 +148,8 @@ class ConfigureActions extends Actions.Implementation<
   protected handle: Handler.Custom<Configure, Lobby.Lobby> = (
     auth,
     lobby,
-    action
+    action,
+    server
   ) => {
     const version = lobby.config.version;
     for (const op of action.change) {
@@ -163,6 +166,7 @@ class ConfigureActions extends Actions.Implementation<
     }
     validated = _validateConfig(patched);
     const { result, events, tasks } = apply(
+      server,
       auth.gc,
       lobby,
       lobby.config,

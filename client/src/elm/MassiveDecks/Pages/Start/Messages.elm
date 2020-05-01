@@ -9,7 +9,7 @@ import MassiveDecks.Requests.HttpData.Messages as HttpData
 type Msg
     = GameCodeChanged String
     | NameChanged String
-    | StartGame (HttpData.Msg () Lobby.Auth)
+    | StartGame (HttpData.Msg Never Lobby.Auth)
     | JoinGame (HttpData.Msg MdError Lobby.Auth)
     | LobbyBrowserMsg LobbyBrowser.Msg
     | PasswordChanged String

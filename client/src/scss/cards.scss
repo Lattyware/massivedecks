@@ -38,7 +38,7 @@
       align-content: flex-start;
       justify-content: flex-start;
 
-      span {
+      span, em, strong {
         white-space: pre-wrap;
         overflow-wrap: break-word;
         word-break: break-all;
@@ -47,7 +47,7 @@
       .slot {
         display: contents;
 
-        span {
+        span, em, strong {
           text-decoration: underline;
         }
 

@@ -4,6 +4,7 @@ module MassiveDecks.Model exposing
     )
 
 import Browser.Navigation as Navigation
+import MassiveDecks.Card.Source.Model as Sources
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
@@ -23,6 +24,7 @@ type alias Shared =
     , speech : Speech.Model
     , notifications : Notifications.Model
     , remoteMode : Bool
+    , sources : Sources.Info
     }
 
 

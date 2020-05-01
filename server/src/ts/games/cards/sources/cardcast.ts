@@ -1,11 +1,15 @@
-import http, { AxiosRequestConfig } from "axios";
+import http, { AxiosInstance, AxiosRequestConfig } from "axios";
 import genericPool from "generic-pool";
 import HttpStatus from "http-status-codes";
 import * as Card from "../card";
 import { Slot } from "../card";
 import * as Decks from "../decks";
 import * as Source from "../source";
-import { SourceNotFoundError, SourceServiceError } from "../sources";
+import * as Config from "../../../config";
+import {
+  SourceNotFoundError,
+  SourceServiceError,
+} from "../../../errors/action-execution-error";
 
 interface CCSummary {
   name: string;
@@ -38,27 +42,6 @@ interface CCCard {
   nsfw: boolean;
 }
 
-const config: AxiosRequestConfig = {
-  method: "GET",
-  baseURL: "https://api.cardcastgame.com/v1/",
-  timeout: 10000,
-  responseType: "json"
-};
-
-/**
- * We pool requests to cardcast to stop us hitting them too hard (on top of
- * caching). We only allow two simultaneous requests.
- */
-const connectionPool = genericPool.createPool(
-  {
-    create: async () => http.create(config),
-    destroy: async _ => {
-      // Do nothing.
-    }
-  },
-  { max: 2 }
-);
-
 const summaryUrl = (playCode: PlayCode): string => `decks/${playCode}`;
 const deckUrl = (playCode: PlayCode): string => `${summaryUrl(playCode)}/cards`;
 const humanViewUrl = (playCode: PlayCode): string =>
@@ -88,7 +71,7 @@ const nextWordShouldBeCapitalized = (previously: string): boolean =>
  */
 // TODO: We probably want to offer some control over these heuristics.
 function* parts(call: CCCard): Iterable<Card.Part> {
-  const upper: Slot = call.text.every(text => text === text.toUpperCase())
+  const upper: Slot = call.text.every((text) => text === text.toUpperCase())
     ? { transform: "UpperCase" }
     : {};
   let first = true;
@@ -114,21 +97,26 @@ function* parts(call: CCCard): Iterable<Card.Part> {
 const call = (source: Cardcast, call: CCCard): Card.Call => ({
   id: Card.id(),
   parts: [Array.from(parts(call))],
-  source: source
+  source: source,
 });
 
 const response = (source: Cardcast, response: CCCard): Card.Response => ({
   id: Card.id(),
   text: response.text[0],
-  source: source
+  source: source,
 });
 
-export class Resolver extends Source.Resolver {
+export class Resolver extends Source.Resolver<Cardcast> {
   public readonly source: Cardcast;
+  private readonly connectionPool: genericPool.Pool<AxiosInstance>;
 
-  public constructor(source: Cardcast) {
+  public constructor(
+    source: Cardcast,
+    connectionPool: genericPool.Pool<AxiosInstance>
+  ) {
     super();
     this.source = source;
+    this.connectionPool = connectionPool;
   }
 
   public id(): string {
@@ -142,7 +130,7 @@ export class Resolver extends Source.Resolver {
   public loadingDetails(): Source.Details {
     return {
       name: `Cardcast ${this.source.playCode}`,
-      url: humanViewUrl(this.source.playCode)
+      url: humanViewUrl(this.source.playCode),
     };
   }
 
@@ -158,49 +146,47 @@ export class Resolver extends Source.Resolver {
   }
 
   public async atLeastSummary(): Promise<Source.AtLeastSummary> {
-    const summary = await Resolver.get<CCSummary>(
-      summaryUrl(this.source.playCode)
-    );
+    const summary = await this.get<CCSummary>(summaryUrl(this.source.playCode));
     return {
       summary: {
         details: {
           name: summary.name,
-          url: humanViewUrl(this.source.playCode)
+          url: humanViewUrl(this.source.playCode),
         },
         calls: Number.parseInt(summary.call_count, 10),
         responses: Number.parseInt(summary.response_count, 10),
-        tag: summary.updated_at
-      }
+        tag: summary.updated_at,
+      },
     };
   }
 
   public async atLeastTemplates(): Promise<Source.AtLeastTemplates> {
-    const deck = await Resolver.get<CCDeck>(deckUrl(this.source.playCode));
+    const deck = await this.get<CCDeck>(deckUrl(this.source.playCode));
     return {
       templates: {
-        calls: new Set(deck.calls.map(c => call(this.source, c))),
-        responses: new Set(deck.responses.map(r => response(this.source, r)))
-      }
+        calls: new Set(deck.calls.map((c) => call(this.source, c))),
+        responses: new Set(deck.responses.map((r) => response(this.source, r))),
+      },
     };
   }
 
-  private static async get<T>(url: string): Promise<T> {
-    const connection = await connectionPool.acquire();
+  private async get<T>(url: string): Promise<T> {
+    const connection = await this.connectionPool.acquire();
     try {
       return (await connection.get(url)).data;
     } catch (error) {
       if (error.response) {
         const response = error.response;
         if (response.status === HttpStatus.NOT_FOUND) {
-          throw new SourceNotFoundError();
+          throw new SourceNotFoundError(this.source);
         } else {
-          throw new SourceServiceError();
+          throw new SourceServiceError(this.source);
         }
       } else {
         throw error;
       }
     } finally {
-      await connectionPool.release(connection);
+      await this.connectionPool.release(connection);
     }
   }
 
@@ -209,6 +195,43 @@ export class Resolver extends Source.Resolver {
     templates: Decks.Templates;
   }> => ({
     summary: await this.summary(),
-    templates: await this.templates()
+    templates: await this.templates(),
   });
 }
+
+export class MetaResolver implements Source.MetaResolver<Cardcast> {
+  /**
+   * We pool requests to cardcast to stop us hitting them too hard (on top of caching).
+   */
+  private readonly connectionPool: genericPool.Pool<AxiosInstance>;
+
+  public constructor(config: Config.Cardcast) {
+    const httpConfig: AxiosRequestConfig = {
+      method: "GET",
+      baseURL: "https://api.cardcastgame.com/v1/",
+      timeout: config.timeout,
+      responseType: "json",
+    };
+
+    this.connectionPool = genericPool.createPool(
+      {
+        create: async () => http.create(httpConfig),
+        destroy: async (_) => {
+          // Do nothing.
+        },
+      },
+      { max: config.simultaneousConnections }
+    );
+  }
+
+  limitedResolver(source: Cardcast): Resolver {
+    return this.resolver(source);
+  }
+
+  resolver(source: Cardcast): Resolver {
+    return new Resolver(source, this.connectionPool);
+  }
+}
+
+export const load = async (config: Config.Cardcast): Promise<MetaResolver> =>
+  new MetaResolver(config);

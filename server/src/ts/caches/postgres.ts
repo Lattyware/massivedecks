@@ -97,7 +97,7 @@ export class PostgresCache extends Cache.Cache {
   }
 
   public async cacheSummary(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     summary: Source.Summary
   ): Promise<void> {
     await this.pg.inTransaction(async (client) => {
@@ -133,7 +133,7 @@ export class PostgresCache extends Cache.Cache {
   }
 
   public async cacheTemplates(
-    source: Source.Resolver,
+    source: Source.Resolver<Source.External>,
     templates: Decks.Templates
   ): Promise<void> {
     await this.pg.inTransaction(async (client) => {
@@ -174,7 +174,7 @@ export class PostgresCache extends Cache.Cache {
   }
 
   public async getCachedSummary(
-    source: Source.Resolver
+    source: Source.Resolver<Source.External>
   ): Promise<Cache.Aged<Source.Summary> | undefined> {
     return await this.pg.withClient(async (client) => {
       const result = await client.query(
@@ -204,7 +204,7 @@ export class PostgresCache extends Cache.Cache {
   }
 
   public async getCachedTemplates(
-    source: Source.Resolver
+    source: Source.Resolver<Source.External>
   ): Promise<Cache.Aged<Decks.Templates> | undefined> {
     return await this.pg.withClient(async (client) => {
       const about = await client.query(

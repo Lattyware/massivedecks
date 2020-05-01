@@ -12,7 +12,7 @@ import MassiveDecks.Requests.HttpData.Model exposing (HttpData)
 {-| The model for the lobby browser.
 -}
 type alias Model =
-    HttpData () (List Summary)
+    HttpData Never (List Summary)
 
 
 {-| An external summary of a lobby.

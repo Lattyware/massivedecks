@@ -1,5 +1,6 @@
 module MassiveDecks.Messages exposing (Msg(..))
 
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Error.Messages as Error
 import MassiveDecks.Notifications.Model as Notifications
@@ -27,5 +28,6 @@ type Msg
     | UpdateToken Lobby.Auth
     | CastStatusUpdate Cast.Status
     | RemoteCommand Cast.RemoteControlCommand
+    | UpdateSources Source.Info
     | Refresh
     | BlockedExternalUrl

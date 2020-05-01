@@ -16,6 +16,37 @@
   basePath: "",
   // This will be overwritten by the environment variable MD_BASE_PATH, if set.
 
+  // What decks players have access to.
+  // Note at least one source must be enabled.
+  sources: {
+    // Decks stored as static files.
+    // Note that the client has references to these built-in decks as defaults, so if you disable this or change the
+    // decks, you will need to make changes there (they are defined in the language definitions).
+    builtIn: {
+      // The directory to look for decks in.
+      basePath: "decks",
+
+      // Ids for decks in the order they will be presented to the user.
+      // The game will look for these in the directory given by basePath above, and will expect them to have the
+      // .deck.json5 extension.
+      decks: [
+        "cah-base-en"
+      ]
+    },
+
+    // Allows players to load decks from Cardcast via their API. https://www.cardcastgame.com/
+    cardcast: {
+      // How long to wait for a response from the Cardcast API service before giving up and telling the user there is a
+      // problem.
+      timeout: "PT10S",
+
+      // The number of connections the server can make to Cardcast at one time.
+      // Please remember this is a service provided by Cardcast, and you should make best efforts to ensure you don't
+      // hit them too hard, including not setting this too high.
+      simultaneousConnections: 1
+    }
+  },
+
   // Timeouts determine how long the server waits before taking certain actions.
   // These values are all ISO 8601 durations.
   timeouts: {

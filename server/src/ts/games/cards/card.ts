@@ -50,18 +50,30 @@ export interface BaseCard {
   source: Source;
 }
 
+export type Style = "Em" | "Strong";
+
 /** An empty slot for responses to be played into.*/
 export interface Slot {
   /**
    * Defines a transformation over the content the slot is filled with.
    */
   transform?: "UpperCase" | "Capitalize";
+  style?: Style;
 }
 
-export const isSlot = (part: Part): part is Slot => typeof part !== "string";
+export interface Styled {
+  text: string;
+  style?: Style;
+}
+
+export const isSlot = (part: Part): part is Slot =>
+  typeof part !== "string" && !part.hasOwnProperty("text");
+
+export const isStyled = (part: Part): part is Styled =>
+  typeof part !== "string" && part.hasOwnProperty("text");
 
 /** Either text or a slot.*/
-export type Part = string | Slot;
+export type Part = string | Styled | Slot;
 
 /**
  * Create a new user id.

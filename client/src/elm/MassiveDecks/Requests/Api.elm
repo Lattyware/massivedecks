@@ -3,11 +3,13 @@ module MassiveDecks.Requests.Api exposing
     , joinLobby
     , lobbySummaries
     , newLobby
+    , sourceInfo
     )
 
 import Dict exposing (Dict)
 import Http
 import Json.Decode as Json
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Error.Model as Error
 import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Models.Encoders as Encoders
@@ -25,7 +27,7 @@ import Url.Builder
 
 {-| List the public lobbies.
 -}
-lobbySummaries : (Request.Response () (List LobbyBrowser.Summary) -> msg) -> Request msg
+lobbySummaries : (Request.Response Never (List LobbyBrowser.Summary) -> msg) -> Request msg
 lobbySummaries msg =
     { method = "GET"
     , headers = []
@@ -39,7 +41,7 @@ lobbySummaries msg =
 
 {-| Create a new lobby.
 -}
-newLobby : (Request.Response () Lobby.Auth -> msg) -> Start.LobbyCreation -> Request msg
+newLobby : (Request.Response Never Lobby.Auth -> msg) -> Start.LobbyCreation -> Request msg
 newLobby msg creation =
     { method = "POST"
     , headers = []
@@ -51,6 +53,8 @@ newLobby msg creation =
     }
 
 
+{-| Join a lobby.
+-}
 joinLobby : (Request.Response MdError Lobby.Auth -> msg) -> GameCode -> User.Registration -> Request msg
 joinLobby msg gameCode registration =
     { method = "POST"
@@ -63,13 +67,29 @@ joinLobby msg gameCode registration =
     }
 
 
-checkAlive : (Request.Response () (Dict Lobby.Token Bool) -> msg) -> List Lobby.Token -> Request msg
+{-| Check if previously joined lobbies are still going.
+-}
+checkAlive : (Request.Response Never (Dict Lobby.Token Bool) -> msg) -> List Lobby.Token -> Request msg
 checkAlive msg tokens =
     { method = "POST"
     , headers = []
     , url = url [ "alive" ]
     , body = tokens |> Encoders.checkAlive |> Http.jsonBody
     , expect = Request.expectResponse msg noError Decoders.tokenValidity
+    , timeout = Nothing
+    , tracker = Nothing
+    }
+
+
+{-| Find out what sources the server offers.
+-}
+sourceInfo : (Request.Response Never Source.Info -> msg) -> Request msg
+sourceInfo msg =
+    { method = "GET"
+    , headers = []
+    , url = url [ "sources" ]
+    , body = Http.emptyBody
+    , expect = Request.expectResponse msg noError Decoders.sourceInfo
     , timeout = Nothing
     , tracker = Nothing
     }
@@ -92,6 +112,6 @@ url path =
     Url.Builder.absolute ([ "api" ] ++ path) []
 
 
-noError : Json.Decoder ()
+noError : Json.Decoder Never
 noError =
-    Json.succeed ()
+    Json.fail "No specific errors are expected for this request."

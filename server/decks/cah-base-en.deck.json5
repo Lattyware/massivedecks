@@ -1,0 +1,1301 @@
+// Cards Against Humanity, https://cardsagainsthumanity.com/
+// Used under a Creative Commons BY-NC-SA 2.0 license, https://creativecommons.org/licenses/by-nc-sa/2.0/
+{
+  name: "Cards Against Humanity",
+  "calls": [
+    [
+      [
+        "Hey Reddit! I’m ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Ask me anything."
+      ]
+    ],
+    [
+      [
+        "Introducing X-treme Baseball!"
+      ],
+      [
+        "It’s like baseball, but with ",
+        {},
+        "!"
+      ]
+    ],
+    [
+      [
+        "What is Batman’s guilty pleasure?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "TSA guidelines now prohibit ",
+        {},
+        " on airplanes."
+      ]
+    ],
+    [
+      [
+        "Next from J.K. Rowling: ",
+        {
+          text: "Harry Potter and the Chamber of ",
+          style: "Em",
+        },
+        {
+          "transform": "Capitalize",
+          "style": "Em",
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "That’s right, I killed ",
+        {},
+        "."
+      ],
+      [
+        "How, you ask?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "I’m sorry professor, but I couldn’t complete my homework because of ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "And the Academy Award for ",
+        {},
+        " goes to ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Dude, do not go in that bathroom."
+      ],
+      [
+        "There’s ",
+        {},
+        " in there."
+      ]
+    ],
+    [
+      [
+        "How did I lose my virginity?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "It’s a pity that kids these days are all getting involved with ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Step 1: ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Step 2: ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Step 3: Profit."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Becha can’t have just one!"
+      ]
+    ],
+    [
+      [
+        "Kids, I don’t need drugs to get high. I’m high on ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "For my next trick, I will pull ",
+        {},
+        " out of ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "While the United States raced the Soviet Union to the moon, the Mexican government funneled millions of pesos into research on ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "In the new Disney Channel Original Movie, Hannah Montana struggles with ",
+        {},
+        " for the first time."
+      ]
+    ],
+    [
+      [
+        "What’s my secret power?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "I’m going on a cleanse this week. Nothing but kale juice and ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        " + ",
+        {
+          "transform": "Capitalize"
+        }
+      ],
+      [
+        " = ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "When Pharaoh remained unmoved, Moses called down a Plague of ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Just once, I’d like to hear you say “Thanks, Mom. Thanks for ",
+        {},
+        ".”"
+      ]
+    ],
+    [
+      [
+        "Daddy, why is mommy crying?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "When I was tripping on acid, ",
+        {},
+        " turned into ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "50% of all marriages end in ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "My fellow Americans: Before this decade is out, we ",
+        {
+          text: "will",
+          style: "Em"
+        },
+        ", have ",
+        {},
+        " on the moon."
+      ]
+    ],
+    [
+      [
+        "This season at Steppenwolf, Samuel Beckett’s classic existential play: ",
+        {
+          text: "Waiting for",
+          style: "Em"
+        },
+        {
+          style: "Em"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Instead of coal, Santa now gives the bad children ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Life for American Indians was forever changed when the White Man introduced them to ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What’s Teach for America using to inspire inner city students to succeed?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Maybe she’s born with it."
+      ],
+      [
+        "Maybe it’s ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What is George W. Bush thinking about right now?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "White people like ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        " is a slippery slope that leads to ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Why do I hurt all over?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "A romantic, candlelit dinner would be incomplete without ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Just saw this upsetting video! Please retweet!!"
+      ],
+      [
+        "#stop",
+        {
+          "transform": "Capitalize"
+        }
+      ]
+    ],
+    [
+      [
+        "Fun tip! When your man asks you to go down on him, try surprising him with ",
+        {},
+        " instead."
+      ]
+    ],
+    [
+      [
+        "The class field trip was completely ruined by ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What’s a girl’s best friend?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Dear Abby, I’m having some trouble with ",
+        {},
+        " and would like your advice."
+      ]
+    ],
+    [
+      [
+        "In M. Night Shyamalan’s new movie, Bruce Willis discovers that ",
+        {},
+        " had really been ",
+        {},
+        " all along."
+      ]
+    ],
+    [
+      [
+        "When I am President of the United States, I will create the Department of ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What are my parents hiding from me?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "What never fails to liven up the party?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "IF you like ",
+        {
+          "transform": "UpperCase"
+        },
+        ","
+      ],
+      [
+        "YOU MIGHT BE A REDNECK."
+      ]
+    ],
+    [
+      [
+        "Make a haiku."
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ","
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ","
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "What made my first kiss so awkward?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Hey guys, welcome to Chili’s! Would you like to start the night off right with ",
+        {},
+        "?"
+      ]
+    ],
+    [
+      [
+        "I got 99 problems but ",
+        {},
+        " ain’t one."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "It’s a trap!"
+      ]
+    ],
+    [
+      [
+        "Bravo’s new reality show features eight washed-up celebrities living with ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What would grandma find disturbing, yet oddly charming?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "That was so metal."
+      ]
+    ],
+    [
+      [
+        "I never truly understood ",
+        {},
+        " until I encountered ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "During sex, I like to think about ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What ended my last relationship?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "What’s that sound?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Uh, hey guys, I know this was my idea, but I’m having serious doubts about ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Why am I sticky?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "I’m no doctor but I’m pretty sure what you’re suffering from is called “",
+        {},
+        ".”"
+      ]
+    ],
+    [
+      [
+        "What’s there a ton of in heaven?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "After four platinum albums and three Grammys, it’s time to get back to my roots, to what inspired me to make music in the first place: ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What will always get you laid?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "They said we were crazy. They said we couldn’t put ",
+        {},
+        " inside of ",
+        {},
+        "."
+      ],
+      [
+        "They were wrong."
+      ]
+    ],
+    [
+      [
+        "Lifetime® presents “",
+        {},
+        ": the Story of ",
+        {},
+        ".”"
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ": kid-tested, mother-approved."
+      ]
+    ],
+    [
+      [
+        "Why can’t I sleep at night?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "What’s that smell?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "After eight years in the White House, how is Obama finally letting loose?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "This is the way the world ends"
+      ],
+      [
+        "This is the way the world ends"
+      ],
+      [
+        "Not with a bang but with ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Coming to Broadway this season, ",
+        {},
+        ": The Musical."
+      ]
+    ],
+    [
+      [
+        "Here is the church"
+      ],
+      [
+        "Here is the steeple"
+      ],
+      [
+        "Open the doors"
+      ],
+      [
+        "And there is",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "But before I kill you, Mr. Bond, I must show you ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Studies show that lab rats navigate mazes 50% faster after being exposed to ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "What’s the next superhero/sidekick duo?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "/",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Next on ESPN2, the World Series of ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "When I am a billionaire, I shall erect a 50-foot statue to commemorate ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Military historians remember Alexander the Great for his brilliant use of ",
+        {},
+        " against the Persians."
+      ]
+    ],
+    [
+      [
+        "War!"
+      ],
+      [
+        "What is it good for?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ]
+  ],
+  "responses": [
+    "silence",
+    "the illusion of choice ina late-stage capitalist society",
+    "many bats",
+    "famine",
+    "flesh-eating bacteria",
+    "flying sex snakes",
+    "not giving a shit about the Third World",
+    "magnets",
+    "shapeshifters",
+    "seeing what happens when you lock people in a room with hungry seagulls",
+    "a crucifixion",
+    "Jennifer Lawrence",
+    "72 virgins",
+    "a live studio audience",
+    "a time travel paradox",
+    "authentic Mexican cuisine",
+    "doing crimes",
+    "synergistic management solutions",
+    "crippling debt",
+    "daddy issues",
+    "used panties",
+    "a fart so powerful that it wakes the giants from their thousand-year slumber",
+    "former president George W. Bush",
+    "full frontal nudity",
+    "covering myself with Parmesan cheese and chili flakes because I am pizza",
+    "laying an egg",
+    "getting naked and watching Nickelodeon",
+    "pretending to care",
+    "having big dreams but no realistic way to achieve them",
+    "seeing Grandma naked",
+    "boogers",
+    "the inevitable heat death of the universe",
+    "the miracle of childbirth",
+    "the rapture",
+    "whipping it out",
+    "white privilege",
+    "emerging from the sea and rampaging through Tokyo",
+    "the Hamburglar",
+    "AXE Body Spray",
+    "the Blood of Christ",
+    "soft, kissy missionary sex",
+    "BATMAN!",
+    "agriculture",
+    "barely making $25,000 a year",
+    "natural selection",
+    "coat hanger abortions",
+    "sex with Patrick Stewart",
+    "my abusive boyfriend who really isn’t so bad once you get to know him",
+    "prescription pain killers",
+    "swooping",
+    "mansplaining",
+    "a homoerotic volleyball montage",
+    "Alexandria Ocasio-Cortez",
+    "putting things where they go",
+    "fragile masculinity",
+    "all-you-can-eat shrimp for $8.99",
+    "an old guy who’s almost dead",
+    "Kanye West",
+    "hot cheese",
+    "raptor attacks",
+    "seven dead and three in critical condition",
+    "smegma",
+    "alcoholism",
+    "a middle-aged man on roller skates",
+    "looking in the mirror, applying lipstick, and whispering “tonight, you will have sex with Tom Cruise”",
+    "bingeing and purging",
+    "an oversized lollipop",
+    "self-loathing",
+    "sitting on my face and telling me I’m garbage",
+    "half-assed foreplay",
+    "the Holy Bible",
+    "german dungeon porn",
+    "being on fire",
+    "teenage pregnancy",
+    "Gandhi",
+    "your weird brother",
+    "a Fleshlight®",
+    "a pyramid of severed heads",
+    "an erection that lasts longer than four hours",
+    "a three-way with my wife and Shaquille O’Neal",
+    "the past",
+    "my genitals",
+    "an endless stream of diarrhea",
+    "science",
+    "not reciprocating oral sex",
+    "flightless birds",
+    "a good sniff",
+    "50,000 volts straight to the nipples",
+    "a balanced breakfast",
+    "dead birds everywhere",
+    "the arrival of the pizza",
+    "Permanent Orgasm-Face Disorder",
+    "the cool, refreshing taste of Pepsi®",
+    "chemical weapons",
+    "Oprah",
+    "wondering if it’s possible to get some of that salsa to go",
+    "bananas",
+    "passive aggressive Post-it notes",
+    "Hillary Clinton’s emails",
+    "switching to Geico®",
+    "peeing a little bit",
+    "wet dreams",
+    "the Jews",
+    "my cheating son-of-a-bitch husband",
+    "powerful thighs",
+    "these hoes",
+    "the only gay person in a hundred miles",
+    "having sex for the first time",
+    "Donald J. Trump",
+    "kissing grandma on the forehead and turning off her life support",
+    "sexual tension",
+    "an AR-15 assault rifle",
+    "my good bra",
+    "punching a congressman in the face",
+    "Fancy Feast®",
+    "being rich",
+    "sweet, sweet vengeance",
+    "Republicans",
+    "sniffing and kissing my feet",
+    "a much younger woman",
+    "poverty",
+    "kamikaze pilots",
+    "committing suicide",
+    "the homosexual agenda",
+    "a Mexican",
+    "a falcon with a cap on its head",
+    "wizard music",
+    "the Kool-Aid Man",
+    "Juuling",
+    "free samples",
+    "hurting those closest to me",
+    "doing the right thing",
+    "the Three-Fifths Compromise",
+    "lactation",
+    "world peace",
+    "shutting up so I can watch the game",
+    "eating a hard boiled egg out of my husband’s asshole",
+    "RoboCop",
+    "one titty hanging out",
+    "Justin Bieber",
+    "Oompa-Loompas",
+    "inappropriate yodeling",
+    "puberty",
+    "ghosts",
+    "50 mg of Zoloft daily",
+    "fucking my sister",
+    "braiding three penises into a Twizzler",
+    "vigorous jazz hands",
+    "getting fingered",
+    "my Uber driver, Pavel",
+    "GoGurt®",
+    "police brutality",
+    "filling my briefcase with business stuff",
+    "preteens",
+    "my fat daughter",
+    "rap music",
+    "fading away into nothingness",
+    "Darth Vader",
+    "a sad handjob",
+    "exactly what you’d expect",
+    "expecting a burp and vomiting on the floor",
+    "Adderall®",
+    "the Red Hot Chili Peppers",
+    "sideboob",
+    "an octopus giving seven handjobs and smoking a cigarette",
+    "my neck, my back, my pussy, and my crack",
+    "J. D. Power and his associates",
+    "mouth herpes",
+    "sperm whales",
+    "women of color",
+    "men discussing their feelings in an emotionally healthy way",
+    "incest",
+    "Pac-Man uncontrollably guzzling cum",
+    "casually suggesting a threesome",
+    "running out of semen",
+    "god",
+    "the wonders of the Orient",
+    "sexual peeing",
+    "emotions",
+    "licking things to claim them as your own",
+    "jobs",
+    "the placenta",
+    "spontaneous human combustion",
+    "the Bachelorette season finale",
+    "throwing grapes at a man until he loses touch with reality",
+    "establishing dominance",
+    "finger painting",
+    "old-people smell",
+    "getting crushed by a vending machine",
+    "my inner demons",
+    "a Super Soaker™ full of cat pee",
+    "Aaron Burr",
+    "cuddling",
+    "however much weed $20 can buy",
+    "battlefield amputations",
+    "Spaghetti? Again?",
+    "Ronald Reagan",
+    "a disappointing birthday party",
+    "nachos for the table",
+    "becoming a blueberry",
+    "a tiny horse",
+    "William Shatner",
+    "selling crack to children",
+    "an M. Night Shyamalan plot twist",
+    "brown people",
+    "mutually assured destruction",
+    "pedophiles",
+    "yeast",
+    "how bad my daughter fucked up her dance recital",
+    "rectangles",
+    "catapults",
+    "poor people",
+    "only dating Asian women",
+    "the Hustle",
+    "the Force",
+    "how amazing it is to be on mushrooms",
+    "judging everyone",
+    "Kourtney, Kim, Khloe, Kendall, and Kylie",
+    "getting married, having a few kids, buying some stuff, retiring to Florida, and dying",
+    "some god damn peace and quiet",
+    "AIDS",
+    "pictures of boobs",
+    "strong female characters",
+    "some foundation, mascara, and a touch of blush",
+    "hospice care",
+    "getting really high",
+    "the opiod epidemic",
+    "penis envy",
+    "gay conversion therapy",
+    "Ruth Bader Ginsburg brutally gaveling your penis",
+    "German Chancellor Angela Merkel",
+    "the KKK",
+    "a pangender octopus who roams the cosmos in search of love",
+    "meth",
+    "serfdom",
+    "holding down a child and farting all over him",
+    "a Bop It™",
+    "a whole thing of butter",
+    "still being a virgin",
+    "solving problems with violence",
+    "getting cummed on",
+    "pixelated bukkake",
+    "a lifetime of sadness",
+    "going an entire day without masturbating",
+    "dick pics",
+    "racism",
+    "menstrual rage",
+    "sunshine and rainbows",
+    "radical Islamic terrorism",
+    "huge biceps",
+    "my little boner",
+    "dry heaving",
+    "a gossamer stream of jizz that catches the light as it arcs through the morning air",
+    "executing a hostage every hour",
+    "the rhythms of Africa",
+    "breaking out into song and dance",
+    "leprosy",
+    "gloryholes",
+    "nipple blades",
+    "the heart of a child",
+    "puppies!",
+    "fellowship in Christ",
+    "little boy penises",
+    "waking up half-naked in a Denny’s parking lot",
+    "an older woman who knows her way around the penis",
+    "getting drugs off the street and into my body",
+    "Daniel Radcliffe’s delicious asshole",
+    "active listening",
+    "ethnic cleansing",
+    "itchy pussy",
+    "blowing my boyfriend so hard he shits",
+    "a fuck-ton of almonds",
+    "a salad for men that’s made of metal",
+    "waiting till marriage",
+    "unfathomable stupidity",
+    "shiny objects",
+    "the Devil himself",
+    "autocannibalism",
+    "erectile dysfunction",
+    "my collection of Japanese sex toys",
+    "the Pope",
+    "white people",
+    "tentacle porn",
+    "my bright pink fuckhole",
+    "how far I can get my own penis up my butt",
+    "having anuses for eyes",
+    "The penny whistle solo from “My Heart Will Go On”",
+    "Seppuku",
+    "Danny DeVito",
+    "the magic of live theatre",
+    "throwing a virgin into a volcano",
+    "Dwayne “The Rock” Johnson",
+    "accepting the way things are",
+    "NBA superstar LeBron James",
+    "listening to her problems without trying to solve them",
+    "therapy",
+    "being fat and stupid",
+    "pooping back and forth. Forever",
+    "tearing that ass up like wrapping paper on Christmas morning",
+    "more elephant cock than I bargained for",
+    "a salty surprise",
+    "the South",
+    "the violation of our most basic human rights",
+    "tap dancing like there’s no tomorrow",
+    "consensual sex",
+    "telling a shitty story that goes nowhere",
+    "a good, strong gorilla",
+    "seeing my father cry",
+    "necrophilia",
+    "being a woman",
+    "getting into a pretty bad car accident",
+    "Bill Nye the Science Guy",
+    "black people",
+    "The Boy Scouts of America",
+    "Lunchables™",
+    "bitches",
+    "some punk kid who stole my turkey sandwich",
+    "heartwarming orphans",
+    "Spirit Airlines",
+    "bubble butt bottom boys",
+    "a bowl of mayonnaise and human teeth",
+    "fiery poops",
+    "saying “I love you”",
+    "inserting a Mason jar into my anus",
+    "the true meaning of Christmas",
+    "some of the best rappers in the game",
+    "owning and operating a Chili’s franchise",
+    "estrogen",
+    "girls",
+    "the Russians",
+    "a bleached asshole",
+    "fucking the weatherman on live television",
+    "PTSD",
+    "dark and mysterious forces beyond our control",
+    "smallpox blankets",
+    "masturbating",
+    "hobos",
+    "queefing",
+    "the guys from Queer Eye",
+    "Cardi B.",
+    "Viagra®",
+    "soup that is too hot",
+    "Muhammad (Peace Be Upon Him)",
+    "explaining how vaginas work",
+    "Academy Award winner Meryl Streep",
+    "drinking alone",
+    "dick fingers",
+    "multiple stab wounds",
+    "poopy diapers",
+    "child abuse",
+    "anal beads",
+    "slaughtering innocent civilians",
+    "pulling out",
+    "being able to talk to elephants",
+    "horse meat",
+    "a really cool hat",
+    "Stalin",
+    "a stray pube",
+    "worshipping that pussy",
+    "completely unwarranted confidence",
+    "doin’ it in the butt",
+    "my ex-wife",
+    "teaching a robot to love",
+    "touching a pug right on his penis",
+    "a windmill full of corpses",
+    "Count Chocula",
+    "Vladimir Putin",
+    "the Patriarchy",
+    "the glass ceiling",
+    "vomiting seafood and bleeding anally",
+    "The American Dream",
+    "not wearing pants",
+    "my balls on your face",
+    "pooping in a laptop and closing it",
+    "dead babies",
+    "foreskin",
+    "a saxophone solo",
+    "Italians",
+    "a fetus",
+    "firing a rifle into the air while balls deep in a squealing hog",
+    "Mike Pence",
+    "10,000 Syrian refugees",
+    "forced sterilization",
+    "my relationship status",
+    "an unwanted pregnancy",
+    "diversity",
+    "a white ethnostate",
+    "Bees?",
+    "Harry Potter erotica",
+    "giving birth to the Antichrist",
+    "three dicks at the same time",
+    "Nazis",
+    "8 oz. of sweet Mexican black-tar heroin",
+    "what that mouth do",
+    "dead parents",
+    "object permanence",
+    "opposable thumbs",
+    "racially-biased SAT questions",
+    "the Great Depression",
+    "chainsaws for hands",
+    "Nicolas Cage",
+    "child beauty pageants",
+    "explosions",
+    "not vaccinating my children because I am stupid",
+    "Lena Dunham",
+    "huffing spray paint",
+    "a man on the brink of orgasm",
+    "repression",
+    "invading Poland",
+    "my vagina",
+    "assless chaps",
+    "murder",
+    "giving 110%",
+    "Her Majesty, Queen Elizabeth II",
+    "the Trail of Tears",
+    "memes",
+    "sex with animals",
+    "being marginalized",
+    "goblins",
+    "hope",
+    "liberals",
+    "a micropenis",
+    "my soul",
+    "a ball of earwax, semen, and toenail clippings",
+    "a horde of Vikings",
+    "hot people",
+    "seething with quiet resentment",
+    "an Oedipus complex",
+    "geese",
+    "extremely tight pants",
+    "Fox News",
+    "a little boy who won’t shut the fuck up about dinosaurs",
+    "making a pouty face",
+    "vehicular manslaughter",
+    "women’s suffrage",
+    "some guy",
+    "Judge Judy",
+    "African children",
+    "this month’s mass shooting",
+    "Barack Obama",
+    "illegal immigrants",
+    "elderly Japanese men",
+    "the female orgasm",
+    "heteronormativity",
+    "crumbs all over the god damn carpet",
+    "Arnold Schwarzenegger",
+    "the wifi password",
+    "spectacular abs",
+    "a bird that shits human turds",
+    "a mopey zoo lion",
+    "a bag of magic beans",
+    "poor life choices",
+    "my sex life",
+    "Auschwitz",
+    "a snapping turtle biting the tip of your penis",
+    "all the dudes I’ve fucked",
+    "the clitoris",
+    "the Big Bang",
+    "land mines",
+    "The entire Mormon Tabernacle Choir",
+    "a micropig wearing a tiny raincoat and booties",
+    "penis breath",
+    "jerking off into a pool of children’s tears",
+    "man meat",
+    "me time",
+    "the Underground Railroad",
+    "poorly-timed Holocaust jokes",
+    "a sea of troubles",
+    "lumberjack fantasies",
+    "Morgan Freeman’s voice",
+    "women in yogurt commercials",
+    "natural male enhancement",
+    "being a motherfucking sorcerer",
+    "my black ass",
+    "genuine human connection",
+    "announcing that I am about to cum",
+    "balls",
+    "Grandma",
+    "friction",
+    "chunks of dead hitchhiker",
+    "farting and walking away",
+    "being a dick to children",
+    "one trillion dollars",
+    "drowning the kids in the bathtub",
+    "dying",
+    "drinking out of the toilet and eating garbage",
+    "the gays",
+    "the screams… the terrible screams",
+    "men",
+    "the bombing of Nagasaki",
+    "fake tits",
+    "the Amish",
+    "David Bowie flying in on a tiger made of lightning",
+    "my ugly face and bad personality",
+    "a bitch slap",
+    "a brain tumor",
+    "fear itself",
+    "Jews, gypsies, and homosexuals",
+    "the milkman",
+    "Cards Against Humanity"
+  ]
+}

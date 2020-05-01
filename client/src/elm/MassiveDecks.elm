@@ -4,6 +4,7 @@ import Browser
 import Browser.Navigation as Navigation
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import Http
 import Json.Decode as Json
 import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
@@ -28,6 +29,8 @@ import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Pages.Start as Start
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown as Unknown
+import MassiveDecks.Requests.Api as Api
+import MassiveDecks.Requests.Request as Request
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Settings.Messages as Settings
@@ -85,6 +88,7 @@ init flags url key =
             , speech = speech
             , notifications = Notifications.init
             , remoteMode = remoteMode
+            , sources = { builtIn = Nothing, cardcast = False }
             }
 
         ( page, pageCmd ) =
@@ -93,9 +97,12 @@ init flags url key =
 
             else
                 ( Pages.Loading, Cmd.none )
+
+        sourceCmd =
+            Request.map (Error.Add >> ErrorMsg) never UpdateSources |> Api.sourceInfo |> Http.request
     in
     ( { page = page, shared = shared, errorOverlay = Overlay.init }
-    , Cmd.batch [ pageCmd, settingsCmd, speechCmd ]
+    , Cmd.batch [ sourceCmd, pageCmd, settingsCmd, speechCmd ]
     )
 
 
@@ -264,6 +271,13 @@ update msg model =
             in
             ( { model | shared = { oldShared | notifications = notifications } }, notificationsCmd )
 
+        UpdateSources info ->
+            let
+                oldShared =
+                    model.shared
+            in
+            ( { model | shared = { oldShared | sources = info } }, Cmd.none )
+
         Refresh ->
             ( model, Navigation.reload )
 
@@ -284,7 +298,7 @@ update msg model =
                                     Settings.update model.shared (Settings.ChangeLang (Just language))
 
                                 ( lobby, lobbyCmd ) =
-                                    Lobby.initWithAuth { gameCode = auth.claims.gc, section = Just Lobby.Spectate } auth
+                                    Lobby.initWithAuth shared { gameCode = auth.claims.gc, section = Just Lobby.Spectate } auth
                             in
                             ( { model
                                 | page = Pages.Lobby lobby

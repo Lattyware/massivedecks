@@ -4,7 +4,7 @@ module MassiveDecks.Strings.Languages.En exposing (pack)
 This is the primary language, strings here are the canonical representation, and are suitable to translate from.
 -}
 
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
@@ -15,7 +15,7 @@ pack =
     { code = "en"
     , name = English
     , translate = translate
-    , recommended = "CAHBS" |> Cardcast.playCode |> Source.Cardcast
+    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
     }
 
 
@@ -713,6 +713,9 @@ translate mdString =
 
         CardcastEmptyPlayCode ->
             [ Text "Enter a ", Ref CardcastPlayCode, Text " for the deck you want to add." ]
+
+        BuiltIn ->
+            [ Text "Built-in" ]
 
         APlayer ->
             [ Text "A Player" ]
