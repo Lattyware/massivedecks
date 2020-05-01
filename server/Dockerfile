@@ -34,6 +34,7 @@ COPY ["./package.json", "./package-lock.json", "./"]
 RUN ["npm", "ci", "--only=production"]
 
 COPY ["./config.json5", "./"]
+COPY ["./decks", "./decks"]
 COPY --from=0 ["/md/dist", "./"]
 
 EXPOSE 8081
