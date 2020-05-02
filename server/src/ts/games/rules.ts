@@ -73,7 +73,7 @@ export const defaultTimeLimits = (): RoundTimeLimits => ({
   playing: 60,
   revealing: 30,
   judging: 30,
-  complete: 2
+  complete: 2,
 });
 
 /**
@@ -83,7 +83,7 @@ export const create = (): Rules => ({
   handSize: 10,
   scoreLimit: 25,
   houseRules: HouseRules.create(),
-  timeLimits: defaultTimeLimits()
+  timeLimits: defaultTimeLimits(),
 });
 
 /**
@@ -122,5 +122,5 @@ export interface ComedyWriter {
 
 export const censor = (rules: Rules): Public => ({
   ...rules,
-  houseRules: HouseRules.censor(rules.houseRules)
+  houseRules: HouseRules.censor(rules.houseRules),
 });

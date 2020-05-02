@@ -93,7 +93,7 @@ front shared getSummary (ViewBody viewBody) viewInstructions source =
 
 info : Shared -> Configure.GetSummary -> ViewInstructions msg -> Source -> Html msg
 info shared getSummary (ViewInstructions viewInstructions) source =
-    Html.div [ HtmlA.class "info" ] ((source |> viewSource shared getSummary) :: viewInstructions ())
+    Html.div [ HtmlA.class "card-info" ] ((source |> viewSource shared getSummary) :: viewInstructions ())
 
 
 viewSource : Shared -> Configure.GetSummary -> Source -> Html msg

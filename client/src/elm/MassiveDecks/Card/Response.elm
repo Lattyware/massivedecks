@@ -102,7 +102,7 @@ viewCustomBody id update canonicalize canonicalValue value =
             [ Html.textarea
                 [ HtmlA.id id
                 , mostRecentValue |> HtmlA.value
-                , update |> HtmlE.onInput
+                , (String.replace "\n" "" >> update) |> HtmlE.onInput
                 , mostRecentValue |> canonicalize |> HtmlE.onBlur
                 ]
                 []

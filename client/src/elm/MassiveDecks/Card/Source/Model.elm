@@ -23,7 +23,7 @@ import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 type Source
     = Ex External
     | Custom
-    | Fake
+    | Fake (Maybe String)
 
 
 {-| An external source.

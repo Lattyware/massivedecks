@@ -12,6 +12,7 @@ module MassiveDecks.Models.Decoders exposing
     , lobbySummary
     , lobbyToken
     , mdError
+    , part
     , privilege
     , remoteControlCommand
     , revealingRound
@@ -942,9 +943,6 @@ styleByName name =
     case name of
         "Em" ->
             Json.succeed Parts.Em
-
-        "Strong" ->
-            Json.succeed Parts.Strong
 
         _ ->
             unknownValue "style" name

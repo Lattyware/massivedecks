@@ -3,13 +3,16 @@ module MassiveDecks.Card.Parts exposing
     , Parts
     , Style(..)
     , Transform(..)
+    , coordinateMap
     , fromList
-    , map
+    , isSlot
     , slotCount
     , unsafeFromList
     , view
     , viewFilled
     , viewFilledString
+    , viewLinesString
+    , viewWithAttributes
     )
 
 import Html exposing (Html)
@@ -30,7 +33,6 @@ type Transform
 type Style
     = NoStyle
     | Em
-    | Strong
 
 
 {-| A part of a call's text. This is either just text or a position for a call to be inserted in-game.
@@ -50,6 +52,13 @@ type alias Line =
 -}
 type Parts
     = Parts (List Line)
+
+
+{-| Map through all the parts with coordinates.
+-}
+coordinateMap : Parts -> (Int -> Int -> Part -> a) -> List a
+coordinateMap (Parts lines) f =
+    lines |> List.indexedMap (\line -> List.indexedMap (f line)) |> List.concat
 
 
 {-| A predicate checking if a part is a slot.
@@ -75,25 +84,19 @@ fromList lines =
         Nothing
 
 
-{-| TODO: Remove
+{-| Construct without checking for at least one `Slot`. This is designed for use with fake cards or the editor where
+that guarantee isn't important.
 -}
 unsafeFromList : List Line -> Parts
 unsafeFromList lines =
     Parts lines
 
 
-{-| Apply the given function to each `Part`, returning the resulting `List`.
--}
-map : (Line -> a) -> Parts -> List a
-map f lines =
-    lines |> extract |> List.map f
-
-
 {-| The number of `Slot`s in the `Parts`. This will be one or more.
 -}
 slotCount : Parts -> Int
-slotCount lines =
-    lines |> extract |> List.concat |> List.filter isSlot |> List.length
+slotCount (Parts lines) =
+    lines |> List.concat |> List.filter isSlot |> List.length
 
 
 {-| Render the `Parts` to HTML.
@@ -113,66 +116,82 @@ viewFilledString blankString play (Parts lines) =
 {-| Render the `Parts` with slots filled with the given values.
 -}
 viewFilled : List String -> Parts -> List (Html msg)
-viewFilled play (Parts lines) =
-    viewLinesHtml play lines
+viewFilled play parts =
+    viewWithAttributes (\_ -> \_ -> \_ -> []) play parts
+
+
+{-| Render the parts with filled slots and attributes applied to each part.
+-}
+viewWithAttributes : (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> Parts -> List (Html msg)
+viewWithAttributes attributes play (Parts lines) =
+    viewLinesHtml attributes play lines
+
+
+{-| Render lines to a string without needing a complete parts.
+-}
+viewLinesString : String -> List String -> List Line -> List String
+viewLinesString blankPhrase =
+    viewLines (\_ -> \s -> \p -> viewPartsString blankPhrase s p |> String.concat) 0 (\_ -> \_ -> \_ -> [])
 
 
 
 {- Private -}
 
 
-viewLines : (List String -> List Part -> a) -> List String -> List Line -> List a
-viewLines renderParts play lines =
+viewLines : ((Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> a) -> Int -> (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> List Line -> List a
+viewLines renderParts index attributes play lines =
     case lines of
         firstLine :: restLines ->
             let
                 slots =
                     firstLine |> List.filter isSlot |> List.length
             in
-            renderParts (List.take slots play) firstLine :: viewLines renderParts (List.drop slots play) restLines
+            renderParts (attributes index) (List.take slots play) firstLine :: viewLines renderParts (index + 1) attributes (List.drop slots play) restLines
 
         [] ->
             []
 
 
-viewLinesHtml : List String -> List Line -> List (Html msg)
-viewLinesHtml =
-    viewLines (\s -> \p -> viewPartsHtml s p |> Html.p [])
+viewLinesHtml : (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> List Line -> List (Html msg)
+viewLinesHtml attributes =
+    viewLines (\a -> \s -> \p -> Html.p [] (viewPartsHtml a s p)) 0 attributes
 
 
-viewLinesString : String -> List String -> List Line -> List String
-viewLinesString blankPhrase =
-    viewLines (\s -> \p -> viewPartsString blankPhrase s p |> String.join "")
-
-
-viewParts : (Bool -> String -> Style -> List a) -> a -> List String -> List Part -> List a
-viewParts viewText emptySlot play parts =
+viewParts : (List (Html.Attribute msg) -> Bool -> String -> Style -> List a) -> (List (Html.Attribute msg) -> a) -> Int -> (Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> List a
+viewParts viewText emptySlot index attributes play parts =
     case parts of
         firstPart :: restParts ->
+            let
+                recurse =
+                    viewParts viewText emptySlot (index + 1) attributes
+
+                attributesForThis =
+                    attributes index firstPart
+            in
             case firstPart of
                 Text string style ->
-                    viewText False string style ++ viewParts viewText emptySlot play restParts
+                    viewText attributesForThis False string style ++ recurse play restParts
 
                 Slot transform style ->
                     case play of
                         firstPlay :: restPlay ->
-                            viewText True (applyTransform transform firstPlay) style ++ viewParts viewText emptySlot restPlay restParts
+                            viewText attributesForThis True (applyTransform transform firstPlay) style ++ recurse restPlay restParts
 
                         [] ->
-                            emptySlot :: viewParts viewText emptySlot [] restParts
+                            emptySlot attributesForThis :: recurse [] restParts
 
         [] ->
             []
 
 
-viewPartsHtml : List String -> List Part -> List (Html msg)
+viewPartsHtml : (Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> List (Html msg)
 viewPartsHtml =
-    viewParts viewTextHtml (Html.span [ HtmlA.class "slot" ] [])
+    viewParts viewTextHtml (\attributes -> Html.span (HtmlA.class "slot" :: attributes) []) 0
 
 
 viewPartsString : String -> List String -> List Part -> List String
 viewPartsString blankPhrase =
-    viewParts (\_ -> \s -> \_ -> [ s ]) blankPhrase
+    viewParts (\_ -> \_ -> \s -> \_ -> [ s ]) (always blankPhrase) 0 (\_ -> \_ -> [])
 
 
 applyTransform : Transform -> String -> String
@@ -188,8 +207,8 @@ applyTransform transform value =
             String.capitalise value
 
 
-viewTextHtml : Bool -> String -> Style -> List (Html msg)
-viewTextHtml slot string style =
+viewTextHtml : List (Html.Attribute msg) -> Bool -> String -> Style -> List (Html msg)
+viewTextHtml attributes slot string style =
     let
         element =
             case style of
@@ -199,19 +218,18 @@ viewTextHtml slot string style =
                 Em ->
                     Html.em
 
-                Strong ->
-                    Html.strong
-
         words =
-            string |> splitWords |> List.map (\word -> element [] [ Html.text word ])
+            string |> splitWords |> List.map (\word -> Html.span [] [ Html.text word ])
     in
     if slot then
-        [ Html.span [ HtmlA.class "slot" ] words ]
+        [ element (HtmlA.class "slot" :: attributes) words ]
 
     else
-        words
+        [ element (HtmlA.class "text" :: attributes) words ]
 
 
+{-| Splits words by retains the whitespace.
+-}
 splitWords : String -> List String
 splitWords string =
     case String.uncons string of
@@ -230,10 +248,3 @@ splitWords string =
 
                         head :: tail ->
                             String.cons other head :: tail
-
-
-extract : Parts -> List Line
-extract lines =
-    case lines of
-        Parts list ->
-            list

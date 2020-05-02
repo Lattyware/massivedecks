@@ -1,4 +1,10 @@
-module MassiveDecks.Card.Call exposing (slotCount, view, viewFilled, viewUnknown)
+module MassiveDecks.Card.Call exposing
+    ( slotCount
+    , view
+    , viewFilled
+    , viewUnknown
+    , viewWithAttributes
+    )
 
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -33,6 +39,13 @@ view shared config side attributes call =
 viewFilled : Shared -> Config -> Side -> List (Html.Attribute msg) -> List String -> Call -> Html msg
 viewFilled shared config side attributes fillWith call =
     viewInternal shared config side attributes (Parts.viewFilled fillWith) call
+
+
+{-| Render the call to HTML, with the slots filled with the given values and custom attributes applied to each part.
+-}
+viewWithAttributes : Shared -> Config -> Side -> List (Html.Attribute msg) -> (Int -> Int -> Parts.Part -> List (Html.Attribute msg)) -> List String -> Call -> Html msg
+viewWithAttributes shared config side attributes partAttributes fillWith call =
+    viewInternal shared config side attributes (Parts.viewWithAttributes partAttributes fillWith) call
 
 
 {-| Render an unknown response to HTML, face-down.

@@ -13,7 +13,7 @@
   "module": "dist/index.js",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc",
+    "build": "npx tsc",
     "prestart": "npm run build",
     "start": "node --es-module-specifier-resolution=node dist/index.js",
     "predev": "npm run build",

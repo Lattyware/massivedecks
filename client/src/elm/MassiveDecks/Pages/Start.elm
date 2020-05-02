@@ -293,7 +293,7 @@ loadingOrLoaded model =
 
 subtitleCard : Shared -> Card.Response
 subtitleCard shared =
-    Card.response (Strings.ShortGameDescription |> Lang.string shared) "" Source.Fake
+    Card.response (Strings.ShortGameDescription |> Lang.string shared) "" (Source.Fake Nothing)
 
 
 gameCodeForRoute : Route -> Maybe GameCode
@@ -595,4 +595,4 @@ examplePick2 =
             ]
         )
         ""
-        Source.Fake
+        (Source.Fake Nothing)

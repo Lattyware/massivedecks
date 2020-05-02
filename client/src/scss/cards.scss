@@ -38,18 +38,19 @@
       align-content: flex-start;
       justify-content: flex-start;
 
-      span, em, strong {
+      span {
         white-space: pre-wrap;
         overflow-wrap: break-word;
         word-break: break-all;
       }
 
+      .text {
+        display: contents;
+      }
+
       .slot {
         display: contents;
-
-        span, em, strong {
-          text-decoration: underline;
-        }
+        text-decoration: underline;
 
         &:empty {
           display: block;
@@ -142,11 +143,17 @@
     height: 100%;
   }
 
-  .info {
+  .card-info {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-top: 0.5em;
+    margin: 0.5em 0.25em 0.25em 0.25em;
+    font-size: 0.75em;
+    padding: 0.25em;
+
+    span {
+      flex-grow: 1;
+    }
 
     .source {
       font-size: 1.2em;
@@ -179,4 +186,42 @@
       }
     }
   }
+}
+
+.instruction {
+  white-space: nowrap;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-rendering: optimizeLegibility;
+
+  &:before {
+    content: "[";
+  }
+
+  &:after {
+    content: "]";
+  }
+}
+
+.game-card .instruction {
+  &:before,
+  &:after {
+    content: none;
+  }
+}
+
+.amount {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  text-align: center;
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: 0.3em;
+  border-radius: 50%;
+  background: var(--fg, $call-background);
+  color: var(--bg, $call-color);
 }

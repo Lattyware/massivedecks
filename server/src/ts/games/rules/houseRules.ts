@@ -22,10 +22,10 @@ export interface Public {
 }
 
 export const create = (): HouseRules => ({
-  rando: Rando.create()
+  rando: Rando.create(),
 });
 
 export const censor = (houseRules: HouseRules): Public => ({
   ...houseRules,
-  rando: Rando.censor(houseRules.rando)
+  rando: Rando.censor(houseRules.rando),
 });

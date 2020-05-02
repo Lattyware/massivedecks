@@ -4,12 +4,8 @@
 @import "./animation.scss";
 @import "./variables.scss";
 
-@mixin no-wrap() {
-  white-space: nowrap;
-}
-
 .no-wrap {
-  @include no-wrap();
+  white-space: nowrap;
 }
 
 body {
@@ -99,7 +95,7 @@ a,
 }
 
 .term {
-  @include no-wrap();
+  white-space: nowrap;
   font-variant: small-caps;
   letter-spacing: 0.05em;
   text-rendering: optimizeLegibility;
@@ -125,44 +121,6 @@ a,
       display: inline;
     }
   }
-}
-
-.instruction {
-  @include no-wrap();
-
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-rendering: optimizeLegibility;
-
-  &:before {
-    content: "[";
-  }
-
-  &:after {
-    content: "]";
-  }
-}
-
-.game-card .instruction {
-  &:before,
-  &:after {
-    content: none;
-  }
-}
-
-.amount {
-  @include no-wrap();
-  display: inline-flex;
-  align-items: center;
-  align-content: center;
-  justify-content: center;
-  text-align: center;
-  width: 1.2em;
-  height: 1.2em;
-  margin-left: 0.3em;
-  border-radius: 50%;
-  background: var(--fg, $call-background);
-  color: var(--bg, $call-color);
 }
 
 // TODO: Move to Elm asset loader when one works.

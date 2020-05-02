@@ -1,16 +1,17 @@
 module MassiveDecks.Card.Source.Fake exposing (methods)
 
 import MassiveDecks.Card.Source.Methods as Source
+import MassiveDecks.Card.Source.Model exposing (Source(..))
 import MassiveDecks.Strings as Strings
 
 
-methods : Source.Methods msg
-methods =
+methods : Maybe String -> Source.Methods msg
+methods name =
     { name = \_ -> Strings.MassiveDecks
     , logo = \() -> Nothing
     , defaultDetails =
         \_ ->
-            { name = ""
+            { name = name |> Maybe.withDefault ""
             , url = Nothing
             }
     , tooltip = \_ -> Nothing

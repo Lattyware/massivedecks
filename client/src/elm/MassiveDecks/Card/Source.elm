@@ -208,8 +208,8 @@ methods source =
         Custom ->
             Player.methods
 
-        Fake ->
-            Fake.methods
+        Fake fakeName ->
+            Fake.methods fakeName
 
 
 externalMethods : External -> ExternalMethods msg
