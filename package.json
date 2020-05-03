@@ -10,7 +10,7 @@
         "node": "13.x.x"
     },
     "scripts": {
-        "build": "npm run buildServer && npm run buildClient",
+        "build": "cp -r server/decks decks && npm run buildServer && npm run buildClient",
         "buildServer": "npm explore @massivedecks/server -- npm run build",
         "buildClient": "npm explore @massivedecks/client -- npm run build"
     },
