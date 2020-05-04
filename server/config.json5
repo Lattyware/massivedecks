@@ -30,7 +30,8 @@
       // The game will look for these in the directory given by basePath above, and will expect them to have the
       // .deck.json5 extension.
       decks: [
-        "cah-base-en"
+        "cah-base-en",
+        "cah-base-ptbr"
       ]
     },
 
