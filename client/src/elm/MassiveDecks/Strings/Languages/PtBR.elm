@@ -14,7 +14,7 @@ pack =
     { code = "ptBR"
     , name = BrazilianPortuguese
     , translate = translate
-    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
+    , recommended = "cah-base-ptbr" |> BuiltIn.Id |> Source.BuiltIn
     }
 
 
@@ -482,13 +482,11 @@ translate mdString =
             [ Text (String.fromInt numberOfCards) ]
 
         -- Lobby
-        -- TODO: Translate
         LobbyNameLabel ->
-            [ Text "Game Name" ]
+            [ Text "Nome do Jogo" ]
 
-        -- TODO: Translate
         DefaultLobbyName { owner } ->
-            [ Text owner, Text "'s Game" ]
+            [ Text "Jogo de ", Text owner ]
 
         Invite ->
             [ Text "Convide pessoas ao jogo." ]
@@ -690,7 +688,7 @@ translate mdString =
             ]
 
         NoDecksHint ->
-            [ Text "Não tem certeza? Adicione o deck original de ", Raw CardsAgainstHumanity, Text " (em inglês)." ]
+            [ Text "Não tem certeza? Adicione o deck original de ", Raw CardsAgainstHumanity, Text "." ]
 
         WaitForDecks ->
             [ Text "Os decks devem carregar antes de que você possa iniciar o jogo." ]
@@ -732,9 +730,8 @@ translate mdString =
         CardcastEmptyPlayCode ->
             [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deck que você queira adicionar." ]
 
-        -- TODO: Translate
         BuiltIn ->
-            [ Text "Built-in" ]
+            [ Text "Embutido" ]
 
         APlayer ->
             [ Text "Um jogador" ]
