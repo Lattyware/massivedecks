@@ -1,0 +1,1354 @@
+{
+  "name": "Cartas Contra a Humanidade",
+  "calls": [
+    [
+      [
+        "Faça um poema de três versos."
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        {},
+        "."
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        " + ",
+        {},
+        " = ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Globo Filmes apresenta ",
+        {
+          "transform": "Capitalize"
+        },
+        ",  a história de ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Sim, eu matei ",
+        {},
+        "."
+      ],
+      [
+        "Como? ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Dizem as más línguas que o prato predileto de Vladimir Putin é ",
+        {},
+        " recheado com ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Nunca de fato entendi ",
+        {},
+        ", até encontrar ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "No próximo Tropa de Elite, Capitão Nascimento descobre que milicianos estavam usando ",
+        {},
+        " para ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Em um mundo devastado por ",
+        {},
+        ", nosso único consolo é ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        " é uma ladeira escorregadia que leva direto para ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Quando eu estava viajando no LCD, ",
+        {},
+        " se transformou em ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Passo 1: ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Passo 2: ",
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Passo 3: Lucrar."
+      ]
+    ],
+    [
+      [
+        "E para meu próximo número, tirarei ",
+        {},
+        " de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "E o prêmio ",
+        {},
+        " vai para ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Véi, na boa..."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "As mina pira véi."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "Tô dentro!"
+      ]
+    ],
+    [
+      [
+        "Bebo pra esquecer ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que você espera não achar em seu prato de comida chinesa?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Historiadores encontraram dezenas de cadernos de Picasso com esboços de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que Dick Cheney prefere?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que os Estados Unidos jogaram, de avião, às crianças do afeganistão?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "A medicina alternativa agora está explorando os poderes curativos de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que vou deixar de fazer na quaresma?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Idosos tem cheiro de quê?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que me causa gases incontroláveis?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Guerra! Pra que serve?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Buscando aumentar sua audiência, o Museu de História Natural abriu uma exposição interativa sobre ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Quando eu for bilionário, mandarei fazer uma estátua de 15 metros de altura para celebrar ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "A seguir, na ESPN2: Campeonato Mundial de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Qual é a próxima dupla de super-herói e ajudante?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Estudo mostra que ratos de laboratório atravessam labirintos 50% mais rápido depois de serem expostos à ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Mas antes de matá-lo, Sr. Bond, preciso te mostrar ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Antropólogos recentemente descobriram uma tribo primitiva que cultua ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Chega à Broadway nesta temporada o musical ",
+        {
+          "transform": "Capitalize",
+          "style": "Em"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Assim expira o mundo. Não com uma explosão, mas com ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que ajuda o Obama a relaxar depois do trabalho?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Que cheiro é esse?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Por que não consigo dormir à noite?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ":"
+      ],
+      [
+        "testado pelas crianças, aprovado pelas mães."
+      ]
+    ],
+    [
+      [
+        "O que é tiro-e-queda para se conseguir sexo?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Não sei com que armas se lutará a terceira guerra mundial, mas a quarta será com ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que é que tem à vontade no céu?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Qual o próximo brinde do McLanche Feliz?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Por que minha pele está pegajosa?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "É assim que eu espero morrer."
+      ]
+    ],
+    [
+      [
+        "Que som é esse?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que causou o fim da minha ultima relação?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Durante o sexo, gosto de pensar em ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que é mais EMO?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que é que vovó acharia perturbante, mas estranhamente charmoso?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Novo reality-show da MTV apresenta oito celebridades desgastadas morando com ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ],
+      [
+        "É uma armadilha!"
+      ]
+    ],
+    [
+      [
+        "Resolução da ANAC agora proíbe ",
+        {},
+        " em aeronaves."
+      ]
+    ],
+    [
+      [
+        "É uma pena que as crianças hoje em dia estejam todas envolvidas em ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Em 1000 anos, quando o dinheiro de papel for apenas uma lembrança distante, ",
+        {},
+        " será nossa moeda"
+      ]
+    ],
+    [
+      [
+        "CBF proíbe ",
+        {},
+        " por proporcionar vantagem desleal aos jogadores."
+      ]
+    ],
+    [
+      [
+        "Qual é o prazer proibido do Batman?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Vem aí o novo livro de J. K. Rowling: ",
+        {
+          "text": "Harry Potter e a Câmara de ",
+          "style": "Em"
+        },
+        {
+          "transform": "Capitalize",
+          "style": "Em"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Desculpe, professora, mas é que eu não pude terminar o dever de casa por causa de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que eu trouxe do Paraguai?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "?"
+      ],
+      [
+        "Tem um app pra isso."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ". "
+      ],
+      [
+        "Aposto que um só não te satisfaz!"
+      ]
+    ],
+    [
+      [
+        "Qual é meu anti-droga?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Enquanto os Estados Unidos e a União Soviética competiam na corrida espacial, o governo brasileiro investia pesado em ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "No novo filme da Disney, Hanna Montana enfrenta ",
+        {},
+        " pela primeira vez."
+      ]
+    ],
+    [
+      [
+        "Qual é meu poder secreto?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Qual é a dieta do momento?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que o Vin Diesel teve no jantar?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Quando o faraó permaneceu imóvel, Moisés invocou a praga dos ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Como estou mantendo minha atual relação amorosa?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Qual é o cúmulo da porquice?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Dizem que em Bangu 3 se troca dez maços de cigarro por ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Depois do terremoto, o Sean Penn levou ",
+        {},
+        " ao Haití."
+      ]
+    ],
+    [
+      [
+        "No próximo Natal o Papai Noel vai dar ",
+        {},
+        " pra criança que não se comportar."
+      ]
+    ],
+    [
+      [
+        "A vida dos índios americanos mudou para sempre quando o homem branco lhes apresentou ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que o Ministério da Educação está usando para inspirar os estudantes do interior a serem bem sucedidos?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Talvez ela tenha nascido assim."
+      ],
+      [
+        "Talvez seja ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Em seus momentos finais, Michael Jackson pensou em ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Homem branco gosta de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Porque estou todo doído?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Um jantar romântico à luz de velas seria incompleto sem ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que eu levaria ao passado para convencer as pessoas de que sou um ser mágico poderoso?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Em breve, numa livraria perto de você, ",
+        {
+          "transform": "Capitalize",
+          "style": "Em"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "A excursão escolar foi um fiasco devido a ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "Qual é o melhor amigo de uma garota?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "Doutor Drauzio, estou tendo problemas com ",
+        {},
+        " e gostaria de ouvir o seu conselho."
+      ]
+    ],
+    [
+      [
+        "Quando eu for presidente, criarei o Departamento de ",
+        {},
+        "."
+      ]
+    ],
+    [
+      [
+        "O que meus pais estão escondendo de mim?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que é que nunca falha em deixar uma festa mais animada?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        "O que é que fica melhor quando envelhece?"
+      ],
+      [
+        {
+          "transform": "Capitalize"
+        },
+        "."
+      ]
+    ],
+    [
+      [
+        {
+          "transform": "Capitalize"
+        },
+        ": bom até a última gota."
+      ]
+    ],
+    [
+      [
+        "Estou com 99 problemas, mas ",
+        {},
+        " não é um deles."
+      ]
+    ]
+  ],
+  "responses": [
+    "uma maldição cigana",
+    "um momento de silêncio",
+    "um festival da linguiça",
+    "um  policial honesto sem nada a perderr",
+    "escassez de comida",
+    "bactéria carnívora",
+    "erva para aumentar a libido",
+    "não dar a mínima para o terceiro mundo",
+    "sexting",
+    "transmutação corpórea",
+    "atrizes pornô",
+    "estuprar e saquear",
+    "72 virgens",
+    "fuzilamento",
+    "um paradoxo de viagem no tempo",
+    "autêntica cozinha mexicana",
+    "cintilante",
+    "consultores",
+    "dívida monstruosa",
+    "problemas com o pai na infância",
+    "cotas raciais",
+    "deixar o lustre cair sobre seus inimigos enquanto a outra ponta da corda te lança para cima",
+    "o ex-presidente George W. Bush",
+    "nudez frontal",
+    "injeções hormonais",
+    "pôr um ovo",
+    "assistir Cartoon Network pelado(a)",
+    "fingir que se importa",
+    "pagar mico em público",
+    "compartilhar agulhas",
+    "meleca de nariz",
+    "a inevitável morte térmica do universo",
+    "o milagre do parto",
+    "o apocalipse",
+    "passar o rodo",
+    "o privilégio de ser branco",
+    "deveres da esposa",
+    "uma viagem para Pelotas",
+    "desodorante AXE",
+    "o sangue de Cristo",
+    "horríveis acidentes causados  por depilação a laser",
+    "BATMAN!",
+    "agricultura",
+    "um mongolóide vigoroso",
+    "seleção natural",
+    "aborto clandestino",
+    "comer todos os doces que deveriam ser vendidos na campanha de caridade",
+    "os braços da Michelle Obama",
+    "o jogo World of Warcraft",
+    "cobiçar a mulher do próximo",
+    "obesidade",
+    "um clipe homo-erótico sobre voleibol",
+    "tétano",
+    "exibição para fins de acasalamento",
+    "torção testicular",
+    "buffet de camarão livre por R$ 4,99",
+    "feijoada",
+    "Kanye West",
+    "queijo quente",
+    "ataques de velociraptor",
+    "tirar a camisa",
+    "esmegma",
+    "alcoolismo",
+    "um cara de meia idade andando de patins",
+    "os raios de sentimentos bons dos Ursinhos Carinhosos",
+    "empanturrar-se e purgar-se",
+    "pirulitos gigantes",
+    "auto-repugnância",
+    "crianças na coleira",
+    "preliminares meia-boca",
+    "a Bíblia Sagrada",
+    "pornô calabouço-alemão",
+    "estar em chamas",
+    "gravidez na adolescência",
+    "Gandhi",
+    "deixar uma mensagem de voz esquisita",
+    "uppercuts",
+    "funcionários de atendimento ao cliente",
+    "uma ereção que dura mais que quatro horas",
+    "minha genitália",
+    "pegar mulher na clínica de aborto",
+    "ciência",
+    "sexo oral não recíproco",
+    "aves que não voam",
+    "uma boa cheirada",
+    "afogamento simulado",
+    "café da manhã balanceado",
+    "faculdades historicamente mais frequntadas por negros",
+    "literalmente roubar doce de criança",
+    "a fundação Make-A-Wish®",
+    "um arranhão no traseiro mantido em segredo",
+    "notas passivo-agressivas no trabalho",
+    "o time de ginástica chinês",
+    "depender do SUS",
+    "mijar um pouco",
+    "Capitão Nascimento levando bronca da sogra",
+    "polução noturna",
+    "os judeus",
+    "minhas curvas",
+    "coisas poderosas",
+    "piscar para idosos",
+    "repórteres de programa humorísticos",
+    "uma carícia suave na parte interna da coxa",
+    "tensão sexual",
+    "o fruto proibido",
+    "esqueleto",
+    "churrasco na laje",
+    "ser rico",
+    "doce, doce vingança",
+    "republicanos",
+    "um antílope flatulento",
+    "Natalie Portman",
+    "acariciar alguém sem permissão",
+    "pilotos Kamikaze",
+    "Sean Connery",
+    "a agenda homossexual",
+    "o mexicano que trabalha duro",
+    "um falcão encapuzado",
+    "coroinhas",
+    "o cara da previsão do tempo",
+    "ficar tão nervoso a ponto de ter uma ereção",
+    "amostras grátis",
+    "um grande estardalhaço por nada",
+    "fazer a coisa certa",
+    "o jeitinho brasileiro",
+    "lactação",
+    "paz mundial",
+    "RoboCop",
+    "Senvergonhice",
+    "Justin Bieber",
+    "Oompa-Loompas",
+    "cantar à tirolesa inapropriadamente",
+    "puberdade",
+    "fantasmas",
+    "implantes de silicone assimétricos",
+    "Axé Music",
+    "masturbação feminina",
+    "dinheiro na cueca",
+    "sacolé",
+    "brutalidade policial",
+    "flanelinhas",
+    "pré-adolescentes",
+    "escalpeamento",
+    "deixar escapar uma risadinha à menção de Tutsis e Hutus",
+    "twittar",
+    "Darth Vader",
+    "uma masturbação triste",
+    "justamente o que você esperaria",
+    "esperar um arroto e acabar vomitando no chão",
+    "gardenal",
+    "células tronco",
+    "vestir-se de modo a exibir a lateral dos seios com elegância",
+    "sexo entre pandas",
+    "lobotomia",
+    "Tom Cruise",
+    "cachalotes",
+    "moradores de rua",
+    "dar uns amassos",
+    "incesto",
+    "ejaculação precoce",
+    "um mímico tendo um AVC",
+    "Hulk Hogan",
+    "Deus",
+    "coçar sob as dobras da pele",
+    "urofilia",
+    "emoções",
+    "lamber coisas para estabelecer que são propriedade sua",
+    "cerveja quente",
+    "a placenta",
+    "combustão humana espontânea",
+    "amizade colorida",
+    "pintar com os dedos",
+    "cheiro de pessoa velha",
+    "morrer de disenteria",
+    "meus demônios interiores",
+    "pistola d’água cheia de urina de gato",
+    "Aaron Burr",
+    "chamego",
+    "a crônica",
+    "rinha de galo",
+    "fogo amigo",
+    "Ronald Reagan",
+    "Uma festa de aniversário decepcionante",
+    "uma negra atrevida",
+    "atleta de olimpíada de matemática",
+    "um cavalo minúsculo",
+    "William Shatner",
+    "cavalgar rumo ao pôr do sol",
+    "uma reviravolta num roteiro de M. Night Shyamalan",
+    "judeu de cabelo afro",
+    "Destruição Mútua Assegurada (MAD)",
+    "pedófilos",
+    "fungos",
+    "roubar sepultura",
+    "comer o último bisão conhecido",
+    "catapultas",
+    "os pobres",
+    "o doce veneno do escorpião",
+    "funk proibidão",
+    "a força",
+    "limpar a bunda dela",
+    "design inteligente",
+    "lingua solta",
+    "AIDS",
+    "imagens de seios",
+    "o Übermensch",
+    "Sarah Palin",
+    "legião dos Super-Heróis Brasileiros",
+    "ficar completamente dopado",
+    "cientologia",
+    "inveja do pênis",
+    "rezar para curar o homossexualismo",
+    "flertar",
+    "dois anões cagando num balde",
+    "a Ku Klux Klan",
+    "Genghis Khan",
+    "metanfetamina",
+    "servidão",
+    "perigo relacionado à pessoas estranhas",
+    "um brinquedo Bop It™",
+    "a carreira de ator do Shaquille O’Neal",
+    "exibir-se",
+    "milícias",
+    "sobrecompensação",
+    "cena de “bukkake” em baixa resolução",
+    "uma vida de tristeza",
+    "racismo",
+    "aremesso de anão",
+    "felicidade ingênua",
+    "um macaco fumando cigarro",
+    "inundação",
+    "o testículo ausente em Lance Armstrong",
+    "ância de vômito",
+    "terroristas",
+    "Britney Spears aos 55",
+    "atitude",
+    "subitamente cantar e dançar uma canção em público",
+    "lepra",
+    "buracos gloriosos",
+    "mamilos protuberantes",
+    "o coração de uma criança",
+    "filhotes de cachorro",
+    "acordar semi-nú num estacionamento a céu aberto",
+    "dental dams",
+    "a vagina da Toni Morrison",
+    "períneo",
+    "escuta ativa",
+    "limpeza étnica",
+    "comer, rezar, amar",
+    "a mão invisível",
+    "esperando até o casamento",
+    "estupidez incomensurável",
+    "Euphoria™, por Calvin Klein",
+    "repassar o presente",
+    "auto-canibalismo",
+    "disfunção erétil",
+    "minha coleção de brinquedos sexuais eletrônicos",
+    "o papa",
+    "brancos",
+    "pornografia envolvendo tentáculos",
+    "gel de cabelo em excesso",
+    "seppuku",
+    "dançar no gelo com parceiro do mesmo sexo",
+    "trapacear na olimpíada para-olímpica",
+    "carisma",
+    "Keanu Reeves",
+    "Sean Penn",
+    "Nickelback",
+    "uma inspeção",
+    "distribuir camisinhas em porta de igreja",
+    "menstruação",
+    "crianças com câncer anal",
+    "uma surpresa desagradável",
+    "o sul",
+    "violação dos mais básicos de nossos direitos humanos",
+    "PEDE PRA SAIR!",
+    "estupro",
+    "ser fabuloso",
+    "necrofilia",
+    "centauros",
+    "os cientistas desocupados da Austrália",
+    "negros",
+    "cavalheirismo",
+    "quentinha",
+    "vadias",
+    "vadias",
+    "retardados",
+    "órfãos",
+    "MechaHitler",
+    "evacuação dolorosa",
+    "outro maltido filme sobre vampiros",
+    "mola maluca",
+    "o verdadeiro significado do natal",
+    "estrogênio",
+    "indigestão de torresmo",
+    "aquele negócio que eletrocuta o abdomem",
+    "cálculo renal",
+    "clareamento anal",
+    "Michael Jackson",
+    "melhoramentos cibernéticos",
+    "caras que não telefonam",
+    "lençóis infectados com varíola",
+    "masturbação",
+    "conotações classistas",
+    "emitir flatos vaginais",
+    "esconder uma ereção",
+    "lingerie comestível",
+    "Viagra®",
+    "sopa muito quente",
+    "Maomé (Louvado Seja Seu Nome)",
+    "sexo surpresa!",
+    "X-Tudão",
+    "beber sozinho",
+    "mão furada",
+    "múltiplas facadas",
+    "sujar-se",
+    "abuso infantil",
+    "cordão anal com nódulos e alça de segurança",
+    "vítimas civís",
+    "coito interrompido",
+    "Robert Downey Jr.",
+    "carne de cavalo",
+    "um chapéu super transado",
+    "Kim Jong-il",
+    "um pelo pubiano",
+    "fraternidades judias",
+    "cotas raciais",
+    "fazer aquilo na bunda",
+    "alimentar Rosie O’Donnell",
+    "ensinar um robô a amar",
+    "ser foda",
+    "um moinho de vento cheio de cadáveres",
+    "Toddynho",
+    "vestir roupa íntima ao avesso para economizar roupa lavada",
+    "um raio da morte",
+    "teto de vidro",
+    "um congelador cheio de órgãos",
+    "o Sonho Americano",
+    "barriga de chopp",
+    "quando você peida e sai mais do que devia",
+    "pegar de volta o que foi dado",
+    "bebês mortos",
+    "prepúcio",
+    "solos de saxofone",
+    "italianos",
+    "um feto",
+    "disparar uma espingarda para o alto enquanto trepa com uma cabra que está aos berros",
+    "Dick Cheney",
+    "amputados",
+    "eugenia",
+    "o status da minha relação",
+    "Christopher Walken",
+    "abelhas?",
+    "erotismo baseado em Harry Potter",
+    "faculdade",
+    "ficar bêbado ao bochechar anti-séptico bucal",
+    "nazistas",
+    "200 gramas de doce heroína preta mexicana",
+    "Stephen Hawking dizendo coisas obscenas",
+    "pais mortos",
+    "polegares opositores",
+    "questões racistas em vestibular",
+    "falar abobrinha",
+    "motosserras",
+    "Nicolas cage",
+    "concursos de beleza para crianças",
+    "explosões",
+    "cheirar cola",
+    "repressão",
+    "Boa Noite Cinderela",
+    "minha vagina",
+    "biquíni fio-dental",
+    "chacina",
+    "dar-se 110%",
+    "Sua Alteza Real, Rainha Elizabeth II",
+    "O Caminho de Santiago",
+    "ser marginalizado",
+    "goblins",
+    "esperança",
+    "o reverendo Dr. Martin Luther King Jr.",
+    "um micro-pênis",
+    "minha alma",
+    "uma desolação",
+    "vikings",
+    "gostosas",
+    "sedução",
+    "Complexo de Édipo",
+    "gansos",
+    "aquecimento global",
+    "música New Age",
+    "Hot Pockets®",
+    "fazer beicinho",
+    "homicídio em direção veicular",
+    "sufrágio feminino",
+    "um preservativo defeituoso",
+    "Sessão da Tarde",
+    "crianças africanas",
+    "o massacre no Virginia Tech",
+    "Barack Obama",
+    "asiáticos que não são bons em matemática",
+    "homens japoneses idosos",
+    "troca de gentilezas",
+    "heteronormatividade",
+    "separar o Mar Vermelho",
+    "Arnold Schwarzenegger",
+    "sexo oral na direção",
+    "barriga de tanquinho",
+    "pão na chapa",
+    "um leão de zoológico deprimido",
+    "um saco de feijões mágicos",
+    "más decisões ao longo da vida",
+    "minha vida sexual",
+    "Auschwitz",
+    "uma tartaruga-mordedora mordiscando a ponta do seu pênis",
+    "uma detonação termonuclear",
+    "o clitóris",
+    "o Big Bang",
+    "minas terrestres",
+    "amigos que comem todo o lanche",
+    "cabras comendo latas",
+    "a Sança da fada Açucarada",
+    "masturbar-se em uma poça de lágrimas de crianças",
+    "carne humana",
+    "tempo para mim",
+    "túneis clandestinos",
+    "piadas inoportunas sobre o holocausto",
+    "um mar de problemas",
+    "histórias de lenhador",
+    "a voz do Morgan Freeman",
+    "mulheres em comerciais de yorgute",
+    "aumento peniano natural",
+    "ser um feiticeiro filho-da-puta",
+    "piercings genitais",
+    "travestís que não parecem",
+    "brigas de travesseiro sensuais",
+    "bolas",
+    "vovó",
+    "fricção",
+    "estraga-festa",
+    "peidar e se mandar",
+    "ser chato com crianças",
+    "colocar armadilhas em casa para pegar assaltantes",
+    "trepar",
+    "morrer",
+    "Furacão Katrina",
+    "gays",
+    "a loucura do homem",
+    "homens",
+    "os amish",
+    "ovos de pterodáctilo",
+    "dinâmica de grupo",
+    "um tumor cerebral",
+    "Cartas Contra a Humanidade",
+    "ter medo de si próprio",
+    "Lady Gaga",
+    "o entregador de leite",
+    "dizer o que pensa"
+  ]
+}
