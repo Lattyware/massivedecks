@@ -96,11 +96,12 @@ export class Calls extends Deck<Card.Call> {
  */
 export class Responses extends Deck<Card.Response> {
   protected discardSingle(card: Card.Response): void {
-    card.id = Card.id();
-    if (Card.isCustomResponse(card)) {
-      card.text = "";
-    }
-    this.discarded.add(card);
+    // We duplicate the card here so we don't damage any references to it hanging around elsewhere (e.g: history).
+    this.discarded.add({
+      ...card,
+      id: Card.id(),
+      ...(Card.isCustomResponse(card) ? { text: "" } : {}),
+    });
   }
 
   public static fromTemplates(

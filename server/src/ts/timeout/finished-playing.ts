@@ -16,12 +16,12 @@ export interface FinishedPlaying {
 }
 
 const isFinished = (round: Round.Playing): boolean => {
-  const hasPlayed = new Set(wu(round.plays).map(play => play.playedBy));
+  const hasPlayed = new Set(wu(round.plays).map((play) => play.playedBy));
   return Util.setEquals(round.players, hasPlayed);
 };
 
 export const of = (): FinishedPlaying => ({
-  timeout: "FinishedPlaying"
+  timeout: "FinishedPlaying",
 });
 
 export const ifNeeded = (playing: Round.Playing): FinishedPlaying | undefined =>
@@ -57,10 +57,10 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
       : 0;
   const newCardsByPlayer = new Map();
   for (const play of round.plays) {
-    const idSet = new Set(play.play.map(c => c.id));
+    const idSet = new Set(play.play.map((c) => c.id));
     const player = game.players[play.playedBy];
     if (player !== undefined) {
-      player.hand = player.hand.filter(card => !idSet.has(card.id));
+      player.hand = player.hand.filter((card) => !idSet.has(card.id));
       const toDraw = play.play.length - extraCards;
       const drawn = responses.draw(toDraw);
       newCardsByPlayer.set(play.playedBy, { drawn });
@@ -71,10 +71,10 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
   game.round = round.advance();
 
   const playsToBeRevealed = Array.from(
-    wu(game.round.plays).map(play => play.id)
+    wu(game.round.plays).map((play) => play.id)
   );
   const events = [
-    Event.additionally(StartRevealing.of(playsToBeRevealed), newCardsByPlayer)
+    Event.additionally(StartRevealing.of(playsToBeRevealed), newCardsByPlayer),
   ];
 
   const timeouts = [];
@@ -89,6 +89,6 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
   return {
     lobby,
     events: events,
-    timeouts: timeouts
+    timeouts: timeouts,
   };
 };
