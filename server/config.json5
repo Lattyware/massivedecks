@@ -31,7 +31,8 @@
       // .deck.json5 extension.
       decks: [
         "cah-base-en",
-        "cah-base-ptbr"
+        "cah-base-ptbr",
+        "crimes-against-leedsfurs-en.deck.json5"
       ]
     },
 
