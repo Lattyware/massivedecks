@@ -756,6 +756,12 @@ translate mdString =
         CardcastEmptyPlayCode ->
             [ Text "Enter a ", Ref CardcastPlayCode, Text " for the deck you want to add." ]
 
+        JsonUrl ->
+            [ Text "Url" ]
+
+        JsonUrlUrl ->
+            [ Text "A Url to a .md.json5 deck." ]
+
         BuiltIn ->
             [ Text "Built-in" ]
 

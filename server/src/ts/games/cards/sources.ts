@@ -1,11 +1,11 @@
 import { Cache } from "../../cache";
 import * as Util from "../../util";
 import * as Source from "./source";
-import * as Cardcast from "./sources/cardcast";
 import * as Player from "./sources/custom";
 import * as Config from "../../config";
 import * as BuiltIn from "./sources/builtIn";
 import { SourceNotFoundError } from "../../errors/action-execution-error";
+import * as JsonUrl from "./sources/json-url";
 
 async function loadIfEnabled<Config, MetaResolver>(
   config: Config | undefined,
@@ -25,17 +25,17 @@ export interface ClientInfo {
 
 export class Sources {
   public readonly builtIn?: BuiltIn.MetaResolver;
-  public readonly cardcast?: Cardcast.MetaResolver;
+  public readonly jsonUrl?: JsonUrl.MetaResolver;
 
   public constructor(
     builtIn?: BuiltIn.MetaResolver,
-    cardcast?: Cardcast.MetaResolver
+    jsonUrl?: JsonUrl.MetaResolver
   ) {
-    if (builtIn === undefined && cardcast === undefined) {
+    if (builtIn === undefined && jsonUrl === undefined) {
       throw new Error("At least one source must be enabled.");
     }
     this.builtIn = builtIn;
-    this.cardcast = cardcast;
+    this.jsonUrl = jsonUrl;
   }
 
   public clientInfo(): ClientInfo {
@@ -45,7 +45,7 @@ export class Sources {
             builtIn: this.builtIn.clientInfo(),
           }
         : {}),
-      ...(this.cardcast !== undefined ? { cardcast: true } : {}),
+      ...(this.jsonUrl !== undefined ? { jsonUrl: true } : {}),
     };
   }
 
@@ -56,8 +56,8 @@ export class Sources {
       case "BuiltIn":
         return this.builtIn;
 
-      case "Cardcast":
-        return this.cardcast;
+      case "JsonUrl":
+        return this.jsonUrl;
 
       default:
         Util.assertNever(source);
@@ -115,13 +115,13 @@ export class Sources {
   };
 
   public static async from(config: Config.Sources): Promise<Sources> {
-    const [builtInMeta, cardcastMeta] = await Promise.all<
+    const [builtInMeta, jsonUrlMeta] = await Promise.all<
       BuiltIn.MetaResolver | undefined,
-      Cardcast.MetaResolver | undefined
+      JsonUrl.MetaResolver | undefined
     >([
       loadIfEnabled(config.builtIn, BuiltIn.load),
-      loadIfEnabled(config.cardcast, Cardcast.load),
+      loadIfEnabled(config.jsonUrl, JsonUrl.load),
     ]);
-    return new Sources(builtInMeta, cardcastMeta);
+    return new Sources(builtInMeta, jsonUrlMeta);
   }
 }

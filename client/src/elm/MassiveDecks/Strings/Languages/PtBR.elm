@@ -777,6 +777,14 @@ translate mdString =
         CardcastEmptyPlayCode ->
             [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deck que você queira adicionar." ]
 
+        -- TODO: Translate
+        JsonUrl ->
+            [ Missing ]
+
+        -- TODO: Translate
+        JsonUrlUrl ->
+            [ Missing ]
+
         BuiltIn ->
             [ Text "Embutido" ]
 

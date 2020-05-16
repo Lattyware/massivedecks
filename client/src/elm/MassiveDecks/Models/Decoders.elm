@@ -31,7 +31,6 @@ import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Game.Model as Game exposing (Game)
@@ -62,7 +61,7 @@ sourceInfo : Json.Decoder Source.Info
 sourceInfo =
     let
         atLeastOne info =
-            if [ info.builtIn /= Nothing, info.cardcast ] |> List.any identity then
+            if [ info.builtIn /= Nothing, info.jsonUrl ] |> List.any identity then
                 info |> Json.succeed
 
             else
@@ -70,7 +69,7 @@ sourceInfo =
     in
     Json.succeed Source.Info
         |> Json.optional "builtIn" (builtInInfo |> Json.map Just) Nothing
-        |> Json.optional "cardcast" Json.bool False
+        |> Json.optional "jsonUrl" Json.bool False
         |> Json.andThen atLeastOne
 
 
@@ -221,8 +220,8 @@ externalSourceByGeneral general =
         Source.GBuiltIn ->
             Json.field "id" BuiltIn.idDecoder |> Json.map Source.BuiltIn
 
-        Source.GCardcast ->
-            Json.field "playCode" Json.string |> Json.map (Cardcast.playCode >> Source.Cardcast)
+        Source.GJsonUrl ->
+            Json.field "url" Json.string |> Json.map Source.JsonUrl
 
 
 tokenValidity : Json.Decoder (List Lobby.Token)

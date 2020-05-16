@@ -216,6 +216,8 @@ type MdString
     | Cardcast -- The name of the Cardcast service.
     | CardcastPlayCode -- A term referring to the play code that identifies a deck on Cardcast.
     | CardcastEmptyPlayCode -- A description of the problem of the entered Cardcast play code being empty.
+    | JsonUrl -- The name of a source that offers simple loading of JSON from a url.
+    | JsonUrlUrl -- A term referring to a URL to some JSON.
     | BuiltIn -- A term referring to decks of cards that are provided by this instance of the game.
     | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.

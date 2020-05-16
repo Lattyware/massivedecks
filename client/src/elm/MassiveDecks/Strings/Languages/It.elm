@@ -780,6 +780,14 @@ translate mdString =
             [ Text "Inserisci il ", Ref CardcastPlayCode, Text " per il mazzo che vuoi aggiungere." ]
 
         -- TODO: Translate
+        JsonUrl ->
+            [ Missing ]
+
+        -- TODO: Translate
+        JsonUrlUrl ->
+            [ Missing ]
+
+        -- TODO: Translate
         BuiltIn ->
             [ Missing ]
 

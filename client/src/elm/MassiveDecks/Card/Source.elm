@@ -17,9 +17,9 @@ module MassiveDecks.Card.Source exposing
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn as BuiltIn
-import MassiveDecks.Card.Source.Cardcast as Cardcast
 import MassiveDecks.Card.Source.Custom as Player
 import MassiveDecks.Card.Source.Fake as Fake
+import MassiveDecks.Card.Source.JsonUrl as JsonUrl
 import MassiveDecks.Card.Source.Methods exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Components.Form.Message exposing (Message)
@@ -66,8 +66,8 @@ generalMethods source =
         GBuiltIn ->
             BuiltIn.generalMethods
 
-        GCardcast ->
-            Cardcast.generalMethods
+        GJsonUrl ->
+            JsonUrl.generalMethods
 
 
 {-| Get an empty source of the given type.
@@ -170,7 +170,7 @@ generalEditor shared existing currentValue update submit noOp =
     let
         enabledSources =
             [ shared.sources.builtIn |> Maybe.map (\_ -> BuiltIn.generalMethods)
-            , Cardcast.generalMethods |> Maybe.justIf shared.sources.cardcast
+            , JsonUrl.generalMethods |> Maybe.justIf shared.sources.jsonUrl
             ]
 
         toItem source =
@@ -242,8 +242,8 @@ methods source =
 externalMethods : External -> ExternalMethods msg
 externalMethods external =
     case external of
-        Cardcast playCode ->
-            Cardcast.methods playCode
+        JsonUrl url ->
+            JsonUrl.methods url
 
         BuiltIn id ->
             BuiltIn.methods id

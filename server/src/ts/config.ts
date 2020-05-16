@@ -49,15 +49,15 @@ export interface BuiltIn {
   decks: string[];
 }
 
-interface BaseCardcast<D extends Duration> {
+interface BaseJsonUrl<D extends Duration> {
   timeout: D;
   simultaneousConnections: number;
 }
-export type Cardcast = BaseCardcast<ParsedDuration>;
+export type JsonUrl = BaseJsonUrl<ParsedDuration>;
 
 interface BaseSources<D extends Duration> {
   builtIn?: BuiltIn;
-  cardcast?: BaseCardcast<D>;
+  jsonUrl?: BaseJsonUrl<D>;
 }
 export type Sources = BaseSources<ParsedDuration>;
 
@@ -143,15 +143,15 @@ export const parseTasks = (
   processTickFrequency: parseDuration(tasks.processTickFrequency),
 });
 
-const parseCardcast = (cardcast: BaseCardcast<UnparsedDuration>): Cardcast => ({
-  ...cardcast,
-  timeout: parseDuration(cardcast.timeout),
+const parseJsonUrl = (jsonUrl: BaseJsonUrl<UnparsedDuration>): JsonUrl => ({
+  ...jsonUrl,
+  timeout: parseDuration(jsonUrl.timeout),
 });
 
 const parseSources = (sources: BaseSources<UnparsedDuration>): Sources => ({
   ...(sources.builtIn !== undefined ? { builtIn: sources.builtIn } : {}),
-  ...(sources.cardcast !== undefined
-    ? { cardcast: parseCardcast(sources.cardcast) }
+  ...(sources.jsonUrl !== undefined
+    ? { jsonUrl: parseJsonUrl(sources.jsonUrl) }
     : {}),
 });
 

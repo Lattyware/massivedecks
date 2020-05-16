@@ -32,15 +32,12 @@
       decks: ["cah-base-en", "cah-base-ptbr"],
     },
 
-    // Allows players to load decks from Cardcast via their API. https://www.cardcastgame.com/
-    cardcast: {
-      // How long to wait for a response from the Cardcast API service before giving up and telling the user there is a
-      // problem.
+    // Allows players to load decks from arbitrary URLs.
+    jsonUrl: {
+      // How long to wait for a response from the url before giving up and telling the user there is a problem.
       timeout: "PT10S",
 
-      // The number of connections the server can make to Cardcast at one time.
-      // Please remember this is a service provided by Cardcast, and you should make best efforts to ensure you don't
-      // hit them too hard, including not setting this too high.
+      // The number of connections the server can make to urls at one time.
       simultaneousConnections: 1,
     },
   },

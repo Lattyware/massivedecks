@@ -160,22 +160,6 @@ export const Schema = {
       required: ["id", "source"],
       type: "object",
     },
-    Cardcast: {
-      additionalProperties: false,
-      defaultProperties: [],
-      description: "A source for Cardcast.",
-      properties: {
-        playCode: {
-          $ref: "#/definitions/PlayCode",
-        },
-        source: {
-          enum: ["Cardcast"],
-          type: "string",
-        },
-      },
-      required: ["playCode", "source"],
-      type: "object",
-    },
     CheckAlive: {
       additionalProperties: false,
       defaultProperties: [],
@@ -348,10 +332,10 @@ export const Schema = {
     External: {
       anyOf: [
         {
-          $ref: "#/definitions/BuiltIn",
+          $ref: "#/definitions/JsonUrl",
         },
         {
-          $ref: "#/definitions/Cardcast",
+          $ref: "#/definitions/BuiltIn",
         },
       ],
       description: "An external source for a card or deck.",
@@ -403,6 +387,22 @@ export const Schema = {
     Id_1: {
       description: "A unique id for a user.",
       type: "string",
+    },
+    JsonUrl: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A source that just tries to load an arbitrary URL.",
+      properties: {
+        source: {
+          enum: ["JsonUrl"],
+          type: "string",
+        },
+        url: {
+          type: "string",
+        },
+      },
+      required: ["source", "url"],
+      type: "object",
     },
     Judge: {
       additionalProperties: false,
@@ -517,10 +517,6 @@ export const Schema = {
     },
     Patch: {
       $ref: "#/definitions/Array",
-    },
-    PlayCode: {
-      description: "A Cardcast play code for a deck.",
-      type: "string",
     },
     Presence: {
       description:
