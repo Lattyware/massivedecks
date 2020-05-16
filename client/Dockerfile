@@ -10,7 +10,7 @@ COPY ["./package.json", "./package-lock.json", "./"]
 RUN ["apk", "add", "--no-cache", "--virtual", ".gyp", "python", "make", "g++"]
 RUN ["npm", "ci"]
 
-COPY ["./tsconfig.json", "./webpack.config.js", "./elm.json", "./"]
+COPY ["./tsconfig.json", "postcss.config.js", "./webpack.config.js", "./elm.json", "./"]
 COPY ["./src", "./src"]
 COPY ["./assets", "./assets"]
 RUN ["npm", "run", "build"]

@@ -35,13 +35,13 @@ module.exports = (env, argv) => {
       loader: "css-loader",
       options: { sourceMap: dev },
     },
-    // // Transform CSS for compatibility.
-    // {
-    //   loader: "postcss-loader",
-    //   options: {
-    //     sourceMap: dev,
-    //   },
-    // },
+    // Transform CSS for compatibility.
+    {
+      loader: "postcss-loader",
+      options: {
+        sourceMap: dev,
+      },
+    },
     // Allow relative URLs.
     {
       loader: "resolve-url-loader",
@@ -244,9 +244,8 @@ module.exports = (env, argv) => {
         },
       },
       minimizer: [
-        // Typescript
         new TerserPlugin({
-          test: /assets\/scripts\/(index|cast|runtime|vendors|cast-client|cast-server)\..*\.js$/,
+          test: /assets\/scripts\/(runtime|vendors)\..*\.js$/,
           sourceMap: dev,
           parallel: true,
           terserOptions: {
@@ -255,14 +254,16 @@ module.exports = (env, argv) => {
             },
           },
         }),
-        // Elm - we can do otherwise dangerous optimisation thanks to the purity.
         new ClosurePlugin(
           {
             mode: "STANDARD",
             platform: "javascript",
-            test: /assets\/scripts\/massive-decks\..*\.js$/,
+            test: /assets\/scripts\/.*\.js$/,
           },
-          {}
+          {
+            compilation_level: "SIMPLE_OPTIMIZATIONS",
+            externs: "src/js/extern.js",
+          }
         ),
       ],
     },
