@@ -11,10 +11,10 @@ import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
 pack : Translation.Pack
 pack =
-    { code = "ptBR"
+    { code = "pt-BR"
     , name = BrazilianPortuguese
     , translate = translate
-    , recommended = "cah-base-ptbr" |> BuiltIn.Id |> Source.BuiltIn
+    , recommended = "cah-base-ptbr" |> BuiltIn.hardcoded |> Source.BuiltIn
     }
 
 
@@ -136,6 +136,14 @@ translate mdString =
 
         YouWereKicked ->
             [ Text "Você foi chutado do jogo." ]
+
+        -- TODO: Translate
+        ScrollToTop ->
+            [ Text "Scroll to the top." ]
+
+        -- TODO: Translate
+        Copy ->
+            [ Text "Copy" ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -317,6 +325,9 @@ translate mdString =
         MissingLanguage ->
             [ Text "Não vê seu idioma? ", Ref TranslationBeg ]
 
+        AutonymFormat { autonym } ->
+            [ Text "(", Text autonym, Text ")" ]
+
         TranslationBeg ->
             [ Text "Ajudar a traduzir o "
             , Ref MassiveDecks
@@ -419,6 +430,22 @@ translate mdString =
 
         Deck ->
             [ Text "Deck" ]
+
+        -- TODO: Translate
+        DeckSource ->
+            [ Ref Deck, Text " Source" ]
+
+        -- TODO: Translate
+        DeckLanguage { language } ->
+            [ Text "in ", Ref language ]
+
+        -- TODO: Translate
+        DeckAuthor { author } ->
+            [ Text "by ", Text author ]
+
+        -- TODO: Translate
+        DeckTranslator { translator } ->
+            [ Text "translation by ", Text translator ]
 
         StillPlaying ->
             [ Text "Jogando" ]
@@ -709,6 +736,14 @@ translate mdString =
             , Text "."
             ]
 
+        -- TODO: Translate
+        AddBlankCards { amount } ->
+            [ Text "Add "
+            , amount |> String.fromInt |> Text
+            , Text " blank "
+            , Ref (Plural { singular = Response, amount = Just amount })
+            ]
+
         AddDeck ->
             [ Text "Adicionar deck." ]
 
@@ -879,6 +914,18 @@ translate mdString =
 
         TheirChanges ->
             [ Text "Mudanças dele(a)" ]
+
+        -- TODO: Translate
+        ConfigurationDisabledWhileInGame ->
+            [ Text "While the game in progress, you can't change the configuration." ]
+
+        -- TODO: Translate
+        ConfigurationDisabledIfNotPrivileged ->
+            [ Text "You can't change the configuration of this game." ]
+
+        -- TODO: Translate
+        ConfigureNextGame ->
+            [ Text "Configure Next Game" ]
 
         -- Game
         SubmitPlay ->

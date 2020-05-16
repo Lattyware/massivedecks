@@ -18,6 +18,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-community/dict-extra": "2.4.0",
+            "elm-community/list-extra": "8.2.3",
             "elm-community/random-extra": "3.1.0",
             "fapian/elm-html-aria": "1.4.0",
             "lattyware/elm-fontawesome": "4.0.0",
@@ -31,7 +32,6 @@
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
             "elm/virtual-dom": "1.0.2",
-            "elm-community/list-extra": "8.2.3",
             "owanturist/elm-union-find": "1.0.0"
         }
     },

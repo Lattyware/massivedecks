@@ -1,12 +1,12 @@
 import winston from "winston";
 
-const logFormat = winston.format.printf(info => {
+const logFormat = winston.format.printf((info) => {
   const stringRest = JSON.stringify(
     {
       ...info,
       level: undefined,
       message: undefined,
-      splat: undefined
+      splat: undefined,
     },
     null,
     2
@@ -25,7 +25,7 @@ export const logger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.colorize(),
     logFormat
-  )
+  ),
 });
 
 const exceptionHandler = new winston.ExceptionHandler(logger);

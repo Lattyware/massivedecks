@@ -34,7 +34,7 @@ export const aiNames = new Set([
   "Skynet", // Terminator
   "Project 2501", // GITS
   "SHODAN", // System Shock
-  "Mr. House" // Fallout: New Vegas
+  "Mr. House", // Fallout: New Vegas
 ]);
 
 /**
@@ -59,7 +59,7 @@ export const create = (): Rando => ({
   current: [],
   unused: [aiName]
     .concat(Util.shuffled(aiNames).slice(0, max - 1))
-    .map(name => ({ name }))
+    .map((name) => ({ name })),
 });
 
 /**
@@ -91,12 +91,12 @@ export const createIfNeeded = (
   if (isId(ai)) {
     return {
       user: ai,
-      events: [Event.targetAll(PresenceChanged.joined(ai, inLobby.users[ai]))]
+      events: [Event.targetAll(PresenceChanged.joined(ai, inLobby.users[ai]))],
     };
   } else {
-    return Lobby.addUser(inLobby, ai, user => ({
+    return Lobby.addUser(inLobby, ai, (user) => ({
       ...user,
-      control: "Computer"
+      control: "Computer",
     }));
   }
 };
@@ -119,7 +119,7 @@ export function* change(
     const toAdd = want - have;
     const added = config.unused
       .splice(0, toAdd)
-      .map(ai => createIfNeeded(inLobby, ai));
+      .map((ai) => createIfNeeded(inLobby, ai));
     for (const { user, events } of added) {
       const userData = inLobby.users[user];
       userData.presence = "Joined";

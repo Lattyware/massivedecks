@@ -14,7 +14,6 @@ import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable as Toggleable
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Rando.Model exposing (..)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless.Attributes as WlA
 
 
 init : Model
@@ -102,14 +101,9 @@ enabledOption =
     }
 
 
-numberMin : Int
-numberMin =
-    1
-
-
-numberMax : Int
-numberMax =
-    10
+numberBounds : ConfigOption.IntBounds
+numberBounds =
+    ConfigOption.IntBounds 1 10
 
 
 number : Component (Maybe Int) Model Id Msg msg
@@ -118,7 +112,7 @@ number =
         Number
         (ConfigOption.view numberOption)
         Maybe.isNothing
-        (Validator.optional (Validator.between numberMin numberMax (Just >> SetNumber)))
+        (Validator.optional (ConfigOption.toValidator numberBounds (Just >> SetNumber)))
 
 
 numberOption : ConfigOption Model (Maybe Int) Msg msg
@@ -127,7 +121,7 @@ numberOption =
     , toggleable = Toggleable.none
     , primaryEditor =
         \_ ->
-            ConfigOption.intEditor Strings.HouseRuleRandoCardrissianNumber [ WlA.min numberMin, WlA.max numberMax ]
+            ConfigOption.intEditor Strings.HouseRuleRandoCardrissianNumber (ConfigOption.toMinMaxAttrs numberBounds)
                 |> ConfigOption.maybeEditor
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter SetNumber

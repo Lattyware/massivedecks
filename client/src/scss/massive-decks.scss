@@ -1,34 +1,40 @@
-@import "./colors";
-@import "./card/variables";
-@import "./fonts";
-@import "./animation.scss";
-@import "./variables.scss";
+@use "_colors";
+@use "_fonts";
+@use "_material";
+
+@use "_game";
+@use "pages/_start";
+@use "pages/_lobby";
+@use "pages/_spectate";
+@use "pages/_unknown-page";
+@use "_settings";
+@use "_error";
+
+@import "~@fortawesome/fontawesome-free/css/svg-with-js.min.css";
+
+$min-page-width: 320px;
 
 .no-wrap {
   white-space: nowrap;
 }
 
 body {
-  color: $on-primary;
-  background: $background url(../../assets/images/background.svg) repeat;
+  color: colors.$on-primary;
+  background: colors.$background url(../../assets/images/background.svg) repeat;
   margin: 0;
   padding: 0;
   font-size: 18px;
   line-height: 1.2;
-  font-family: "Roboto", sans-serif;
+  font-family: fonts.$general;
   min-width: $min-page-width;
 }
 
-#game {
-  background: $background url(../../assets/images/background.svg) repeat;
-}
-
 .game-code-input {
-  --input-font-family: "Source Code Pro", monospace;
+  --mdc-typography-font-family: #{fonts.$game-code};
 }
 
 .game-code {
-  font-family: "Source Code Pro", monospace;
+  font-family: fonts.$game-code;
   .svg-inline--fa {
     margin-left: 0.3em;
   }
@@ -39,7 +45,7 @@ body {
 }
 
 h1 {
-  font-family: "Helvetica Neue", "Nimbus Sans L", sans-serif;
+  font-family: fonts.$card;
   font-weight: 700;
   margin: 0.5em;
 }
@@ -63,7 +69,11 @@ a,
   text-decoration: none;
 
   &:not(.tab) {
-    background: linear-gradient(to top, $secondary 50%, $transparent 50%)
+    background: linear-gradient(
+        to top,
+        colors.$secondary 50%,
+        colors.$transparent 50%
+      )
       no-repeat 0 10%;
     background-size: 100% 200%;
     transition: background-position 0.3s cubic-bezier(0.64, 0.9, 0.8, 1);
@@ -76,17 +86,17 @@ a,
 
 // A button that allows the user to perform the main action in the game for them at this moment.
 .action {
-  --button-fab-size: 4rem;
   font-size: 1.5rem;
 
   // A style for actions that the game is waiting on - high contrast to grab attention.
-  &.important {
-    --button-bg: #{$secondary};
-    --button-color: #{$on-secondary};
-    --button-bg-hover: #{$secondary-light};
-    --button-color-hover: #{$on-secondary-light};
-    --button-bg-active: #{$secondary-dark};
-    --button-color-acitve: #{$on-secondary-dark};
+  &.blocking {
+    --mdc-theme-secondary: #{colors.$secondary};
+    --mdc-theme-on-secondary: #{colors.$on-secondary};
+  }
+
+  &.normal {
+    --mdc-theme-secondary: #{colors.$card};
+    --mdc-theme-on-secondary: #{colors.$primary};
   }
 }
 
@@ -161,12 +171,18 @@ a,
   }
 
   .children {
+    display: flex;
+    flex-direction: column;
     font-size: 0.9em;
     margin-left: 0.5em;
 
     &.inactive {
       opacity: 0.6;
     }
+  }
+
+  mwc-button {
+    align-self: flex-end;
   }
 }
 
@@ -196,8 +212,8 @@ a,
 
 .inline-error {
   @include message;
-  color: $error;
-  background-color: lighten($error, 55%);
+  color: colors.$error;
+  background-color: lighten(colors.$error, 55%);
   border-radius: 0.5em;
 }
 
@@ -215,7 +231,7 @@ a,
   li {
     display: inline-block;
 
-    wl-button {
+    mwc-icon-button {
       margin: 0;
     }
   }
@@ -224,16 +240,3 @@ a,
 .remove-from-flow {
   position: absolute;
 }
-
-@import "./fonts";
-@import "./cards";
-@import "./error";
-@import "./settings";
-@import "./game";
-@import "./pages/start";
-@import "./pages/unknown-page";
-@import "./pages/spectate";
-@import "./pages/lobby";
-@import "./weightless";
-
-@import "@fortawesome/fontawesome-free/css/svg-with-js.min.css";

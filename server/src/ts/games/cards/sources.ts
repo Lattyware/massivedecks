@@ -91,10 +91,11 @@ export class Sources {
     cache: Cache,
     source: Source.External
   ): Source.Resolver<Source.External> {
-    return new Source.CachedResolver(
-      cache,
-      this.metaResolver(source).resolver(source)
-    );
+    const metaResolver = this.metaResolver(source);
+    const resolver = metaResolver.resolver(source);
+    return metaResolver.cache
+      ? new Source.CachedResolver(cache, resolver)
+      : resolver;
   }
 
   /**

@@ -17,7 +17,7 @@ import MassiveDecks.Pages.Unknown.Model exposing (..)
 import MassiveDecks.Pages.Unknown.Route exposing (..)
 import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages as Lang
-import Weightless
+import Material.Card as Card
 
 
 changeRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -38,7 +38,7 @@ route model =
 view : Shared -> Model -> List (Html Msg)
 view shared _ =
     [ Html.div [ HtmlA.class "page unknown-page" ]
-        [ Weightless.card []
+        [ Card.view []
             [ Html.h1 [] [ Icon.viewIcon Icon.exclamationCircle, Lang.html shared UnknownPageTitle ]
             , Html.p []
                 [ Html.a [ Route.url (Route.Start { section = Start.New }) |> HtmlA.href ]

@@ -58,7 +58,7 @@ export function reduce<T, L extends Lobby>(
     ...(lobbyUnchanged ? { lobby: currentLobby } : {}),
     ...(events.length > 0 ? { events } : {}),
     ...(timeouts.length > 0 ? { timeouts } : {}),
-    ...(tasks.length > 0 ? { tasks } : {})
+    ...(tasks.length > 0 ? { tasks } : {}),
   };
 }
 
@@ -130,7 +130,7 @@ export async function applyAndReturn<T>(
   try {
     const [tasks, returnValue] = await server.store.writeAndReturn(
       gameCode,
-      lobby => {
+      (lobby) => {
         const { change, returnValue } = handler(lobby);
         const result = internalApply(server, gameCode, lobby, change);
         if (result.events !== undefined) {
@@ -140,9 +140,9 @@ export async function applyAndReturn<T>(
           transaction: {
             lobby: result.lobby,
             timeouts: result.timeouts,
-            executedTimeout: timeoutId
+            executedTimeout: timeoutId,
           },
-          result: [result.tasks, returnValue]
+          result: [result.tasks, returnValue],
         };
       }
     );
@@ -155,11 +155,11 @@ export async function applyAndReturn<T>(
   } catch (error) {
     // If we get an error we still want to kill the timeout and potentially
     // tell the user about the error.
-    await server.store.write(gameCode, lobby => {
+    await server.store.write(gameCode, (lobby) => {
       if (error instanceof GameStateError) {
         lobby.errors.push(error.details());
         Event.send(server.socketManager, gameCode, lobby, [
-          Event.targetAll(ErrorEncountered.of(error.details()))
+          Event.targetAll(ErrorEncountered.of(error.details())),
         ]);
       }
       return { lobby, executedTimeout: timeoutId };
@@ -184,9 +184,9 @@ export async function apply(
   await applyAndReturn(
     server,
     gameCode,
-    lobby => ({
+    (lobby) => ({
       change: handler(lobby),
-      returnValue: undefined
+      returnValue: undefined,
     }),
     timeoutId
   );

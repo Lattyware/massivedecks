@@ -45,7 +45,7 @@ export const dealWithLostPlayer = (
       Event.targetAll(PlayerPresenceChanged.away(playerId)),
       ...(invalidateRoundResult.events !== undefined
         ? invalidateRoundResult.events
-        : [])
+        : []),
     ],
     timeouts: [
       ...(invalidateRoundResult.timeouts !== undefined
@@ -53,8 +53,8 @@ export const dealWithLostPlayer = (
         : []),
       ...(removeFromRoundResult.timeouts !== undefined
         ? removeFromRoundResult.timeouts
-        : [])
-    ]
+        : []),
+    ],
   };
 };
 
@@ -91,9 +91,9 @@ class SetPresenceActions extends Actions.Implementation<
           lobby,
           events: [
             Event.targetAll(PlayerPresenceChanged.back(playerId)),
-            ...(unpause.events !== undefined ? unpause.events : [])
+            ...(unpause.events !== undefined ? unpause.events : []),
           ],
-          timeouts: unpause.timeouts
+          timeouts: unpause.timeouts,
         };
       } else {
         Util.assertNever(player.presence);

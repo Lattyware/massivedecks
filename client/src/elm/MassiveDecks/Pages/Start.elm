@@ -1,7 +1,7 @@
 module MassiveDecks.Pages.Start exposing
     ( changeRoute
     , init
-    , initWithAuthError
+    , initWithError
     , route
     , update
     , view
@@ -21,7 +21,6 @@ import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error as Error
@@ -48,10 +47,14 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import MassiveDecks.Version as Version
+import Material.Button as Button
+import Material.Card as Card
+import Material.IconButton as IconButton
+import Material.Tabs as Tabs
+import Material.TextField as TextField
 import Svg.Attributes as SvgA
-import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 changeRoute : Route -> Model -> ( Model, Cmd Global.Msg )
@@ -93,8 +96,8 @@ init shared r =
     )
 
 
-initWithAuthError : Shared -> GameCode -> MdError.AuthenticationError -> ( Model, Cmd Global.Msg )
-initWithAuthError shared gameCode authenticationError =
+initWithError : Shared -> GameCode -> MdError -> ( Model, Cmd Global.Msg )
+initWithError shared gameCode error =
     let
         ( model, cmd ) =
             init shared { section = Join (Just gameCode) }
@@ -102,7 +105,7 @@ initWithAuthError shared gameCode authenticationError =
         jlr =
             model.joinLobbyRequest
     in
-    ( { model | joinLobbyRequest = { jlr | error = authenticationError |> MdError.Authentication |> Just } }, cmd )
+    ( { model | joinLobbyRequest = { jlr | error = error |> Just } }, cmd )
 
 
 route : Model -> Route
@@ -191,6 +194,10 @@ update shared msg model =
 
 view : Shared -> Model -> List (Html Global.Msg)
 view shared model =
+    let
+        r =
+            model.route
+    in
     [ Html.div [ HtmlA.class "page start" ]
         [ overlay shared model.overlay
         , Html.header [ HtmlA.class "title-card" ]
@@ -201,13 +208,14 @@ view shared model =
                     ]
                 ]
             ]
-        , Wl.card []
-            [ Wl.tabGroup [ WlA.align WlA.Center ]
-                [ tab shared New model Icon.plus Strings.NewGame
-                , tab shared (Join model.gameCode) model Icon.signInAlt Strings.JoinPrivateGame
-                , tab shared Find model Icon.search Strings.FindPublicGame
-                , tab shared About model Icon.questionCircle Strings.AboutTheGame
-                ]
+        , Card.view []
+            [ Tabs.view shared
+                { selected = r.section
+                , change = \s -> Route.Start { r | section = s } |> Global.ChangePage
+                , ids = NeList New [ Join model.gameCode, Find, About ]
+                , tab = tabFor
+                , equals = sectionsMatch
+                }
             , sectionContent shared model
             ]
         , Html.footer [ HtmlA.class "version-info" ]
@@ -240,18 +248,32 @@ view shared model =
 {- Private -}
 
 
+tabFor : Section -> Tabs.TabModel
+tabFor section =
+    case section of
+        New ->
+            Tabs.TabModel Strings.NewGame (Just Icon.plus)
+
+        Join _ ->
+            Tabs.TabModel Strings.JoinPrivateGame (Just Icon.signInAlt)
+
+        Find ->
+            Tabs.TabModel Strings.FindPublicGame (Just Icon.search)
+
+        About ->
+            Tabs.TabModel Strings.AboutTheGame (Just Icon.questionCircle)
+
+
 overlay : Shared -> Maybe MdString -> Html Global.Msg
 overlay shared content =
     case content of
         Just text ->
             Html.div [ HtmlA.id "overlay" ]
-                [ Components.iconButton
-                    [ HtmlA.class "close"
-                    , HideOverlay |> Global.StartMsg |> HtmlE.onClick
-                    , Strings.Close |> Lang.title shared
-                    ]
-                    Icon.times
-                , Wl.card []
+                [ IconButton.view shared
+                    Strings.Close
+                    (Icon.times |> Icon.present |> NeList.just)
+                    (HideOverlay |> Global.StartMsg |> Just)
+                , Card.view []
                     [ text |> Lang.html shared
                     ]
                 ]
@@ -304,24 +326,6 @@ gameCodeForRoute r =
 
         _ ->
             Nothing
-
-
-tab : Shared -> Section -> Model -> Icon -> MdString -> Html Global.Msg
-tab shared targetSection model icon title =
-    let
-        r =
-            model.route
-    in
-    Wl.tab
-        (List.concat
-            [ [ Route.Start { r | section = targetSection } |> Global.ChangePage |> HtmlE.onClick
-              ]
-            , [ WlA.checked ] |> Maybe.justIf (sectionsMatch r.section targetSection) |> Maybe.withDefault []
-            ]
-        )
-        [ Icon.viewIcon icon
-        , title |> Lang.html shared
-        ]
 
 
 sectionsMatch : Section -> Section -> Bool
@@ -381,17 +385,18 @@ newContent shared model =
                 |> Maybe.withDefault Html.nothing
     in
     Html.div [ HtmlA.class "new-game start-tab" ]
-        [ error
-        , Html.div [ HtmlA.class "restrict" ]
-            (List.concat
-                [ nameField shared model Nothing
-                , [ Wl.button
-                        [ buttonAttr
-                        ]
-                        [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
-                  ]
-                ]
-            )
+        [ Html.div [ HtmlA.class "tab-content" ]
+            [ Html.h2 [] [ Strings.NewGame |> Lang.html shared ]
+            , Html.p [] [ Html.text "Start a new game of Massive Decks." ]
+            , error
+            , nameField shared model Nothing
+            , Button.view shared
+                Button.Raised
+                Strings.PlayGame
+                Strings.PlayGame
+                buttonIcon
+                [ buttonAttr ]
+            ]
         ]
 
 
@@ -437,31 +442,35 @@ joinContent shared model =
                 |> Maybe.withDefault []
     in
     Html.div [ HtmlA.class "join-game start-tab" ]
-        [ error
-        , Html.div [ HtmlA.class "restrict" ]
+        [ Html.div [ HtmlA.class "tab-content" ]
             (List.concat
-                [ rejoinSection shared model
-                , nameField shared model nameError
-                , [ Form.section shared
+                [ [ Html.h2 [] [ Strings.JoinPrivateGame |> Lang.html shared ]
+                  , Html.p [] [ Html.text "Join a game someone invited you to." ]
+                  , error
+                  ]
+                , rejoinSection shared model
+                , [ nameField shared model Nothing
+                  , Form.section shared
                         "game-code-input"
-                        (Wl.textField
+                        (TextField.view shared
+                            Strings.GameCodeTerm
+                            TextField.Text
+                            (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
                             [ HtmlA.class "game-code-input"
                             , GameCodeChanged >> Global.StartMsg |> HtmlE.onInput
-                            , WlA.value (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
-                            , WlA.outlined
-                            , Strings.GameCodeTerm |> Lang.label shared
                             ]
-                            []
                         )
                         [ Message.info Strings.GameCodeHowToAcquire
                         , gameError |> Maybe.map Message.mdError |> Maybe.withDefault Message.none
                         ]
                   ]
                 , maybePasswordField
-                , [ Wl.button
-                        [ buttonAttr
-                        ]
-                        [ buttonIcon, Strings.PlayGame |> Lang.html shared ]
+                , [ Button.view shared
+                        Button.Raised
+                        Strings.PlayGame
+                        Strings.PlayGame
+                        buttonIcon
+                        [ buttonAttr ]
                   ]
                 ]
             )
@@ -472,13 +481,11 @@ passwordField : Shared -> Maybe MdError -> String -> List (Html Global.Msg)
 passwordField shared error password =
     [ Form.section shared
         "password-input"
-        (Wl.textField
-            [ PasswordChanged >> Global.StartMsg |> HtmlE.onInput
-            , WlA.value password
-            , WlA.outlined
-            , Strings.LobbyPassword |> Lang.label shared
-            ]
-            []
+        (TextField.view shared
+            Strings.LobbyPassword
+            TextField.Password
+            password
+            [ PasswordChanged >> Global.StartMsg |> HtmlE.onInput ]
         )
         [ Message.info Strings.LobbyRequiresPassword
         , error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none
@@ -518,22 +525,17 @@ rejoinLobby shared result =
             Nothing
 
 
-nameField : Shared -> Model -> Maybe MdError -> List (Html Global.Msg)
+nameField : Shared -> Model -> Maybe MdError -> Html Global.Msg
 nameField shared model error =
-    [ Form.section shared
+    Form.section shared
         "name-input"
-        (Wl.textField
-            [ NameChanged
-                >> Global.StartMsg
-                |> HtmlE.onInput
-            , WlA.value model.name
-            , Strings.NameLabel |> Lang.label shared
-            , WlA.outlined
-            ]
-            []
+        (TextField.view shared
+            Strings.NameLabel
+            TextField.Text
+            model.name
+            [ NameChanged >> Global.StartMsg |> HtmlE.onInput ]
         )
         [ error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none ]
-    ]
 
 
 aboutContent : Shared -> Html Global.Msg

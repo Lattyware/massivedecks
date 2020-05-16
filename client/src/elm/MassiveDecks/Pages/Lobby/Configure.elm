@@ -15,9 +15,7 @@ import Json.Decode as Json
 import Json.Diff as Json
 import Json.Encode
 import Json.Patch as Json
-import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
-import MassiveDecks.Components as Components
+import MassiveDecks.Card.Source.Model exposing (Source)
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error.Model as Error exposing (Error)
@@ -52,8 +50,13 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless as Wl
-import Weightless.Attributes as WlA
+import MassiveDecks.Util.NeList exposing (NeList(..))
+import Material.Attributes as Material
+import Material.Button as Button
+import Material.Card as Card
+import Material.Fab as Fab
+import Material.Tabs as Tabs
+import Material.TextField as TextField
 
 
 init : Shared -> Model
@@ -177,16 +180,19 @@ update shared msg model config =
             ( model, shared, Cmd.none )
 
 
-view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Maybe msg -> Bool -> Model -> GameCode -> Lobby -> Html msg
-view wrap wrapLobby shared return canEdit model gameCode lobby =
+view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Maybe msg -> Message msg -> Model -> GameCode -> Lobby -> Html msg
+view wrap wrapLobby shared return disabledReason model gameCode lobby =
     let
+        canEdit =
+            disabledReason |> Maybe.isNothing
+
         conflicts =
             if List.isEmpty model.conflicts then
                 Html.nothing
 
             else
                 Html.div [ HtmlA.id "merge-overlay" ]
-                    [ Wl.card []
+                    [ Card.view []
                         [ model.conflicts |> viewMerge wrap shared model model.localConfig lobby.config (wrap NoOp) canEdit
                         ]
                     ]
@@ -205,27 +211,37 @@ view wrap wrapLobby shared return canEdit model gameCode lobby =
                 Privacy ->
                     Privacy.All |> PrivacyId
 
-        returnButton msg =
-            Wl.card []
-                [ Wl.button [ HtmlA.class "game-in-progress", HtmlE.onClick msg, Strings.ReturnViewToGameDescription |> Lang.title shared ]
-                    [ Icon.play |> Icon.viewIcon
-                    , Strings.ReturnViewToGame |> Lang.html shared
-                    ]
-                ]
+        viewReturnButton msg =
+            Button.view shared
+                Button.Raised
+                Strings.ReturnViewToGame
+                Strings.ReturnViewToGameDescription
+                (Icon.arrowLeft |> Icon.viewIcon)
+                [ HtmlA.class "game-in-progress", HtmlE.onClick msg ]
+
+        returnButton =
+            return |> Maybe.map viewReturnButton |> Maybe.withDefault (Html.div [] [])
     in
     Html.div [ HtmlA.class "configure" ]
-        [ return |> Maybe.map returnButton |> Maybe.withDefault Html.nothing
-        , Wl.card []
+        [ Card.view []
             [ Html.div [ HtmlA.class "title" ]
                 [ Component.view (componentById NameId) wrap shared model model.localConfig lobby.config (wrap NoOp) canEdit ConfigOption.Local |> Maybe.withDefault Html.nothing
                 , Html.div [ HtmlA.class "joining" ]
                     [ Invite.button wrapLobby shared
-                    , Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared
+                    , Html.label [ Lobby.ToggleInviteDialog |> wrapLobby |> HtmlE.onClick ]
+                        [ Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared ]
                     ]
                 ]
-            ]
-        , Wl.card []
-            [ Wl.tabGroup [ WlA.align WlA.Center ] (tabs |> List.map (tab wrap shared model.tab))
+            , disabledReason
+                |> Message.view shared
+                |> Maybe.withDefault Html.nothing
+            , Tabs.view shared
+                { selected = model.tab
+                , change = ChangeTab >> wrap
+                , ids = tabs
+                , tab = tab
+                , equals = (==)
+                }
             , Component.view (componentById tabComponent)
                 wrap
                 shared
@@ -236,9 +252,7 @@ view wrap wrapLobby shared return canEdit model gameCode lobby =
                 canEdit
                 ConfigOption.Local
                 |> Maybe.withDefault Html.nothing
-            ]
-        , Wl.card []
-            [ startGameSegment wrap wrapLobby shared canEdit model lobby
+            , startGameSegment wrap wrapLobby shared canEdit model lobby returnButton
             ]
         , actions wrap shared (model.localConfig /= lobby.config)
         , conflicts
@@ -270,19 +284,18 @@ applyChange change config model =
 
 actions wrap shared hasChanges =
     Html.div [ HtmlA.class "actions" ]
-        [ Components.floatingActionButton
-            [ Strings.SaveChanges |> Lang.title shared
-            , SaveChanges |> wrap |> HtmlE.onClick
-            , HtmlA.classList [ ( "action", True ), ( "important", True ), ( "exited", not hasChanges ) ]
-            ]
-            Icon.save
-        , Components.floatingActionButton
-            [ Strings.RevertChanges |> Lang.title shared
-            , RevertChanges |> wrap |> HtmlE.onClick
-            , HtmlA.classList [ ( "action", True ), ( "exited", not hasChanges ) ]
-            , WlA.inverted
-            ]
-            Icon.undo
+        [ Fab.view shared
+            Fab.Normal
+            Strings.SaveChanges
+            (Icon.save |> Icon.present)
+            (SaveChanges |> wrap |> Just)
+            [ HtmlA.classList [ ( "action", True ), ( "important", True ), ( "exited", not hasChanges ) ] ]
+        , Fab.view shared
+            Fab.Mini
+            Strings.RevertChanges
+            (Icon.undo |> Icon.present)
+            (RevertChanges |> wrap |> Just)
+            [ HtmlA.classList [ ( "action", True ), ( "exited", not hasChanges ), ( "normal", True ) ] ]
         ]
 
 
@@ -329,8 +342,14 @@ viewConflict wrap shared model local config noOp canEdit conflict =
         ]
 
 
+resolveButton : (Msg -> msg) -> Shared -> Id -> Config.Source -> MdString -> Html msg
 resolveButton wrap shared conflict source description =
-    Wl.button [ HtmlA.class "resolve", ResolveConflict source conflict |> wrap |> HtmlE.onClick ] [ description |> Lang.html shared ]
+    Button.view shared
+        Button.Raised
+        description
+        description
+        Html.nothing
+        [ HtmlA.class "resolve", ResolveConflict source conflict |> wrap |> HtmlE.onClick ]
 
 
 default : Config
@@ -408,12 +427,12 @@ nameOption =
         \_ ->
             ConfigOption.TextField
                 { placeholder = Strings.LobbyNameLabel
-                , inputType = Nothing
+                , inputType = TextField.Text
                 , toString = Just
                 , fromString = Just
-                , attrs = [ WlA.minLength 1, WlA.maxLength 100 ]
+                , attrs = [ Material.minLength 1, Material.maxLength 100 ]
                 }
-    , extraEditor = \_ -> \_ -> \_ -> Nothing
+    , extraEditor = \_ -> \_ -> \_ -> \_ -> Nothing
     , set = ConfigOption.wrappedSetter NameChange
     , messages = \_ -> []
     }
@@ -436,8 +455,8 @@ mergeChange base local remote model =
     { model | localConfig = updated, conflicts = oldConflicts ++ newConflicts }
 
 
-startGameSegment : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> Lobby -> Html msg
-startGameSegment wrap wrapLobby shared canEdit model lobby =
+startGameSegment : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Bool -> Model -> Lobby -> Html msg -> Html msg
+startGameSegment wrap wrapLobby shared canEdit model lobby returnButton =
     let
         config =
             lobby.config
@@ -447,15 +466,27 @@ startGameSegment wrap wrapLobby shared canEdit model lobby =
 
         startGameAttrs =
             if List.isEmpty startErrors && canEdit then
-                [ StartGame |> wrap |> HtmlE.onClick ]
+                StartGame |> wrap |> HtmlE.onClick
 
             else
-                [ WlA.disabled ]
+                HtmlA.disabled True
     in
-    Form.section shared
-        "start-game"
-        (Wl.button startGameAttrs [ Strings.StartGame |> Lang.html shared ])
-        (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
+    Html.div []
+        [ Form.section
+            shared
+            "start-game"
+            Html.nothing
+            (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
+        , Html.div [ HtmlA.class "button-spread" ]
+            [ returnButton
+            , Button.view shared
+                Button.Raised
+                Strings.StartGame
+                Strings.StartGame
+                (Icon.rocket |> Icon.viewIcon)
+                [ startGameAttrs ]
+            ]
+        ]
 
 
 startGameProblems : Shared -> (Msg -> msg) -> (Lobby.Msg -> msg) -> Dict User.Id User -> Model -> Config -> List (Message msg)
@@ -496,7 +527,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                     summaries .responses
 
         requiredResponses =
-            (users |> Dict.values |> List.filter (\u -> u.role == User.Player) |> List.length) * 3
+            (users |> Dict.values |> List.filter (\u -> u.role == User.Player) |> List.length) * 3 * 2
 
         deckIssues =
             if noDecks then
@@ -514,28 +545,36 @@ startGameProblems shared wrap wrapLobby users model remote =
                 [ Strings.WaitForDecks |> Message.info |> Just ]
 
             else
+                let
+                    diff =
+                        requiredResponses - numberOfResponses
+
+                    old =
+                        config.rules.houseRules.comedyWriter |> Maybe.map .number |> Maybe.withDefault 0
+
+                    fixMsg =
+                        diff + old |> Just |> ComedyWriter.SetNumber |> HouseRule.ComedyWriterMsg |> Rules.HouseRulesMsg |> RulesMsg |> wrap
+                in
                 [ Strings.MissingCardType { cardType = Strings.Call }
                     |> Message.error
                     |> Maybe.justIf (summaries .calls < 1)
-                , Strings.MissingCardType { cardType = Strings.Response }
-                    |> Message.error
-                    |> Maybe.justIf (numberOfResponses < 1)
-                , Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredResponses, have = numberOfResponses }
-                    |> Message.error
+                , Message.errorWithFix
+                    (Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredResponses, have = numberOfResponses })
+                    [ Message.Fix (Strings.AddBlankCards { amount = diff }) Icon.plus fixMsg ]
                     |> Maybe.justIf (numberOfResponses < requiredResponses)
                 ]
-
-        playerCount =
-            users
-                |> Dict.values
-                |> List.filter (\user -> user.role == User.Player && user.presence == User.Joined)
-                |> List.length
 
         humanPlayerCount =
             users
                 |> Dict.values
-                |> List.filter (\user -> user.role == User.Player && user.presence == User.Joined && user.control == User.Human)
+                |> List.filter (\u -> u.role == User.Player && u.presence == User.Joined && u.control == User.Human)
                 |> List.length
+
+        computerPlayers =
+            config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
+
+        playerCount =
+            humanPlayerCount + computerPlayers
 
         playerIssues =
             [ Message.errorWithFix
@@ -614,18 +653,16 @@ startGameProblems shared wrap wrapLobby users model remote =
     [ deckIssues, playerIssues, aisNoWriteGoodIssues, configurationIssues ] |> List.concat |> List.filterMap identity
 
 
-tabs : List Tab
+tabs : NeList Tab
 tabs =
-    [ Decks, Rules, TimeLimits, Privacy ]
+    NeList Decks [ Rules, TimeLimits, Privacy ]
 
 
-tab : (Msg -> msg) -> Shared -> Tab -> Tab -> Html msg
-tab wrap shared currently target =
-    Wl.tab
-        ((target |> ChangeTab |> wrap |> always |> HtmlE.onCheck)
-            :: ([ WlA.checked ] |> Maybe.justIf (currently == target) |> Maybe.withDefault [])
-        )
-        [ target |> tabName |> Lang.html shared ]
+tab : Tab -> Tabs.TabModel
+tab target =
+    { label = target |> tabName
+    , icon = Nothing
+    }
 
 
 tabName : Tab -> MdString

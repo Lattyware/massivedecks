@@ -29,10 +29,7 @@
       // Ids for decks in the order they will be presented to the user.
       // The game will look for these in the directory given by basePath above, and will expect them to have the
       // .deck.json5 extension.
-      decks: [
-        "cah-base-en",
-        "cah-base-ptbr"
-      ]
+      decks: ["cah-base-en", "cah-base-ptbr"],
     },
 
     // Allows players to load decks from Cardcast via their API. https://www.cardcastgame.com/
@@ -44,8 +41,8 @@
       // The number of connections the server can make to Cardcast at one time.
       // Please remember this is a service provided by Cardcast, and you should make best efforts to ensure you don't
       // hit them too hard, including not setting this too high.
-      simultaneousConnections: 1
-    }
+      simultaneousConnections: 1,
+    },
   },
 
   // Timeouts determine how long the server waits before taking certain actions.
@@ -62,7 +59,7 @@
 
     // How long to wait after everyone has played to begin the revealing phase. Having this as a non-zero value lets
     // the last person playing
-    finishedPlayingDelay: "PT2S"
+    finishedPlayingDelay: "PT2S",
   },
 
   // Tasks are things that take some time to happen (e.g: requesting data from external card services).
@@ -73,7 +70,7 @@
     rateLimit: 20,
     // How often to process queued tasks. Setting this too high will result in games being slowed down a lot when the
     // rate limit is hit (an ISO 8601 duration).
-    processTickFrequency: "PT0.5S"
+    processTickFrequency: "PT0.5S",
   },
 
   // How to store game data.
@@ -92,10 +89,10 @@
     //   keepAlive: false,
     // },
 
-    // How long to allow without any activity before garbage collecting the game.
+    // How long to allow without any activity before garbage collecting the game (an ISO 8601 duration).
     abandonedTime: "PT15M",
     // How often to delete abandoned/finished games (an ISO 8601 duration).
-    garbageCollectionFrequency: "PT5M"
+    garbageCollectionFrequency: "PT5M",
   },
 
   // How to cache game data.
@@ -115,7 +112,7 @@
     // },
 
     // How old a cached value should be before we check to see if we should update it on a hit.
-    checkAfter: "PT5M"
+    checkAfter: "PT5M",
   },
 
   // A file to touch when the server is started. If null, we won't touch any files.
@@ -123,6 +120,6 @@
   // This will be overwritten by the environment variable MD_TOUCH_ON_START, if set.
 
   // The version of Massive Decks.
-  version: "dev"
+  version: "dev",
   // This will be overwritten by the environment variable MD_VERSION, if set.
 }

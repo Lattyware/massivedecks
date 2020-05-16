@@ -84,7 +84,7 @@ export abstract class Store {
   ): Promise<void> {
     await this.writeAndReturn(gameCode, (lobby: Lobby.Lobby) => ({
       transaction: write(lobby),
-      result: undefined
+      result: undefined,
     }));
   }
 

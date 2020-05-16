@@ -15,6 +15,7 @@ import MassiveDecks.Error.Overlay as Overlay
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
+import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Loading as Loading
@@ -377,10 +378,10 @@ handleLobbyMsg baseModel lobbyMsg lobbyModel =
         Lobby.Stay newLobbyModel ->
             ( { model | page = Pages.Lobby newLobbyModel }, lobbyCmd )
 
-        Lobby.AuthError gc authenticationError ->
+        Lobby.JoinError gc error ->
             let
                 ( page, changePageCmd ) =
-                    Start.initWithAuthError shared gc authenticationError
+                    Start.initWithError shared gc error
 
                 urlCommand =
                     page |> .route |> Route.Start |> Route.url |> Navigation.pushUrl shared.key

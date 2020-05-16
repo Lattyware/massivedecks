@@ -13,7 +13,7 @@ pack =
     { code = "it"
     , name = Italian
     , translate = translate
-    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
+    , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
     }
 
 
@@ -135,6 +135,14 @@ translate mdString =
 
         YouWereKicked ->
             [ Text "Sei stato espulso dal gioco." ]
+
+        -- TODO: Translate
+        ScrollToTop ->
+            [ Text "Scroll to the top." ]
+
+        -- TODO: Translate
+        Copy ->
+            [ Text "Copy" ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -316,6 +324,9 @@ translate mdString =
         MissingLanguage ->
             [ Text "Non vedi la tua lingua? ", Ref TranslationBeg ]
 
+        AutonymFormat { autonym } ->
+            [ Text "(", Text autonym, Text ")" ]
+
         TranslationBeg ->
             [ Text "Aiuta a tradurre "
             , Ref MassiveDecks
@@ -419,6 +430,22 @@ translate mdString =
 
         Deck ->
             [ Text "Mazzo" ]
+
+        -- TODO: Translate
+        DeckSource ->
+            [ Ref Deck, Text " Source" ]
+
+        -- TODO: Translate
+        DeckLanguage { language } ->
+            [ Text "in ", Ref language ]
+
+        -- TODO: Translate
+        DeckAuthor { author } ->
+            [ Text "by ", Text author ]
+
+        -- TODO: Translate
+        DeckTranslator { translator } ->
+            [ Text "translation by ", Text translator ]
 
         StillPlaying ->
             [ Text "Sta giocando" ]
@@ -711,6 +738,14 @@ translate mdString =
             , Text "."
             ]
 
+        -- TODO: Translate
+        AddBlankCards { amount } ->
+            [ Text "Add "
+            , amount |> String.fromInt |> Text
+            , Text " blank "
+            , Ref (Plural { singular = Response, amount = Just amount })
+            ]
+
         AddDeck ->
             [ Text "Aggiungi mazzo." ]
 
@@ -882,6 +917,18 @@ translate mdString =
 
         TheirChanges ->
             [ Text "Le sue modifiche" ]
+
+        -- TODO: Translate
+        ConfigurationDisabledWhileInGame ->
+            [ Text "While the game in progress, you can't change the configuration." ]
+
+        -- TODO: Translate
+        ConfigurationDisabledIfNotPrivileged ->
+            [ Text "You can't change the configuration of this game." ]
+
+        -- TODO: Translate
+        ConfigureNextGame ->
+            [ Text "Configure Next Game" ]
 
         -- Game
         SubmitPlay ->

@@ -18,7 +18,7 @@ export interface Connected extends Base {
 
 export const connected = (user: User.Id): Connected => ({
   event: "Connected",
-  user
+  user,
 });
 
 /**
@@ -30,5 +30,5 @@ export interface Disconnected extends Base {
 
 export const disconnected = (user: User.Id): Disconnected => ({
   event: "Disconnected",
-  user
+  user,
 });

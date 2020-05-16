@@ -1,4 +1,5 @@
 import Pg from "pg";
+import * as Logging from "../logging";
 
 /**
  * A version for the database. Undefined if none exists.
@@ -32,14 +33,22 @@ export class Postgres {
    * Ensure the database is set up for the current version.
    */
   public async ensureCurrent(): Promise<void> {
-    await this.inTransaction(async client => {
+    await this.inTransaction(async (client) => {
       let version = await this.findVersion(client);
       while (true) {
         const upgrade = this.upgrades(version);
         if (upgrade === undefined) {
           return;
         }
+        const oldVersion = version;
         version = await upgrade.apply(client);
+        if (oldVersion == undefined) {
+          Logging.logger.info(`Created '${this.schema}' at '${version}'`);
+        } else {
+          Logging.logger.info(
+            `Upgraded '${this.schema}' from '${oldVersion}' to '${version}'.`
+          );
+        }
       }
     });
   }
@@ -68,7 +77,7 @@ export class Postgres {
   ): AsyncIterableIterator<Result> {
     const client = await this.pool.connect();
     try {
-      return await f(client);
+      yield* await f(client);
     } finally {
       client.release();
     }
@@ -82,7 +91,7 @@ export class Postgres {
   public async inTransaction<Result>(
     f: (client: Pg.PoolClient) => Promise<Result>
   ): Promise<Result> {
-    return await this.withClient(async client => {
+    return await this.withClient(async (client) => {
       await client.query("BEGIN;");
       try {
         const result = await f(client);

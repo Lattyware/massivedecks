@@ -62,13 +62,13 @@ export type Control = "Human" | "Computer";
 /**
  * If the user is playing.
  */
-export const isPlaying: (user: User) => boolean = user =>
+export const isPlaying: (user: User) => boolean = (user) =>
   user.role === "Player";
 
 /**
  * If the user is spectating.
  */
-export const isSpectating: (user: User) => boolean = user =>
+export const isSpectating: (user: User) => boolean = (user) =>
   user.role === "Spectator";
 
 /**
@@ -85,12 +85,12 @@ export const create = (
   connection: "Connected",
   privilege: privilege,
   control: "Human",
-  role: "Player"
+  role: "Player",
 });
 
 /**
  * Gives a version of the user with only publicly visible properties.
  */
-export const censor: (user: User) => Public = user => ({
-  ...user
+export const censor: (user: User) => Public = (user) => ({
+  ...user,
 });

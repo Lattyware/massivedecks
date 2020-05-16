@@ -7,6 +7,20 @@ import * as Postgres from "../util/postgres";
 import * as Card from "../games/cards/card";
 import * as uuid from "uuid";
 
+class To1 extends Postgres.Upgrade<0, 1> {
+  public readonly to = 1;
+
+  public async apply(client: Pg.PoolClient): Promise<1> {
+    await client.query(`
+      ALTER TABLE mdcache.summaries ADD COLUMN author TEXT;
+      ALTER TABLE mdcache.summaries ADD COLUMN language TEXT;
+      ALTER TABLE mdcache.summaries ADD COLUMN translator TEXT;
+    `);
+    await client.query("UPDATE mdcache.meta SET version = $1;", [this.to]);
+    return this.to;
+  }
+}
+
 class To0 extends Postgres.Upgrade<undefined, 0> {
   public readonly to = 0;
 
@@ -66,12 +80,18 @@ const upgrades: Postgres.Upgrades = (version) => {
       return new To0(version);
 
     case 0:
+      return new To1(version);
+
+    case 1:
       return undefined;
 
     default:
       throw new Error("Database is on unsupported version, can't upgrade.");
   }
 };
+
+const nullToUndefined = <T>(value: T | null): T | undefined =>
+  value === null ? undefined : value;
 
 /**
  * A PostgreSQL database backed cache.
@@ -84,9 +104,7 @@ export class PostgresCache extends Cache.Cache {
     config: Config.PostgreSQLCache
   ): Promise<PostgresCache> {
     const pg = new Postgres.Postgres("mdcache", config.connection, upgrades);
-
     await pg.ensureCurrent();
-
     return new PostgresCache(config, pg);
   }
 
@@ -109,11 +127,11 @@ export class PostgresCache extends Cache.Cache {
         `,
         [source.id(), source.deckId()]
       );
-
+      const details = summary.details;
       await client.query(
         `
           INSERT INTO mdcache.summaries 
-            (source, deck, name, url, calls, responses, updated, tag) 
+            (source, deck, name, url, author, language, translator, calls, responses, updated, tag) 
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8
           );
@@ -121,8 +139,11 @@ export class PostgresCache extends Cache.Cache {
         [
           source.id(),
           source.deckId(),
-          summary.details.name,
-          summary.details.url,
+          details.name,
+          details.url,
+          details.author,
+          details.language,
+          details.translator,
           summary.calls,
           summary.responses,
           Date.now(),
@@ -179,7 +200,7 @@ export class PostgresCache extends Cache.Cache {
     return await this.pg.withClient(async (client) => {
       const result = await client.query(
         `
-          SELECT name, url, calls, responses, updated 
+          SELECT name, url, author, language, translator, calls, responses, updated 
           FROM mdcache.summaries WHERE source = $1 AND deck = $2
         `,
         [source.id(), source.deckId()]
@@ -190,7 +211,10 @@ export class PostgresCache extends Cache.Cache {
           cached: {
             details: {
               name: row["name"],
-              url: row["url"],
+              url: nullToUndefined(row["url"]),
+              author: nullToUndefined(row["author"]),
+              language: nullToUndefined(row["language"]),
+              translator: nullToUndefined(row["translator"]),
             },
             calls: row["calls"],
             responses: row["responses"],

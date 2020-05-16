@@ -21,6 +21,6 @@ export class OutOfCardsError extends GameStateError {
   }
 
   public details = (): Errors.Details => ({
-    error: "OutOfCards"
+    error: "OutOfCards",
   });
 }

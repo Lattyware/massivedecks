@@ -266,8 +266,20 @@ export const Schema = {
       defaultProperties: [],
       description: "More information that can be looked up given a source.",
       properties: {
+        author: {
+          description: "The name of the author of the deck.",
+          type: "string",
+        },
+        language: {
+          description: "The language tag for the language the deck is in.",
+          type: "string",
+        },
         name: {
           description: "A name for the source.",
+          type: "string",
+        },
+        translator: {
+          description: "The name of the translator of the deck.",
           type: "string",
         },
         url: {

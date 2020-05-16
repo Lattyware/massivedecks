@@ -14,7 +14,6 @@ import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable as Toggleable
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.ComedyWriter.Model exposing (..)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless.Attributes as WlA
 
 
 init : Model
@@ -115,14 +114,9 @@ enabledOption =
     }
 
 
-numberMin : Int
-numberMin =
-    1
-
-
-numberMax : Int
-numberMax =
-    99999
+numberBounds : ConfigOption.IntBounds
+numberBounds =
+    ConfigOption.IntBounds 1 99999
 
 
 number : Component (Maybe Int) Model Id Msg msg
@@ -131,7 +125,7 @@ number =
         Number
         (ConfigOption.view numberOption)
         Maybe.isNothing
-        (Validator.optional (Validator.between numberMin numberMax (Just >> SetNumber)))
+        (Validator.optional (ConfigOption.toValidator numberBounds (Just >> SetNumber)))
 
 
 numberOption : ConfigOption Model (Maybe Int) Msg msg
@@ -140,7 +134,7 @@ numberOption =
     , toggleable = Nothing
     , primaryEditor =
         \_ ->
-            ConfigOption.intEditor Strings.HouseRuleComedyWriterNumber [ WlA.min numberMin, WlA.max numberMax ]
+            ConfigOption.intEditor Strings.HouseRuleComedyWriterNumber (ConfigOption.toMinMaxAttrs numberBounds)
                 |> ConfigOption.maybeEditor
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter SetNumber

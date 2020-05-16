@@ -84,9 +84,9 @@ class SetUserRoleActions extends Actions.Implementation<
             UserRoleChanged.of(userId, action.role),
             additionalMap
           ),
-          ...allEvents
+          ...allEvents,
         ],
-        timeouts: allTimeouts
+        timeouts: allTimeouts,
       };
     } else {
       return {};

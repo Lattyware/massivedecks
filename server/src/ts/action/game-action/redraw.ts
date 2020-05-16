@@ -48,8 +48,8 @@ class RedrawActions extends Actions.Implementation<
         Event.additionally(
           HandRedrawn.of(auth.uid),
           new Map([[auth.uid, { hand: player.hand }]])
-        )
-      ]
+        ),
+      ],
     };
   };
 }

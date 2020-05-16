@@ -24,8 +24,9 @@ import MassiveDecks.Animated as Animated exposing (Animated)
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
-import MassiveDecks.Components as Components
+import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Components.Menu as Menu
+import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Error as MdError
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Game as Game
@@ -59,8 +60,10 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless as Wl
-import Weightless.Attributes as WlA
+import MassiveDecks.Util.NeList as NeList
+import Material.Button as Button
+import Material.Card as Card
+import Material.IconButton as IconButton
 
 
 changeRoute : Shared -> Route -> Model -> Route.Fork ( Model, Cmd msg )
@@ -97,6 +100,8 @@ initWithAuth shared r auth =
       , inviteDialogOpen = False
       , timeAnchor = Nothing
       , spectate = Spectate.init
+      , gameMenu = Menu.Closed
+      , userMenu = Nothing
       }
     , ServerConnection.connect auth.claims.gc auth.token
     )
@@ -157,20 +162,31 @@ update wrap shared msg model =
                             applySync wrap shared model state hand play partialTimeAnchor
 
                         Events.Configured { change } ->
-                            ( applyConfigured change model
-                            , shared
-                            , Cmd.none
-                            )
+                            ( applyConfigured change model, shared, Cmd.none )
 
                         Events.GameStarted { round, hand } ->
                             let
-                                ( g, cmd ) =
+                                ( g, gameCmd ) =
                                     Game.applyGameStarted (GameMsg >> wrap) lobby round (hand |> Maybe.withDefault [])
+
+                                r =
+                                    model.route
+
+                                changeCmd =
+                                    if r.section == Just Configure then
+                                        { r | section = Nothing }
+                                            |> Route.Lobby
+                                            |> Route.url
+                                            |> Navigation.replaceUrl shared.key
+                                            |> Just
+
+                                    else
+                                        Nothing
+
+                                cmd =
+                                    [ Just gameCmd, changeCmd ] |> List.filterMap identity |> Cmd.batch
                             in
-                            ( Stay { model | lobby = Just { lobby | game = Just g } }
-                            , shared
-                            , cmd
-                            )
+                            ( Stay { model | lobby = Just { lobby | game = Just g } }, shared, cmd )
 
                         Events.Game gameEvent ->
                             let
@@ -294,8 +310,11 @@ update wrap shared msg model =
 
         ErrorReceived error ->
             case error of
-                MdError.Authentication reason ->
-                    ( AuthError model.auth.claims.gc reason, shared, Cmd.none )
+                MdError.Authentication _ ->
+                    ( JoinError model.auth.claims.gc error, shared, Cmd.none )
+
+                MdError.LobbyNotFound _ ->
+                    ( JoinError model.auth.claims.gc error, shared, Cmd.none )
 
                 MdError.ActionExecution (MdError.ConfigEditConflict _) ->
                     let
@@ -374,6 +393,28 @@ update wrap shared msg model =
             in
             ( Stay { model | route = newRoute }, shared, newRoute |> Route.Lobby |> Route.url |> Navigation.replaceUrl shared.key )
 
+        SetGameMenuState newState ->
+            ( Stay { model | gameMenu = newState }, shared, Cmd.none )
+
+        SetUserMenuState id state ->
+            let
+                old =
+                    model.userMenu
+
+                new =
+                    case state of
+                        Menu.Open ->
+                            Just id
+
+                        Menu.Closed ->
+                            if old /= Just id then
+                                old
+
+                            else
+                                Nothing
+            in
+            ( Stay { model | userMenu = new }, shared, Cmd.none )
+
         NoOp ->
             ( Stay model, shared, Cmd.none )
 
@@ -389,7 +430,7 @@ view wrap wrapSettings changePage shared model =
             let
                 viewContent _ auth timeAnchor lobby =
                     lobby.game
-                        |> Maybe.map (Game.view (GameMsg >> wrap) shared auth timeAnchor lobby.config.name lobby.config lobby.users)
+                        |> Maybe.map (Game.view wrap (GameMsg >> wrap) shared auth timeAnchor lobby.config.name lobby.config lobby.users)
                         |> Maybe.withDefault (Html.div [] [ Strings.GameNotStartedError |> Lang.html shared ])
             in
             viewWithUsers wrap wrapSettings shared s viewContent model
@@ -434,7 +475,7 @@ section r auth lobby =
 
 
 type alias ViewContent msg =
-    Bool -> Auth -> Time.Anchor -> Lobby -> Html msg
+    Message msg -> Auth -> Time.Anchor -> Lobby -> Html msg
 
 
 viewWithUsers : (Msg -> msg) -> (Settings.Msg -> msg) -> Shared -> Section -> ViewContent msg -> Model -> List (Html msg)
@@ -459,7 +500,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
 
         castButton =
             castAttrs
-                |> Maybe.map (viewCastButton wrap model.auth)
+                |> Maybe.map (viewCastButton wrap shared model.auth)
                 |> Maybe.withDefault []
 
         usersIcon =
@@ -489,12 +530,11 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
         (Html.div [ HtmlA.id "top-bar" ]
             [ Html.div [ HtmlA.class "left" ]
                 (List.concat
-                    [ [ Components.iconButtonStyled
-                            [ HtmlE.onClick (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings)
-                            , Strings.ToggleUserList |> Lang.title shared
-                            ]
-                            ( [ Icon.lg ], usersIcon )
-                      , lobbyMenu wrap shared model.route s localUser localPlayer (maybeGame |> Maybe.map .game)
+                    [ [ IconButton.view shared
+                            Strings.ToggleUserList
+                            (usersIcon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                            (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
+                      , lobbyMenu wrap shared model.gameMenu model.route s localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
                     , castButton
                     ]
@@ -503,7 +543,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
             :: (model.lobby
-                    |> Maybe.map2 (viewLobby wrap shared model.auth viewContent) model.timeAnchor
+                    |> Maybe.map2 (viewLobby wrap shared model.auth model.userMenu viewContent) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
                             [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
@@ -519,8 +559,8 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
     ]
 
 
-viewLobby : (Msg -> msg) -> Shared -> Auth -> ViewContent msg -> Time.Anchor -> Lobby -> List (Html msg)
-viewLobby wrap shared auth viewContent timeAnchor lobby =
+viewLobby : (Msg -> msg) -> Shared -> Auth -> Maybe User.Id -> ViewContent msg -> Time.Anchor -> Lobby -> List (Html msg)
+viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobby =
     let
         game =
             lobby.game |> Maybe.map .game
@@ -528,12 +568,24 @@ viewLobby wrap shared auth viewContent timeAnchor lobby =
         privileged =
             (lobby.users |> Dict.get auth.claims.uid |> Maybe.map .privilege) == Just User.Privileged
 
-        canEdit =
-            privileged && (game |> Maybe.map (.winner >> Maybe.isJust) |> Maybe.withDefault True)
+        configDisabledReason =
+            if not privileged then
+                Message.info Strings.ConfigurationDisabledIfNotPrivileged
+
+            else if game |> Maybe.map (.winner >> Maybe.isNothing) |> Maybe.withDefault False then
+                Message.infoWithFix Strings.ConfigurationDisabledWhileInGame
+                    [ { description = Strings.EndGame
+                      , icon = Icon.stopCircle
+                      , action = wrap EndGame
+                      }
+                    ]
+
+            else
+                Message.none
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
-        [ viewUsers wrap shared auth.claims.uid lobby.users game
-        , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent canEdit auth timeAnchor lobby ]
+        [ viewUsers wrap shared auth.claims.uid lobby.users openUserMenu game
+        , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobby ]
         , lobby.errors |> viewErrors shared
         ]
     ]
@@ -552,12 +604,9 @@ cardSizeToAttr cardSize =
             HtmlA.nothing
 
 
-lobbyMenu : (Msg -> msg) -> Shared -> Route -> Section -> Maybe User -> Maybe Player -> Maybe Game -> Html msg
-lobbyMenu wrap shared r s user player game =
+lobbyMenu : (Msg -> msg) -> Shared -> Menu.State -> Route -> Section -> Maybe User -> Maybe Player -> Maybe Game -> Html msg
+lobbyMenu wrap shared menuState r s user player game =
     let
-        id =
-            "lobby-menu-button"
-
         lobbyMenuItems =
             [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
 
@@ -609,11 +658,16 @@ lobbyMenu wrap shared r s user player game =
         separatedMenuItems =
             menuItems |> List.filterMap identity |> List.intersperse [ Menu.Separator ] |> List.concat
     in
-    Html.div []
-        [ Components.iconButtonStyled [ HtmlA.id id, Strings.GameMenu |> Lang.title shared ]
-            ( [ Icon.lg ], Icon.bars )
-        , Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XLeft, WlA.YTop ) separatedMenuItems
-        ]
+    Menu.view shared
+        (Menu.Closed |> SetGameMenuState |> wrap)
+        menuState
+        Menu.BottomEnd
+        (IconButton.view shared
+            Strings.GameMenu
+            (Icon.bars |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+            (menuState |> Menu.toggle |> SetGameMenuState |> wrap |> Just)
+        )
+        separatedMenuItems
 
 
 applyConfigured : Json.Patch -> Model -> Change
@@ -749,18 +803,19 @@ viewNotification wrap shared users animationState notification =
                     , Just "error"
                     )
     in
-    Wl.card
+    Card.view
         [ HtmlA.class "notification", animationState, class |> Maybe.map HtmlA.class |> Maybe.withDefault HtmlA.nothing ]
         [ Html.div [ HtmlA.class "content" ]
             [ Html.span [ HtmlA.class "icon" ] [ icon ]
             , Html.span [ HtmlA.class "message" ] [ message ]
-            , Wl.button
-                [ WlA.flat
-                , WlA.inverted
-                , notification |> Animated.Exit |> NotificationMsg |> wrap |> HtmlE.onClick
+            , Button.view shared
+                Button.Standard
+                Strings.Dismiss
+                Strings.Dismiss
+                Html.nothing
+                [ notification |> Animated.Exit |> NotificationMsg |> wrap |> HtmlE.onClick
                 , HtmlA.class "action"
                 ]
-                [ Strings.Dismiss |> Lang.html shared ]
             ]
         ]
 
@@ -787,8 +842,8 @@ viewError shared error =
     error |> MdError.Game |> MdError.viewSpecific shared
 
 
-viewUsers : (Msg -> msg) -> Shared -> User.Id -> Dict User.Id User -> Maybe Game -> Html msg
-viewUsers wrap shared localUserId users game =
+viewUsers : (Msg -> msg) -> Shared -> User.Id -> Dict User.Id User -> Maybe User.Id -> Maybe Game -> Html msg
+viewUsers wrap shared localUserId users openUserMenu game =
     let
         localUserPrivilege =
             users |> Dict.get localUserId |> Maybe.map .privilege |> Maybe.withDefault User.Unprivileged
@@ -797,24 +852,23 @@ viewUsers wrap shared localUserId users game =
             users |> Dict.toList |> List.partition (\( _, user ) -> user.presence == User.Joined)
 
         activeGroups =
-            active |> byRole |> List.map (viewRoleGroup wrap shared localUserId localUserPrivilege game)
+            active |> byRole |> List.map (viewRoleGroup wrap shared localUserId localUserPrivilege openUserMenu game)
 
         inactiveGroup =
             if List.isEmpty inactive then
                 []
 
             else
-                [ viewUserListGroup wrap shared localUserId localUserPrivilege game ( ( "left", Strings.Left ), inactive ) ]
+                [ viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( ( "left", Strings.Left ), inactive ) ]
 
         groups =
             List.concat [ activeGroups, inactiveGroup ]
     in
-    Wl.card [ HtmlA.id "users" ]
-        [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
+    Card.view [ HtmlA.id "users" ] [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
 
 
-viewRoleGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html msg )
-viewRoleGroup wrap shared localUserId localUserPrivilege game ( role, users ) =
+viewRoleGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html msg )
+viewRoleGroup wrap shared localUserId localUserPrivilege openUserMenu game ( role, users ) =
     let
         idAndDescription =
             case role of
@@ -824,15 +878,15 @@ viewRoleGroup wrap shared localUserId localUserPrivilege game ( role, users ) =
                 User.Spectator ->
                     ( "spectators", Strings.Spectators )
     in
-    viewUserListGroup wrap shared localUserId localUserPrivilege game ( idAndDescription, users )
+    viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( idAndDescription, users )
 
 
-viewUserListGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html msg )
-viewUserListGroup wrap shared localUserId localUserPrivilege game ( ( id, description ), users ) =
+viewUserListGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html msg )
+viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( ( id, description ), users ) =
     ( id
     , Html.li [ HtmlA.class id ]
         [ Html.span [] [ description |> Lang.html shared ]
-        , HtmlK.ol [] (users |> List.map (viewUser wrap shared localUserId localUserPrivilege game))
+        , HtmlK.ol [] (users |> List.map (viewUser wrap shared localUserId localUserPrivilege openUserMenu game))
         ]
     )
 
@@ -849,14 +903,11 @@ byRole users =
         |> List.filter (\( _, us ) -> not (List.isEmpty us))
 
 
-viewUser : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe Game -> ( User.Id, User ) -> ( String, Html msg )
-viewUser wrap shared localUserId localUserPrivilege game ( userId, user ) =
+viewUser : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html msg )
+viewUser wrap shared localUserId localUserPrivilege openUserMenu game ( userId, user ) =
     let
         ( secondary, score ) =
             userDetails shared game userId user
-
-        id =
-            "user-" ++ userId
 
         player =
             game |> Maybe.map .players |> Maybe.andThen (Dict.get userId)
@@ -914,10 +965,10 @@ viewUser wrap shared localUserId localUserPrivilege game ( userId, user ) =
                                 in
                                 let
                                     setAway =
-                                        if userId == localUserId then
+                                        if userId == localUserId && game /= Nothing then
                                             setPresenceMenuItem wrap player |> Just
 
-                                        else if not isAway then
+                                        else if not isAway && game /= Nothing then
                                             case localUserPrivilege of
                                                 User.Privileged ->
                                                     Menu.button Icon.userClock Strings.SetAway Strings.SetAway (userId |> SetAway |> wrap |> Just) |> Just
@@ -946,27 +997,38 @@ viewUser wrap shared localUserId localUserPrivilege game ( userId, user ) =
             else
                 []
 
-        ( menu, clickable ) =
+        ( menu, attrs ) =
             if user.presence == User.Left || List.isEmpty menuItems then
-                ( Html.nothing, HtmlA.nothing )
+                ( identity, [] )
 
             else
-                ( menuItems |> Menu.view shared id ( WlA.XCenter, WlA.YBottom ) ( WlA.XCenter, WlA.YTop )
-                , WlA.clickable
+                let
+                    isOpen =
+                        Just userId == openUserMenu
+                in
+                ( \c ->
+                    Menu.view shared
+                        (SetUserMenuState userId Menu.Closed |> wrap)
+                        (isOpen |> Menu.open)
+                        Menu.BottomRight
+                        c
+                        menuItems
+                , [ not isOpen |> Menu.open |> SetUserMenuState userId |> wrap |> HtmlE.onClick
+                  , HtmlA.classList [ ( "active", isOpen ), ( "has-menu", True ) ]
+                  ]
                 )
     in
     ( userId
     , Html.li []
-        [ Wl.listItem
-            [ HtmlA.classList [ ( "you", localUserId == userId ), ( "away", isAway ) ]
-            , clickable
-            , HtmlA.id id
+        [ Html.div
+            (HtmlA.classList [ ( "user", True ), ( "you", localUserId == userId ), ( "away", isAway ) ] :: attrs)
+            [ Html.div [ HtmlA.class "about" ]
+                [ Html.div [ HtmlA.class "name", HtmlA.title user.name ] [ Html.text user.name ]
+                , Html.div [ HtmlA.class "state", HtmlA.class "compressed-terms" ] secondary
+                ]
+            , Html.span [ HtmlA.class "scores" ] score
             ]
-            [ Html.span [ HtmlA.class "user", HtmlA.title user.name ] [ Html.text user.name ]
-            , Html.div [ HtmlA.class "compressed-terms" ] secondary
-            , Html.span [ WlA.listItemSlot WlA.AfterItem ] score
-            ]
-        , menu
+        , Html.div [] [] |> menu
         ]
     )
 
@@ -994,33 +1056,33 @@ userDetails shared game userId user =
             game |> Maybe.map .round
 
         details =
-            [ Strings.Privileged |> Maybe.justIf (user.privilege == User.Privileged)
-            , Strings.Ai |> Maybe.justIf (user.control == User.Computer)
-            , round |> Maybe.andThen (\r -> Strings.Czar |> Maybe.justIf (Player.isCzar r userId))
-            , Strings.Disconnected |> Maybe.justIf (user.connection == User.Disconnected && user.presence /= User.Left)
-            , Strings.Away |> Maybe.justIf ((player |> Maybe.map .presence) == Just Player.Away)
+            [ ( "privileged", Strings.Privileged ) |> Maybe.justIf (user.privilege == User.Privileged)
+            , ( "ai", Strings.Ai ) |> Maybe.justIf (user.control == User.Computer)
+            , round |> Maybe.andThen (\r -> ( "czar", Strings.Czar ) |> Maybe.justIf (Player.isCzar r userId))
+            , ( "disconnected", Strings.Disconnected ) |> Maybe.justIf (user.connection == User.Disconnected && user.presence /= User.Left)
+            , ( "away", Strings.Away ) |> Maybe.justIf ((player |> Maybe.map .presence) == Just Player.Away)
             , playStateDetail round userId
             ]
 
         score =
-            player |> Maybe.map (\p -> Strings.Score { total = p.score })
+            player |> Maybe.map (\p -> ( "score", Strings.Score { total = p.score } ))
 
         likes =
-            player |> Maybe.map (\p -> Strings.Likes { total = p.likes })
+            player |> Maybe.map (\p -> ( "likes", Strings.Likes { total = p.likes } ))
     in
     ( viewDetails shared details, viewDetails shared [ score, likes ] )
 
 
-playStateDetail : Maybe Round -> User.Id -> Maybe MdString
+playStateDetail : Maybe Round -> User.Id -> Maybe ( String, MdString )
 playStateDetail round userId =
     case round of
         Just (Round.P p) ->
             case Player.playState p userId of
                 Player.Playing ->
-                    Just Strings.StillPlaying
+                    Just ( "playing", Strings.StillPlaying )
 
                 Player.Played ->
-                    Just Strings.Played
+                    Just ( "played", Strings.Played )
 
                 Player.NotInRound ->
                     Nothing
@@ -1029,20 +1091,18 @@ playStateDetail round userId =
             Nothing
 
 
-viewDetails : Shared -> List (Maybe MdString) -> List (Html msg)
-viewDetails shared details =
-    details |> List.filterMap identity |> List.map (Lang.html shared) |> List.intersperse (Html.text " ")
+viewDetails : Shared -> List (Maybe ( String, MdString )) -> List (Html msg)
+viewDetails shared =
+    List.filterMap identity
+        >> List.map (\( cls, str ) -> Html.span [ HtmlA.class cls ] [ str |> Lang.html shared ])
 
 
-viewCastButton : (Msg -> msg) -> Auth -> List (Html.Attribute msg) -> List (Html msg)
-viewCastButton wrap auth attrs =
-    [ Components.iconButtonStyled
-        (List.concat
-            [ [ HtmlA.class "cast-button"
-              , auth |> TryCast |> wrap |> HtmlE.onClick
-              ]
-            , attrs
-            ]
-        )
-        ( [ Icon.lg ], Icon.chromecast )
+viewCastButton : (Msg -> msg) -> Shared -> Auth -> List (Html.Attribute msg) -> List (Html msg)
+viewCastButton wrap shared auth attrs =
+    [ Html.div (HtmlA.class "cast-button" :: attrs)
+        [ IconButton.view shared
+            Strings.Cast
+            (Icon.chromecast |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+            (auth |> TryCast |> wrap |> Just)
+        ]
     ]

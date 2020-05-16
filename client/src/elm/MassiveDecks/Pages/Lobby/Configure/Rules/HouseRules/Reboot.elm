@@ -14,7 +14,6 @@ import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable as Toggleable
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Reboot.Model exposing (..)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless.Attributes as WlA
 
 
 init : Model
@@ -100,14 +99,9 @@ enabledOption =
     }
 
 
-costMin : Int
-costMin =
-    1
-
-
-costMax : Int
-costMax =
-    50
+costBounds : ConfigOption.IntBounds
+costBounds =
+    ConfigOption.IntBounds 1 50
 
 
 cost : Component (Maybe Int) Model Id Msg msg
@@ -116,7 +110,7 @@ cost =
         Cost
         (ConfigOption.view costOption)
         Maybe.isNothing
-        (Validator.optional (Validator.between costMin costMax (Just >> SetCost)))
+        (Validator.optional (ConfigOption.toValidator costBounds (Just >> SetCost)))
 
 
 costOption : ConfigOption Model (Maybe Int) Msg msg
@@ -125,7 +119,7 @@ costOption =
     , toggleable = Toggleable.none
     , primaryEditor =
         \_ ->
-            ConfigOption.intEditor Strings.HouseRuleRebootCost [ WlA.min costMin, WlA.max costMax ]
+            ConfigOption.intEditor Strings.HouseRuleRebootCost (ConfigOption.toMinMaxAttrs costBounds)
                 |> ConfigOption.maybeEditor
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter SetCost

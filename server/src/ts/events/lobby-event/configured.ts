@@ -13,5 +13,5 @@ export interface Configured {
 
 export const of = (change: Rfc6902.Patch): Configured => ({
   event: "Configured",
-  change
+  change,
 });

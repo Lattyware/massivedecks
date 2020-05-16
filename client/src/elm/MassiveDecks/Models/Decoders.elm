@@ -54,27 +54,40 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User exposing (User)
+import MassiveDecks.Util.NeList as NonEmptyList
 import Set exposing (Set)
 
 
 sourceInfo : Json.Decoder Source.Info
 sourceInfo =
+    let
+        atLeastOne info =
+            if [ info.builtIn /= Nothing, info.cardcast ] |> List.any identity then
+                info |> Json.succeed
+
+            else
+                Json.fail "Must have at least one source enabled."
+    in
     Json.succeed Source.Info
         |> Json.optional "builtIn" (builtInInfo |> Json.map Just) Nothing
         |> Json.optional "cardcast" Json.bool False
+        |> Json.andThen atLeastOne
 
 
-builtInInfo : Json.Decoder Source.BuiltInInfo
+builtInInfo : Json.Decoder BuiltIn.Info
 builtInInfo =
-    Json.succeed Source.BuiltInInfo
-        |> Json.required "decks" (Json.list builtInDeck)
+    Json.succeed BuiltIn.Info
+        |> Json.required "decks" (NonEmptyList.decoder builtInDeck)
 
 
-builtInDeck : Json.Decoder Source.BuiltInDeck
+builtInDeck : Json.Decoder BuiltIn.Deck
 builtInDeck =
-    Json.succeed Source.BuiltInDeck
+    Json.succeed BuiltIn.Deck
         |> Json.required "name" Json.string
-        |> Json.required "id" (Json.string |> Json.map BuiltIn.Id)
+        |> Json.required "id" BuiltIn.idDecoder
+        |> Json.required "language" language
+        |> Json.required "author" Json.string
+        |> Json.optional "translator" (Json.string |> Json.map Just) Nothing
 
 
 unknownValue : String -> String -> Json.Decoder a
@@ -194,30 +207,27 @@ sourceByName name =
             Json.succeed Source.Custom
 
         _ ->
-            externalSourceByName name |> Json.map Source.Ex
+            Json.field "source" Source.generalDecoder |> Json.andThen externalSourceByGeneral |> Json.map Source.Ex
 
 
 externalSource : Json.Decoder Source.External
 externalSource =
-    Json.field "source" Json.string |> Json.andThen externalSourceByName
+    Json.field "source" Source.generalDecoder |> Json.andThen externalSourceByGeneral
 
 
-externalSourceByName : String -> Json.Decoder Source.External
-externalSourceByName name =
-    case name of
-        "BuiltIn" ->
-            Json.field "id" Json.string |> Json.map (BuiltIn.Id >> Source.BuiltIn)
+externalSourceByGeneral : Source.General -> Json.Decoder Source.External
+externalSourceByGeneral general =
+    case general of
+        Source.GBuiltIn ->
+            Json.field "id" BuiltIn.idDecoder |> Json.map Source.BuiltIn
 
-        "Cardcast" ->
+        Source.GCardcast ->
             Json.field "playCode" Json.string |> Json.map (Cardcast.playCode >> Source.Cardcast)
 
-        _ ->
-            unknownValue "source" name
 
-
-tokenValidity : Json.Decoder (Dict Lobby.Token Bool)
+tokenValidity : Json.Decoder (List Lobby.Token)
 tokenValidity =
-    Json.dict Json.bool
+    Json.list lobbyToken
 
 
 lobbyToken : Json.Decoder Lobby.Token
@@ -280,7 +290,7 @@ privacyConfig =
 
 deckOrError : Json.Decoder DeckConfig.DeckOrError
 deckOrError =
-    Json.oneOf [ Json.map DeckConfig.E deckError, Json.map DeckConfig.D deck ]
+    Json.oneOf [ deckError |> Json.map DeckConfig.errorToDeckOrError, deck |> Json.map DeckConfig.deckToDeckOrError ]
 
 
 deck : Json.Decoder DeckConfig.Deck
@@ -307,9 +317,12 @@ summary =
 
 details : Json.Decoder Source.Details
 details =
-    Json.map2 Source.Details
-        (Json.field "name" Json.string)
-        (Json.maybe (Json.field "url" Json.string))
+    Json.succeed Source.Details
+        |> Json.required "name" Json.string
+        |> Json.optional "url" (Json.string |> Json.map Just) Nothing
+        |> Json.optional "author" (Json.string |> Json.map Just) Nothing
+        |> Json.optional "language" (language |> Json.map Just) Nothing
+        |> Json.optional "translator" (Json.string |> Json.map Just) Nothing
 
 
 rules : Json.Decoder Rules

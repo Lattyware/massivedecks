@@ -24,7 +24,7 @@ export const joined = (id: User.Id, user: User.User): Joined => ({
   user: id,
   name: user.name,
   ...(user.privilege !== "Unprivileged" ? { privilege: user.privilege } : {}),
-  ...(user.control !== "Human" ? { control: user.control } : {})
+  ...(user.control !== "Human" ? { control: user.control } : {}),
 });
 
 export type LeaveReason = "Left" | "Kicked";
@@ -40,5 +40,5 @@ export interface Left extends Base {
 export const left = (user: User.Id, reason: LeaveReason): Left => ({
   event: "Left",
   user,
-  ...(reason !== "Left" ? { reason } : {})
+  ...(reason !== "Left" ? { reason } : {}),
 });

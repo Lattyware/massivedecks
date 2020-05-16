@@ -152,6 +152,7 @@ export class Resolver extends Source.Resolver<Cardcast> {
         details: {
           name: summary.name,
           url: humanViewUrl(this.source.playCode),
+          author: summary.author.username,
         },
         calls: Number.parseInt(summary.call_count, 10),
         responses: Number.parseInt(summary.response_count, 10),
@@ -204,6 +205,7 @@ export class MetaResolver implements Source.MetaResolver<Cardcast> {
    * We pool requests to cardcast to stop us hitting them too hard (on top of caching).
    */
   private readonly connectionPool: genericPool.Pool<AxiosInstance>;
+  public readonly cache = true;
 
   public constructor(config: Config.Cardcast) {
     const httpConfig: AxiosRequestConfig = {

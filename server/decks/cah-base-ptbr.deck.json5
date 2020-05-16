@@ -1,65 +1,59 @@
 {
-  "name": "Cartas Contra a Humanidade",
-  "calls": [
+  name: "Cartas Contra a Humanidade",
+  language: "pt-BR",
+  author: "Cards Against Humanity",
+  translator: "Fittl3",
+  calls: [
     [
-      [
-        "Faça um poema de três versos."
-      ],
+      ["Faça um poema de três versos."],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        {},
-        "."
-      ],
+      [{}, "."],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         " + ",
         {},
         " = ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Globo Filmes apresenta ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         ",  a história de ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Sim, eu matei ",
-        {},
-        "."
-      ],
+      ["Sim, eu matei ", {}, "."],
       [
         "Como? ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
@@ -67,45 +61,29 @@
         {},
         " recheado com ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Nunca de fato entendi ",
-        {},
-        ", até encontrar ",
-        {},
-        "."
-      ]
-    ],
+    [["Nunca de fato entendi ", {}, ", até encontrar ", {}, "."]],
     [
       [
         "No próximo Tropa de Elite, Capitão Nascimento descobre que milicianos estavam usando ",
         {},
         " para ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Em um mundo devastado por ",
-        {},
-        ", nosso único consolo é ",
-        {},
-        "."
-      ]
-    ],
+    [["Em um mundo devastado por ", {}, ", nosso único consolo é ", {}, "."]],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         " é uma ladeira escorregadia que leva direto para ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
@@ -113,786 +91,591 @@
         {},
         " se transformou em ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Passo 1: ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
       [
         "Passo 2: ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Passo 3: Lucrar."
-      ]
+      ["Passo 3: Lucrar."],
     ],
+    [["E para meu próximo número, tirarei ", {}, " de ", {}, "."]],
+    [["E o prêmio ", {}, " vai para ", {}, "."]],
     [
       [
-        "E para meu próximo número, tirarei ",
-        {},
-        " de ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "E o prêmio ",
-        {},
-        " vai para ",
-        {},
-        "."
-      ]
+        {
+          transform: "Capitalize",
+        },
+        ".",
+      ],
+      ["Véi, na boa..."],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Véi, na boa..."
-      ]
+      ["As mina pira véi."],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "As mina pira véi."
-      ]
+      ["Tô dentro!"],
     ],
+    [["Bebo pra esquecer ", {}, "."]],
     [
+      ["O que você espera não achar em seu prato de comida chinesa?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Tô dentro!"
-      ]
-    ],
-    [
-      [
-        "Bebo pra esquecer ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "O que você espera não achar em seu prato de comida chinesa?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
     ],
     [
       [
         "Historiadores encontraram dezenas de cadernos de Picasso com esboços de ",
         {},
-        "."
-      ]
+        ".",
+      ],
+    ],
+    [
+      ["O que Dick Cheney prefere?"],
+      [
+        {
+          transform: "Capitalize",
+        },
+        ".",
+      ],
     ],
     [
       [
-        "O que Dick Cheney prefere?"
+        "O que os Estados Unidos jogaram, de avião, às crianças do afeganistão?",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "O que os Estados Unidos jogaram, de avião, às crianças do afeganistão?"
+        ".",
       ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
     ],
     [
       [
         "A medicina alternativa agora está explorando os poderes curativos de ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que vou deixar de fazer na quaresma?"
-      ],
+      ["O que vou deixar de fazer na quaresma?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Idosos tem cheiro de quê?"
-      ],
+      ["Idosos tem cheiro de quê?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que me causa gases incontroláveis?"
-      ],
+      ["O que me causa gases incontroláveis?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Guerra! Pra que serve?"
-      ],
+      ["Guerra! Pra que serve?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Buscando aumentar sua audiência, o Museu de História Natural abriu uma exposição interativa sobre ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Quando eu for bilionário, mandarei fazer uma estátua de 15 metros de altura para celebrar ",
         {},
-        "."
-      ]
-    ],
-    [
-      [
-        "A seguir, na ESPN2: Campeonato Mundial de ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Qual é a próxima dupla de super-herói e ajudante?"
+        ".",
       ],
+    ],
+    [["A seguir, na ESPN2: Campeonato Mundial de ", {}, "."]],
+    [
+      ["Qual é a próxima dupla de super-herói e ajudante?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Estudo mostra que ratos de laboratório atravessam labirintos 50% mais rápido depois de serem expostos à ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Mas antes de matá-lo, Sr. Bond, preciso te mostrar ",
-        {},
-        "."
-      ]
-    ],
+    [["Mas antes de matá-lo, Sr. Bond, preciso te mostrar ", {}, "."]],
     [
       [
         "Antropólogos recentemente descobriram uma tribo primitiva que cultua ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Chega à Broadway nesta temporada o musical ",
         {
-          "transform": "Capitalize",
-          "style": "Em"
+          transform: "Capitalize",
+          style: "Em",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "Assim expira o mundo. Não com uma explosão, mas com ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "O que ajuda o Obama a relaxar depois do trabalho?"
+        ".",
       ],
+    ],
+    [["Assim expira o mundo. Não com uma explosão, mas com ", {}, "."]],
+    [
+      ["O que ajuda o Obama a relaxar depois do trabalho?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Que cheiro é esse?"
-      ],
+      ["Que cheiro é esse?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Por que não consigo dormir à noite?"
-      ],
+      ["Por que não consigo dormir à noite?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ":"
+        ":",
       ],
-      [
-        "testado pelas crianças, aprovado pelas mães."
-      ]
+      ["testado pelas crianças, aprovado pelas mães."],
     ],
     [
-      [
-        "O que é tiro-e-queda para se conseguir sexo?"
-      ],
+      ["O que é tiro-e-queda para se conseguir sexo?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Não sei com que armas se lutará a terceira guerra mundial, mas a quarta será com ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que é que tem à vontade no céu?"
-      ],
+      ["O que é que tem à vontade no céu?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Qual o próximo brinde do McLanche Feliz?"
-      ],
+      ["Qual o próximo brinde do McLanche Feliz?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Por que minha pele está pegajosa?"
-      ],
+      ["Por que minha pele está pegajosa?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "É assim que eu espero morrer."
-      ]
+      ["É assim que eu espero morrer."],
     ],
     [
-      [
-        "Que som é esse?"
-      ],
+      ["Que som é esse?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que causou o fim da minha ultima relação?"
-      ],
+      ["O que causou o fim da minha ultima relação?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "Durante o sexo, gosto de pensar em ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "O que é mais EMO?"
+        ".",
       ],
+    ],
+    [["Durante o sexo, gosto de pensar em ", {}, "."]],
+    [
+      ["O que é mais EMO?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que é que vovó acharia perturbante, mas estranhamente charmoso?"
-      ],
+      ["O que é que vovó acharia perturbante, mas estranhamente charmoso?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Novo reality-show da MTV apresenta oito celebridades desgastadas morando com ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "É uma armadilha!"
-      ]
+      ["É uma armadilha!"],
     ],
-    [
-      [
-        "Resolução da ANAC agora proíbe ",
-        {},
-        " em aeronaves."
-      ]
-    ],
+    [["Resolução da ANAC agora proíbe ", {}, " em aeronaves."]],
     [
       [
         "É uma pena que as crianças hoje em dia estejam todas envolvidas em ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Em 1000 anos, quando o dinheiro de papel for apenas uma lembrança distante, ",
         {},
-        " será nossa moeda"
-      ]
-    ],
-    [
-      [
-        "CBF proíbe ",
-        {},
-        " por proporcionar vantagem desleal aos jogadores."
-      ]
-    ],
-    [
-      [
-        "Qual é o prazer proibido do Batman?"
+        " será nossa moeda",
       ],
+    ],
+    [["CBF proíbe ", {}, " por proporcionar vantagem desleal aos jogadores."]],
+    [
+      ["Qual é o prazer proibido do Batman?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Vem aí o novo livro de J. K. Rowling: ",
         {
-          "text": "Harry Potter e a Câmara de ",
-          "style": "Em"
+          text: "Harry Potter e a Câmara de ",
+          style: "Em",
         },
         {
-          "transform": "Capitalize",
-          "style": "Em"
+          transform: "Capitalize",
+          style: "Em",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Desculpe, professora, mas é que eu não pude terminar o dever de casa por causa de ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que eu trouxe do Paraguai?"
-      ],
+      ["O que eu trouxe do Paraguai?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "?"
+        ".",
       ],
-      [
-        "Tem um app pra isso."
-      ]
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ". "
+        "?",
       ],
-      [
-        "Aposto que um só não te satisfaz!"
-      ]
+      ["Tem um app pra isso."],
     ],
     [
       [
-        "Qual é meu anti-droga?"
+        {
+          transform: "Capitalize",
+        },
+        ". ",
       ],
+      ["Aposto que um só não te satisfaz!"],
+    ],
+    [
+      ["Qual é meu anti-droga?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Enquanto os Estados Unidos e a União Soviética competiam na corrida espacial, o governo brasileiro investia pesado em ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "No novo filme da Disney, Hanna Montana enfrenta ",
         {},
-        " pela primeira vez."
-      ]
+        " pela primeira vez.",
+      ],
     ],
     [
-      [
-        "Qual é meu poder secreto?"
-      ],
+      ["Qual é meu poder secreto?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Qual é a dieta do momento?"
-      ],
+      ["Qual é a dieta do momento?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "O que o Vin Diesel teve no jantar?"
-      ],
+      ["O que o Vin Diesel teve no jantar?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Quando o faraó permaneceu imóvel, Moisés invocou a praga dos ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Como estou mantendo minha atual relação amorosa?"
-      ],
+      ["Como estou mantendo minha atual relação amorosa?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Qual é o cúmulo da porquice?"
-      ],
+      ["Qual é o cúmulo da porquice?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Dizem que em Bangu 3 se troca dez maços de cigarro por ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Depois do terremoto, o Sean Penn levou ",
-        {},
-        " ao Haití."
-      ]
-    ],
+    [["Dizem que em Bangu 3 se troca dez maços de cigarro por ", {}, "."]],
+    [["Depois do terremoto, o Sean Penn levou ", {}, " ao Haití."]],
     [
       [
         "No próximo Natal o Papai Noel vai dar ",
         {},
-        " pra criança que não se comportar."
-      ]
+        " pra criança que não se comportar.",
+      ],
     ],
     [
       [
         "A vida dos índios americanos mudou para sempre quando o homem branco lhes apresentou ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
-        "O que o Ministério da Educação está usando para inspirar os estudantes do interior a serem bem sucedidos?"
+        "O que o Ministério da Educação está usando para inspirar os estudantes do interior a serem bem sucedidos?",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "Talvez ela tenha nascido assim."
+        ".",
       ],
-      [
-        "Talvez seja ",
-        {},
-        "."
-      ]
     ],
+    [["Talvez ela tenha nascido assim."], ["Talvez seja ", {}, "."]],
+    [["Em seus momentos finais, Michael Jackson pensou em ", {}, "."]],
+    [["Homem branco gosta de ", {}, "."]],
+    [
+      ["Porque estou todo doído?"],
+      [
+        {
+          transform: "Capitalize",
+        },
+        ".",
+      ],
+    ],
+    [["Um jantar romântico à luz de velas seria incompleto sem ", {}, "."]],
     [
       [
-        "Em seus momentos finais, Michael Jackson pensou em ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Homem branco gosta de ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Porque estou todo doído?"
+        "O que eu levaria ao passado para convencer as pessoas de que sou um ser mágico poderoso?",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "Um jantar romântico à luz de velas seria incompleto sem ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "O que eu levaria ao passado para convencer as pessoas de que sou um ser mágico poderoso?"
+        ".",
       ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
     ],
     [
       [
         "Em breve, numa livraria perto de você, ",
         {
-          "transform": "Capitalize",
-          "style": "Em"
+          transform: "Capitalize",
+          style: "Em",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "A excursão escolar foi um fiasco devido a ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Qual é o melhor amigo de uma garota?"
+        ".",
       ],
+    ],
+    [["A excursão escolar foi um fiasco devido a ", {}, "."]],
+    [
+      ["Qual é o melhor amigo de uma garota?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Doutor Drauzio, estou tendo problemas com ",
         {},
-        " e gostaria de ouvir o seu conselho."
-      ]
-    ],
-    [
-      [
-        "Quando eu for presidente, criarei o Departamento de ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "O que meus pais estão escondendo de mim?"
+        " e gostaria de ouvir o seu conselho.",
       ],
+    ],
+    [["Quando eu for presidente, criarei o Departamento de ", {}, "."]],
+    [
+      ["O que meus pais estão escondendo de mim?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "O que é que nunca falha em deixar uma festa mais animada?"
+        ".",
       ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
     ],
     [
+      ["O que é que nunca falha em deixar uma festa mais animada?"],
       [
-        "O que é que fica melhor quando envelhece?"
+        {
+          transform: "Capitalize",
+        },
+        ".",
       ],
+    ],
+    [
+      ["O que é que fica melhor quando envelhece?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ": bom até a última gota."
-      ]
+        ": bom até a última gota.",
+      ],
     ],
-    [
-      [
-        "Estou com 99 problemas, mas ",
-        {},
-        " não é um deles."
-      ]
-    ]
+    [["Estou com 99 problemas, mas ", {}, " não é um deles."]],
   ],
-  "responses": [
+  responses: [
     "uma maldição cigana",
     "um momento de silêncio",
     "um festival da linguiça",
@@ -1349,6 +1132,6 @@
     "ter medo de si próprio",
     "Lady Gaga",
     "o entregador de leite",
-    "dizer o que pensa"
-  ]
+    "dizer o que pensa",
+  ],
 }

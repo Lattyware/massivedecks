@@ -1,34 +1,11 @@
 module MassiveDecks.Util.List exposing
-    ( any
-    , find
-    , map2Long
+    ( map2Long
     , mappedIntersperse
     , merge
     )
 
 {-| Utility functions for lists.
 -}
-
-import MassiveDecks.Util.Maybe as Maybe
-
-
-{-| Returns `True` if any value in the list matches the given predicate.
--}
-any : (a -> Bool) -> List a -> Bool
-any predicate list =
-    find predicate list /= Nothing
-
-
-{-| Find the first element of the given list that fulfils the given predicate.
--}
-find : (a -> Bool) -> List a -> Maybe a
-find predicate list =
-    case list of
-        head :: tail ->
-            Maybe.first [ Maybe.validate predicate head, find predicate tail ]
-
-        [] ->
-            Nothing
 
 
 {-| Map two items together, getting `Nothing`s when the shorter ends.

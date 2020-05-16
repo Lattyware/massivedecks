@@ -25,7 +25,7 @@ abstract class RegistrationError<MoreDetails> extends Errors.MassiveDecksError<
     return {
       error: "Registration",
       reason: this.reason,
-      ...this.moreDetails()
+      ...this.moreDetails(),
     };
   }
 }
@@ -47,7 +47,7 @@ export class UsernameAlreadyInUseError extends RegistrationError<
 
   protected moreDetails(): UsernameDetails {
     return {
-      username: this.username
+      username: this.username,
     };
   }
 }

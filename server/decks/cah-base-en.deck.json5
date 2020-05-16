@@ -2,47 +2,33 @@
 // Used under a Creative Commons BY-NC-SA 2.0 license, https://creativecommons.org/licenses/by-nc-sa/2.0/
 {
   name: "Cards Against Humanity",
-  "calls": [
+  language: "en",
+  author: "Cards Against Humanity",
+  calls: [
     [
       [
         "Hey Reddit! I’m ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Ask me anything."
-      ]
+      ["Ask me anything."],
     ],
     [
-      [
-        "Introducing X-treme Baseball!"
-      ],
-      [
-        "It’s like baseball, but with ",
-        {},
-        "!"
-      ]
+      ["Introducing X-treme Baseball!"],
+      ["It’s like baseball, but with ", {}, "!"],
     ],
     [
-      [
-        "What is Batman’s guilty pleasure?"
-      ],
+      ["What is Batman’s guilty pleasure?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "TSA guidelines now prohibit ",
-        {},
-        " on airplanes."
-      ]
-    ],
+    [["TSA guidelines now prohibit ", {}, " on airplanes."]],
     [
       [
         "Next from J.K. Rowling: ",
@@ -51,357 +37,255 @@
           style: "Em",
         },
         {
-          "transform": "Capitalize",
-          "style": "Em",
+          transform: "Capitalize",
+          style: "Em",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "That’s right, I killed ",
-        {},
-        "."
-      ],
-      [
-        "How, you ask?"
-      ],
+      ["That’s right, I killed ", {}, "."],
+      ["How, you ask?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "I’m sorry professor, but I couldn’t complete my homework because of ",
         {},
-        "."
-      ]
-    ],
-    [
-      [
-        "And the Academy Award for ",
-        {},
-        " goes to ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Dude, do not go in that bathroom."
+        ".",
       ],
-      [
-        "There’s ",
-        {},
-        " in there."
-      ]
     ],
+    [["And the Academy Award for ", {}, " goes to ", {}, "."]],
+    [["Dude, do not go in that bathroom."], ["There’s ", {}, " in there."]],
     [
-      [
-        "How did I lose my virginity?"
-      ],
+      ["How did I lose my virginity?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "It’s a pity that kids these days are all getting involved with ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Step 1: ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
       [
         "Step 2: ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Step 3: Profit."
-      ]
+      ["Step 3: Profit."],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "Becha can’t have just one!"
-      ]
+      ["Becha can’t have just one!"],
     ],
-    [
-      [
-        "Kids, I don’t need drugs to get high. I’m high on ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "For my next trick, I will pull ",
-        {},
-        " out of ",
-        {},
-        "."
-      ]
-    ],
+    [["Kids, I don’t need drugs to get high. I’m high on ", {}, "."]],
+    [["For my next trick, I will pull ", {}, " out of ", {}, "."]],
     [
       [
         "While the United States raced the Soviet Union to the moon, the Mexican government funneled millions of pesos into research on ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "In the new Disney Channel Original Movie, Hannah Montana struggles with ",
         {},
-        " for the first time."
-      ]
+        " for the first time.",
+      ],
     ],
     [
-      [
-        "What’s my secret power?"
-      ],
+      ["What’s my secret power?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "I’m going on a cleanse this week. Nothing but kale juice and ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         " + ",
         {
-          "transform": "Capitalize"
-        }
+          transform: "Capitalize",
+        },
       ],
       [
         " = ",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "When Pharaoh remained unmoved, Moses called down a Plague of ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Just once, I’d like to hear you say “Thanks, Mom. Thanks for ",
         {},
-        ".”"
-      ]
+        ".”",
+      ],
     ],
     [
-      [
-        "Daddy, why is mommy crying?"
-      ],
+      ["Daddy, why is mommy crying?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "When I was tripping on acid, ",
-        {},
-        " turned into ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "50% of all marriages end in ",
-        {},
-        "."
-      ]
-    ],
+    [["When I was tripping on acid, ", {}, " turned into ", {}, "."]],
+    [["50% of all marriages end in ", {}, "."]],
     [
       [
         "My fellow Americans: Before this decade is out, we ",
         {
           text: "will",
-          style: "Em"
+          style: "Em",
         },
         ", have ",
         {},
-        " on the moon."
-      ]
+        " on the moon.",
+      ],
     ],
     [
       [
         "This season at Steppenwolf, Samuel Beckett’s classic existential play: ",
         {
           text: "Waiting for",
-          style: "Em"
+          style: "Em",
         },
         {
-          style: "Em"
+          style: "Em",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Instead of coal, Santa now gives the bad children ",
-        {},
-        "."
-      ]
-    ],
+    [["Instead of coal, Santa now gives the bad children ", {}, "."]],
     [
       [
         "Life for American Indians was forever changed when the White Man introduced them to ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
-        "What’s Teach for America using to inspire inner city students to succeed?"
+        "What’s Teach for America using to inspire inner city students to succeed?",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "Maybe she’s born with it."
+        ".",
       ],
-      [
-        "Maybe it’s ",
-        {},
-        "."
-      ]
     ],
+    [["Maybe she’s born with it."], ["Maybe it’s ", {}, "."]],
     [
-      [
-        "What is George W. Bush thinking about right now?"
-      ],
+      ["What is George W. Bush thinking about right now?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "White people like ",
-        {},
-        "."
-      ]
-    ],
+    [["White people like ", {}, "."]],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         " is a slippery slope that leads to ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Why do I hurt all over?"
-      ],
+      ["Why do I hurt all over?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ],
-    [
-      [
-        "A romantic, candlelit dinner would be incomplete without ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Just saw this upsetting video! Please retweet!!"
+        ".",
       ],
+    ],
+    [["A romantic, candlelit dinner would be incomplete without ", {}, "."]],
+    [
+      ["Just saw this upsetting video! Please retweet!!"],
       [
         "#stop",
         {
-          "transform": "Capitalize"
-        }
-      ]
+          transform: "Capitalize",
+        },
+      ],
     ],
     [
       [
         "Fun tip! When your man asks you to go down on him, try surprising him with ",
         {},
-        " instead."
-      ]
-    ],
-    [
-      [
-        "The class field trip was completely ruined by ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s a girl’s best friend?"
+        " instead.",
       ],
+    ],
+    [["The class field trip was completely ruined by ", {}, "."]],
+    [
+      ["What’s a girl’s best friend?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Dear Abby, I’m having some trouble with ",
         {},
-        " and would like your advice."
-      ]
+        " and would like your advice.",
+      ],
     ],
     [
       [
@@ -409,229 +293,183 @@
         {},
         " had really been ",
         {},
-        " all along."
-      ]
+        " all along.",
+      ],
     ],
     [
       [
         "When I am President of the United States, I will create the Department of ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What are my parents hiding from me?"
-      ],
+      ["What are my parents hiding from me?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What never fails to liven up the party?"
-      ],
+      ["What never fails to liven up the party?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "IF you like ",
         {
-          "transform": "UpperCase"
+          transform: "UpperCase",
         },
-        ","
+        ",",
       ],
-      [
-        "YOU MIGHT BE A REDNECK."
-      ]
+      ["YOU MIGHT BE A REDNECK."],
     ],
     [
+      ["Make a haiku."],
       [
-        "Make a haiku."
+        {
+          transform: "Capitalize",
+        },
+        ",",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ","
+        ",",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ","
+        ".",
       ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
     ],
     [
-      [
-        "What made my first kiss so awkward?"
-      ],
+      ["What made my first kiss so awkward?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Hey guys, welcome to Chili’s! Would you like to start the night off right with ",
         {},
-        "?"
-      ]
+        "?",
+      ],
     ],
-    [
-      [
-        "I got 99 problems but ",
-        {},
-        " ain’t one."
-      ]
-    ],
+    [["I got 99 problems but ", {}, " ain’t one."]],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "It’s a trap!"
-      ]
+      ["It’s a trap!"],
     ],
     [
       [
         "Bravo’s new reality show features eight washed-up celebrities living with ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What would grandma find disturbing, yet oddly charming?"
-      ],
+      ["What would grandma find disturbing, yet oddly charming?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
+        ".",
       ],
-      [
-        "That was so metal."
-      ]
+      ["That was so metal."],
     ],
+    [["I never truly understood ", {}, " until I encountered ", {}, "."]],
+    [["During sex, I like to think about ", {}, "."]],
     [
-      [
-        "I never truly understood ",
-        {},
-        " until I encountered ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "During sex, I like to think about ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What ended my last relationship?"
-      ],
+      ["What ended my last relationship?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What’s that sound?"
-      ],
+      ["What’s that sound?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Uh, hey guys, I know this was my idea, but I’m having serious doubts about ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "Why am I sticky?"
-      ],
+      ["Why am I sticky?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "I’m no doctor but I’m pretty sure what you’re suffering from is called “",
         {},
-        ".”"
-      ]
+        ".”",
+      ],
     ],
     [
-      [
-        "What’s there a ton of in heaven?"
-      ],
+      ["What’s there a ton of in heaven?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "After four platinum albums and three Grammys, it’s time to get back to my roots, to what inspired me to make music in the first place: ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What will always get you laid?"
-      ],
+      ["What will always get you laid?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
@@ -639,164 +477,108 @@
         {},
         " inside of ",
         {},
-        "."
+        ".",
       ],
-      [
-        "They were wrong."
-      ]
+      ["They were wrong."],
     ],
-    [
-      [
-        "Lifetime® presents “",
-        {},
-        ": the Story of ",
-        {},
-        ".”"
-      ]
-    ],
+    [["Lifetime® presents “", {}, ": the Story of ", {}, ".”"]],
     [
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        ": kid-tested, mother-approved."
-      ]
+        ": kid-tested, mother-approved.",
+      ],
+    ],
+    [
+      ["Why can’t I sleep at night?"],
+      [
+        {
+          transform: "Capitalize",
+        },
+        ".",
+      ],
+    ],
+    [
+      ["What’s that smell?"],
+      [
+        {
+          transform: "Capitalize",
+        },
+        ".",
+      ],
     ],
     [
       [
-        "Why can’t I sleep at night?"
+        "After eight years in the White House, how is Obama finally letting loose?",
       ],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What’s that smell?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
+      ["This is the way the world ends"],
+      ["This is the way the world ends"],
+      ["Not with a bang but with ", {}, "."],
     ],
+    [["Coming to Broadway this season, ", {}, ": The Musical."]],
     [
-      [
-        "After eight years in the White House, how is Obama finally letting loose?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
+      ["Here is the church"],
+      ["Here is the steeple"],
+      ["Open the doors"],
+      ["And there is", {}, "."],
     ],
-    [
-      [
-        "This is the way the world ends"
-      ],
-      [
-        "This is the way the world ends"
-      ],
-      [
-        "Not with a bang but with ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Coming to Broadway this season, ",
-        {},
-        ": The Musical."
-      ]
-    ],
-    [
-      [
-        "Here is the church"
-      ],
-      [
-        "Here is the steeple"
-      ],
-      [
-        "Open the doors"
-      ],
-      [
-        "And there is",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "But before I kill you, Mr. Bond, I must show you ",
-        {},
-        "."
-      ]
-    ],
+    [["But before I kill you, Mr. Bond, I must show you ", {}, "."]],
     [
       [
         "Studies show that lab rats navigate mazes 50% faster after being exposed to ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
-      [
-        "What’s the next superhero/sidekick duo?"
-      ],
+      ["What’s the next superhero/sidekick duo?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
         "/",
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
+        ".",
+      ],
     ],
-    [
-      [
-        "Next on ESPN2, the World Series of ",
-        {},
-        "."
-      ]
-    ],
+    [["Next on ESPN2, the World Series of ", {}, "."]],
     [
       [
         "When I am a billionaire, I shall erect a 50-foot statue to commemorate ",
         {},
-        "."
-      ]
+        ".",
+      ],
     ],
     [
       [
         "Military historians remember Alexander the Great for his brilliant use of ",
         {},
-        " against the Persians."
-      ]
+        " against the Persians.",
+      ],
     ],
     [
-      [
-        "War!"
-      ],
-      [
-        "What is it good for?"
-      ],
+      ["War!"],
+      ["What is it good for?"],
       [
         {
-          "transform": "Capitalize"
+          transform: "Capitalize",
         },
-        "."
-      ]
-    ]
+        ".",
+      ],
+    ],
   ],
-  "responses": [
+  responses: [
     "silence",
     "the illusion of choice ina late-stage capitalist society",
     "many bats",
@@ -1296,6 +1078,6 @@
     "fear itself",
     "Jews, gypsies, and homosexuals",
     "the milkman",
-    "Cards Against Humanity"
-  ]
+    "Cards Against Humanity",
+  ],
 }

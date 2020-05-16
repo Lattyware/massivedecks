@@ -1,7 +1,7 @@
 import { Say, Voice } from "../../ts/speech";
 import {
   State as NotificationState,
-  Command as NotificationCommand
+  Command as NotificationCommand,
 } from "../../ts/notification-manager";
 
 type Token = string;
@@ -61,7 +61,8 @@ export namespace Elm {
         serverSend: InboundPort<ConnectionCommand>;
         copyText: InboundPort<string>;
         remoteControl: OutboundPort<RemoteControlCommand>;
-        languageChanged: InboundPort<string>
+        languageChanged: InboundPort<string>;
+        startConfetti: InboundPort<string>;
       };
     }
     export function init(options: {

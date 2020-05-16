@@ -12,5 +12,5 @@ export interface StageTimerDone {
 export const of = (roundId: Round.Id, stage: Round.Stage): StageTimerDone => ({
   event: "StageTimerDone",
   round: roundId.toString(),
-  stage
+  stage,
 });

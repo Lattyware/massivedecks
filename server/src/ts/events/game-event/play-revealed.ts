@@ -12,5 +12,5 @@ export interface PlayRevealed {
 export const of = (id: Play.Id, play: Play.Play): PlayRevealed => ({
   event: "PlayRevealed",
   id,
-  play
+  play,
 });

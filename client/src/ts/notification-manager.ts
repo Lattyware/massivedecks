@@ -62,7 +62,9 @@ export class NotificationManager {
       permission:
         "Notification" in window ? Notification.permission : "unsupported",
       visibility:
-        "visibilityState" in document ? document.visibilityState : "unsupported"
+        "visibilityState" in document
+          ? document.visibilityState
+          : "unsupported",
     });
 
     document.addEventListener(
@@ -87,26 +89,27 @@ export class NotificationManager {
     try {
       Notification.requestPermission().then(callback);
     } catch (e) {
+      // noinspection JSIgnoredPromiseFromCall
       Notification.requestPermission(callback);
     }
   }
 
   receivePermission(permission: NotificationPermission): void {
     this.out.send({
-      permission
+      permission,
     });
   }
 
   visibilityChange(): any {
     this.out.send({
-      visibility: document.visibilityState === "visible" ? "visible" : "hidden"
+      visibility: document.visibilityState === "visible" ? "visible" : "hidden",
     });
   }
 
   sendNotification(message: Message): void {
     const notification = new Notification(message.title, {
       body: message.body,
-      tag: "game-progress"
+      tag: "game-progress",
     });
     setTimeout(notification.close.bind(notification), 4000);
   }

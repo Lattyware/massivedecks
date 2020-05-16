@@ -26,6 +26,18 @@ export interface Details {
    * A link to more information about the source.
    */
   url?: string;
+  /**
+   * The name of the author of the deck.
+   */
+  author?: string;
+  /**
+   * The language tag for the language the deck is in.
+   */
+  language?: string;
+  /**
+   * The name of the translator of the deck.
+   */
+  translator?: string;
 }
 
 export interface Summary extends Cache.Tagged {
@@ -232,6 +244,10 @@ export class CachedResolver<S extends External> extends Resolver<S> {
  * Get resolvers for the given source type.
  */
 export interface MetaResolver<S extends External> {
+  /**
+   * If the source should be cached.
+   */
+  readonly cache: boolean;
   limitedResolver(source: S): LimitedResolver<S>;
   resolver(source: S): Resolver<S>;
 }

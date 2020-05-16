@@ -22,5 +22,5 @@ export const of = (
   state,
   ...(hand !== undefined ? { hand } : {}),
   ...(play !== undefined ? { play } : {}),
-  gameTime: Date.now()
+  gameTime: Date.now(),
 });

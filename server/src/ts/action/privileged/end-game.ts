@@ -44,7 +44,7 @@ class EndGameActions extends Actions.Implementation<
     lobby.game.winner = winners;
     return {
       lobby,
-      events: [Event.targetAll(GameEnded.of(...winners))]
+      events: [Event.targetAll(GameEnded.of(...winners))],
     };
   };
 }

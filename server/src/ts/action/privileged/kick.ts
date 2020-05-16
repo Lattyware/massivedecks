@@ -34,8 +34,8 @@ export const removeUser = (
   const allEvents = [
     Event.targetAllAndPotentiallyClose(
       PresenceChanged.left(userId, leaveReason),
-      id => id === userId
-    )
+      (id) => id === userId
+    ),
   ];
   const allTimeouts: Timeout.After[] = [];
 
@@ -69,8 +69,9 @@ export const removeUser = (
   }
 
   return {
+    lobby,
     events: allEvents,
-    timeouts: allTimeouts
+    timeouts: allTimeouts,
   };
 };
 

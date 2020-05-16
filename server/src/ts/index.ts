@@ -101,7 +101,7 @@ async function main(): Promise<void> {
   });
 
   app.post("/api/alive", async (req, res) => {
-    const result: { [key: string]: boolean } = {};
+    const result: string[] = [];
     for (const current of CheckAlive.validate(req.body).tokens) {
       try {
         const claims = Token.validate(
@@ -109,9 +109,11 @@ async function main(): Promise<void> {
           await state.store.id(),
           state.config.secret
         );
-        result[current] = await state.store.exists(claims.gc);
+        if (await state.store.exists(claims.gc)) {
+          result.push(current);
+        }
       } catch (error) {
-        result[current] = false;
+        // Ignore.
       }
     }
     res.json(result);

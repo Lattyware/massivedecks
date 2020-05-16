@@ -1,11 +1,14 @@
 module MassiveDecks.Pages.Lobby.Configure.ConfigOption exposing
     ( ConfigOption
+    , IntBounds
     , PrimaryEditor(..)
     , RenderMode(..)
     , ViewArgs
     , intEditor
     , maybeEditor
     , noExtraEditor
+    , toMinMaxAttrs
+    , toValidator
     , view
     , wrappedSetter
     )
@@ -16,14 +19,13 @@ import Html.Events as HtmlE
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Lobby.Configure.Component.Validator exposing (Validator)
+import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator exposing (Validator)
 import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable exposing (Toggleable)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless as Wl
-import Weightless.Attributes as WlA
+import Material.Switch as Material
+import Material.TextField as TextField
 
 
 type alias Model model config =
@@ -34,7 +36,7 @@ type alias ConfigOption model config iMsg msg =
     { id : String
     , toggleable : Toggleable config
     , primaryEditor : model -> PrimaryEditor config msg
-    , extraEditor : (iMsg -> msg) -> model -> config -> Maybe (Html msg)
+    , extraEditor : (iMsg -> msg) -> Shared -> model -> config -> Maybe (Html msg)
     , set : (iMsg -> msg) -> config -> msg
     , messages : (iMsg -> msg) -> List (Message msg)
     }
@@ -43,7 +45,7 @@ type alias ConfigOption model config iMsg msg =
 type PrimaryEditor value msg
     = TextField
         { placeholder : MdString
-        , inputType : Maybe WlA.InputType
+        , inputType : TextField.Type
         , toString : value -> Maybe String
         , fromString : String -> Maybe value
         , attrs : List (Html.Attribute msg)
@@ -55,7 +57,7 @@ intEditor : MdString -> List (Html.Attribute msg) -> PrimaryEditor Int msg
 intEditor placeholder attrs =
     TextField
         { placeholder = placeholder
-        , inputType = Just WlA.Number
+        , inputType = TextField.Number
         , toString = String.fromInt >> Just
         , fromString = String.toInt
         , attrs = attrs
@@ -78,9 +80,9 @@ maybeEditor given =
             Label { text = text }
 
 
-noExtraEditor : (iMsg -> msg) -> model -> config -> Maybe (Html msg)
-noExtraEditor =
-    \_ -> \_ -> \_ -> Nothing
+noExtraEditor : (iMsg -> msg) -> Shared -> model -> config -> Maybe (Html msg)
+noExtraEditor _ _ _ _ =
+    Nothing
 
 
 wrappedSetter : (config -> iMsg) -> (iMsg -> msg) -> config -> msg
@@ -144,6 +146,30 @@ view opt validator { wrap, shared, model, local, remote, noOp, canEdit, renderMo
         (errors ++ opt.messages wrap)
 
 
+{-| Boundaries for an integer value.
+-}
+type alias IntBounds =
+    { min : Int
+    , max : Int
+    }
+
+
+{-| Convert bounds to min/max HTML attributes.
+-}
+toMinMaxAttrs : IntBounds -> List (Html.Attribute msg)
+toMinMaxAttrs { min, max } =
+    [ min |> String.fromInt |> HtmlA.min
+    , max |> String.fromInt |> HtmlA.max
+    ]
+
+
+{-| Convert bounds to a validator.
+-}
+toValidator : IntBounds -> (Int -> iMsg) -> Validator Int iMsg msg
+toValidator { min, max } =
+    Validator.between min max
+
+
 
 {- Private -}
 
@@ -151,54 +177,73 @@ view opt validator { wrap, shared, model, local, remote, noOp, canEdit, renderMo
 viewContents : ConfigOption model config optionMsg msg -> (optionMsg -> msg) -> Shared -> model -> msg -> Bool -> Bool -> config -> List (Html msg)
 viewContents opt wrap shared model noOp canEdit readOnly config =
     let
+        ( switch, toggle, id ) =
+            case opt.toggleable of
+                Just { off, on } ->
+                    let
+                        i =
+                            opt.id ++ "-swtich"
+
+                        t =
+                            Maybe.justIf (config == off) on |> Maybe.withDefault off |> opt.set wrap
+
+                        s =
+                            Material.view
+                                [ HtmlA.checked (config /= off)
+                                , if readOnly || not canEdit then
+                                    HtmlA.disabled True
+
+                                  else
+                                    HtmlE.onCheck (\c -> Maybe.justIf c on |> Maybe.withDefault off |> opt.set wrap)
+                                , HtmlA.id i
+                                ]
+                    in
+                    ( Just s, t |> Maybe.justIf (not readOnly && canEdit), Just i )
+
+                Nothing ->
+                    ( Nothing, Nothing, Nothing )
+
         primaryEditor =
             case opt.primaryEditor model of
                 TextField { placeholder, inputType, toString, fromString, attrs } ->
-                    Wl.textField
-                        ([ HtmlA.class "primary"
-                         , placeholder |> Lang.label shared
-                         , WlA.outlined
-                         , inputType |> Maybe.map WlA.type_ |> Maybe.withDefault HtmlA.nothing
-                         , config |> toString |> Maybe.map WlA.value |> Maybe.withDefault HtmlA.nothing
-                         , if readOnly then
-                            WlA.readonly
+                    let
+                        toggleableAndOff =
+                            opt.toggleable |> Maybe.map (.off >> (==) config) |> Maybe.withDefault False
+                    in
+                    TextField.view shared
+                        placeholder
+                        inputType
+                        (config |> toString |> Maybe.withDefault "")
+                        (List.filterMap identity
+                            [ HtmlA.class "primary" |> Just
+                            , if readOnly then
+                                HtmlA.readonly True |> Just
 
-                           else
-                            fromString
-                                >> Maybe.map (opt.set wrap)
-                                >> Maybe.withDefault noOp
-                                |> HtmlE.onInput
-                         , opt.toggleable
-                            |> Maybe.andThen (\t -> Maybe.justIf (t.off == config) WlA.disabled)
-                            |> Maybe.withDefault HtmlA.nothing
-                         , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
-                         ]
+                              else
+                                fromString
+                                    >> Maybe.map (opt.set wrap)
+                                    >> Maybe.withDefault noOp
+                                    |> HtmlE.onInput
+                                    |> Just
+                            , HtmlA.disabled True |> Maybe.justIf toggleableAndOff
+                            , toggle |> Maybe.andThen (Maybe.justIf toggleableAndOff) |> Maybe.map HtmlE.onClick
+                            , True |> HtmlA.disabled |> Maybe.justIf (not canEdit)
+                            ]
                             ++ attrs
                         )
-                        []
 
                 Label { text } ->
-                    Html.label [ HtmlA.class "primary" ] [ text |> Lang.html shared ]
-
-        switch =
-            case opt.toggleable of
-                Just { off, on } ->
-                    Wl.switch
-                        [ WlA.checked |> Maybe.justIf (config /= off) |> Maybe.withDefault HtmlA.nothing
-                        , if readOnly then
-                            WlA.disabled
-
-                          else
-                            HtmlE.onCheck (\c -> Maybe.justIf c on |> Maybe.withDefault off |> opt.set wrap)
-                        , WlA.disabled |> Maybe.justIf (not canEdit) |> Maybe.withDefault HtmlA.nothing
-                        ]
-                        |> Just
-
-                Nothing ->
-                    Nothing
+                    Html.label
+                        (List.filterMap identity
+                            [ HtmlA.class "primary" |> Just
+                            , toggle |> Maybe.map HtmlE.onClick
+                            , id |> Maybe.map HtmlA.for
+                            ]
+                        )
+                        [ text |> Lang.html shared ]
     in
     [ switch
     , Just primaryEditor
-    , opt.extraEditor wrap model config
+    , opt.extraEditor wrap shared model config
     ]
         |> List.filterMap identity

@@ -26,5 +26,7 @@ type Msg
     | SetPresence Player.Presence
     | SetPlayerAway User.Id
     | UpdateTimer Time
+    | ToggleHelp
     | EnforceTimeLimit
+    | Confetti
     | NoOp

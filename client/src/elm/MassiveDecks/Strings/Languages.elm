@@ -13,6 +13,7 @@ module MassiveDecks.Strings.Languages exposing
     , languages
     , placeholder
     , recommended
+    , sortClosestFirst
     , string
     , title
     )
@@ -34,7 +35,7 @@ import MassiveDecks.Strings.Render as Render
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.String as String
-import Weightless.Attributes as WlA
+import Material.Attributes as Material
 
 
 {-| A list of all the languages enabled in the application, in the order they will be presented to the end-user.
@@ -73,6 +74,24 @@ languageName language =
 autonym : Language -> String
 autonym language =
     languageName language |> givenLanguageString language
+
+
+{-| A sort that gives the closest matches first.
+Currently this just puts all exact matches first.
+-}
+sortClosestFirst : Language -> Maybe Language -> Maybe Language -> Order
+sortClosestFirst target a b =
+    if a == b then
+        EQ
+
+    else if a == Just target then
+        LT
+
+    else if b == Just target then
+        GT
+
+    else
+        EQ
 
 
 {-| The language the user is currently seeing the page in.
@@ -144,11 +163,11 @@ alt shared =
     string shared >> String.capitalise >> HtmlA.alt
 
 
-{-| Convenience for an Weightless `label` attribute from the given `MdString`.
+{-| Convenience for a Material `label` attribute from the given `MdString`.
 -}
 label : Shared -> MdString -> Html.Attribute msg
 label shared =
-    string shared >> String.capitalise >> WlA.label
+    string shared >> String.capitalise >> Material.label
 
 
 {-| Get a deck to recommend to the user if they haven't added any.

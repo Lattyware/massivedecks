@@ -43,7 +43,7 @@ export class Queue {
    */
   public async loadFromStore(server: ServerState): Promise<void> {
     for await (const { gameCode } of server.store.lobbySummaries()) {
-      await server.store.read(gameCode, lobby => {
+      await server.store.read(gameCode, (lobby) => {
         for (const task of Queue.discover(gameCode, lobby)) {
           this.enqueue(server, task);
         }
@@ -83,7 +83,7 @@ export class Queue {
     this.startedThisTick += 1;
     task
       .handle(server)
-      .catch(error => Logging.logException("Error processing task:", error))
+      .catch((error) => Logging.logException("Error processing task:", error))
       .then(() => Logging.logger.info("Task complete:", { task }));
   }
 }

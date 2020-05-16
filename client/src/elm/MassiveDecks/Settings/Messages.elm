@@ -1,6 +1,5 @@
 module MassiveDecks.Settings.Messages exposing (Msg(..))
 
-import Dict exposing (Dict)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Settings.Model exposing (..)
 import MassiveDecks.Strings.Languages.Model exposing (Language)
@@ -11,10 +10,10 @@ type Msg
     | ChangeCardSize CardSize
     | ChangeOpenUserList Bool
     | ToggleOpen
-    | RemoveInvalid (Dict Lobby.Token Bool)
+    | RemoveInvalid (List Lobby.Token)
     | ToggleSpeech Bool
     | ToggleAutoAdvance Bool
-    | ChangeSpeech String
+    | ChangeSpeech (Maybe String)
     | ToggleNotifications Bool
     | ToggleOnlyWhenHidden Bool
     | NoOp

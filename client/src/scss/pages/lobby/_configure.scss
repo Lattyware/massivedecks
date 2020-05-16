@@ -1,0 +1,232 @@
+@use "../../_colors";
+
+.configure {
+  padding: 1em;
+  height: 100%;
+
+  .mdc-card {
+    max-width: 60em;
+    margin: auto;
+  }
+
+  .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+
+    .game-code {
+      font-size: 1.5em;
+    }
+
+    #name-option {
+      flex-grow: 1;
+      flex-basis: 6em;
+    }
+
+    .joining {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  h2,
+  h3 {
+    margin: 0.5em 0 0 0;
+  }
+
+  .multipart {
+    mdc-switch {
+      margin-right: 0.5em;
+    }
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column-reverse;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    margin: 1em;
+    pointer-events: none;
+    gap: 0.5em;
+
+    .action {
+      pointer-events: all;
+    }
+  }
+}
+
+.indent {
+  margin-left: 1em;
+}
+
+#decks-tab table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+
+  th {
+    text-align: center;
+    padding: 1em 0.5em;
+  }
+
+  th.deck-name {
+    text-align: left;
+  }
+
+  tr {
+    border-top: 1px solid colors.$secondary-background;
+  }
+
+  .deck-row .name {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+  }
+
+  thead tr {
+    border-top: none;
+  }
+
+  .deck-name {
+    width: auto;
+  }
+
+  .count {
+    width: 2em;
+    text-align: right;
+  }
+
+  .loading-deck-info {
+    margin-left: 0.5em;
+  }
+
+  .with-error {
+    opacity: 0.5;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+#add-deck .multipart {
+  .primary {
+    flex-shrink: 0;
+  }
+}
+
+#source-selector {
+  flex-shrink: 1;
+  flex-basis: 12em;
+}
+
+.house-rules {
+  margin-top: 2em;
+}
+
+.house-rule {
+  margin: 1em 0;
+  opacity: 0.6;
+
+  &:first-of-type {
+    margin: 0 0 1em 0;
+  }
+
+  h4 {
+    margin: 0;
+  }
+
+  &.enabled {
+    opacity: 1;
+
+    .house-rule-settings {
+      transition: height 200ms ease-in;
+      height: fit-content;
+    }
+  }
+
+  .form-section {
+    margin: 0;
+  }
+
+  .house-rule-settings {
+    height: 0;
+    overflow: hidden;
+    transition: height 200ms ease-out;
+
+    .form-section {
+      margin: 0 1.5em;
+    }
+  }
+}
+
+.button-spread {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#merge-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  background-color: transparentize(colors.$secondary-background, 0.6);
+
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .conflict {
+    display: flex;
+    flex-direction: column;
+
+    .resolution {
+      display: flex;
+      flex-direction: row;
+
+      .resolve {
+        flex-basis: 0;
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+.locally-changed {
+  background-color: transparentize(colors.$primary-light, 0.9);
+}
+
+.validation-error {
+  background-color: transparentize(colors.$error, 0.9);
+}
+
+#add-deck mwc-icon-button {
+  margin: 0;
+}
+
+.source-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  font-size: 1.5em;
+
+  & p {
+    margin: 0;
+  }
+
+  .author,
+  .translator,
+  .language {
+    font-size: 0.8em;
+  }
+}

@@ -5,6 +5,7 @@ module MassiveDecks.Components.Form.Message exposing
     , error
     , errorWithFix
     , info
+    , infoWithFix
     , mdError
     , none
     , view
@@ -16,12 +17,12 @@ import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
-import MassiveDecks.Components as Components
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
+import Material.IconButton as IconButton
 import Svg.Attributes as Svg
 
 
@@ -53,6 +54,15 @@ info mdString =
         { severity = Info
         , description = mdString
         , fixes = []
+        }
+
+
+infoWithFix : MdString -> List (Fix msg) -> Message msg
+infoWithFix mdString fixes =
+    Just
+        { severity = Info
+        , description = mdString
+        , fixes = fixes
         }
 
 
@@ -127,10 +137,4 @@ internalMessage shared { severity, description, fixes } =
 
 viewFix : Shared -> Fix msg -> Html msg
 viewFix shared { icon, description, action } =
-    Html.li []
-        [ Components.iconButton
-            [ action |> HtmlE.onClick
-            , description |> Lang.title shared
-            ]
-            icon
-        ]
+    Html.li [] [ IconButton.view shared description (icon |> Icon.present |> NeList.just) (Just action) ]

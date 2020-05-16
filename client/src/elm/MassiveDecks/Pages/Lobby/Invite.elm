@@ -1,11 +1,10 @@
 module MassiveDecks.Pages.Lobby.Invite exposing (button, dialog, overlay)
 
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
-import Json.Decode
-import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Model exposing (..)
@@ -16,20 +15,19 @@ import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Events as HtmlE
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
+import Material.Card as Card
+import Material.IconButton as IconButton
 import QRCode
 import Url exposing (Url)
-import Weightless as Wl
 
 
 {-| A button to show the dialog.
 -}
 button : (Msg -> msg) -> Shared -> Html msg
 button wrap shared =
-    Components.iconButton
-        [ Lang.title shared Strings.Invite
-        , ToggleInviteDialog |> wrap |> HtmlE.onClick
-        ]
-        Icon.bullhorn
+    IconButton.view shared Strings.Invite (Icon.bullhorn |> Icon.present |> NeList.just) (ToggleInviteDialog |> wrap |> Just)
 
 
 {-| A dialog overlay that displays information on how to invite people to the game.
@@ -45,15 +43,11 @@ dialog wrap shared gameCode password open =
         , HtmlA.classList [ ( "open", open ) ]
         , Lobby.ToggleInviteDialog |> wrap |> HtmlE.onClick
         ]
-        [ Components.iconButton
-            [ HtmlA.class "close"
-            , Lobby.ToggleInviteDialog
-                |> wrap
-                |> onClickNoPropegation
-            , Strings.Close |> Lang.title shared
-            ]
-            Icon.times
-        , Wl.card [ onClickNoPropegation (wrap NoOp) ]
+        [ IconButton.viewNoPropagation shared
+            Strings.Close
+            (Icon.times |> Icon.present |> NeList.just)
+            (Lobby.ToggleInviteDialog |> wrap |> Just)
+        , Card.view [ HtmlE.onClickNoPropagation (wrap NoOp) ]
             [ Strings.InviteExplanation { gameCode = GameCode.toString gameCode, password = password } |> Lang.html shared
             , Form.section shared
                 "invite-link"
@@ -65,7 +59,10 @@ dialog wrap shared gameCode password open =
                         , HtmlA.id "invite-link-field"
                         ]
                         []
-                    , Components.iconButton [ "invite-link-field" |> Copy |> wrap |> HtmlE.onClick ] Icon.copy
+                    , IconButton.view shared
+                        Strings.Copy
+                        (Icon.copy |> Icon.present |> NeList.just)
+                        ("invite-link-field" |> Copy |> wrap |> Just)
                     ]
                 )
                 [ Message.info Strings.InviteLinkHelp ]
@@ -90,11 +87,6 @@ overlay shared gameCode =
 
 
 {- Private -}
-
-
-onClickNoPropegation : msg -> Html.Attribute msg
-onClickNoPropegation msg =
-    HtmlE.stopPropagationOn "click" (Json.Decode.succeed ( msg, True ))
 
 
 qr : String -> Html msg

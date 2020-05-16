@@ -15,13 +15,12 @@ import Dict.Extra as Dict
 import FontAwesome.Attributes as Icon
 import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
-import Html exposing (Html)
+import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Http
 import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Icon as Icon
@@ -41,11 +40,12 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
-import MassiveDecks.Util.Html.Attributes as HtmlA
-import MassiveDecks.Util.Maybe as Maybe
-import Weightless as Wl
-import Weightless.Attributes as WlA
-import Weightless.Slider as Slider
+import MassiveDecks.Util.NeList exposing (NeList(..))
+import MassiveDecks.Util.Order as Order
+import Material.IconButton as IconButton
+import Material.Select as Select
+import Material.Slider as Slider
+import Material.Switch as Switch
 
 
 init : (Msg -> msg) -> Settings -> ( Model, Cmd msg )
@@ -115,7 +115,7 @@ update shared msg =
             let
                 newTokens =
                     model.settings.tokens
-                        |> Dict.filter (\_ -> \t -> Dict.get t tokenValidity |> Maybe.withDefault True)
+                        |> Dict.filter (\_ -> \t -> List.member t tokenValidity)
             in
             changeSettings (\s -> { s | tokens = newTokens }) model
 
@@ -129,9 +129,9 @@ update shared msg =
         ChangeSpeech voice ->
             let
                 newSpeechSettings =
-                    model.settings.speech |> Speech.selectVoice voice
+                    voice |> Maybe.map (\v -> model.settings.speech |> Speech.selectVoice v)
             in
-            changeSettings (\s -> { s | speech = newSpeechSettings }) model
+            changeSettings (\s -> { s | speech = newSpeechSettings |> Maybe.withDefault s.speech }) model
 
         ToggleAutoAdvance enabled ->
             changeSettings (\s -> { s | autoAdvance = Just enabled }) model
@@ -167,15 +167,10 @@ view wrap shared =
                 Icon.cog
 
         button =
-            Components.iconButtonStyled
-                [ HtmlA.id "settings-button"
-                , ToggleOpen |> wrap |> HtmlE.onClick
-                , Strings.SettingsTitle |> Lang.title shared
-                ]
-                ( [ Icon.lg ], icon )
+            IconButton.view shared Strings.SettingsTitle (NeList (icon |> Icon.present |> Icon.styled [ Icon.lg ]) []) (ToggleOpen |> wrap |> Just)
 
         panel =
-            Wl.card [ HtmlA.classList [ ( "settings-panel", True ), ( "open", model.open ) ] ]
+            Html.div [ HtmlA.classList [ ( "settings-panel", True ), ( "mdc-card", True ), ( "open", model.open ) ] ]
                 [ Html.h3 [] [ Strings.SettingsTitle |> Lang.html shared ]
                 , Html.div [ HtmlA.class "body" ]
                     (List.intersperse (Html.hr [] [])
@@ -296,42 +291,28 @@ cardSize wrap shared =
         "card-size"
         (Html.div
             [ HtmlA.class "multipart" ]
-            [ Wl.slider
-                [ HtmlA.class "primary"
-                , Slider.step 1
-                , Slider.min 1
-                , Slider.max 3
-                , Strings.CardSizeSetting |> Lang.string shared |> WlA.label
-                , WlA.outlined
-                , Slider.thumbLabel True
-                , String.toInt
-                    >> Maybe.andThen cardSizeFromValue
-                    >> Maybe.withDefault Full
-                    >> ChangeCardSize
-                    >> wrap
-                    |> HtmlE.onInput
-                , settings.cardSize |> cardSizeToValue |> String.fromInt |> WlA.value
-                ]
-                [ Icon.viewStyled [ Slider.slot Slider.Before ] Icon.searchMinus
-                , [ settings.cardSize |> cardSizeThumb ] |> Html.span [ Slider.slot Slider.ThumbLabel ]
-                , Icon.viewStyled [ Slider.slot Slider.After ] Icon.searchPlus
+            [ Html.div
+                [ HtmlA.class "card-size-slider" ]
+                [ Icon.viewStyled [] Icon.minimalCardSize
+                , Slider.view
+                    [ HtmlA.class "primary"
+                    , Slider.step 1
+                    , Slider.min 1
+                    , Slider.max 3
+                    , Slider.pin
+                    , Slider.markers
+                    , cardSizeFromValue
+                        >> Maybe.withDefault Full
+                        >> ChangeCardSize
+                        >> wrap
+                        |> Slider.onChange
+                    , settings.cardSize |> cardSizeToValue |> Slider.value
+                    ]
+                , Icon.viewStyled [] Icon.callCard
                 ]
             ]
         )
         [ Message.info Strings.CardSizeExplanation ]
-
-
-cardSizeThumb : CardSize -> Html msg
-cardSizeThumb size =
-    case size of
-        Minimal ->
-            Icon.viewIcon Icon.minimalCardSize
-
-        Square ->
-            Icon.viewIcon Icon.squareCardSize
-
-        Full ->
-            Icon.viewIcon Icon.callCard
 
 
 autoAdvanceRound : (Msg -> msg) -> Shared -> Html msg
@@ -344,11 +325,12 @@ autoAdvanceRound wrap shared =
         "auto-advance"
         (Html.div
             [ HtmlA.class "multipart" ]
-            [ Wl.switch
+            [ Switch.view
                 [ HtmlE.onCheck (ToggleAutoAdvance >> wrap)
                 , HtmlA.checked (settings.autoAdvance |> Maybe.withDefault False)
+                , HtmlA.id "auto-advance-enable"
                 ]
-            , Html.label []
+            , Html.label [ HtmlA.for "auto-advance-enable" ]
                 [ Icon.viewIcon Icon.commentDots
                 , Html.text " "
                 , Strings.AutoAdvanceSetting |> Lang.html shared
@@ -379,6 +361,12 @@ speechVoiceSelector wrap shared =
 
             else
                 Message.none
+
+        currentLanguage =
+            shared |> Lang.currentLanguage
+
+        voiceSortOrder =
+            combinedOrder (NeList defaultFirst [ languageMatchFirst currentLanguage ])
     in
     Html.div []
         [ Form.section shared
@@ -386,24 +374,31 @@ speechVoiceSelector wrap shared =
             (Html.div []
                 [ Html.div
                     [ HtmlA.class "multipart" ]
-                    [ Wl.switch
+                    [ Switch.view
                         [ HtmlE.onCheck (ToggleSpeech >> wrap)
                         , HtmlA.disabled isDisabled
                         , HtmlA.checked enabled
+                        , HtmlA.id "speech-enable"
                         ]
-                    , Html.label []
+                    , Html.label [ HtmlA.for "speech-enable" ]
                         [ Icon.viewIcon Icon.commentDots
                         , Html.text " "
                         , Strings.SpeechSetting |> Lang.html shared
                         ]
                     ]
-                , Wl.select
-                    [ HtmlE.onInput (ChangeSpeech >> wrap)
-                    , Strings.VoiceSetting |> Lang.string shared |> WlA.label
-                    , WlA.outlined
-                    , HtmlA.disabled (not enabled || isDisabled)
+                , Html.div [ HtmlA.class "children" ]
+                    [ Select.view shared
+                        { label = Strings.VoiceSetting
+                        , idToString = identity
+                        , idFromString = Just
+                        , selected = selectedVoice
+                        , wrap = ChangeSpeech >> wrap
+                        }
+                        [ HtmlA.disabled (not enabled || isDisabled)
+                        , HtmlA.class "secondary"
+                        ]
+                        (voices |> List.sortWith voiceSortOrder |> List.map speechVoiceOption)
                     ]
-                    (voices |> List.sortWith defaultFirst |> List.map (speechVoiceOption selectedVoice))
                 ]
             )
             [ Message.info Strings.SpeechExplanation
@@ -414,7 +409,7 @@ speechVoiceSelector wrap shared =
 
 defaultFirst : Speech.Voice -> Speech.Voice -> Order
 defaultFirst a b =
-    if a.default && b.default then
+    if a.default == b.default then
         EQ
 
     else if a.default then
@@ -424,19 +419,38 @@ defaultFirst a b =
         GT
 
 
-speechVoiceOption : Maybe String -> Speech.Voice -> Html msg
-speechVoiceOption selectedVoice voice =
-    let
-        selected =
-            if selectedVoice == Just voice.name then
-                [ WlA.selected ]
+languageMatchFirst : Language -> Speech.Voice -> Speech.Voice -> Order
+languageMatchFirst lang =
+    Lang.sortClosestFirst lang |> Order.map (.lang >> Lang.fromCode)
 
-            else
-                []
-    in
-    Html.option
-        (HtmlA.value voice.name :: selected)
-        [ Html.text (voice.name ++ " (" ++ voice.lang ++ ")") ]
+
+combinedOrder : NeList (a -> a -> Order) -> a -> a -> Order
+combinedOrder (NeList first rest) a b =
+    case rest of
+        [] ->
+            first a b
+
+        next :: remaining ->
+            let
+                result =
+                    first a b
+            in
+            case result of
+                EQ ->
+                    combinedOrder (NeList next remaining) a b
+
+                _ ->
+                    result
+
+
+speechVoiceOption : Speech.Voice -> Select.ItemModel String msg
+speechVoiceOption voice =
+    { id = voice.name
+    , icon = Nothing
+    , primary = [ voice.name |> Html.text ]
+    , secondary = Nothing
+    , meta = Nothing
+    }
 
 
 notificationsSwitch : (Msg -> msg) -> Shared -> Html msg
@@ -462,12 +476,13 @@ notificationsSwitch wrap shared =
         (Html.div []
             [ Html.div
                 [ HtmlA.class "multipart" ]
-                [ Wl.switch
+                [ Switch.view
                     [ HtmlE.onCheck (ToggleNotifications >> wrap)
                     , HtmlA.disabled unsupported
                     , HtmlA.checked enabled
+                    , HtmlA.id "notifications-enable"
                     ]
-                , Html.label []
+                , Html.label [ HtmlA.for "notifications-enable" ]
                     [ Icon.viewIcon Icon.bell
                     , Html.text " "
                     , Strings.NotificationsSetting |> Lang.html shared
@@ -479,12 +494,13 @@ notificationsSwitch wrap shared =
                     "only-when-hidden"
                     (Html.div
                         [ HtmlA.class "multipart" ]
-                        [ Wl.switch
+                        [ Switch.view
                             [ HtmlE.onCheck (ToggleOnlyWhenHidden >> wrap)
                             , HtmlA.disabled visibilityDisabled
                             , HtmlA.checked settings.requireNotVisible
+                            , HtmlA.id "only-when-hidden-toggle"
                             ]
-                        , Html.label []
+                        , Html.label [ HtmlA.for "only-when-hidden-toggle" ]
                             [ Icon.viewIcon Icon.eyeSlash
                             , Html.text " "
                             , Strings.NotificationOnlyWhenHiddenSetting |> Lang.html shared
@@ -520,41 +536,42 @@ languageSelector wrap shared =
     Form.section
         shared
         "language"
-        (Wl.select
-            [ HtmlE.onInput (Lang.fromCode >> ChangeLang >> wrap)
-            , Strings.LanguageSetting |> Lang.string shared |> WlA.label
-            , WlA.outlined
-            ]
-            (Lang.languages |> List.map (languageOption selected))
+        (Select.view shared
+            { label = Strings.LanguageSetting
+            , idToString = Lang.code
+            , idFromString = Lang.fromCode
+            , selected = Just selected
+            , wrap = ChangeLang >> wrap
+            }
+            []
+            (Lang.languages |> List.map (languageOption shared selected))
         )
         [ Message.info Strings.MissingLanguage ]
 
 
-languageOption : Language -> Language -> Html msg
-languageOption currentLanguage language =
+languageOption : Shared -> Language -> Language -> Select.ItemModel Language msg
+languageOption shared currentLanguage language =
     let
-        autonym =
-            language |> Lang.autonym
-
         nameInCurrentLanguage =
-            language |> Lang.languageName |> Lang.givenLanguageString currentLanguage
+            language
+                |> Lang.languageName
+                |> Lang.givenLanguageString currentLanguage
 
-        name =
-            if currentLanguage == language then
-                [ autonym |> Html.text ]
+        autonym =
+            if language /= currentLanguage then
+                language
+                    |> Lang.autonym
+                    |> (\n -> Just [ Strings.AutonymFormat { autonym = n } |> Lang.html shared ])
 
             else
-                [ autonym |> Html.text
-                , Html.text " ("
-                , nameInCurrentLanguage |> Html.text
-                , Html.text ")"
-                ]
+                Nothing
     in
-    Html.option
-        [ WlA.selected |> Maybe.justIf (currentLanguage == language) |> Maybe.withDefault HtmlA.nothing
-        , language |> Lang.code |> HtmlA.value
-        ]
-        name
+    { id = language
+    , icon = Nothing
+    , primary = [ nameInCurrentLanguage |> Html.text ]
+    , secondary = autonym
+    , meta = Nothing
+    }
 
 
 ignore : (Msg -> msg) -> a -> msg

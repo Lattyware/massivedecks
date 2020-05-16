@@ -18,7 +18,7 @@ export interface Away extends Base {
 
 export const away = (id: User.Id): Away => ({
   event: "Away",
-  player: id
+  player: id,
 });
 
 /**
@@ -30,5 +30,5 @@ export interface Back extends Base {
 
 export const back = (id: User.Id): Back => ({
   event: "Back",
-  player: id
+  player: id,
 });

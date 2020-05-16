@@ -9,7 +9,9 @@ module MassiveDecks.Game exposing
     )
 
 import Browser.Dom as Dom
+import Browser.Events as Browser
 import Dict exposing (Dict)
+import FontAwesome.Attributes as Icon
 import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
@@ -39,18 +41,23 @@ import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
+import MassiveDecks.Pages.Lobby.Messages as Lobby
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
+import MassiveDecks.Pages.Lobby.Route as Lobby
+import MassiveDecks.Ports as Ports
 import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList as NeList
+import Material.Button as Button
+import Material.Card as Card
+import Material.IconButton as IconButton
+import Material.LinearProgress as LinearProgress
 import Set exposing (Set)
 import Task
-import Weightless as Wl
-import Weightless.Attributes as WlA
-import Weightless.ProgressBar as ProgressBar
 
 
 init : (Msg -> msg) -> Game -> List Card.Response -> Round.Pick -> ( Model, Cmd msg )
@@ -299,6 +306,12 @@ update wrap shared msg model =
         EnforceTimeLimit ->
             ( model, Actions.enforceTimeLimit (model.game.round |> Round.data |> .id) (model.game.round |> Round.stage) )
 
+        ToggleHelp ->
+            ( { model | helpVisible = not model.helpVisible }, Cmd.none )
+
+        Confetti ->
+            ( { model | confetti = True }, Ports.startConfetti confettiId )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -308,37 +321,47 @@ subscriptions wrap anchor model =
     let
         ( startedAt, maybeLimitSeconds, timedOut ) =
             roundTimeDetails model.game
-    in
-    if timedOut || model.game.winner /= Nothing then
-        Sub.none
 
-    else
-        case maybeLimitSeconds of
-            Nothing ->
+        timerSub =
+            if timedOut || model.game.winner /= Nothing then
                 Sub.none
 
-            Just limitSeconds ->
-                case model.time of
-                    Just time ->
-                        let
-                            left =
-                                timeLeft anchor startedAt time limitSeconds
-                        in
-                        if left < 0 then
-                            Sub.none
-
-                        else if left > showProgressBarForLast then
-                            Time.every 500 (UpdateTimer >> wrap)
-
-                        else
-                            Time.animate (UpdateTimer >> wrap)
-
+            else
+                case maybeLimitSeconds of
                     Nothing ->
-                        Time.animate (UpdateTimer >> wrap)
+                        Sub.none
+
+                    Just limitSeconds ->
+                        case model.time of
+                            Just time ->
+                                let
+                                    left =
+                                        timeLeft anchor startedAt time limitSeconds
+                                in
+                                if left < 0 then
+                                    Sub.none
+
+                                else if left > showProgressBarForLast then
+                                    Time.every 500 (UpdateTimer >> wrap)
+
+                                else
+                                    Time.animate (UpdateTimer >> wrap)
+
+                            Nothing ->
+                                Time.animate (UpdateTimer >> wrap)
+
+        confettiSub =
+            if model.game.winner /= Nothing && not model.confetti then
+                Browser.onAnimationFrame (Confetti |> wrap |> always)
+
+            else
+                Sub.none
+    in
+    Sub.batch [ timerSub, confettiSub ]
 
 
-view : (Msg -> msg) -> Shared -> Lobby.Auth -> Time.Anchor -> String -> Config -> Dict User.Id User -> Model -> Html msg
-view wrap shared auth timeAnchor name config users model =
+view : (Lobby.Msg -> msg) -> (Msg -> msg) -> Shared -> Lobby.Auth -> Time.Anchor -> String -> Config -> Dict User.Id User -> Model -> Html msg
+view wrapLobby wrap shared auth timeAnchor name config users model =
     let
         overlay =
             if model.game.players |> Dict.get auth.claims.uid |> Maybe.map (\p -> p.presence == Player.Away) |> Maybe.withDefault False then
@@ -357,7 +380,7 @@ view wrap shared auth timeAnchor name config users model =
             else
                 case model.game.winner of
                     Just winners ->
-                        viewWinner shared users winners
+                        viewWinner wrapLobby shared users auth.claims.uid winners
 
                     Nothing ->
                         viewRound wrap shared auth timeAnchor config users model
@@ -687,7 +710,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                 game =
                     model.game
             in
-            ( { model | game = { game | winner = Just winner } }, Cmd.none )
+            ( { model | game = { game | winner = Just winner }, confetti = False }, Cmd.none )
 
 
 applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
@@ -748,12 +771,34 @@ updateLikes plays uid player =
         |> Maybe.withDefault player
 
 
-viewWinner : Shared -> Dict User.Id User -> Set User.Id -> List (Html msg)
-viewWinner shared users winners =
-    [ Wl.card [ HtmlA.id "game-winner" ]
+confettiId : String
+confettiId =
+    "win-confetti-overlay"
+
+
+viewWinner : (Lobby.Msg -> msg) -> Shared -> Dict User.Id User -> User.Id -> Set User.Id -> List (Html msg)
+viewWinner wrapLobby shared users localUser winners =
+    let
+        configureNextGame =
+            if users |> Dict.get localUser |> Maybe.map (.privilege >> (==) User.Privileged) |> Maybe.withDefault False then
+                Button.view shared
+                    Button.Raised
+                    Strings.ConfigureNextGame
+                    Strings.ConfigureNextGame
+                    (Icon.cog |> Icon.viewIcon)
+                    [ HtmlA.id "new-game-config"
+                    , Lobby.Configure |> Just |> Lobby.ChangeSection |> wrapLobby |> HtmlE.onClick
+                    ]
+
+            else
+                Html.nothing
+    in
+    [ Card.view [ HtmlA.id "game-winner" ]
         [ Html.span [] [ Icon.trophy |> Icon.viewIcon ]
         , Html.ul [] (winners |> Set.toList |> List.map (viewWinnerListItem shared users))
         ]
+    , configureNextGame
+    , Html.canvas [ HtmlA.id confettiId ] []
     ]
 
 
@@ -798,16 +843,16 @@ viewRound wrap shared auth timeAnchor config users model =
 
         renderedCall =
             call |> Call.viewFilled shared config Card.Front [] parts
-
-        { bar, countdown } =
-            timer timeAnchor model
     in
     [ Html.div [ HtmlA.id "top-content" ]
-        [ bar |> Maybe.withDefault Html.nothing
-        , Html.div [ HtmlA.class "top-row" ]
-            [ minorActions wrap shared auth game instruction
-            , countdown |> Maybe.withDefault Html.nothing
-            ]
+        [ case instruction |> Maybe.andThen (Maybe.justIf model.helpVisible) of
+            Just i ->
+                Card.view [ HtmlA.class "help" ] [ Icon.questionCircle |> Icon.viewIcon, i |> Lang.html shared ]
+
+            Nothing ->
+                Html.nothing
+        , timer timeAnchor model
+        , Html.div [ HtmlA.class "top-row" ] [ minorActions wrap shared auth game model.helpVisible ]
         ]
     , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction wrap shared action ]
     , content
@@ -815,41 +860,27 @@ viewRound wrap shared auth timeAnchor config users model =
 
     -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
     , Html.div [ HtmlA.class "scroll-top" ]
-        [ Wl.button
-            [ WlA.flat
-            , WlA.fab
-            , WlA.inverted
-            , ScrollToTop |> wrap |> HtmlE.onClick
-            ]
-            [ Icon.viewIcon Icon.arrowUp ]
-        ]
+        [ IconButton.view shared Strings.ScrollToTop (Icon.arrowUp |> Icon.present |> NeList.just) (ScrollToTop |> wrap |> Just) ]
     ]
 
 
-help : Shared -> MdString -> Html msg
-help shared instruction =
+toggleHelp : (Msg -> msg) -> Shared -> Bool -> Html msg
+toggleHelp wrap shared enabled =
     let
-        id =
-            "context-help-button"
+        extra =
+            if enabled then
+                [ Icon.slash |> Icon.present |> Icon.styled [ Icon.fw ] ]
 
-        helpContent =
-            [ Components.iconButton
-                [ HtmlA.id id, Strings.ViewHelpAction |> Lang.title shared ]
-                Icon.question
-            , Wl.popover
-                (List.concat
-                    [ WlA.anchorOrigin WlA.XCenter WlA.YBottom
-                    , WlA.transformOrigin WlA.XLeft WlA.YTop
-                    , [ WlA.anchor id, WlA.fixed, WlA.anchorOpenEvents [ "click" ] ]
-                    ]
-                )
-                [ Wl.popoverCard [] [ instruction |> Lang.html shared ] ]
-            ]
+            else
+                []
+
+        icon =
+            Icon.question |> Icon.present |> Icon.styled [ Icon.fw ] |> NeList.just |> NeList.extend extra
     in
-    Html.div [ HtmlA.id "context-help" ] helpContent
+    IconButton.view shared Strings.ViewHelpAction icon (ToggleHelp |> wrap |> Just)
 
 
-timer : Time.Anchor -> Model -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
+timer : Time.Anchor -> Model -> Html msg
 timer timeAnchor model =
     let
         ( startedAt, limit, timedOut ) =
@@ -862,10 +893,10 @@ timer timeAnchor model =
             else
                 Maybe.map2 (timeLeft timeAnchor startedAt) model.time limit
     in
-    left |> Maybe.map timerInternal |> Maybe.withDefault { bar = Nothing, countdown = Nothing }
+    left |> Maybe.andThen timerInternal |> Maybe.withDefault (Html.div [ HtmlA.id "timer" ] [])
 
 
-timerInternal : Int -> { bar : Maybe (Html msg), countdown : Maybe (Html msg) }
+timerInternal : Int -> Maybe (Html msg)
 timerInternal leftInt =
     let
         last =
@@ -873,20 +904,18 @@ timerInternal leftInt =
 
         left =
             leftInt |> toFloat
-
-        progressBar =
-            (1 - (last - left) / last)
-                |> timerProgressBar
     in
-    { bar = progressBar
-    , countdown = Just (Html.div [ HtmlA.id "time-left" ] [ max 0 left / 1000 |> ceiling |> String.fromInt |> Html.text ])
-    }
+    (1 - (last - left) / last) |> timerProgressBar
 
 
 timerProgressBar : Float -> Maybe (Html msg)
 timerProgressBar proportion =
     if proportion < 1 then
-        ProgressBar.determinate (min 1 (max 0 proportion)) [ HtmlA.id "timer" ] |> Just
+        let
+            progress =
+                proportion |> max 0 |> LinearProgress.Progress
+        in
+        LinearProgress.view progress [ HtmlA.id "timer" ] |> Just
 
     else
         Nothing
@@ -894,7 +923,7 @@ timerProgressBar proportion =
 
 showProgressBarForLast : Int
 showProgressBarForLast =
-    20000
+    15000
 
 
 timeLeft : Time.Anchor -> Time -> Time -> Int -> Int
@@ -929,8 +958,8 @@ roundTimeDetails game =
             ( complete.startedAt, Nothing, False )
 
 
-minorActions : (Msg -> msg) -> Shared -> Lobby.Auth -> Game -> Maybe MdString -> Html msg
-minorActions wrap shared auth game instruction =
+minorActions : (Msg -> msg) -> Shared -> Lobby.Auth -> Game -> Bool -> Html msg
+minorActions wrap shared auth game helpEnabled =
     let
         localPlayer =
             game.players |> Dict.get auth.claims.uid
@@ -940,11 +969,10 @@ minorActions wrap shared auth game instruction =
 
         enforceTimeLimit =
             if timedOut && game.rules.timeLimits.mode == Rules.Soft then
-                Components.iconButton
-                    [ Strings.EnforceTimeLimitAction |> Lang.title shared
-                    , EnforceTimeLimit |> wrap |> HtmlE.onClick
-                    ]
-                    Icon.forward
+                IconButton.view shared
+                    Strings.EnforceTimeLimitAction
+                    (Icon.forward |> Icon.present |> NeList.just)
+                    (EnforceTimeLimit |> wrap |> Just)
                     |> Just
 
             else
@@ -953,7 +981,7 @@ minorActions wrap shared auth game instruction =
     Html.div [ HtmlA.id "minor-actions" ]
         (List.filterMap identity
             [ Just (historyButton wrap shared)
-            , instruction |> Maybe.map (help shared)
+            , Just (toggleHelp wrap shared helpEnabled)
             , Maybe.map2 (\score -> \reboot -> rebootButton wrap shared score reboot)
                 (localPlayer |> Maybe.map .score)
                 game.rules.houseRules.reboot
@@ -964,24 +992,26 @@ minorActions wrap shared auth game instruction =
 
 historyButton : (Msg -> msg) -> Shared -> Html msg
 historyButton wrap shared =
-    Components.iconButton
-        [ HtmlA.id "history-button"
-        , Strings.ViewGameHistoryAction |> Lang.title shared
-        , ToggleHistoryView |> wrap |> HtmlE.onClick
-        ]
-        Icon.history
+    IconButton.view shared
+        Strings.ViewGameHistoryAction
+        (Icon.history |> Icon.present |> NeList.just)
+        (ToggleHistoryView |> wrap |> Just)
 
 
 rebootButton : (Msg -> msg) -> Shared -> Int -> Rules.Reboot -> Html msg
 rebootButton wrap shared score reboot =
-    Components.iconButton
-        [ HtmlA.id "redraw"
-        , { cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.title shared
-        , WlA.disabled
-            |> Maybe.justIf (score < reboot.cost)
-            |> Maybe.withDefault (Redraw |> wrap |> HtmlE.onClick)
-        ]
-        Icon.random
+    let
+        action =
+            if score < reboot.cost then
+                Nothing
+
+            else
+                Redraw |> wrap |> Just
+    in
+    IconButton.view shared
+        ({ cost = reboot.cost } |> Strings.HouseRuleRebootAction)
+        (Icon.random |> Icon.present |> NeList.just)
+        action
 
 
 viewAction : (Msg -> msg) -> Shared -> Maybe Action -> Html msg

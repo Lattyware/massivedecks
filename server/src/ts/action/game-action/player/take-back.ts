@@ -29,7 +29,7 @@ class TakeBackActions extends Actions.Implementation<
   ) => {
     if (lobby.game.round.verifyStage<Round.Playing>(action, "Playing")) {
       const plays = lobby.game.round.plays;
-      const playIndex = plays.findIndex(play => play.playedBy === auth.uid);
+      const playIndex = plays.findIndex((play) => play.playedBy === auth.uid);
       if (playIndex < 0) {
         throw new InvalidActionError("No play to take back.");
       }

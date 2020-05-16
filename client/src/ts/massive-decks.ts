@@ -1,10 +1,12 @@
-import "./weightless";
+import "./material";
+import "./paper";
 import * as serverConnection from "./server-connection";
 import * as speech from "./speech";
 import * as notificationManager from "./notification-manager";
 import * as settings from "./settings";
 import * as copy from "./copy";
 import * as language from "./language";
+import * as confetti from "./confetti";
 
 export function load(remoteMode: boolean) {
   // This lets us chunk off our elm code separately, which is important so we can
@@ -15,8 +17,8 @@ export function load(remoteMode: boolean) {
         flags: {
           ...settings.flags(),
           ...language.flags(),
-          remoteMode
-        }
+          remoteMode,
+        },
       });
 
       serverConnection.register(app.ports.serverRecv, app.ports.serverSend);
@@ -29,14 +31,15 @@ export function load(remoteMode: boolean) {
           app.ports.notificationCommands
         );
         language.register(app.ports.languageChanged);
+        confetti.register(app.ports.startConfetti);
         import(/* webpackChunkName: "cast-client" */ "./cast/client").then(
-          cast => {
+          (cast) => {
             cast.register(app.ports.tryCast, app.ports.castStatus);
           }
         );
       } else {
         import(/* webpackChunkName: "cast-server" */ "./cast/server").then(
-          cast => {
+          (cast) => {
             cast.register(app.ports.remoteControl);
           }
         );

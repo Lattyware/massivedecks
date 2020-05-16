@@ -4,7 +4,7 @@ import {
   InboundPort,
   MessageCommand,
   OpenCommand,
-  OutboundPort
+  OutboundPort,
 } from "../elm/MassiveDecks";
 
 export function register(
@@ -53,7 +53,7 @@ class ServerConnection {
       ("//" + baseUrl.host + baseUrl.path + slash + ServerConnection.apiUrl);
     this.out = out;
     this.lobbyConnection = null;
-    inbound.subscribe(command => this.handleMessage(command));
+    inbound.subscribe((command) => this.handleMessage(command));
   }
 
   static baseFromHtml(baseElement: HTMLBaseElement): BaseUrl {
@@ -61,7 +61,7 @@ class ServerConnection {
     return {
       protocol: url.protocol,
       host: url.host,
-      path: url.pathname
+      path: url.pathname,
     };
   }
 
@@ -72,7 +72,7 @@ class ServerConnection {
     return {
       protocol: url.protocol,
       host: url.host,
-      path: ""
+      path: "",
     };
   }
 
@@ -103,7 +103,7 @@ class LobbyConnection {
   static readonly oneMinute = LobbyConnection.oneSecond * 60;
 
   static readonly initialDelay = LobbyConnection.oneSecond / 2;
-  static readonly maxDelay = LobbyConnection.oneMinute * 10;
+  static readonly maxDelay = LobbyConnection.oneMinute;
 
   socket: WebSocket;
   delay: number = LobbyConnection.initialDelay;
@@ -118,21 +118,21 @@ class LobbyConnection {
   open(parent: ServerConnection, url: string) {
     this.closed = false;
     const socket = new WebSocket(url);
-    socket.addEventListener("message", event => {
+    socket.addEventListener("message", (event) => {
       if (parent.lobbyConnection === this) {
         parent.out.send(event.data);
       }
     });
-    socket.addEventListener("open", _ => {
+    socket.addEventListener("open", (_) => {
       this.delay = LobbyConnection.initialDelay;
       this.send(
         JSON.stringify({
           action: "Authenticate",
-          token: this.token
+          token: this.token,
         })
       );
     });
-    socket.addEventListener("close", _ => {
+    socket.addEventListener("close", (_) => {
       if (!this.closed) {
         setTimeout(() => {
           if (!this.closed) {

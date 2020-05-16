@@ -44,7 +44,7 @@ export async function handle(
   if (claims.gc !== gameCode) {
     throw new Authentication.InvalidAuthenticationError("wrong game code");
   }
-  await Change.apply(server, gameCode, lobby => {
+  await Change.apply(server, gameCode, (lobby) => {
     const user = lobby.users[claims.uid];
     if (user === undefined) {
       throw new Authentication.InvalidAuthenticationError("no such user");
@@ -55,7 +55,7 @@ export async function handle(
     if (user.connection !== "Connected") {
       user.connection = "Connected";
       return {
-        events: [Event.targetAll(ConnectionChanged.connected(claims.uid))]
+        events: [Event.targetAll(ConnectionChanged.connected(claims.uid))],
       };
     } else {
       return {};

@@ -25,9 +25,9 @@ class StartGameActions extends Actions.Implementation<
       tasks: [
         new StartGameTask(
           auth.gc,
-          lobby.config.decks.map(s => s.source)
-        )
-      ]
+          lobby.config.decks.map((s) => s.source)
+        ),
+      ],
     });
 }
 

@@ -38,6 +38,8 @@ type MdString
     | RejoinGame { code : String } -- A description of the action of attempting to rejoin a game the user was previously in.
     | LobbyRequiresPassword -- An explanation that the given lobby requires a password to join.
     | YouWereKicked -- An explanation that the player was kicked from the lobby they were in.
+    | ScrollToTop -- A description of the action of scrolling to the top of a screen.
+    | Copy -- A description of the action of copying something (i.e: copy and paste).
       -- Rules
     | CardsAgainstHumanity -- The name of "Cards Against Humanity" (https://cardsagainsthumanity.com/).
     | Rules -- The title for a DESCRIPTION of the rules.
@@ -80,6 +82,7 @@ type MdString
     | SettingsTitle -- The title for the settings panel.
     | LanguageSetting -- The label for the "Language" setting.
     | MissingLanguage -- A question asking if the user doesn't see the language they want.
+    | AutonymFormat { autonym : String } -- How to format the name for a language in that language (e.g: in brackets).
     | TranslationBeg -- A request for help translating the game.
     | CardSizeSetting -- The label for the "Card Size" setting.
     | CardSizeExplanation -- An explanation of what the card size does (changes the size of the card).
@@ -113,6 +116,10 @@ type MdString
     | GameCodeSpecificDescription -- A short description of what a specific game code and how to use it.
     | GameCodeHowToAcquire -- A short description of how to get a game code.
     | Deck -- The name for a deck of cards.
+    | DeckSource -- The name for a source of decks of cards.
+    | DeckLanguage { language : MdString } -- A description of what language a deck is in.
+    | DeckAuthor { author : String } -- A description of who created the deck.
+    | DeckTranslator { translator : String } -- A description of who translated the deck.
     | StillPlaying -- A term for a person who is in a round, but has not yet submitted a play.
     | PlayingDescription -- A description of a person who is in a round, but has not yet submitted a play.
     | Played -- A term for a person who is in a round, and has submitted a play.
@@ -197,6 +204,7 @@ type MdString
     | WaitForDecks -- A hint that the user has to wait for decks to load before starting the game.
     | MissingCardType { cardType : MdString } -- An error explaining that the user needs a deck with the given type of card (call/response).
     | NotEnoughCardsOfType { cardType : MdString, needed : Int, have : Int } -- An error explaining that the user needs to add more cards of the given type for the number of players.
+    | AddBlankCards { amount : Int } -- A description of the action of adding the given number of blank cards to the game.
     | AddDeck -- A description of the action of adding a deck to the game configuration.
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
     | SourceNotFound { source : MdString } -- An explanation that the deck didn't load because it doesn't exist on the source service.
@@ -246,6 +254,9 @@ type MdString
     | ConflictDescription -- An explanation of what a conflict is.
     | YourChanges -- A title for a section showing changes tot he configuration by the user.
     | TheirChanges -- A title for a section showing changes to the configuration by someone else.
+    | ConfigurationDisabledWhileInGame -- A message explaining that the configuration can't be changed while the game is in-progress.
+    | ConfigurationDisabledIfNotPrivileged -- A message explaining that the configuration can't be changed if the user isn't privileged.
+    | ConfigureNextGame -- A description of the action of configuring the next game for the lobby after the current one finished.
       -- Game
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.

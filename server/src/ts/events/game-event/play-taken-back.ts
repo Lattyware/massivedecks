@@ -10,5 +10,5 @@ export interface PlayTakenBack {
 
 export const of = (by: User.Id): PlayTakenBack => ({
   event: "PlayTakenBack",
-  by
+  by,
 });

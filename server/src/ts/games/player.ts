@@ -49,13 +49,13 @@ export const initial = (hand: Hand): Player => ({
   hand: hand,
   score: 0,
   likes: 0,
-  presence: "Active"
+  presence: "Active",
 });
 
 export const censor = (player: Player): Public => ({
   score: player.score,
   presence: player.presence,
-  likes: player.likes
+  likes: player.likes,
 });
 
 /**

@@ -14,6 +14,9 @@ methods =
         \shared ->
             { name = name shared
             , url = Nothing
+            , translator = Nothing
+            , author = Nothing
+            , language = Nothing
             }
     , tooltip = \_ -> Nothing
     }

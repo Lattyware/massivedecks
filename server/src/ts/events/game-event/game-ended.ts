@@ -10,5 +10,5 @@ export interface GameEnded {
 
 export const of = (...winner: User.Id[]): GameEnded => ({
   event: "GameEnded",
-  winner: winner.map(w => w.toString())
+  winner: winner.map((w) => w.toString()),
 });

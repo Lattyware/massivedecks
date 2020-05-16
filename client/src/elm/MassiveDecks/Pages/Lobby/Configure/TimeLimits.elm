@@ -14,7 +14,6 @@ import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption exposing 
 import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless.Attributes as WlA
 
 
 init : Model
@@ -101,13 +100,18 @@ modeOption =
     }
 
 
+timeLimitBounds : ConfigOption.IntBounds
+timeLimitBounds =
+    ConfigOption.IntBounds 0 900
+
+
 timeLimit : Round.Stage -> MdString -> Bool -> Component (Maybe Int) Model Id Msg msg
 timeLimit stage description toggleable =
     Component.value
         (TimeLimit stage)
         (ConfigOption.view (timeLimitOption stage description toggleable))
         (always False)
-        (Validator.optional (Validator.between 0 900 (\v -> TimeLimitChange stage (Just v))))
+        (Validator.optional (ConfigOption.toValidator timeLimitBounds (\v -> TimeLimitChange stage (Just v))))
 
 
 stageId : Round.Stage -> String
@@ -135,7 +139,7 @@ timeLimitOption stage description toggleable =
         }
             |> Maybe.justIf toggleable
     , primaryEditor =
-        \_ -> ConfigOption.maybeEditor (ConfigOption.intEditor (Strings.TimeLimit { stage = stage |> Round.stageDescription }) [ WlA.min 0, WlA.max 900 ])
+        \_ -> ConfigOption.maybeEditor (ConfigOption.intEditor (Strings.TimeLimit { stage = stage |> Round.stageDescription }) (ConfigOption.toMinMaxAttrs timeLimitBounds))
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter (TimeLimitChange stage)
     , messages = \_ -> [ Message.info description ]

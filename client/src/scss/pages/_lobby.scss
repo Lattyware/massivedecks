@@ -1,0 +1,255 @@
+@use "../_colors";
+@use "../_cards";
+@use "../_game";
+@use "lobby/_configure";
+@use "lobby/_invite";
+
+$top-bar-height: 4rem;
+$users-width: 18rem;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.1;
+  }
+}
+
+#lobby {
+}
+
+#top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  z-index: 10;
+
+  height: $top-bar-height;
+  padding: 0 1em;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+
+  color: cards.$call-color;
+  background-color: cards.$call-background;
+
+  .left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+}
+
+#lobby-content {
+  position: absolute;
+  left: 0;
+  top: $top-bar-height;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  min-width: fit-content;
+}
+
+#scroll-frame {
+  position: absolute;
+  top: 0;
+  left: $users-width;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  transition: left 0.3s;
+}
+
+.collapsed-users #scroll-frame {
+  left: 0;
+}
+
+.loading {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#users {
+  font-size: 1rem;
+  overflow-y: auto;
+
+  z-index: 2;
+
+  border-radius: 0;
+
+  padding: 0;
+
+  min-height: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: $users-width;
+
+  transition: width 0.3s;
+
+  mwc-menu {
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
+
+  .collapsible {
+    padding: 1em;
+  }
+
+  .user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0.5em;
+
+    &.has-menu {
+      &:hover {
+        background-color: colors.$background;
+      }
+
+      &.active {
+        background-color: colors.$secondary-background;
+      }
+    }
+
+    .about {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 1;
+      flex-grow: 1;
+      min-width: 1em;
+
+      .name {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+    }
+
+    .scores {
+      display: flex;
+      flex-direction: column;
+
+      .score {
+        color: colors.$secondary;
+      }
+
+      .likes {
+        color: colors.$primary;
+      }
+    }
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    margin-top: 0.5em;
+  }
+
+  .away {
+    opacity: 0.5;
+  }
+
+  .left {
+    opacity: 0.3;
+  }
+}
+
+@media screen and (max-width: $users-width * 2) {
+  #scroll-frame {
+    left: 100vw;
+  }
+
+  #users {
+    width: 100vw;
+  }
+}
+
+.collapsed-users #users {
+  width: 0;
+}
+
+.cast-button {
+  &.connecting {
+    animation: fadeIn 1s infinite alternate;
+  }
+
+  &.connected {
+    color: colors.$secondary;
+  }
+}
+
+.you {
+  font-weight: bold;
+}
+
+.notifications {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  list-style: none;
+  z-index: 500;
+}
+
+.notification {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 1em;
+  padding: 0.5em;
+  transform: translateY(100%);
+
+  background-color: #{cards.$call-background};
+  color: #{cards.$call-color};
+
+  &.error {
+    background-color: #{colors.$error};
+    color: #{colors.$on-error};
+  }
+
+  &.entering {
+    transform: translateY(0%);
+  }
+
+  .content {
+    display: flex;
+    align-items: center;
+    padding: 0.05em;
+
+    .icon {
+      margin: 0 0.5em 0 1em;
+    }
+
+    .action {
+      margin-left: 0.5em;
+    }
+  }
+}
+
+.menu {
+  --list-item-border-radius: 0;
+  padding: 0;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}

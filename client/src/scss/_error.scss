@@ -1,0 +1,76 @@
+@use "./colors";
+
+.error-overlay {
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background-color: transparentize(colors.$secondary-background, 0.6);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+
+  padding: 3em;
+
+  .actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .help {
+    margin-bottom: 0.5em;
+  }
+
+  .errors {
+    overflow-y: auto;
+  }
+}
+
+.error {
+  color: #{colors.$on-error};
+  background-color: #{colors.$error};
+
+  padding: 0.5em;
+
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    display: flex;
+    align-items: center;
+  }
+
+  .title > span {
+    white-space: nowrap;
+    font-weight: bold;
+
+    .icon-prefix {
+      margin-right: 0.3em;
+    }
+  }
+
+  .description {
+    margin-left: 0.5em;
+    white-space: normal;
+    flex-basis: 100%;
+  }
+
+  .link {
+    display: block;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  .report {
+    margin: 0.5em;
+    background-color: inherit;
+    color: inherit;
+    height: 10em;
+  }
+}

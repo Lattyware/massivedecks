@@ -60,9 +60,9 @@ export const ifEnabled = (
     timeout: {
       timeout: "RoundStageTimerDone",
       round: round.id,
-      stage: round.stage
+      stage: round.stage,
     },
-    after: afterSeconds * 1000
+    after: afterSeconds * 1000,
   };
 };
 
@@ -95,8 +95,8 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
     case "Soft":
       return {
         events: [
-          Event.targetAll(StageTimerDone.of(timeout.round, timeout.stage))
-        ]
+          Event.targetAll(StageTimerDone.of(timeout.round, timeout.stage)),
+        ],
       };
     case "Hard":
       return Change.reduce(waitingFor, lobby as Lobby.WithActiveGame, (l, p) =>

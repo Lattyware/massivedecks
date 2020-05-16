@@ -15,5 +15,5 @@ export interface RoundFinished {
 export const of = (round: GameRound.Complete): RoundFinished => ({
   event: "RoundFinished",
   winner: round.winner,
-  playDetails: round.playDetails()
+  playDetails: round.playDetails(),
 });

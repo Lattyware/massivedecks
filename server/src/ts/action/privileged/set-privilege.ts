@@ -41,7 +41,7 @@ class SetPrivilegeActions extends Actions.Implementation<
       user.privilege = privilege;
       return {
         lobby,
-        events: [Event.targetAll(PrivilegeChanged.of(action.user, privilege))]
+        events: [Event.targetAll(PrivilegeChanged.of(action.user, privilege))],
       };
     }
     return {};

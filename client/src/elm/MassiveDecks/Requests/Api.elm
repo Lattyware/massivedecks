@@ -69,7 +69,7 @@ joinLobby msg gameCode registration =
 
 {-| Check if previously joined lobbies are still going.
 -}
-checkAlive : (Request.Response Never (Dict Lobby.Token Bool) -> msg) -> List Lobby.Token -> Request msg
+checkAlive : (Request.Response Never (List Lobby.Token) -> msg) -> List Lobby.Token -> Request msg
 checkAlive msg tokens =
     { method = "POST"
     , headers = []

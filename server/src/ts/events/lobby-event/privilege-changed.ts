@@ -15,5 +15,5 @@ export const of = (
 ): PrivilegeChanged => ({
   event: "PrivilegeChanged",
   user,
-  privilege
+  privilege,
 });

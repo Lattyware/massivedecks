@@ -10,8 +10,6 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
-import MassiveDecks.Components as Component
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -27,6 +25,8 @@ import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User
+import MassiveDecks.Util.NeList as NeList
+import Material.IconButton as IconButton
 import QRCode
 import Url exposing (Url)
 
@@ -96,21 +96,18 @@ viewSettings wrap changePage shared lobby =
                         ( wrap BecomePlayer, Strings.BecomePlayerDescription )
         in
         [ Html.div [ HtmlA.id "spectate-actions" ]
-            [ Component.iconButton
-                [ backAction |> HtmlE.onClick
-                , backDescription |> Lang.title shared
-                ]
-                Icon.arrowLeft
-            , Component.iconButton
-                [ { route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> HtmlE.onClick
-                , Strings.ViewConfgiurationDescription |> Lang.title shared
-                ]
-                Icon.cog
-            , Component.iconButton
-                [ ToggleAdvert |> wrap |> HtmlE.onClick
-                , Strings.ToggleAdvertDescription |> Lang.title shared
-                ]
-                advertiseIcon
+            [ IconButton.view shared
+                backDescription
+                (Icon.arrowLeft |> Icon.present |> NeList.just)
+                (Just backAction)
+            , IconButton.view shared
+                Strings.ViewConfgiurationDescription
+                (Icon.cog |> Icon.present |> NeList.just)
+                ({ route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> Just)
+            , IconButton.view shared
+                Strings.ToggleAdvertDescription
+                (advertiseIcon |> Icon.present |> NeList.just)
+                (ToggleAdvert |> wrap |> Just)
             ]
         ]
 

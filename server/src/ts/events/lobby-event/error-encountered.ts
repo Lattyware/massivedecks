@@ -11,5 +11,5 @@ export interface ErrorEncountered {
 
 export const of = (error: Errors.Details): ErrorEncountered => ({
   event: "ErrorEncountered",
-  error
+  error,
 });

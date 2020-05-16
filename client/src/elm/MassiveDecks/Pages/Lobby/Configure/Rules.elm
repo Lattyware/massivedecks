@@ -13,7 +13,6 @@ import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules as HouseRules
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model as HouseRules
 import MassiveDecks.Pages.Lobby.Configure.Rules.Model exposing (..)
 import MassiveDecks.Strings as Strings
-import Weightless.Attributes as WlA
 
 
 init : Model
@@ -81,13 +80,18 @@ gameRules =
         ]
 
 
+handSizeLimits : ConfigOption.IntBounds
+handSizeLimits =
+    ConfigOption.IntBounds 3 50
+
+
 handSize : Component Int Model Id Msg msg
 handSize =
     Component.value
         HandSize
         (ConfigOption.view handSizeOption)
         (always False)
-        (Validator.between 3 50 HandSizeChange)
+        (ConfigOption.toValidator handSizeLimits HandSizeChange)
 
 
 handSizeOption : ConfigOption Model Int Msg msg
@@ -95,11 +99,16 @@ handSizeOption =
     { id = "hand-size-option"
     , toggleable = Nothing
     , primaryEditor =
-        \_ -> ConfigOption.intEditor Strings.HandSize [ 3 |> WlA.min, 50 |> WlA.max ]
+        \_ -> ConfigOption.intEditor Strings.HandSize (ConfigOption.toMinMaxAttrs handSizeLimits)
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter HandSizeChange
     , messages = \_ -> [ Message.info Strings.HandSizeDescription ]
     }
+
+
+scoreLimitBounds : ConfigOption.IntBounds
+scoreLimitBounds =
+    ConfigOption.IntBounds 1 10000
 
 
 scoreLimit : Component (Maybe Int) Model Id Msg msg
@@ -108,7 +117,7 @@ scoreLimit =
         ScoreLimit
         (ConfigOption.view scoreLimitOption)
         (always False)
-        (Validator.optional (Validator.between 3 10000 (Just >> ScoreLimitChange)))
+        (Validator.optional (ConfigOption.toValidator scoreLimitBounds (Just >> ScoreLimitChange)))
 
 
 scoreLimitOption : ConfigOption Model (Maybe Int) Msg msg
@@ -116,7 +125,7 @@ scoreLimitOption =
     { id = "score-limit-option"
     , toggleable = Toggleable.maybe 25
     , primaryEditor =
-        \_ -> ConfigOption.maybeEditor (ConfigOption.intEditor Strings.ScoreLimit [ 3 |> WlA.min, 10000 |> WlA.max ])
+        \_ -> ConfigOption.maybeEditor (ConfigOption.intEditor Strings.ScoreLimit (ConfigOption.toMinMaxAttrs scoreLimitBounds))
     , extraEditor = ConfigOption.noExtraEditor
     , set = ConfigOption.wrappedSetter ScoreLimitChange
     , messages = \_ -> [ Message.info Strings.ScoreLimitDescription ]

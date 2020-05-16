@@ -59,13 +59,15 @@ export class Sockets {
   public delete(gameCode: GameCode, id: User.Id, socket: WebSocket): boolean {
     const users = this.users(gameCode);
     const sockets = users.get(id);
-    const didDelete = sockets !== undefined ? sockets.delete(socket) : false;
-    if (didDelete && sockets !== undefined && sockets.size < 1) {
-      users.delete(id);
-      if (users.size < 1) {
-        this.sockets.delete(gameCode);
+    if (sockets !== undefined) {
+      sockets.delete(socket);
+      if (sockets.size < 1) {
+        users.delete(id);
+        if (users.size < 1) {
+          this.sockets.delete(gameCode);
+        }
+        return true;
       }
-      return true;
     }
     return false;
   }
@@ -92,24 +94,28 @@ export class SocketManager {
   private readonly errorWSHandler = <T>(
     socket: WebSocket,
     fn: (data: WebSocket.Data) => Promise<T>
-  ): ((data: WebSocket.Data) => Promise<T | void>) => async data => {
+  ): ((data: WebSocket.Data) => Promise<T | void>) => async (data) => {
     try {
       return await fn(data);
     } catch (error) {
-      const dataDescription =
-        typeof data === "string" ? data : `(${typeof data})`;
-      if (error instanceof MassiveDecksError) {
-        const details = error.details();
-        Logging.logger.warn("WebSocket bad request:", {
-          data: dataDescription,
-          details,
-          errorMessage: error.message
-        });
-        socket.send(JSON.stringify(details));
-      } else {
-        Logging.logException("WebSocket error:", error, dataDescription);
-        socket.send(JSON.stringify({ error: "InternalServerError" }));
-        socket.close();
+      try {
+        const dataDescription =
+          typeof data === "string" ? data : `(${typeof data})`;
+        if (error instanceof MassiveDecksError) {
+          const details = error.details();
+          Logging.logger.warn("WebSocket bad request:", {
+            data: dataDescription,
+            details,
+            errorMessage: error.message,
+          });
+          socket.send(JSON.stringify(details));
+        } else {
+          Logging.logException("WebSocket error:", error, dataDescription);
+          socket.send(JSON.stringify({ error: "InternalServerError" }));
+          socket.close();
+        }
+      } catch (error) {
+        Logging.logException("Error resolving WebSocket error:", error);
       }
       return;
     }
@@ -120,7 +126,7 @@ export class SocketManager {
     let auth: Token.Claims | null = null;
     socket.on(
       "message",
-      this.errorWSHandler(socket, async data => {
+      this.errorWSHandler(socket, async (data) => {
         if (typeof data !== "string") {
           throw new InvalidActionError("Invalid message.");
         }
@@ -130,7 +136,7 @@ export class SocketManager {
             auth = await Authenticate.handle(server, validated, gameCode);
             const uid = auth.uid;
             sockets.add(auth.gc, uid, socket);
-            await Change.apply(server, auth.gc, lobby => {
+            await Change.apply(server, auth.gc, (lobby) => {
               let hand = undefined;
               let play = undefined;
               if (lobby.game !== undefined) {
@@ -139,10 +145,10 @@ export class SocketManager {
                   hand = player.hand;
                 }
                 const potentialPlay = lobby.game.round.plays.find(
-                  play => play.playedBy === uid
+                  (play) => play.playedBy === uid
                 );
                 if (potentialPlay !== undefined) {
-                  play = potentialPlay.play.map(card => card.id);
+                  play = potentialPlay.play.map((card) => card.id);
                 }
               }
 
@@ -154,46 +160,49 @@ export class SocketManager {
                   Event.targetOnly(
                     Sync.of(Lobby.censor(lobby), hand, play),
                     uid
-                  )
-                ]
+                  ),
+                ],
               };
             });
             Logging.logger.info("WebSocket connect:", {
               user: auth.uid,
-              authenticate: validated
+              authenticate: validated,
             });
           } else {
             throw new NotAuthenticatedError();
           }
         } else {
           const claims = auth;
-          await Change.apply(server, auth.gc, lobby =>
+          await Change.apply(server, auth.gc, (lobby) =>
             Action.handle(claims, lobby, validated, server)
           );
           Logging.logger.info("WebSocket receive:", {
             user: auth.uid,
-            action: validated
+            action: validated,
           });
         }
       })
     );
-    socket.on("close", async () => {
-      if (auth) {
-        const uid = auth.uid;
-        Logging.logger.info("WebSocket disconnect:", { user: auth.uid });
-        if (sockets.delete(auth.gc, uid, socket)) {
-          await Change.apply(server, auth.gc, lobby => ({
-            lobby,
-            timeouts: [
-              {
-                timeout: UserDisconnect.of(uid),
-                after: server.config.timeouts.disconnectionGracePeriod
-              }
-            ]
-          }));
-          Logging.logger.info("User disconnect:", { user: auth.uid });
+    socket.on(
+      "close",
+      this.errorWSHandler(socket, async () => {
+        if (auth) {
+          const uid = auth.uid;
+          Logging.logger.info("WebSocket disconnect:", { user: auth.uid });
+          if (sockets.delete(auth.gc, uid, socket)) {
+            await Change.apply(server, auth.gc, (lobby) => ({
+              lobby,
+              timeouts: [
+                {
+                  timeout: UserDisconnect.of(uid),
+                  after: server.config.timeouts.disconnectionGracePeriod,
+                },
+              ],
+            }));
+            Logging.logger.info("User disconnect:", { user: auth.uid });
+          }
         }
-      }
-    });
+      })
+    );
   }
 }

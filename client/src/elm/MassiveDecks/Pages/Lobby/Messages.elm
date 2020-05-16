@@ -1,6 +1,7 @@
 module MassiveDecks.Pages.Lobby.Messages exposing (Msg(..))
 
 import MassiveDecks.Animated as Animated
+import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError exposing (MdError)
@@ -29,5 +30,7 @@ type Msg
     | TryCast Auth
     | Copy String
     | ChangeSection (Maybe Section)
+    | SetGameMenuState Menu.State
+    | SetUserMenuState User.Id Menu.State
     | EndGame
     | NoOp

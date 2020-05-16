@@ -66,7 +66,7 @@ export class Complete extends Base<"Complete"> {
   public readonly czar: Card.Id;
 
   public get players(): Set<User.Id> {
-    return new Set(wu(this.plays).map(play => play.playedBy));
+    return new Set(wu(this.plays).map((play) => play.playedBy));
   }
 
   public readonly call: Card.Call;
@@ -101,8 +101,8 @@ export class Complete extends Base<"Complete"> {
       call: this.call,
       winner: this.winner,
       plays: this.playsObj(),
-      playOrder: this.plays.map(play => play.playedBy),
-      startedAt: this.startedAt
+      playOrder: this.plays.map((play) => play.playedBy),
+      startedAt: this.startedAt,
     };
   }
 
@@ -111,7 +111,9 @@ export class Complete extends Base<"Complete"> {
     for (const roundPlay of this.plays) {
       obj[roundPlay.id] = {
         playedBy: roundPlay.playedBy,
-        ...(roundPlay.likes.length > 0 ? { likes: roundPlay.likes.length } : {})
+        ...(roundPlay.likes.length > 0
+          ? { likes: roundPlay.likes.length }
+          : {}),
       };
     }
     return obj;
@@ -122,7 +124,9 @@ export class Complete extends Base<"Complete"> {
     for (const roundPlay of this.plays) {
       obj[roundPlay.playedBy] = {
         play: roundPlay.play,
-        ...(roundPlay.likes.length > 0 ? { likes: roundPlay.likes.length } : {})
+        ...(roundPlay.likes.length > 0
+          ? { likes: roundPlay.likes.length }
+          : {}),
       };
     }
     return obj;
@@ -135,7 +139,7 @@ export class Complete extends Base<"Complete"> {
       czar: this.czar,
       call: this.call,
       plays: this.plays,
-      winner: this.winner
+      winner: this.winner,
     };
   }
 }
@@ -149,7 +153,7 @@ export class Judging extends Base<"Judging"> implements Timed {
   public readonly czar: Card.Id;
 
   public get players(): Set<User.Id> {
-    return new Set(wu(this.plays).map(play => play.playedBy));
+    return new Set(wu(this.plays).map((play) => play.playedBy));
   }
 
   public readonly call: Card.Call;
@@ -188,7 +192,7 @@ export class Judging extends Base<"Judging"> implements Timed {
       call: this.call,
       plays: Array.from(this.revealedPlays()),
       ...(this.timedOut ? { timedOut: true } : {}),
-      startedAt: this.startedAt
+      startedAt: this.startedAt,
     };
   }
 
@@ -196,7 +200,7 @@ export class Judging extends Base<"Judging"> implements Timed {
     for (const roundPlay of this.plays) {
       yield {
         id: roundPlay.id,
-        play: roundPlay.play
+        play: roundPlay.play,
       };
     }
   }
@@ -208,7 +212,7 @@ export class Judging extends Base<"Judging"> implements Timed {
       czar: this.czar,
       call: this.call,
       plays: this.plays,
-      timedOut: this.timedOut
+      timedOut: this.timedOut,
     };
   }
 }
@@ -222,7 +226,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   public readonly czar: Card.Id;
 
   public get players(): Set<User.Id> {
-    return new Set(wu(this.plays).map(play => play.playedBy));
+    return new Set(wu(this.plays).map((play) => play.playedBy));
   }
 
   public readonly call: Card.Call;
@@ -265,14 +269,14 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       call: this.call,
       plays: Array.from(this.potentiallyRevealedPlays()),
       ...(this.timedOut ? { timedOut: true } : {}),
-      startedAt: this.startedAt
+      startedAt: this.startedAt,
     };
   }
 
   private *potentiallyRevealedPlays(): Iterable<Play.PotentiallyRevealed> {
     for (const roundPlay of this.plays) {
       const potentiallyRevealed: Play.PotentiallyRevealed = {
-        id: roundPlay.id
+        id: roundPlay.id,
       };
       if (roundPlay.revealed) {
         potentiallyRevealed.play = roundPlay.play;
@@ -288,7 +292,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       czar: this.czar,
       call: this.call,
       plays: this.plays,
-      timedOut: this.timedOut
+      timedOut: this.timedOut,
     };
   }
 }
@@ -333,13 +337,13 @@ export class Playing extends Base<"Playing"> implements Timed {
 
   public waitingFor(): Set<User.Id> | null {
     const done = new Set(
-      wu(this.players).filter(p => !this.hasPlayed().has(p))
+      wu(this.players).filter((p) => !this.hasPlayed().has(p))
     );
     return done.size > 0 ? done : null;
   }
 
   private hasPlayed(): Set<User.Id> {
-    return new Set(wu(this.plays).map(play => play.playedBy));
+    return new Set(wu(this.plays).map((play) => play.playedBy));
   }
 
   public public(): PublicRound.Playing {
@@ -349,9 +353,9 @@ export class Playing extends Base<"Playing"> implements Timed {
       czar: this.czar,
       players: Array.from(this.players),
       call: this.call,
-      played: this.plays.map(play => play.playedBy),
+      played: this.plays.map((play) => play.playedBy),
       ...(this.timedOut ? { timedOut: true } : {}),
-      startedAt: this.startedAt
+      startedAt: this.startedAt,
     };
   }
 
@@ -363,7 +367,7 @@ export class Playing extends Base<"Playing"> implements Timed {
       players: Array.from(this.players),
       call: this.call,
       plays: this.plays,
-      timedOut: this.timedOut
+      timedOut: this.timedOut,
     };
   }
 }

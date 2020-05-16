@@ -50,7 +50,8 @@ export class Game {
     decks: Decks.Decks,
     rules: Rules.Rules,
     paused = false,
-    history: PublicRound.Complete[] | undefined = undefined
+    history: PublicRound.Complete[] | undefined = undefined,
+    winner: User.Id[] | undefined = undefined
   ) {
     this.round = round;
     this.history = history === undefined ? [] : history;
@@ -59,6 +60,7 @@ export class Game {
     this.decks = decks;
     this.rules = rules;
     this.paused = paused;
+    this.winner = winner;
   }
 
   public toJSON(): object {
@@ -70,6 +72,7 @@ export class Game {
       rules: this.rules,
       paused: this.paused,
       history: this.history,
+      winner: this.winner,
     };
   }
 
@@ -84,7 +87,8 @@ export class Game {
       },
       game.rules,
       game.paused,
-      game.history
+      game.history,
+      game.winner
     );
 
   private static activePlayer(

@@ -9,6 +9,7 @@ port module MassiveDecks.Ports exposing
     , serverSend
     , speechCommands
     , speechVoices
+    , startConfetti
     , storeSettings
     , tryCast
     )
@@ -50,3 +51,6 @@ port remoteControl : (Json.Value -> msg) -> Sub msg
 
 
 port languageChanged : String -> Cmd msg
+
+
+port startConfetti : String -> Cmd msg

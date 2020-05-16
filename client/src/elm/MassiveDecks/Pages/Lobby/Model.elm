@@ -13,10 +13,11 @@ module MassiveDecks.Pages.Lobby.Model exposing
 
 import Dict exposing (Dict)
 import MassiveDecks.Animated exposing (Animated)
+import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Time as Time
-import MassiveDecks.Models.MdError as MdError exposing (GameStateError, MdError)
+import MassiveDecks.Models.MdError exposing (GameStateError, MdError)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
@@ -29,7 +30,7 @@ to somewhere else with some payload.
 -}
 type Change
     = Stay Model
-    | AuthError GameCode MdError.AuthenticationError
+    | JoinError GameCode MdError
     | LeftGame GameCode User.LeaveReason
     | ConfigError Error
 
@@ -46,6 +47,8 @@ type alias Model =
     , inviteDialogOpen : Bool
     , timeAnchor : Maybe Time.Anchor
     , spectate : Spectate.Model
+    , gameMenu : Menu.State
+    , userMenu : Maybe User.Id
     }
 
 

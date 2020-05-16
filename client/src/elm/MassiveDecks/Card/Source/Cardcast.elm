@@ -6,18 +6,18 @@ module MassiveDecks.Card.Source.Cardcast exposing
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import Json.Decode as Json
 import MassiveDecks.Card.Source.Cardcast.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (DeckOrError)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
+import Material.TextField as TextField
 import Url.Builder as Url
-import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 methods : PlayCode -> Source.ExternalMethods msg
@@ -47,9 +47,9 @@ generalMethods =
 {- Private -}
 
 
-id : () -> String
+id : () -> Source.General
 id () =
-    "Cardcast"
+    Source.GCardcast
 
 
 name : () -> MdString
@@ -58,7 +58,7 @@ name () =
 
 
 empty : Shared -> Source.External
-empty shared =
+empty _ =
     "" |> playCode |> Source.Cardcast
 
 
@@ -81,23 +81,14 @@ problems (PlayCode pc) () =
         []
 
 
-editor : PlayCode -> Shared -> List DeckOrError -> (Source.External -> msg) -> Html msg
-editor (PlayCode pc) shared existing update =
+editor : PlayCode -> Shared -> List DeckOrError -> (Source.External -> msg) -> Maybe msg -> msg -> Html msg
+editor (PlayCode pc) shared existing update submit noOp =
     let
         notAlreadyInGame potential =
             case potential of
                 Source.Cardcast playCode ->
                     let
-                        notSameDeck deckOrError =
-                            let
-                                source =
-                                    case deckOrError of
-                                        Decks.D d ->
-                                            d.source
-
-                                        Decks.E e ->
-                                            e.source
-                            in
+                        notSameDeck { source } =
                             equals playCode source |> not
                     in
                     playCode |> Maybe.justIf (existing |> List.all notSameDeck)
@@ -111,14 +102,16 @@ editor (PlayCode pc) shared existing update =
     Html.div [ HtmlA.class "primary" ]
         [ Html.datalist [ HtmlA.id "cardcast-recent-decks" ]
             (shared.settings.settings.recentDecks |> List.filterMap notAlreadyInGame |> List.map recentDeck)
-        , Wl.textField
-            [ HtmlA.value pc
-            , WlA.outlined
-            , WlA.list "cardcast-recent-decks"
+        , TextField.view shared
+            Strings.CardcastPlayCode
+            TextField.Text
+            pc
+            [ HtmlA.list "cardcast-recent-decks"
             , HtmlE.onInput (playCode >> Source.Cardcast >> update)
-            , Strings.CardcastPlayCode |> Lang.label shared
+            , HtmlE.keyCode
+                |> Json.map (\k -> submit |> Maybe.andThen (Maybe.justIf (k == 13)) |> Maybe.withDefault noOp)
+                |> HtmlE.on "keydown"
             ]
-            [ Html.span [ WlA.textFieldSlot WlA.BeforeText ] [ logoInternal ] ]
         ]
 
 
@@ -126,12 +119,19 @@ details : PlayCode -> Shared -> Source.Details
 details (PlayCode pc) shared =
     { name = (() |> name |> Lang.string shared) ++ " " ++ pc
     , url = Just (Url.crossOrigin "https://www.cardcastgame.com" [ "browse", "deck", pc ] [])
+    , author = Nothing
+    , translator = Nothing
+    , language = Nothing
     }
 
 
-tooltip : PlayCode -> Shared -> Maybe ( String, Html msg )
-tooltip (PlayCode pc) _ =
-    ( "cardcast-" ++ pc, Html.span [] [ logoInternal, Html.text pc ] ) |> Just
+tooltip : PlayCode -> (String -> List (Html msg) -> Html msg) -> Maybe ( String, Html msg )
+tooltip (PlayCode pc) tooltipRender =
+    let
+        forId =
+            "cardcast-" ++ pc
+    in
+    ( forId, [ Html.p [ HtmlA.class "play-code" ] [ logoInternal, Html.text pc ] ] |> tooltipRender forId ) |> Just
 
 
 logo : () -> Maybe (Html msg)

@@ -1,0 +1,51 @@
+@use "../../_colors";
+
+#invite-dialog {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  min-width: min-content;
+
+  z-index: 200000;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  overflow: hidden;
+
+  background-color: transparentize(colors.$secondary-background, 0.2);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 200ms ease-in;
+
+  #invite-link-field {
+    border: 0;
+    border-bottom: 2px solid colors.$secondary-background;
+    flex-grow: 1;
+    text-align: center;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &.open {
+    opacity: 1;
+    bottom: 0;
+    transition: opacity 200ms ease-out;
+    pointer-events: all;
+  }
+
+  .mdc-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 20em;
+  }
+}

@@ -15,7 +15,7 @@ pack =
     { code = "en"
     , name = English
     , translate = translate
-    , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn
+    , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
     }
 
 
@@ -119,6 +119,12 @@ translate mdString =
 
         YouWereKicked ->
             [ Text "You were kicked from the game." ]
+
+        ScrollToTop ->
+            [ Text "Scroll to the top." ]
+
+        Copy ->
+            [ Text "Copy" ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -300,6 +306,9 @@ translate mdString =
         MissingLanguage ->
             [ Text "Don’t see your language? ", Ref TranslationBeg ]
 
+        AutonymFormat { autonym } ->
+            [ Text "(", Text autonym, Text ")" ]
+
         TranslationBeg ->
             [ Text "Help translate "
             , Ref MassiveDecks
@@ -403,6 +412,18 @@ translate mdString =
 
         Deck ->
             [ Text "Deck" ]
+
+        DeckSource ->
+            [ Ref Deck, Text " Source" ]
+
+        DeckLanguage { language } ->
+            [ Text "in ", Ref language ]
+
+        DeckAuthor { author } ->
+            [ Text "by ", Text author ]
+
+        DeckTranslator { translator } ->
+            [ Text "translation by ", Text translator ]
 
         StillPlaying ->
             [ Text "Playing" ]
@@ -622,7 +643,7 @@ translate mdString =
             [ Text "End the game now." ]
 
         ReturnViewToGame ->
-            [ Text "Return" ]
+            [ Text "Return to game" ]
 
         ReturnViewToGameDescription ->
             [ Text "Return to the main game view." ]
@@ -691,6 +712,13 @@ translate mdString =
             , Text " but you only have "
             , Text (have |> String.fromInt)
             , Text "."
+            ]
+
+        AddBlankCards { amount } ->
+            [ Text "Add "
+            , amount |> String.fromInt |> Text
+            , Text " blank "
+            , Ref (Plural { singular = Response, amount = Just amount })
             ]
 
         AddDeck ->
@@ -863,6 +891,15 @@ translate mdString =
 
         TheirChanges ->
             [ Text "Their Changes" ]
+
+        ConfigurationDisabledWhileInGame ->
+            [ Text "While the game in progress, you can't change the configuration." ]
+
+        ConfigurationDisabledIfNotPrivileged ->
+            [ Text "You can't change the configuration of this game." ]
+
+        ConfigureNextGame ->
+            [ Text "Configure Next Game" ]
 
         -- Game
         SubmitPlay ->

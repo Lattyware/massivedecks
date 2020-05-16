@@ -32,7 +32,7 @@ class RevealAction extends Actions.Implementation<
   ) => {
     const lobbyRound = lobby.game.round;
     if (lobbyRound.verifyStage<Round.Revealing>(action, "Revealing")) {
-      const play = lobbyRound.plays.find(play => play.id === action.play);
+      const play = lobbyRound.plays.find((play) => play.id === action.play);
       if (play === undefined) {
         throw new InvalidActionError("Given play doesn't exist.");
       }
@@ -55,7 +55,7 @@ class RevealAction extends Actions.Implementation<
       return {
         lobby,
         events: [Event.targetAll(PlayRevealed.of(play.id, play.play))],
-        timeouts: timeouts
+        timeouts: timeouts,
       };
     } else {
       return {};

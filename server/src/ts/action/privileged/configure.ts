@@ -6,7 +6,6 @@ import { ConfigEditConflictError } from "../../errors/action-execution-error";
 import { InvalidActionError } from "../../errors/validation";
 import * as Event from "../../event";
 import * as Configured from "../../events/lobby-event/configured";
-import * as Sources from "../../games/cards/sources";
 import * as Rules from "../../games/rules";
 import * as HouseRules from "../../games/rules/houseRules";
 import * as Rando from "../../games/rules/rando";

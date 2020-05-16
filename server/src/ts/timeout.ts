@@ -57,7 +57,7 @@ export async function handle(server: ServerState): Promise<void> {
     await Change.apply(
       server,
       lobby,
-      lobbyState => handler(server, timeout, lobby, lobbyState),
+      (lobbyState) => handler(server, timeout, lobby, lobbyState),
       id
     );
   }

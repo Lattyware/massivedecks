@@ -135,13 +135,13 @@ decks d =
 
 
 deckOrError : Decks.DeckOrError -> Json.Value
-deckOrError de =
-    case de of
-        Decks.D d ->
-            deck d
+deckOrError d =
+    case d.result of
+        Ok s ->
+            deck { source = d.source, summary = s }
 
-        Decks.E e ->
-            deckError e
+        Err r ->
+            deckError { source = d.source, reason = r }
 
 
 deck : Decks.Deck -> Json.Value
@@ -327,8 +327,8 @@ source s =
         Source.Cardcast (Cardcast.PlayCode playCode) ->
             Json.object [ ( "source", "Cardcast" |> Json.string ), ( "playCode", playCode |> Json.string ) ]
 
-        Source.BuiltIn (BuiltIn.Id id) ->
-            Json.object [ ( "source", "BuiltIn" |> Json.string ), ( "id", id |> Json.string ) ]
+        Source.BuiltIn id ->
+            Json.object [ ( "source", "BuiltIn" |> Json.string ), ( "id", id |> BuiltIn.toString |> Json.string ) ]
 
 
 language : Language -> Json.Value

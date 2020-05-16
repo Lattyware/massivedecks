@@ -1,17 +1,14 @@
 module MassiveDecks.Game.Action exposing (actions, view)
 
-import FontAwesome.Icon exposing (Icon)
+import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
-import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action.Model exposing (..)
 import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
-import MassiveDecks.Strings.Languages as Lang
-import Weightless.Attributes as WlA
+import Material.Fab as Fab
 
 
 actions : List Action
@@ -23,14 +20,14 @@ actions =
 -}
 blocking : List (Html.Attribute msg)
 blocking =
-    [ HtmlA.class "important" ]
+    [ HtmlA.class "blocking" ]
 
 
 {-| Style for an action that doesn't block the game.
 -}
 normal : List (Html.Attribute msg)
 normal =
-    [ WlA.inverted, WlA.outlined ]
+    [ HtmlA.class "normal" ]
 
 
 view : (Msg -> msg) -> Shared -> Maybe Action -> Action -> Html msg
@@ -53,16 +50,12 @@ view wrap shared visible action =
                 Advance ->
                     IconView Icon.forward blocking Strings.AdvanceRound Game.AdvanceRound
     in
-    Components.floatingActionButton
-        (List.concat
-            [ [ title |> Lang.title shared
-              , onClick |> wrap |> HtmlE.onClick
-              , HtmlA.classList [ ( "action", True ), ( "exited", visible /= Just action ) ]
-              ]
-            , attrs
-            ]
-        )
-        icon
+    Fab.view shared
+        Fab.Normal
+        title
+        (icon |> Icon.present)
+        (onClick |> wrap |> Just)
+        (HtmlA.classList [ ( "action", True ), ( "exited", visible /= Just action ) ] :: attrs)
 
 
 type alias IconView msg =

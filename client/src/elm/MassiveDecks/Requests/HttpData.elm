@@ -13,7 +13,6 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
 import MassiveDecks.Error as Error
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Route exposing (Route)
@@ -21,10 +20,10 @@ import MassiveDecks.Requests.HttpData.Messages exposing (..)
 import MassiveDecks.Requests.HttpData.Model exposing (..)
 import MassiveDecks.Requests.Request as Request exposing (Request)
 import MassiveDecks.Strings as Strings exposing (MdString)
-import MassiveDecks.Strings.Languages as Lang
+import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList exposing (NeList(..))
+import Material.IconButton as IconButton
 import Time
-import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 {-| Set up the empty HttpData and send a request to load the data.
@@ -111,31 +110,16 @@ view shared route emptyContent viewResult model =
 {-| Show a refresh button for the data.
 -}
 refreshButton : Shared -> HttpData error result -> Html (Msg error result)
-refreshButton shared model =
+refreshButton shared { loading, data } =
     let
-        title =
-            [ Strings.Refresh |> Lang.title shared ]
-
-        onClick =
-            if not model.loading then
-                [ HtmlE.onClick Pull ]
+        applyStyle =
+            if loading then
+                Icon.styled [ Icon.spin ]
 
             else
-                []
-
-        style =
-            [ WlA.flat
-            , WlA.fab
-            , WlA.inverted
-            ]
-
-        spin =
-            if model.loading then
-                [ Icon.spin ]
-
-            else
-                []
+                identity
     in
-    Wl.button
-        (List.concat [ style, title, onClick ])
-        [ Icon.viewStyled spin Icon.sync ]
+    IconButton.view shared
+        Strings.Refresh
+        (NeList (Icon.sync |> Icon.present |> applyStyle) [])
+        (Pull |> Maybe.justIf (not loading))

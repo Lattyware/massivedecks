@@ -25,7 +25,7 @@ export abstract class LobbyNotFoundError extends Errors.MassiveDecksError<
   public details: () => Details = () => ({
     error: "LobbyNotFound",
     gameCode: this.gameCode,
-    reason: this.reason
+    reason: this.reason,
   });
 }
 

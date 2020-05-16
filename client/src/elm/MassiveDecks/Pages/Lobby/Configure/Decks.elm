@@ -30,9 +30,11 @@ import MassiveDecks.Settings as Settings
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
-import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList exposing (NeList(..))
 import MassiveDecks.Util.Result as Result
+import Material.IconButton as IconButton
+import Paper.Tooltip as Tooltip
 import Svg.Attributes as SvgA
 
 
@@ -74,6 +76,9 @@ update shared msg model =
         Remove index ->
             ( model, shared, Actions.configure (removeDeck index) )
 
+        NoOp ->
+            ( model, shared, Cmd.none )
+
 
 {-| View the editor/viewer for decks.
 -}
@@ -83,8 +88,7 @@ view _ { wrap, shared, model, remote, canEdit } =
         hint =
             if canEdit then
                 Components.linkButton
-                    [ shared |> Lang.recommended |> Add |> wrap |> HtmlE.onClick
-                    ]
+                    [ shared |> Lang.recommended |> Add |> wrap |> HtmlE.onClick ]
                     [ Strings.NoDecksHint |> Lang.html shared ]
 
             else
@@ -138,7 +142,7 @@ view _ { wrap, shared, model, remote, canEdit } =
 
 addDeck : Source.External -> Json.Patch
 addDeck source =
-    [ Json.Add [ "decks", "-" ] (D (Deck source Nothing) |> Encoders.deckOrError) ]
+    [ Json.Add [ "decks", "-" ] (DeckOrError source (Ok Nothing) |> Encoders.deckOrError) ]
 
 
 removeDeck : Int -> Json.Patch
@@ -175,21 +179,21 @@ all =
 
 getDeck : DeckOrError -> Maybe Deck
 getDeck deckOrError =
-    case deckOrError of
-        D deck ->
-            Just deck
+    case deckOrError.result of
+        Ok summary ->
+            Deck deckOrError.source summary |> Just
 
-        E _ ->
+        Err _ ->
             Nothing
 
 
 summaryFor : DeckOrError -> Maybe ( Source.External, Source.Summary )
 summaryFor deckOrError =
-    case deckOrError of
-        D deck ->
-            deck.summary |> Maybe.map (\s -> ( deck.source, s ))
+    case deckOrError.result of
+        Ok summary ->
+            summary |> Maybe.map (\s -> ( deckOrError.source, s ))
 
-        E _ ->
+        Err _ ->
             Nothing
 
 
@@ -199,33 +203,28 @@ addDeckWidget wrap shared existing deckToAdd =
         submit =
             deckToAdd |> submitDeckAction wrap existing
     in
-    Html.form
-        [ submit |> Result.map HtmlE.onSubmit |> Result.withDefault HtmlA.nothing ]
-        [ Form.section
-            shared
-            "add-deck"
-            (Html.div [ HtmlA.class "multipart" ]
-                (List.concat
-                    [ Source.generalEditor shared existing deckToAdd (Update >> wrap)
-                    , [ Components.floatingActionButton
-                            [ HtmlA.type_ "submit"
-                            , Result.isError submit |> HtmlA.disabled
-                            , Strings.AddDeck |> Lang.title shared
-                            ]
-                            Icon.plus
-                      ]
-                    ]
-                )
+    Form.section
+        shared
+        "add-deck"
+        (Html.div [ HtmlA.class "multipart" ]
+            (List.concat
+                [ Source.generalEditor shared existing deckToAdd (Update >> wrap) (submit |> Result.toMaybe) (NoOp |> wrap)
+                , [ IconButton.view shared
+                        Strings.AddDeck
+                        (NeList (Icon.plus |> Icon.present) [])
+                        (submit |> Result.toMaybe)
+                  ]
+                ]
             )
-            (submit |> Result.error |> Maybe.withDefault [])
-        ]
+        )
+        (submit |> Result.error |> Maybe.withDefault [])
 
 
 submitDeckAction : (Msg -> msg) -> List DeckOrError -> Source.External -> Result (List (Message msg)) msg
 submitDeckAction wrap existing deckToAdd =
     let
         potentialProblems =
-            if List.any (getSource >> Source.equals deckToAdd) existing then
+            if List.any (.source >> Source.equals deckToAdd) existing then
                 [ Strings.DeckAlreadyAdded |> Message.info ]
 
             else
@@ -238,26 +237,19 @@ submitDeckAction wrap existing deckToAdd =
         potentialProblems |> Result.Err
 
 
-getSource : DeckOrError -> Source.External
-getSource deckOrError =
-    case deckOrError of
-        D deck ->
-            deck.source
-
-        E error ->
-            error.source
-
-
 viewDeck : (Msg -> msg) -> Shared -> Bool -> Int -> DeckOrError -> Html msg
 viewDeck wrap shared canEdit index deckOrError =
     let
-        ( deckSource, deckSummary, failureReason ) =
-            case deckOrError of
-                D { source, summary } ->
-                    ( source, summary, Nothing )
+        deckSource =
+            deckOrError.source
 
-                E { source, reason } ->
-                    ( source, Nothing, Just reason )
+        ( deckSummary, failureReason ) =
+            case deckOrError.result of
+                Ok summary ->
+                    ( summary, Nothing )
+
+                Err reason ->
+                    ( Nothing, Just reason )
 
         ( attr, columns ) =
             case deckSummary of
@@ -299,16 +291,15 @@ name :
 name wrap shared canEdit index source loading maybeError details =
     let
         removeButton =
-            Components.iconButton
-                [ index |> Remove |> wrap |> HtmlE.onClick
-                , Strings.RemoveDeck |> Lang.title shared
-                , HtmlA.class "remove-button"
-                ]
-                Icon.trash
+            IconButton.view
+                shared
+                Strings.RemoveDeck
+                (NeList (Icon.trash |> Icon.present) [])
+                (index |> Remove |> wrap |> Just)
                 |> Maybe.justIf canEdit
 
         ( maybeId, tooltip ) =
-            source |> Source.Ex |> Source.tooltip shared |> Maybe.decompose
+            source |> Source.Ex |> Source.tooltip shared Tooltip.Right details |> Maybe.decompose
 
         attrs =
             maybeId |> Maybe.map (\id -> [ HtmlA.id id ]) |> Maybe.withDefault []

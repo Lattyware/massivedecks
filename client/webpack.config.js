@@ -1,11 +1,11 @@
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const path = require("path");
-const inliner = require("sass-inline-svg");
 const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const sass = require("sass");
+const ClosurePlugin = require("closure-webpack-plugin");
 
 module.exports = (env, argv) => {
   // WebStorm doesn't give any arguments, causing this to blow up without the check.
@@ -33,31 +33,28 @@ module.exports = (env, argv) => {
     // Load CSS to inline styles.
     {
       loader: "css-loader",
-      options: { sourceMap: dev, importLoaders: 2 },
+      options: { sourceMap: dev },
     },
-    // Transform CSS for compatibility.
+    // // Transform CSS for compatibility.
+    // {
+    //   loader: "postcss-loader",
+    //   options: {
+    //     sourceMap: dev,
+    //   },
+    // },
+    // Allow relative URLs.
     {
-      loader: "postcss-loader",
-      options: {
-        sourceMap: dev,
-        ident: "postcss",
-        plugins: (loader) => [
-          require("postcss-import")({ root: loader.resourcePath }),
-          require("postcss-preset-env")(),
-          require("cssnano")(),
-        ],
-      },
+      loader: "resolve-url-loader",
+      options: { sourceMap: dev },
     },
     // Load SASS to CSS.
     {
       loader: "sass-loader",
       options: {
-        sourceMap: dev,
+        implementation: sass,
+        sourceMap: true,
         sassOptions: {
           includePaths: ["node_modules"],
-          functions: {
-            "inline-svg": inliner("./", { encodingFormat: "uri" }),
-          },
         },
       },
     },
@@ -258,47 +255,14 @@ module.exports = (env, argv) => {
           },
         }),
         // Elm - we can do otherwise dangerous optimisation thanks to the purity.
-        new UglifyJsPlugin({
-          test: /assets\/scripts\/massive-decks\..*\.js$/,
-          minify: (file, _) => {
-            const uglify = require("uglify-js");
-            const { error, map, code, warnings } = uglify.minify(file, {
-              compress: {
-                pure_funcs: [
-                  "F2",
-                  "F3",
-                  "F4",
-                  "F5",
-                  "F6",
-                  "F7",
-                  "F8",
-                  "F9",
-                  "A2",
-                  "A3",
-                  "A4",
-                  "A5",
-                  "A6",
-                  "A7",
-                  "A8",
-                  "A9",
-                ],
-                pure_getters: true,
-                keep_fargs: false,
-                unsafe_comps: true,
-                unsafe: true,
-              },
-              mangle: false,
-            });
-
-            if (error) {
-              return { error, map, code, warnings };
-            }
-
-            return uglify.minify(code, {
-              mangle: true,
-            });
+        new ClosurePlugin(
+          {
+            mode: "STANDARD",
+            platform: "javascript",
+            test: /assets\/scripts\/massive-decks\..*\.js$/,
           },
-        }),
+          {}
+        ),
       ],
     },
     devServer: {

@@ -17,6 +17,6 @@ export class InvalidActionError extends Errors.MassiveDecksError<Details> {
 
   public details: () => Details = () => ({
     error: "InvalidAction",
-    reason: this.reason
+    reason: this.reason,
   });
 }

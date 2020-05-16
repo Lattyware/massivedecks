@@ -33,12 +33,12 @@ export abstract class TaskBase<T> implements Task {
     try {
       work = await this.begin(server);
     } catch (error) {
-      await Change.apply(server, this.gameCode, lobby =>
+      await Change.apply(server, this.gameCode, (lobby) =>
         this.resolveError(lobby, error, server)
       );
       return;
     }
-    await Change.apply(server, this.gameCode, lobby =>
+    await Change.apply(server, this.gameCode, (lobby) =>
       this.resolve(lobby, work, server)
     );
   }

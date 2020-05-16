@@ -1,16 +1,27 @@
 module MassiveDecks.Card.Source.Model exposing
-    ( BuiltInDeck
-    , BuiltInInfo
-    , Details
+    ( Details
     , External(..)
+    , General(..)
     , Info
     , LoadFailureReason(..)
     , Source(..)
     , Summary
+    , generalDecoder
+    , generalFromString
+    , generalToString
     )
 
+import Json.Decode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Cardcast.Model as Cardcast
+import MassiveDecks.Strings.Languages.Model exposing (Language)
+
+
+{-| A representation of a source in general terms, not a specific deck.
+-}
+type General
+    = GBuiltIn
+    | GCardcast
 
 
 {-| Details on where game data came from.
@@ -53,6 +64,9 @@ type alias Summary =
 type alias Details =
     { name : String
     , url : Maybe String
+    , author : Maybe String
+    , language : Maybe Language
+    , translator : Maybe String
     }
 
 
@@ -66,14 +80,49 @@ type LoadFailureReason
 {-| Information about what sources are available from the server.
 -}
 type alias Info =
-    { builtIn : Maybe BuiltInInfo
+    { builtIn : Maybe BuiltIn.Info
     , cardcast : Bool
     }
 
 
-type alias BuiltInInfo =
-    { decks : List BuiltInDeck }
+{-| Get a string name from a general source.
+-}
+generalToString : General -> String
+generalToString source =
+    case source of
+        GBuiltIn ->
+            "BuiltIn"
+
+        GCardcast ->
+            "Cardcast"
 
 
-type alias BuiltInDeck =
-    { name : String, id : BuiltIn.Id }
+{-| Get a general source by a string name.
+-}
+generalFromString : String -> Maybe General
+generalFromString sourceName =
+    case sourceName of
+        "BuiltIn" ->
+            Just GBuiltIn
+
+        "Cardcast" ->
+            Just GCardcast
+
+        _ ->
+            Nothing
+
+
+{-| A Json decoder for general sources.
+-}
+generalDecoder : Json.Decoder General
+generalDecoder =
+    let
+        internal name =
+            case generalFromString name of
+                Just general ->
+                    Json.succeed general
+
+                Nothing ->
+                    Json.fail ("Unknown source '" ++ name ++ "'.")
+    in
+    Json.string |> Json.andThen internal

@@ -31,6 +31,8 @@ type alias Model =
     , completeRound : Maybe Round.Complete
     , viewingHistory : Bool
     , time : Maybe Time
+    , helpVisible : Bool
+    , confetti : Bool
     }
 
 
@@ -45,6 +47,8 @@ emptyModel game =
     , completeRound = Nothing
     , viewingHistory = False
     , time = Nothing
+    , helpVisible = False
+    , confetti = False
     }
 
 

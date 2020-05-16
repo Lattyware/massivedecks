@@ -8,4 +8,4 @@ module MassiveDecks.Version exposing (version)
 -}
 version : String
 version =
-    "dev"
+    "unknown-dev"

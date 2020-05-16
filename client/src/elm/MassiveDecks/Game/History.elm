@@ -1,37 +1,35 @@
 module MassiveDecks.Game.History exposing (view)
 
 import Dict exposing (Dict)
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Response as Response
-import MassiveDecks.Components as Components
 import MassiveDecks.Game.Messages exposing (Msg(..))
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
-import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList as NeList
+import Material.IconButton as IconButton
 
 
 view : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> String -> List Round.Complete -> List (Html msg)
 view wrap shared config users name history =
     [ Html.div [ HtmlA.id "top-content" ]
         [ Html.div [ HtmlA.id "minor-actions" ]
-            [ Components.iconButton
-                [ HtmlA.id "return-to-game-button"
-                , Strings.ViewGameHistoryAction |> Lang.title shared
-                , ToggleHistoryView |> wrap |> HtmlE.onClick
-                ]
-                Icon.arrowLeft
+            [ IconButton.view shared
+                Strings.ViewGameHistoryAction
+                (Icon.arrowLeft |> Icon.present |> NeList.just)
+                (ToggleHistoryView |> wrap |> Just)
             ]
         ]
     , Html.div [ HtmlA.id "history" ]

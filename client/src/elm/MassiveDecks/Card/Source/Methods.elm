@@ -74,7 +74,7 @@ type alias ExternalGeneralMethods msg =
 -}
 type alias IsSpecific general msg =
     { general
-        | tooltip : Shared -> Maybe ( String, Html msg )
+        | tooltip : (String -> List (Html msg) -> Html msg) -> Maybe ( String, Html msg )
         , defaultDetails : Shared -> Details
     }
 
@@ -83,7 +83,7 @@ type alias IsSpecific general msg =
 -}
 type alias IsSpecificExternal general msg =
     { general
-        | editor : Shared -> List DeckOrError -> (External -> msg) -> Html msg
+        | editor : Shared -> List DeckOrError -> (External -> msg) -> Maybe msg -> msg -> Html msg
         , equals : External -> Bool
         , problems : () -> List (Message msg)
     }
@@ -94,5 +94,5 @@ type alias IsSpecificExternal general msg =
 type alias IsGeneralExternal rest =
     { rest
         | empty : Shared -> External
-        , id : () -> String
+        , id : () -> General
     }

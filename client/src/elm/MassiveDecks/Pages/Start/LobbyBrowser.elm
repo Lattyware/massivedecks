@@ -9,7 +9,6 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import Http
 import MassiveDecks.Messages as Global
@@ -30,8 +29,7 @@ import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.List as List
 import MassiveDecks.Util.Maybe as Maybe
-import Weightless as Wl
-import Weightless.Attributes as WlA
+import Material.ListView as ListView
 
 
 {-| Set up the lobby browser.
@@ -163,10 +161,15 @@ stateGroup shared ( state, lobbies ) =
 lobby : Shared -> Summary -> ( String, Html Global.Msg )
 lobby shared data =
     ( data.gameCode |> GameCode.toString
-    , Wl.listItem
-        [ HtmlE.onClick (Route.Start { section = Start.Join (Just data.gameCode) } |> Global.ChangePage)
-        , WlA.clickable
-        ]
+    , ListView.viewItem
+        (ListView.Enabled (Route.Start { section = Start.Join (Just data.gameCode) } |> Global.ChangePage))
+        Nothing
+        ([ Html.span [ HtmlA.class "lobby-game-code" ]
+            [ Strings.GameCode { code = GameCode.toString data.gameCode } |> Lang.html shared ]
+         ]
+            |> Just
+        )
+        ([ Icon.viewStyled [ HtmlA.title "Join Game" ] Icon.signInAlt ] |> Just)
         [ Html.span [ HtmlA.class "lobby-name", Strings.LobbyRequiresPassword |> Lang.title shared ]
             [ Html.text data.name
             , Html.text " "
@@ -175,12 +178,5 @@ lobby shared data =
                 |> Maybe.justIf data.password
                 |> Maybe.withDefault Html.nothing
             ]
-        , Html.span [ HtmlA.class "lobby-game-code" ]
-            [ Strings.GameCode { code = GameCode.toString data.gameCode } |> Lang.html shared ]
-        , Icon.viewStyled
-            [ HtmlA.title "Join Game"
-            , WlA.listItemSlot WlA.AfterItem
-            ]
-            Icon.signInAlt
         ]
     )

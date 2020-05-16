@@ -1,0 +1,93 @@
+@use "_colors";
+@use "_fonts";
+
+@use "~@material/card";
+@include card.core-styles;
+
+/// Support styling for Material Web Components.
+
+:root {
+  --mdc-theme-primary: #{colors.$primary};
+  --mdc-theme-on-primary: #{colors.$on-primary};
+
+  --mdc-theme-secondary: #{colors.$secondary};
+  --mdc-theme-on-secondary: #{colors.$on-secondary};
+
+  --mdc-theme-surface: #{colors.$card};
+  --mdc-theme-background: #{colors.$background};
+
+  --mdc-typography-font-family: #{fonts.$general};
+
+  --mdc-menu-item-height: 48px;
+
+  --mdc-icon-size: 0.75em;
+  --mdc-icon-button-size: 1.5em;
+}
+
+mwc-icon-button {
+  svg,
+  .fa-layers {
+    display: block !important;
+    width: 0.7em !important;
+    height: 0.7em !important;
+  }
+}
+
+.mdc-card {
+  padding: 1em;
+}
+
+mwc-select {
+  width: 100%;
+}
+
+mwc-textfield {
+  width: 100%;
+}
+
+mwc-fab {
+  line-height: 1;
+
+  &:focus,
+  &::-moz-focus-inner {
+    outline: none;
+    border: 0;
+  }
+
+  .svg-inline--fa {
+    margin-right: 0;
+  }
+
+  display: inline-flex;
+  justify-content: center;
+
+  transition: opacity 15ms linear 30ms,
+    transform 0.27s cubic-bezier(0, 0, 0.2, 1) 0ms;
+
+  &.exited {
+    transition: opacity 15ms linear 0.15s,
+      transform 0.18s cubic-bezier(0.4, 0, 1, 1) 0ms;
+
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  &.large {
+    --button-fab-size: 3em;
+    font-size: 1.2em;
+  }
+}
+
+.menu-anchor {
+  position: relative;
+
+  mwc-menu {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+a > mwc-list-item {
+  height: 48px;
+}

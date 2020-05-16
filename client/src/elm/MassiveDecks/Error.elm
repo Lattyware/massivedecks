@@ -16,8 +16,6 @@ import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Version exposing (version)
 import Url.Builder
-import Weightless as Wl
-import Weightless.Attributes as WlA
 
 
 {-| A view of an error.
@@ -28,32 +26,31 @@ view shared route error =
         model =
             render error
 
-        report =
+        rawReport =
             model.details |> Maybe.map (body shared route model.description)
 
-        reportView =
-            report |> Maybe.map (viewReport shared) |> Maybe.withDefault []
+        ( report, link ) =
+            rawReport |> Maybe.map (viewReport shared) |> Maybe.withDefault ( Html.nothing, Html.nothing )
     in
-    Wl.expansion
-        [ WlA.name "errors"
-        , HtmlA.class "error"
-        , HtmlA.disabled (report == Nothing)
-        , WlA.noRipple (report == Nothing)
+    Html.div
+        [ HtmlA.class "error" ]
+        [ Html.div [ HtmlA.class "header" ]
+            [ Html.span [ HtmlA.class "title" ] [ Strings.Error |> Lang.html shared ]
+            , Html.span [ HtmlA.class "description" ] [ model.description |> Lang.html shared ]
+            , link
+            ]
+        , report
         ]
-        (Html.span [ HtmlA.class "title", WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
-            :: Html.span [ HtmlA.class "description", WlA.expansionSlot WlA.EDescription ] [ model.description |> Lang.html shared ]
-            :: reportView
-        )
 
 
 {-| A view of an MdError.
 -}
 viewSpecific : Shared -> MdError -> Html msg
 viewSpecific shared error =
-    Wl.expansion
-        [ WlA.name "errors", HtmlA.class "error", HtmlA.attribute "open" "open" ]
-        [ Html.span [ HtmlA.class "title", WlA.expansionSlot WlA.ETitle ] [ Strings.Error |> Lang.html shared ]
-        , Html.span [ WlA.expansionSlot WlA.EDescription ] [ error |> MdError.shortDescribe |> Lang.html shared ]
+    Html.div
+        [ HtmlA.class "error" ]
+        [ Html.span [ HtmlA.class "title" ] [ Strings.Error |> Lang.html shared ]
+        , Html.span [] [ error |> MdError.shortDescribe |> Lang.html shared ]
         , Html.p [] [ error |> MdError.describe |> Lang.html shared ]
         ]
 
@@ -62,7 +59,7 @@ viewSpecific shared error =
 {- Private -}
 
 
-viewReport : Shared -> String -> List (Html msg)
+viewReport : Shared -> String -> ( Html msg, Html msg )
 viewReport shared report =
     let
         github =
@@ -77,15 +74,13 @@ viewReport shared report =
                 ++ report
 
         url =
-            Url.Builder.crossOrigin github path [ Url.Builder.string "body" reportBody ]
+            Url.Builder.crossOrigin github path [ reportBody |> String.left 1950 |> Url.Builder.string "body" ]
     in
-    [ Html.div [ HtmlA.class "report" ]
-        [ Wl.textArea [ HtmlA.class "body", WlA.readonly, WlA.value report ] []
-        , Html.span [ HtmlA.class "link" ]
-            [ Html.blankA [ HtmlA.href url ] [ Strings.ReportError |> Lang.html shared ]
-            ]
+    ( Html.textarea [ HtmlA.class "report", HtmlA.readonly True, HtmlA.value report ] []
+    , Html.span [ HtmlA.class "link" ]
+        [ Html.blankA [ HtmlA.href url ] [ Strings.ReportError |> Lang.html shared ]
         ]
-    ]
+    )
 
 
 body : Shared -> Route -> MdString -> String -> String

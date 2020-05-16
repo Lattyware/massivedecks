@@ -11,7 +11,7 @@ export interface RoundStart {
 }
 
 export const of = (): RoundStart => ({
-  timeout: "RoundStart"
+  timeout: "RoundStart",
 });
 
 export const handle: Timeout.Handler<RoundStart> = (
@@ -44,7 +44,7 @@ export const handle: Timeout.Handler<RoundStart> = (
 
         return {
           inLobby,
-          events
+          events,
         };
       }
     }
@@ -53,7 +53,7 @@ export const handle: Timeout.Handler<RoundStart> = (
       const result = lobbyGame.startNewRound(server, inLobby);
       return {
         lobby: inLobby,
-        ...result
+        ...result,
       };
     }
   }

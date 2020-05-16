@@ -27,7 +27,7 @@ abstract class AuthenticationFailureError extends Errors.MassiveDecksError<
 
   public details = (): Details => ({
     error: "AuthenticationFailure",
-    reason: this.reason
+    reason: this.reason,
   });
 }
 

@@ -61,7 +61,7 @@ export abstract class Group<
   }
 
   is(action: Action): action is Type {
-    return wu(this.childActions).some(child => child.is(action));
+    return wu(this.childActions).some((child) => child.is(action));
   }
 
   abstract limit(

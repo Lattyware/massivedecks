@@ -5,9 +5,8 @@ module MassiveDecks.Pages.Lobby.Configure.Privacy exposing
     , update
     )
 
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
-import Html.Events as HtmlE
-import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Component)
 import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator
@@ -15,9 +14,9 @@ import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption exposing 
 import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable as Toggleable
 import MassiveDecks.Pages.Lobby.Configure.Privacy.Model exposing (..)
 import MassiveDecks.Strings as Strings
-import MassiveDecks.Util.Html.Attributes as HtmlA
-import MassiveDecks.Util.Maybe as Maybe
-import Weightless.Attributes as WlA
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
+import Material.IconButton as IconButton
+import Material.TextField as TextField
 
 
 init : Model
@@ -105,28 +104,38 @@ password =
 
 passwordOption : ConfigOption Model (Maybe String) Msg msg
 passwordOption =
+    let
+        visibility wrap shared model _ =
+            let
+                icon =
+                    if model.passwordVisible then
+                        Icon.eyeSlash
+
+                    else
+                        Icon.eye
+
+                action =
+                    TogglePasswordVisibility |> wrap |> Just
+            in
+            Just (IconButton.view shared Strings.LobbyPassword (icon |> Icon.present |> NeList.just) action)
+    in
     { id = "game-password-option"
     , toggleable = Toggleable.maybe ""
     , primaryEditor =
         \model ->
             ConfigOption.TextField
                 { placeholder = Strings.LobbyPassword
-                , inputType = WlA.Password |> Maybe.justIf (not model.passwordVisible)
+                , inputType =
+                    if not model.passwordVisible then
+                        TextField.Password
+
+                    else
+                        TextField.Text
                 , toString = identity
                 , fromString = Just >> Just
-                , attrs = [ WlA.minLength 1 ]
+                , attrs = []
                 }
-    , extraEditor =
-        \wrap ->
-            \model ->
-                \value ->
-                    Just
-                        (Components.iconButton
-                            [ TogglePasswordVisibility |> wrap |> HtmlE.onClick
-                            , WlA.disabled |> Maybe.justIf (Maybe.isNothing value) |> Maybe.withDefault HtmlA.nothing
-                            ]
-                            (Icon.eyeSlash |> Maybe.justIf model.passwordVisible |> Maybe.withDefault Icon.eye)
-                        )
+    , extraEditor = visibility
     , set = ConfigOption.wrappedSetter PasswordChange
     , messages =
         \_ ->

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import {
   IncorrectIssuerError,
-  InvalidAuthenticationError
+  InvalidAuthenticationError,
 } from "../errors/authentication";
 import { GameCode } from "../lobby/game-code";
 import * as User from "../user";
@@ -48,7 +48,7 @@ export function validate(token: Token, issuer: string, secret: string): Claims {
   try {
     return jwt.verify(token, secret, {
       algorithms: ["HS256"],
-      issuer: issuer
+      issuer: issuer,
     }) as Claims;
   } catch (error) {
     if (error.hasOwnProperty("name") && error.name === "JsonWebTokenError") {

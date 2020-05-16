@@ -11,7 +11,7 @@ export interface Paused {
 }
 
 export const paused: Paused = {
-  event: "Paused"
+  event: "Paused",
 };
 
 /**
@@ -22,5 +22,5 @@ export interface Continued {
 }
 
 export const continued: Continued = {
-  event: "Continued"
+  event: "Continued",
 };

@@ -1,0 +1,218 @@
+@use "./_colors";
+@use "./cards";
+@use "cards/_size";
+@use "./game/_judging";
+@use "./game/_playing";
+@use "./game/_plays";
+@use "./game/_history";
+
+// The main game area.
+#game {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  min-height: 100%;
+
+  //background: colors.$background url(../../assets/images/background.svg) repeat;
+
+  .action {
+    position: fixed;
+    bottom: 1em;
+    right: 1rem;
+
+    z-index: 999;
+  }
+}
+
+#game-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  margin: 1em;
+  text-align: center;
+
+  span {
+    margin-top: 1em;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+}
+
+#new-game-config {
+  margin-right: 3em;
+  align-self: flex-end;
+}
+
+#win-confetti-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  height: 100%;
+  width: 100%;
+
+  pointer-events: none;
+}
+
+#top-content {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  #timer {
+    flex-shrink: 0;
+    height: 4px;
+    --mdc-linear-progress-buffer-color: #{colors.$error};
+  }
+
+  .top-row {
+    margin-top: -0.2em;
+    height: 2.5em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .help {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+
+    font-size: 2em;
+
+    > span {
+      margin-left: 1em;
+      flex-basis: 5em;
+      flex-grow: 1;
+    }
+  }
+}
+
+#minor-actions {
+  display: flex;
+  flex-direction: row;
+  margin: 0.5em 1em 0 1em;
+}
+
+// The button to scroll to the top of the game area.
+.scroll-top {
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  mwc-icon-button {
+    pointer-events: all;
+    position: sticky;
+    bottom: 0.5em;
+    margin: 0.5em;
+    z-index: 1;
+
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// This pushes the scroll-top button down below the page content.
+.scroll-top-spacer {
+  flex-grow: 1;
+  flex-basis: 0;
+}
+
+// Where the call for the round is displayed.
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  z-index: 2;
+}
+
+// A play or card that has been picked by the player as the target of some action.
+.game-card,
+ol.card-set {
+  &.picked {
+    .side {
+      border-color: colors.$primary;
+    }
+  }
+}
+
+// Display some number of cards or card sets together.
+ul.cards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  list-style: none;
+  padding: 0;
+  margin-top: 0.5em;
+
+  li {
+    min-width: size.$card-width;
+  }
+}
+
+// Multiple cards that are grouped together.
+ol.card-set {
+  margin: 0.5em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+
+  li {
+    height: size.$card-overlap;
+    overflow: visible;
+
+    &:hover {
+      z-index: 1;
+    }
+
+    &:last-child {
+      height: size.height(size.$card-width, var(--card-aspect-ratio));
+    }
+  }
+}
+
+#game-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: transparentize(#cccccc, 0.3);
+  font-size: 4em;
+  text-align: center;
+  z-index: 3;
+}

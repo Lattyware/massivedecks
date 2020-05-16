@@ -10,5 +10,5 @@ export interface PlaySubmitted {
 
 export const of = (by: User.Id): PlaySubmitted => ({
   event: "PlaySubmitted",
-  by
+  by,
 });
