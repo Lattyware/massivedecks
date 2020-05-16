@@ -36,12 +36,12 @@ module.exports = (env, argv) => {
       options: { sourceMap: dev },
     },
     // Transform CSS for compatibility.
-    {
-      loader: "postcss-loader",
-      options: {
-        sourceMap: dev,
-      },
-    },
+    // {
+    //   loader: "postcss-loader",
+    //   options: {
+    //     sourceMap: dev,
+    //   },
+    // },
     // Allow relative URLs.
     {
       loader: "resolve-url-loader",

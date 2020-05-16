@@ -13,7 +13,7 @@ export const of = (stages: Rules.Stages): Timeout.After => ({
   timeout: {
     timeout: "FinishedRevealing",
   },
-  after: (stages.revealing?.after ?? 0) * 1000,
+  after: (stages.revealing === undefined ? 0 : stages.revealing.after) * 1000,
 });
 
 export const handle: Timeout.Handler<FinishedRevealing> = (

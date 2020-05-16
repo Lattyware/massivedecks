@@ -121,7 +121,7 @@ export const empty: () => Rando = () => ({
  * Create an initial model given some defaults.
  */
 export const create = (inLobby: Lobby.Lobby, initial?: Public): Rando => {
-  const number = initial?.number ?? 0;
+  const number = initial === undefined ? 0 : initial.number;
   const config = empty();
   // We intentionally ignore the events because we are creating the lobby here, so there won't be any clients connected yet.
   add(inLobby, config, number);

@@ -28,9 +28,11 @@ function stageDuration(stage: Round.Stage, stages: Stages): number | undefined {
     case "Playing":
       return stages.playing.after;
     case "Revealing":
-      return stages.revealing?.duration;
+      return stages.revealing === undefined
+        ? undefined
+        : stages.revealing.duration;
     case "Judging":
-      return stages.judging?.after;
+      return stages.judging.after;
     case "Complete":
       return undefined;
     default:

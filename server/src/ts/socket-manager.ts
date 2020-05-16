@@ -157,8 +157,11 @@ export class SocketManager {
                   const liked = round.plays
                     .filter((p) => p.likes.some((l) => l === uid))
                     .map((p) => p.id);
-                  const played = round.plays.find((p) => p.playedBy === uid)
-                    ?.id;
+                  const playedCard = round.plays.find(
+                    (p) => p.playedBy === uid
+                  );
+                  const played =
+                    playedCard === undefined ? undefined : playedCard.id;
                   likeDetail = { played, liked };
                 }
               }

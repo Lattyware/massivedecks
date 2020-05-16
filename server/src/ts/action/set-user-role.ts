@@ -33,7 +33,7 @@ class SetUserRoleActions extends Actions.Implementation<
     action,
     server
   ) => {
-    const userId = action.id ?? auth.uid;
+    const userId = action.id === undefined ? auth.uid : action.id;
     const targetUser = lobby.users[userId];
     const oldRole = targetUser.role;
     const newRole = action.role;
