@@ -60,9 +60,11 @@ viewRound shared config users round =
     in
     ( Round.idString round.id
     , Html.li [ HtmlA.class "historic-round" ]
-        [ Html.div [ HtmlA.class "historic-call with-byline" ]
-            [ Plays.byLine shared users round.czar (Just Icon.gavel) Nothing
-            , Html.div [] [ Call.viewFilled shared config Card.Front [] winningBody round.call ]
+        [ Html.div [ HtmlA.class "spacer" ]
+            [ Html.div [ HtmlA.class "historic-call with-byline" ]
+                [ Plays.byLine shared users round.czar (Just ( "czar", Icon.gavel )) Nothing
+                , Call.viewFilled shared config Card.Front [] winningBody round.call
+                ]
             ]
         , HtmlK.ul [ HtmlA.class "plays cards" ]
             (round.plays |> Dict.toList |> List.map (viewPlay shared config users round.winner))
@@ -78,7 +80,7 @@ viewPlay shared config users winner ( id, { play, likes } ) =
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id)) likes
+        [ Plays.byLine shared users id (( "trophy", Icon.trophy ) |> Maybe.justIf (winner == id)) likes
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )

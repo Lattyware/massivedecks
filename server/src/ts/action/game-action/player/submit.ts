@@ -10,6 +10,7 @@ import * as FinishedPlaying from "../../../timeout/finished-playing";
 import * as Actions from "../../actions";
 import * as Handler from "../../handler";
 import { Player } from "../player";
+import * as Util from "../../../util";
 
 /**
  * A player plays a white card into a round.
@@ -70,14 +71,9 @@ class SubmitActions extends Actions.Implementation<
         likes: [],
       });
       const events = [Event.targetAll(PlaySubmitted.of(auth.uid))];
-      const timeouts = [];
-      const timeout = FinishedPlaying.ifNeeded(lobbyRound);
-      if (timeout !== undefined) {
-        timeouts.push({
-          timeout: timeout,
-          after: server.config.timeouts.finishedPlayingDelay,
-        });
-      }
+      const timeouts = Util.asOptionalIterable(
+        FinishedPlaying.ifNeeded(lobby.game.rules, lobbyRound)
+      );
       return { lobby, events, timeouts };
     } else {
       return {};

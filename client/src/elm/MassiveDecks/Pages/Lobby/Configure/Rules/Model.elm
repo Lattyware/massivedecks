@@ -1,11 +1,5 @@
-module MassiveDecks.Pages.Lobby.Configure.Rules.Model exposing
-    ( Config
-    , Id(..)
-    , Model
-    , Msg(..)
-    )
+module MassiveDecks.Pages.Lobby.Configure.Rules.Model exposing (Id(..))
 
-import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model as HouseRules
 
 
@@ -15,18 +9,3 @@ type Id
     | HandSize
     | ScoreLimit
     | HouseRulesId HouseRules.Id
-
-
-type alias Model =
-    { houseRules : HouseRules.Model
-    }
-
-
-type alias Config =
-    Rules
-
-
-type Msg
-    = HandSizeChange Int
-    | ScoreLimitChange (Maybe Int)
-    | HouseRulesMsg HouseRules.Msg

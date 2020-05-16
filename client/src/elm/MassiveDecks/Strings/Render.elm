@@ -1,10 +1,10 @@
 module MassiveDecks.Strings.Render exposing (asHtml, asString)
 
 import FontAwesome.Icon as Icon exposing (Icon)
-import FontAwesome.Regular as RegularIcon
 import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Strings exposing (..)
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 import MassiveDecks.Strings.Translation as Translation
@@ -106,10 +106,10 @@ enhanceHtml context mdString unenhanced =
             term context CzarDescription Icon.gavel unenhanced
 
         Call ->
-            term context CallDescription Icon.square unenhanced
+            term context CallDescription Icon.callCard unenhanced
 
         Response ->
-            term context ResponseDescription RegularIcon.square unenhanced
+            term context ResponseDescription Icon.responseCard unenhanced
 
         Point ->
             term context PointDescription Icon.star unenhanced

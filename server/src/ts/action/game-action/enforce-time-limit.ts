@@ -30,11 +30,11 @@ class EnforceTimeLimitAction extends Actions.Implementation<
     action,
     server
   ) => {
-    const timeLimits = lobby.config.rules.timeLimits;
     const game = lobby.game;
-    if (timeLimits === undefined || timeLimits.mode === "Hard") {
-      // No time limit to enforce, or they are automatically enforced.
-      throw new InvalidActionError("No time limits to enforce.");
+    const stages = game.rules.stages;
+    if (stages.timeLimitMode === "Hard") {
+      // Time limits are automatically enforced, so we don't need to do anything.
+      return {};
     }
     const gameRound = game.round;
     if (

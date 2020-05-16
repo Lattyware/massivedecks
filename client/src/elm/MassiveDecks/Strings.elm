@@ -247,9 +247,15 @@ type MdString
     | AutomaticDescription -- A description of what the automatic setting does (sets players as away automatically if they don't act in the time limit).
     | TimeLimit { stage : MdString } -- A name of the setting for the time limit on a given stage.
     | PlayingTimeLimitDescription -- A description of the setting for the time limit on the playing stage.
+    | PlayingAfterDescription -- A description of the setting for the time after the playing stage.
     | RevealingTimeLimitDescription -- A description of the setting for the time limit on the revealing stage.
+    | RevealingAfterDescription -- A description of the setting for the time after the revealing stage.
     | JudgingTimeLimitDescription -- A description of the setting for the time limit on the judging stage.
     | CompleteTimeLimitDescription -- A description of the setting for the time limit on the complete stage.
+    | RevealingEnabledTitle -- A title for the setting that enabled or disables the revealing stage of the round.
+    | RevealingEnabled -- A description of the setting that enabled or disables the revealing stage of the round.
+    | DuringTitle -- The name of the time limit that determines how long a user can take during a stage of a round.
+    | AfterTitle -- The name of the time after a stage of a round is over to wait before starting the next.
     | Conflict -- A title for a section showing conflicting configuration changes.
     | ConflictDescription -- An explanation of what a conflict is.
     | YourChanges -- A title for a section showing changes tot he configuration by the user.

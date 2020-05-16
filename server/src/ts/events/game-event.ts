@@ -10,10 +10,12 @@ import { RoundFinished } from "./game-event/round-finished";
 import { RoundStarted } from "./game-event/round-started";
 import { StageTimerDone } from "./game-event/stage-timer-done";
 import { StartRevealing } from "./game-event/start-revealing";
+import { StartJudging } from "./game-event/start-judging";
 
 export type GameEvent =
   | GameStarted
   | StartRevealing
+  | StartJudging
   | RoundStarted
   | RoundFinished
   | PlaySubmitted

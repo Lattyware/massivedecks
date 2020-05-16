@@ -8,6 +8,13 @@ $call-background: #000000;
 $response-color: $call-background;
 $response-background: $call-color;
 
+@mixin shadow($color: #000000) {
+  .side {
+    box-shadow: 0.15em 0.15em 0.4em transparentize($color, 0.7),
+      -0.05em -0.05em 0.4em transparentize($color, 0.7);
+  }
+}
+
 #game {
   --card-aspect-ratio: #{size.$card-ratio};
   @include size.fluid-type(20rem, 64rem, 0.5rem, 0.8rem);

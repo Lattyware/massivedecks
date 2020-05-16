@@ -31,7 +31,7 @@ players shared users =
 
 
 player : Shared -> ( User.Id, User ) -> Maybe ( String, Html msg )
-player shared ( id, user ) =
+player _ ( id, user ) =
     case user.role of
         User.Player ->
             let

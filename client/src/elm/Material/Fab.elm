@@ -44,7 +44,7 @@ view shared type_ title icon action attrs =
                     msg |> HtmlE.onClick
 
                 Nothing ->
-                    HtmlA.disabled True
+                    HtmlA.attribute "disabled" ""
     in
     Html.node "mwc-fab"
         (List.concat [ [ title |> Lang.title shared, onClick ], style, attrs ])

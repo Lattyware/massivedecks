@@ -21,10 +21,6 @@ export interface Public {
   rando?: Rando.Public;
 }
 
-export const create = (): HouseRules => ({
-  rando: Rando.create(),
-});
-
 export const censor = (houseRules: HouseRules): Public => ({
   ...houseRules,
   rando: Rando.censor(houseRules.rando),

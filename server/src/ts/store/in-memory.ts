@@ -8,6 +8,8 @@ import * as GameCode from "../lobby/game-code";
 import { Store, Transaction } from "../store";
 import * as Timeout from "../timeout";
 import * as Token from "../user/token";
+import * as LobbyConfig from "../lobby/config";
+import { Task } from "../task";
 
 declare module "wu" {
   // Fix incorrect types.
@@ -65,10 +67,15 @@ export class InMemoryStore extends Store {
 
   public async newLobby(
     creation: CreateLobby,
-    secret: string
-  ): Promise<{ gameCode: GameCode.GameCode; token: Token.Token }> {
-    const lobby = Lobby.create(creation);
+    secret: string,
+    defaults: LobbyConfig.Defaults
+  ): Promise<{
+    gameCode: GameCode.GameCode;
+    token: Token.Token;
+    tasks: Iterable<Task>;
+  }> {
     const gameCode = GameCode.encode(this.nextLobby);
+    const { lobby, tasks } = Lobby.create(gameCode, creation, defaults);
     this.nextLobby += 1;
     this.lobbies.set(gameCode, { lobby, lastWrite: Date.now() });
     return {
@@ -81,6 +88,7 @@ export class InMemoryStore extends Store {
         this._id,
         secret
       ),
+      tasks,
     };
   }
 
@@ -128,7 +136,7 @@ export class InMemoryStore extends Store {
     const toRemove = new Set<GameCode.GameCode>();
     for (const [gameCode, { lobby, lastWrite }] of this.lobbies.entries()) {
       if (
-        lastWrite + this.config.abandonedTime > Date.now() ||
+        lastWrite + this.config.abandonedTime < Date.now() ||
         wu(Object.values(lobby.users)).every(
           (u) => u.control === "Computer" || u.presence === "Left"
         )

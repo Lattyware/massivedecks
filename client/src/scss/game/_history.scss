@@ -30,24 +30,23 @@
     counter-increment: historic-round-number -1;
     padding: 1em 0 0.5em 0;
 
+    .cards {
+      margin-top: 0;
+    }
+
     &::before {
       display: flex;
       flex-direction: column;
       justify-content: center;
       content: counter(historic-round-number);
-      align-self: stretch;
+      align-items: center;
       font-size: 3em;
       padding: 0 0.2em;
       font-weight: bold;
     }
 
-    .historic-call {
-      flex-basis: size.$card-width;
-      min-width: size.$card-width;
-
-      & > div {
-        margin: 0.5em;
-      }
+    .spacer {
+      margin: 0.5em;
     }
 
     .plays {

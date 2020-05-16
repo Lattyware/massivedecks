@@ -284,15 +284,13 @@ export class Game {
       const play = this.round.plays.find((p) => p.playedBy === toRemove);
       if (play === undefined) {
         this.round.players.delete(toRemove);
-        const timeouts = [];
-        const timeout = FinishedPlaying.ifNeeded(this.round as Round.Playing);
-        if (timeout !== undefined) {
-          timeouts.push({
-            timeout: timeout,
-            after: server.config.timeouts.finishedPlayingDelay,
-          });
+        if (this.round.stage === "Playing") {
+          return {
+            timeouts: Util.asOptionalIterable(
+              FinishedPlaying.ifNeeded(this.rules, this.round)
+            ),
+          };
         }
-        return { timeouts };
       }
       return {};
     } else {
@@ -376,18 +374,12 @@ export class Game {
     }
 
     const timeouts = [];
-    const finishedTimeout = FinishedPlaying.ifNeeded(game.round);
+    const finishedTimeout = FinishedPlaying.ifNeeded(game.rules, game.round);
     if (finishedTimeout !== undefined) {
-      timeouts.push({
-        timeout: finishedTimeout,
-        after: server.config.timeouts.finishedPlayingDelay,
-      });
+      timeouts.push(finishedTimeout);
     }
 
-    const timer = RoundStageTimerDone.ifEnabled(
-      game.round,
-      game.rules.timeLimits
-    );
+    const timer = RoundStageTimerDone.ifEnabled(game.round, game.rules.stages);
     if (timer !== undefined) {
       timeouts.push(timer);
     }

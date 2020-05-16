@@ -89,10 +89,14 @@ async function main(): Promise<void> {
   });
 
   app.post("/api/games", async (req, res) => {
-    const { gameCode, token } = await state.store.newLobby(
+    const { gameCode, token, tasks } = await state.store.newLobby(
       CreateLobby.validate(req.body),
-      config.secret
+      config.secret,
+      config.defaults
     );
+    for (const task of tasks) {
+      state.tasks.enqueue(state, task);
+    }
     res.append(
       "Location",
       `${req.protocol}://${req.hostname}/${config.basePath}api/games/${gameCode}`

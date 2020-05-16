@@ -132,3 +132,27 @@ export function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
     return true;
   }
 }
+
+/**
+ * Return an item that may be undefined as either an iterable of nothing or an iterable of just that item.
+ */
+export function* asIterable<T>(
+  maybeItem: T | undefined
+): Iterable<T> | undefined {
+  if (maybeItem !== undefined) {
+    yield maybeItem;
+  }
+}
+
+/**
+ * Return an item that may be undefined as either a undefined or an iterable of just that item.
+ */
+export function asOptionalIterable<T>(
+  maybeItem: T | undefined
+): Iterable<T> | undefined {
+  if (maybeItem === undefined) {
+    return undefined;
+  } else {
+    return asIterable(maybeItem);
+  }
+}

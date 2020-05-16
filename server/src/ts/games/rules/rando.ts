@@ -53,16 +53,6 @@ export interface Rando {
 }
 
 /**
- * Create the initial model.
- */
-export const create = (): Rando => ({
-  current: [],
-  unused: [aiName]
-    .concat(Util.shuffled(aiNames).slice(0, max - 1))
-    .map((name) => ({ name })),
-});
-
-/**
  * The public view of the Rando house rule.
  */
 export interface Public {
@@ -101,6 +91,43 @@ export const createIfNeeded = (
   }
 };
 
+function* add(
+  inLobby: Lobby.Lobby,
+  config: Rando,
+  number: number
+): Iterable<Event.Distributor> {
+  const added = config.unused
+    .splice(0, number)
+    .map((ai) => createIfNeeded(inLobby, ai));
+  for (const { user, events } of added) {
+    const userData = inLobby.users[user];
+    userData.presence = "Joined";
+    config.current.push(user);
+    yield* events;
+  }
+}
+
+/**
+ * Create an empty model.
+ */
+export const empty: () => Rando = () => ({
+  current: [],
+  unused: [aiName]
+    .concat(Util.shuffled(aiNames).slice(0, max - 1))
+    .map((name) => ({ name })),
+});
+
+/**
+ * Create an initial model given some defaults.
+ */
+export const create = (inLobby: Lobby.Lobby, initial?: Public): Rando => {
+  const number = initial?.number ?? 0;
+  const config = empty();
+  // We intentionally ignore the events because we are creating the lobby here, so there won't be any clients connected yet.
+  add(inLobby, config, number);
+  return config;
+};
+
 /**
  * Change the internal model to match the given public representation.
  */
@@ -111,21 +138,11 @@ export function* change(
 ): Iterable<Event.Distributor> {
   const want = changeTo !== undefined ? changeTo.number : 0;
   const have = config.current.length;
-  const eventsCollection = [];
   if (want === have) {
     return null;
   }
   if (want > have) {
-    const toAdd = want - have;
-    const added = config.unused
-      .splice(0, toAdd)
-      .map((ai) => createIfNeeded(inLobby, ai));
-    for (const { user, events } of added) {
-      const userData = inLobby.users[user];
-      userData.presence = "Joined";
-      config.current.push(user);
-      eventsCollection.push(...events);
-    }
+    yield* add(inLobby, config, want - have);
   } else if (have > want) {
     const toRemove = have - want;
     const removed = config.current.splice(
@@ -135,9 +152,8 @@ export function* change(
     for (const ai of removed) {
       const user = inLobby.users[ai];
       user.presence = "Left";
-      eventsCollection.push(Event.targetAll(PresenceChanged.left(ai, "Left")));
+      yield Event.targetAll(PresenceChanged.left(ai, "Left"));
     }
     config.unused.splice(0, 0, ...removed);
   }
-  yield* eventsCollection;
 }

@@ -76,6 +76,11 @@ mwc-fab {
     --button-fab-size: 3em;
     font-size: 1.2em;
   }
+
+  &[disabled] {
+    pointer-events: none;
+    --mdc-theme-secondary: #cccccc;
+  }
 }
 
 .menu-anchor {

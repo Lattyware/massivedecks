@@ -45,6 +45,43 @@
     },
   },
 
+  // The default configuration for new lobbies when they are created.
+  // There is no default name here as that is managed by the client.
+  defaults: {
+    rules: {
+      handSize: 10,
+      scoreLimit: 25,
+      houseRules: {
+        // packingHeat: {},
+        // reboot: { cost: 1 },
+        // comedyWriter: { number: 300, exclusive: true },
+        // rando: { number: 1 },
+      },
+      stages: {
+        timeLimitMode: "Soft",
+        playing: {
+          duration: 60,
+          after: 2,
+        },
+        revealing: {
+          duration: 45,
+          after: 2,
+        },
+        judging: {
+          duration: 20,
+          after: 2,
+        },
+      },
+    },
+    public: false,
+    decks: [
+      // {
+      //   source: "BuiltIn",
+      //   id: "cah-base-en",
+      // },
+    ],
+  },
+
   // Timeouts determine how long the server waits before taking certain actions.
   // These values are all ISO 8601 durations.
   timeouts: {
@@ -56,10 +93,6 @@
 
     // How long to wait before marking a player as disconnected.
     disconnectionGracePeriod: "PT2S",
-
-    // How long to wait after everyone has played to begin the revealing phase. Having this as a non-zero value lets
-    // the last person playing
-    finishedPlayingDelay: "PT2S",
   },
 
   // Tasks are things that take some time to happen (e.g: requesting data from external card services).

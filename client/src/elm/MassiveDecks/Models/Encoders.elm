@@ -77,22 +77,31 @@ rules r =
         (List.concat
             [ [ ( "handSize", r.handSize |> Json.int )
               , ( "houseRules", r.houseRules |> houseRules )
-              , ( "timeLimits", r.timeLimits |> timeLimits )
+              , ( "stages", r.stages |> stages )
               ]
             , r.scoreLimit |> Maybe.map (\sl -> [ ( "scoreLimit", sl |> Json.int ) ]) |> Maybe.withDefault []
             ]
         )
 
 
-timeLimits : Rules.TimeLimits -> Json.Value
-timeLimits t =
+stages : Rules.Stages -> Json.Value
+stages t =
     Json.object
         (List.filterMap identity
-            [ Just ( "mode", timeLimitMode t.mode )
-            , t.playing |> Maybe.map (\p -> ( "playing", p |> Json.int ))
-            , t.revealing |> Maybe.map (\r -> ( "revealing", r |> Json.int ))
-            , t.judging |> Maybe.map (\j -> ( "judging", j |> Json.int ))
-            , Just ( "complete", t.complete |> Json.int )
+            [ Just ( "timeLimitMode", timeLimitMode t.mode )
+            , Just ( "playing", t.playing |> stageRules )
+            , t.revealing |> Maybe.map (\r -> ( "revealing", r |> stageRules ))
+            , Just ( "judging", t.judging |> stageRules )
+            ]
+        )
+
+
+stageRules : Rules.Stage -> Json.Value
+stageRules s =
+    Json.object
+        (List.filterMap identity
+            [ s.duration |> Maybe.map (\d -> ( "duration", d |> Json.int ))
+            , Just ( "after", s.after |> Json.int )
             ]
         )
 

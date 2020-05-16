@@ -9,7 +9,9 @@ import * as Store from "../store";
 import * as Timeout from "../timeout";
 import * as Token from "../user/token";
 import * as Postgres from "../util/postgres";
-import * as Logging from "../logging";
+import * as LobbyConfig from "../lobby/config";
+import { LoadDeckSummary } from "../task/load-deck-summary";
+import * as Task from "../task";
 
 class To0 extends Postgres.Upgrade<undefined, 0> {
   public readonly to = 0;
@@ -171,10 +173,19 @@ export class PostgresStore extends Store.Store {
 
   public async newLobby(
     creation: CreateLobby,
-    secret: string
-  ): Promise<{ gameCode: GameCode.GameCode; token: Token.Token }> {
+    secret: string,
+    defaults: LobbyConfig.Defaults
+  ): Promise<{
+    gameCode: GameCode.GameCode;
+    token: Token.Token;
+    tasks: Iterable<Task.Task>;
+  }> {
     return await this.pg.withClient(async (client) => {
-      const lobby = Lobby.create(creation);
+      const { lobby, tasks } = Lobby.create(
+        "fake-game-code",
+        creation,
+        defaults
+      );
       const result = await client.query(
         "INSERT INTO massivedecks.lobbies VALUES (DEFAULT, $1) RETURNING id",
         [lobby]
@@ -190,6 +201,7 @@ export class PostgresStore extends Store.Store {
           await this.id(),
           secret
         ),
+        tasks: tasks.map((task) => new LoadDeckSummary(gameCode, task.source)),
       };
     });
   }

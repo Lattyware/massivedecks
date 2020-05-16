@@ -90,11 +90,10 @@ init shared r auth =
 
 
 initWithAuth : Shared -> Route -> Auth -> ( Model, Cmd msg )
-initWithAuth shared r auth =
+initWithAuth _ r auth =
     ( { route = r
       , auth = auth
-      , lobby = Nothing
-      , configure = Configure.init shared
+      , lobbyAndConfigure = Nothing
       , notificationId = 0
       , notifications = []
       , inviteDialogOpen = False
@@ -117,7 +116,7 @@ subscriptions wrap handleError model =
     Sub.batch
         [ Maybe.map2 (Game.subscriptions (GameMsg >> wrap))
             model.timeAnchor
-            (model.lobby |> Maybe.andThen .game)
+            (model.lobbyAndConfigure |> Maybe.map .lobby |> Maybe.andThen .game)
             |> Maybe.withDefault Sub.none
         , model.notifications |> Animated.subscriptions (NotificationMsg >> wrap)
         , ServerConnection.notifications
@@ -131,15 +130,26 @@ update : (Msg -> msg) -> Shared -> Msg -> Model -> ( Change, Shared, Cmd msg )
 update wrap shared msg model =
     case msg of
         GameMsg gameMsg ->
-            case model.lobby of
-                Just l ->
-                    case l.game of
+            case model.lobbyAndConfigure of
+                Just lobbyAndConfigure ->
+                    let
+                        l =
+                            lobbyAndConfigure.lobby
+                    in
+                    case lobbyAndConfigure.lobby.game of
                         Just g ->
                             let
                                 ( updatedGame, gameCmd ) =
                                     Game.update (GameMsg >> wrap) shared gameMsg g
                             in
-                            ( Stay { model | lobby = Just { l | game = Just updatedGame } }, shared, gameCmd )
+                            ( Stay
+                                { model
+                                    | lobbyAndConfigure =
+                                        Just { lobbyAndConfigure | lobby = { l | game = Just updatedGame } }
+                                }
+                            , shared
+                            , gameCmd
+                            )
 
                         Nothing ->
                             ( Stay model, shared, Cmd.none )
@@ -155,14 +165,34 @@ update wrap shared msg model =
             ( Stay { model | spectate = spectate }, shared, cmd )
 
         EventReceived event ->
-            case model.lobby of
-                Just lobby ->
+            case model.lobbyAndConfigure of
+                Just lobbyAndConfigure ->
+                    let
+                        { lobby, configure } =
+                            lobbyAndConfigure
+
+                        updatedLobby l m =
+                            let
+                                f lAndC =
+                                    { lAndC | lobby = l lAndC.lobby }
+                            in
+                            { m | lobbyAndConfigure = m.lobbyAndConfigure |> Maybe.map f }
+
+                        updatedGame g =
+                            updatedLobby (\l -> { l | game = g })
+
+                        updatedUsers u =
+                            updatedLobby (\l -> { l | users = u })
+
+                        updatedErrors e =
+                            updatedLobby (\l -> { l | errors = e })
+                    in
                     case event of
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
                             applySync wrap shared model state hand play partialTimeAnchor
 
                         Events.Configured { change } ->
-                            ( applyConfigured change model, shared, Cmd.none )
+                            ( applyConfigured wrap change model, shared, Cmd.none )
 
                         Events.GameStarted { round, hand } ->
                             let
@@ -186,16 +216,21 @@ update wrap shared msg model =
                                 cmd =
                                     [ Just gameCmd, changeCmd ] |> List.filterMap identity |> Cmd.batch
                             in
-                            ( Stay { model | lobby = Just { lobby | game = Just g } }, shared, cmd )
+                            ( model |> updatedGame (Just g) |> Stay, shared, cmd )
 
                         Events.Game gameEvent ->
                             let
                                 withGame game =
                                     let
                                         ( g, cmd ) =
-                                            Game.applyGameEvent (GameMsg >> wrap) (EventReceived >> wrap) model.auth shared gameEvent game
+                                            Game.applyGameEvent (GameMsg >> wrap)
+                                                (EventReceived >> wrap)
+                                                model.auth
+                                                shared
+                                                gameEvent
+                                                game
                                     in
-                                    ( Stay { model | lobby = Just { lobby | game = Just g } }, shared, cmd )
+                                    ( model |> updatedGame (Just g) |> Stay, shared, cmd )
                             in
                             lobby.game
                                 |> Maybe.map withGame
@@ -215,7 +250,10 @@ update wrap shared msg model =
                                             , UserDisconnected user
                                             )
                             in
-                            addNotification wrap shared message { model | lobby = Just { lobby | users = newUsers } }
+                            addNotification wrap
+                                shared
+                                message
+                                (model |> updatedUsers newUsers)
 
                         Events.Presence { user, state } ->
                             case ( state, user == model.auth.claims.uid ) of
@@ -257,17 +295,17 @@ update wrap shared msg model =
                                     addNotification wrap
                                         shared
                                         message
-                                        { model | lobby = Just { lobby | users = newUsers, game = game } }
+                                        (model |> updatedUsers newUsers |> updatedGame game)
 
                         Events.PrivilegeChanged { user, privilege } ->
                             let
                                 users =
                                     lobby.users |> Dict.update user (Maybe.map (\u -> { u | privilege = privilege }))
                             in
-                            ( Stay { model | lobby = Just { lobby | users = users } }, shared, Cmd.none )
+                            ( model |> updatedUsers users |> Stay, shared, Cmd.none )
 
                         Events.ErrorEncountered { error } ->
-                            ( Stay { model | lobby = Just { lobby | errors = lobby.errors ++ [ error ] } }, shared, Cmd.none )
+                            ( model |> updatedErrors (lobby.errors ++ [ error ]) |> Stay, shared, Cmd.none )
 
                         Events.UserRoleChanged { user, role, hand } ->
                             let
@@ -295,7 +333,7 @@ update wrap shared msg model =
                                 newGame =
                                     lobby.game |> Maybe.map updateGame
                             in
-                            ( Stay { model | lobby = Just { lobby | users = users, game = newGame } }
+                            ( (model |> updatedUsers users |> updatedGame newGame) |> Stay
                             , shared
                             , Cmd.none
                             )
@@ -318,30 +356,25 @@ update wrap shared msg model =
 
                 MdError.ActionExecution (MdError.ConfigEditConflict _) ->
                     let
-                        configure =
-                            model.configure
+                        reset { lobby, configure } =
+                            { lobby = lobby, configure = { configure | localConfig = lobby.config } }
                     in
                     addNotification wrap
                         shared
                         (Error error)
-                        { model
-                            | configure =
-                                model.lobby
-                                    |> Maybe.map (\l -> { configure | localConfig = l.config })
-                                    |> Maybe.withDefault model.configure
-                        }
+                        { model | lobbyAndConfigure = model.lobbyAndConfigure |> Maybe.map reset }
 
                 _ ->
                     addNotification wrap shared (Error error) model
 
         ConfigureMsg configureMsg ->
-            case model.lobby of
-                Just l ->
+            case model.lobbyAndConfigure of
+                Just { lobby, configure } ->
                     let
                         ( c, s, cmd ) =
-                            Configure.update shared configureMsg model.configure l.config
+                            Configure.update shared configureMsg configure lobby.config
                     in
-                    ( Stay { model | configure = c }, s, cmd )
+                    ( Stay { model | lobbyAndConfigure = Just { lobby = lobby, configure = c } }, s, cmd )
 
                 Nothing ->
                     ( Stay model, shared, Cmd.none )
@@ -423,12 +456,13 @@ view : (Msg -> msg) -> (Settings.Msg -> msg) -> (Route.Route -> msg) -> Shared -
 view wrap wrapSettings changePage shared model =
     let
         s =
-            model.route.section |> Maybe.withDefault (section model.route model.auth model.lobby)
+            model.route.section
+                |> Maybe.withDefault (section model.route model.auth (model.lobbyAndConfigure |> Maybe.map .lobby))
     in
     case s of
         Play ->
             let
-                viewContent _ auth timeAnchor lobby =
+                viewContent _ auth timeAnchor { lobby, configure } =
                     lobby.game
                         |> Maybe.map (Game.view wrap (GameMsg >> wrap) shared auth timeAnchor lobby.config.name lobby.config lobby.users)
                         |> Maybe.withDefault (Html.div [] [ Strings.GameNotStartedError |> Lang.html shared ])
@@ -437,15 +471,14 @@ view wrap wrapSettings changePage shared model =
 
         Configure ->
             let
-                viewContent canEdit auth _ lobby =
+                viewContent canEdit auth _ lobbyAndConfigure =
                     Configure.view (ConfigureMsg >> wrap)
                         wrap
                         shared
-                        (Nothing |> ChangeSection |> wrap |> Maybe.justIf (lobby.game /= Nothing))
+                        (Nothing |> ChangeSection |> wrap |> Maybe.justIf (lobbyAndConfigure.lobby.game /= Nothing))
                         canEdit
-                        model.configure
                         auth.claims.gc
-                        lobby
+                        lobbyAndConfigure
             in
             viewWithUsers wrap wrapSettings shared s viewContent model
 
@@ -475,7 +508,7 @@ section r auth lobby =
 
 
 type alias ViewContent msg =
-    Message msg -> Auth -> Time.Anchor -> Lobby -> Html msg
+    Message msg -> Auth -> Time.Anchor -> LobbyAndConfigure -> Html msg
 
 
 viewWithUsers : (Msg -> msg) -> (Settings.Msg -> msg) -> Shared -> Section -> ViewContent msg -> Model -> List (Html msg)
@@ -510,14 +543,17 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             else
                 Icon.users
 
+        lobby =
+            model.lobbyAndConfigure |> Maybe.map .lobby
+
         notifications =
-            model.notifications |> List.map (keyedViewNotification wrap shared model.lobby)
+            model.notifications |> List.map (keyedViewNotification wrap shared lobby)
 
         localUser =
-            model.lobby |> Maybe.andThen (.users >> Dict.get model.auth.claims.uid)
+            lobby |> Maybe.andThen (.users >> Dict.get model.auth.claims.uid)
 
         maybeGame =
-            model.lobby |> Maybe.andThen .game
+            lobby |> Maybe.andThen .game
 
         localPlayer =
             maybeGame |> Maybe.andThen (.game >> .players >> Dict.get model.auth.claims.uid)
@@ -542,7 +578,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             , Html.div [] [ Settings.view wrapSettings shared ]
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
-            :: (model.lobby
+            :: (model.lobbyAndConfigure
                     |> Maybe.map2 (viewLobby wrap shared model.auth model.userMenu viewContent) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
@@ -554,14 +590,17 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
         wrap
         shared
         model.auth.claims.gc
-        (model.lobby |> Maybe.andThen (.config >> .privacy >> .password))
+        (lobby |> Maybe.andThen (.config >> .privacy >> .password))
         model.inviteDialogOpen
     ]
 
 
-viewLobby : (Msg -> msg) -> Shared -> Auth -> Maybe User.Id -> ViewContent msg -> Time.Anchor -> Lobby -> List (Html msg)
-viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobby =
+viewLobby : (Msg -> msg) -> Shared -> Auth -> Maybe User.Id -> ViewContent msg -> Time.Anchor -> LobbyAndConfigure -> List (Html msg)
+viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobbyAndConfigure =
     let
+        lobby =
+            lobbyAndConfigure.lobby
+
         game =
             lobby.game |> Maybe.map .game
 
@@ -585,7 +624,7 @@ viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobby =
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
         [ viewUsers wrap shared auth.claims.uid lobby.users openUserMenu game
-        , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobby ]
+        , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobbyAndConfigure ]
         , lobby.errors |> viewErrors shared
         ]
     ]
@@ -670,17 +709,21 @@ lobbyMenu wrap shared menuState r s user player game =
         separatedMenuItems
 
 
-applyConfigured : Json.Patch -> Model -> Change
-applyConfigured change oldModel =
-    case oldModel.lobby of
-        Just oldLobby ->
+applyConfigured : (Msg -> msg) -> Json.Patch -> Model -> Change
+applyConfigured wrap change oldModel =
+    case oldModel.lobbyAndConfigure of
+        Just { lobby, configure } ->
             let
                 updatedConfig =
-                    Configure.applyChange change oldLobby.config oldModel.configure
+                    Configure.applyChange (ConfigureMsg >> wrap) change lobby.config configure
             in
             case updatedConfig of
                 Ok ( config, model ) ->
-                    { oldModel | lobby = Just { oldLobby | config = config }, configure = model } |> Stay
+                    { oldModel
+                        | lobbyAndConfigure =
+                            Just { lobby = { lobby | config = config }, configure = model }
+                    }
+                        |> Stay
 
                 Err error ->
                     error |> ConfigError
@@ -711,7 +754,7 @@ applySync wrap shared model state hand pick partialTimeAnchor =
         -- We keep fills over syncs to try and preserve user input if possible.
         -- If things have changed, it won't matter, we'll just clear them at the end of the next round.
         keptFills =
-            model.lobby |> Maybe.andThen .game |> Maybe.map .filledCards
+            model.lobbyAndConfigure |> Maybe.map .lobby |> Maybe.andThen .game |> Maybe.map .filledCards
 
         ( game, gameCmd ) =
             case state.game of
@@ -729,12 +772,15 @@ applySync wrap shared model state hand pick partialTimeAnchor =
             Time.anchor (SetTimeAnchor >> wrap) partialTimeAnchor
 
         configure =
-            model.configure
+            model.lobbyAndConfigure |> Maybe.map .configure |> Maybe.withDefault (Configure.init shared state.config)
     in
     ( Stay
         { model
-            | lobby = Just { state | game = game }
-            , configure = { configure | localConfig = state.config }
+            | lobbyAndConfigure =
+                Just
+                    { lobby = { state | game = game }
+                    , configure = { configure | localConfig = state.config }
+                    }
         }
     , shared
     , Cmd.batch [ timeCmd, gameCmd ]

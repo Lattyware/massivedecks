@@ -250,8 +250,7 @@ languageFromCode code =
 
 lobby : Json.Decoder Lobby
 lobby =
-    Json.map6 Lobby
-        (Json.field "public" Json.bool)
+    Json.map5 Lobby
         (Json.field "users" users)
         (Json.field "owner" userId)
         (Json.field "config" config)
@@ -290,7 +289,16 @@ privacyConfig =
 
 deckOrError : Json.Decoder DeckConfig.DeckOrError
 deckOrError =
-    Json.oneOf [ deckError |> Json.map DeckConfig.errorToDeckOrError, deck |> Json.map DeckConfig.deckToDeckOrError ]
+    let
+        which e =
+            case e of
+                Just _ ->
+                    deckError |> Json.map DeckConfig.errorToDeckOrError
+
+                Nothing ->
+                    deck |> Json.map DeckConfig.deckToDeckOrError
+    in
+    Json.field "failure" Json.string |> Json.maybe |> Json.andThen which
 
 
 deck : Json.Decoder DeckConfig.Deck
@@ -331,17 +339,23 @@ rules =
         (Json.field "handSize" Json.int)
         (Json.maybe (Json.field "scoreLimit" score))
         (Json.field "houseRules" houseRules)
-        (Json.field "timeLimits" timeLimits)
+        (Json.field "stages" stages)
 
 
-timeLimits : Json.Decoder Rules.TimeLimits
-timeLimits =
-    Json.map5 Rules.TimeLimits
-        (Json.field "mode" timeLimitMode)
-        (Json.maybe (Json.field "playing" Json.int))
-        (Json.maybe (Json.field "revealing" Json.int))
-        (Json.maybe (Json.field "judging" Json.int))
-        (Json.field "complete" Json.int)
+stages : Json.Decoder Rules.Stages
+stages =
+    Json.succeed Rules.Stages
+        |> Json.required "timeLimitMode" timeLimitMode
+        |> Json.required "playing" stageRules
+        |> Json.optional "revealing" (stageRules |> Json.map Just) Nothing
+        |> Json.required "judging" stageRules
+
+
+stageRules : Json.Decoder Rules.Stage
+stageRules =
+    Json.succeed Rules.Stage
+        |> Json.optional "duration" (Json.int |> Json.map Just) Nothing
+        |> Json.required "after" Json.int
 
 
 timeLimitMode : Json.Decoder Rules.TimeLimitMode
@@ -574,10 +588,16 @@ userSummary =
 
 eventOrMdError : Json.Decoder (Result MdError Event)
 eventOrMdError =
-    Json.oneOf
-        [ event |> Json.map Result.Ok
-        , mdError |> Json.map Result.Err
-        ]
+    let
+        which e =
+            case e of
+                Just name ->
+                    mdErrorByName name |> Json.map Result.Err
+
+                Nothing ->
+                    event |> Json.map Result.Ok
+    in
+    Json.field "error" Json.string |> Json.maybe |> Json.andThen which
 
 
 event : Json.Decoder Event
@@ -623,6 +643,9 @@ eventByName name =
 
         "StartRevealing" ->
             timedGameEvent startRevealing
+
+        "StartJudging" ->
+            timedGameEvent startJudging
 
         "PlayRevealed" ->
             timedGameEvent playRevealed
@@ -739,6 +762,12 @@ startRevealing =
     Json.map2 (\ps -> \dr -> Events.StartRevealing { plays = ps, drawn = dr })
         (Json.field "plays" (Json.list playId))
         (Json.maybe (Json.field "drawn" (Json.list response)))
+
+
+startJudging : Json.Decoder Events.TimedGameEvent
+startJudging =
+    Json.succeed (\ps -> Events.StartJudging { plays = ps })
+        |> Json.optional "plays" (knownPlay |> Json.list |> Json.map Just) Nothing
 
 
 gameEvent : Json.Decoder Events.GameEvent -> Json.Decoder Event

@@ -624,15 +624,8 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                         plays =
                                             r.plays |> List.map (reveal id play)
 
-                                        known =
-                                            plays |> List.filterMap Play.asKnown
-
                                         round =
-                                            if List.length known == List.length plays then
-                                                Round.judging r.id r.czar r.players r.call known time False |> Round.J
-
-                                            else
-                                                { r | plays = plays, lastRevealed = Just id } |> Round.R
+                                            { r | plays = plays, lastRevealed = Just id } |> Round.R
 
                                         tts =
                                             speak shared r.call (Just play)
@@ -644,6 +637,34 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                     ( model.game.round, Cmd.none )
                     in
                     ( { model | game = { game | round = newRound } }, speech )
+
+                Events.StartJudging { plays } ->
+                    let
+                        game =
+                            model.game
+
+                        newRound =
+                            case game.round of
+                                Round.P r ->
+                                    let
+                                        known =
+                                            -- TODO: Error on default here.
+                                            plays |> Maybe.withDefault []
+                                    in
+                                    Round.judging r.id r.czar r.players r.call known time False |> Round.J
+
+                                Round.R r ->
+                                    let
+                                        known =
+                                            plays |> Maybe.withDefault (r.plays |> List.filterMap Play.asKnown)
+                                    in
+                                    Round.judging r.id r.czar r.players r.call known time False |> Round.J
+
+                                _ ->
+                                    -- TODO: Error
+                                    game.round
+                    in
+                    ( { model | game = { game | round = newRound } }, Cmd.none )
 
         Events.PlayerAway { player } ->
             let
@@ -941,18 +962,18 @@ timeLeft anchor startedAt currentTime limit =
 roundTimeDetails : Game -> ( Time, Maybe Int, Bool )
 roundTimeDetails game =
     let
-        timeLimits =
-            game.rules.timeLimits
+        stages =
+            game.rules.stages
     in
     case game.round of
         Round.P playing ->
-            ( playing.startedAt, timeLimits.playing, playing.timedOut )
+            ( playing.startedAt, stages.playing.duration, playing.timedOut )
 
         Round.R revealing ->
-            ( revealing.startedAt, timeLimits.revealing, revealing.timedOut )
+            ( revealing.startedAt, stages.revealing |> Maybe.andThen .duration, revealing.timedOut )
 
         Round.J judging ->
-            ( judging.startedAt, timeLimits.judging, judging.timedOut )
+            ( judging.startedAt, stages.judging.duration, judging.timedOut )
 
         Round.C complete ->
             ( complete.startedAt, Nothing, False )
@@ -968,7 +989,7 @@ minorActions wrap shared auth game helpEnabled =
             roundTimeDetails game
 
         enforceTimeLimit =
-            if timedOut && game.rules.timeLimits.mode == Rules.Soft then
+            if timedOut && game.rules.stages.mode == Rules.Soft then
                 IconButton.view shared
                     Strings.EnforceTimeLimitAction
                     (Icon.forward |> Icon.present |> NeList.just)

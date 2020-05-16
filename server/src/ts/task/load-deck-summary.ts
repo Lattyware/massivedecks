@@ -12,9 +12,10 @@ import {
   SourceNotFoundError,
   SourceServiceError,
 } from "../errors/action-execution-error";
+import { ReplaceOperation, TestOperation } from "rfc6902/diff";
 
 export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
-  private readonly source: Source.External;
+  public readonly source: Source.External;
 
   public constructor(gameCode: GameCode, source: Source.External) {
     super(gameCode);
@@ -42,11 +43,26 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
     const target = decks.find((deck) => resolver.equals(deck.source));
     if (target !== undefined) {
       modify(target);
-      lobbyConfig.version += 1;
+      const oldVersion = lobbyConfig.version;
       const patch = Rfc6902.createPatch(oldConfig, Config.censor(lobbyConfig));
+      lobbyConfig.version += 1;
+      const testVersion: TestOperation = {
+        op: "test",
+        path: "/version",
+        value: oldVersion.toString(),
+      };
+      const replaceVersion: ReplaceOperation = {
+        op: "replace",
+        path: "/version",
+        value: lobbyConfig.version.toString(),
+      };
       return {
         lobby,
-        events: [Event.targetAll(Configured.of(patch))],
+        events: [
+          Event.targetAll(
+            Configured.of([testVersion, ...patch, replaceVersion])
+          ),
+        ],
       };
     } else {
       return {};

@@ -4,6 +4,8 @@ import * as Lobby from "./lobby";
 import { GameCode } from "./lobby/game-code";
 import * as Timeout from "./timeout";
 import { Token } from "./user/token";
+import { Task } from "./task";
+import * as LobbyConfig from "./lobby/config";
 
 /**
  * Represents a chunk of data that should be written as a single transaction,
@@ -55,8 +57,9 @@ export abstract class Store {
    */
   public abstract async newLobby(
     creation: CreateLobby,
-    secret: string
-  ): Promise<{ gameCode: GameCode; token: Token }>;
+    secret: string,
+    defaults: LobbyConfig.Defaults
+  ): Promise<{ gameCode: GameCode; token: Token; tasks: Iterable<Task> }>;
 
   /**
    * An operation that doesn't make any changes to the lobby.

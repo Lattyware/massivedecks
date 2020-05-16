@@ -47,7 +47,7 @@ viewPlay shared config users winner ( id, play ) =
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.byLine shared users id (Icon.trophy |> Maybe.justIf (winner == id)) (play |> Maybe.andThen .likes)
+        [ Plays.byLine shared users id (( "trophy", Icon.trophy ) |> Maybe.justIf (winner == id)) (play |> Maybe.andThen .likes)
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )

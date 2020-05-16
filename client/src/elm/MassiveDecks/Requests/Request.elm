@@ -145,7 +145,7 @@ manageResponse errorDecoder valueDecoder response =
                     else
                         metadata.statusCode |> Error.BadStatus |> Error.Http |> GeneralError
 
-                Http.GoodStatus_ metadata body ->
+                Http.GoodStatus_ _ body ->
                     case Json.decodeString valueDecoder body of
                         Ok value ->
                             value |> Value

@@ -88,7 +88,7 @@ viewSettings wrap changePage shared lobby =
                 l.users |> Dict.get lobby.auth.claims.uid |> Maybe.map .role
 
             ( backAction, backDescription ) =
-                case lobby.lobby |> Maybe.andThen role |> Maybe.withDefault User.Spectator of
+                case lobby.lobbyAndConfigure |> Maybe.map .lobby |> Maybe.andThen role |> Maybe.withDefault User.Spectator of
                     User.Player ->
                         ( { route | section = Nothing } |> Route.Lobby |> changePage, Strings.ReturnViewToGameDescription )
 
@@ -117,7 +117,7 @@ viewSettings wrap changePage shared lobby =
 
 viewStage : Shared -> Lobby.Model -> List (Html msg)
 viewStage shared lobbyModel =
-    case lobbyModel.lobby of
+    case lobbyModel.lobbyAndConfigure |> Maybe.map .lobby of
         Just lobby ->
             case lobby.game of
                 Just game ->

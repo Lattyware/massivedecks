@@ -1,22 +1,50 @@
+@use "../_colors";
+
 // A play with the user's name.
 .with-byline {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0.5em;
+  position: relative;
+
+  > .play,
+  > .game-card {
+    margin-top: 2.5em;
+  }
 }
 
 // The user's name.
 .byline {
+  display: flex;
+
+  justify-content: center;
+
   font-size: 2em;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  max-width: 100%;
   overflow: hidden;
 
-  > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  .trophy {
+    color: colors.$secondary;
+  }
+  .likes {
+    color: colors.$primary;
+  }
+
+  > span {
     margin: 0 0.25em 0 0.25em;
+  }
+
+  .name {
+    flex-shrink: 1;
+    min-width: 1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 }

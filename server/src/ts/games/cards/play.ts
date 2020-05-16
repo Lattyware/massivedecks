@@ -16,12 +16,13 @@ export type Id = string;
 export interface PotentiallyRevealed {
   id: Id;
   play?: Play;
+  likes?: number;
 }
 
 /**
  * A play with its id.
  */
-export type Revealed = PotentiallyRevealed & { play: Play; likes?: number };
+export type Revealed = PotentiallyRevealed & { play: Play };
 
 /**
  * Create a new user id.

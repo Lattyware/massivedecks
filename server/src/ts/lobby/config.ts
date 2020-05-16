@@ -34,6 +34,15 @@ export interface Public {
 }
 
 /**
+ * Default configuration values for new lobbies.
+ */
+export interface Defaults {
+  rules: Rules.Public;
+  public: boolean;
+  decks: Source.External[];
+}
+
+/**
  * A deck source in the configuration.
  */
 export type ConfiguredSource = SummarisedSource | FailedSource;

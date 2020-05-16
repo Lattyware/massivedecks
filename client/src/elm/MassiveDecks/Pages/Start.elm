@@ -449,7 +449,7 @@ joinContent shared model =
                   , error
                   ]
                 , rejoinSection shared model
-                , [ nameField shared model Nothing
+                , [ nameField shared model nameError
                   , Form.section shared
                         "game-code-input"
                         (TextField.view shared

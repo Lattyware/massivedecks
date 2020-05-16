@@ -1,8 +1,16 @@
 import * as HouseRules from "./rules/houseRules";
+import * as Rando from "./rules/rando";
 
 /** The rules for a standard game.
  */
 export interface Rules {
+  handSize: number;
+  scoreLimit?: number;
+  houseRules: HouseRules.HouseRules;
+  stages: Stages;
+}
+
+export interface Public {
   /**
    * The number of cards in each player's hand.
    * @TJS-type integer
@@ -18,19 +26,12 @@ export interface Rules {
    * @maximum 10000
    */
   scoreLimit?: number;
-  houseRules: HouseRules.HouseRules;
-  timeLimits: RoundTimeLimits;
-}
-
-export interface Public {
-  handSize: number;
-  scoreLimit?: number;
   houseRules: HouseRules.Public;
-  timeLimits: RoundTimeLimits;
+  stages: Stages;
 }
 
 /**
- * Indicated what happens when the time limit runs out.
+ * Indicated what happens when duration time limits runs out.
  * "Hard": Non-ready players are automatically set to away.
  * "Soft": Ready players are given the option to set non-ready players to away.
  */
@@ -45,46 +46,42 @@ export type TimeLimitMode = "Hard" | "Soft";
 export type TimeLimit = number;
 
 /**
- * The time limits for the stages of a round.
+ * Rules specific to a stage of a round.
  */
-export interface RoundTimeLimits {
-  mode: TimeLimitMode;
+export interface Stage {
   /**
-   * The time limit for players to make their play.
+   * The amount of time the phase can last before action can be taken.
+   * If undefined, then there will be no time limit.
    */
-  playing?: TimeLimit;
+  duration?: TimeLimit;
   /**
-   * The time limit for the judge  to reveal the plays.
+   * The amount of time to wait after the phase is done (for players to see what has happened, change things, etc...).
    */
-  revealing?: TimeLimit;
-  /**
-   * The time limit for the judge to pick a winner.
-   */
-  judging?: TimeLimit;
-  /**
-   * The amount of time in seconds after one round completes the next one
-   * starts.
-   */
-  complete: TimeLimit;
+  after: TimeLimit;
 }
 
-export const defaultTimeLimits = (): RoundTimeLimits => ({
-  mode: "Soft",
-  playing: 60,
-  revealing: 30,
-  judging: 30,
-  complete: 2,
-});
-
 /**
- * Create a default set of rules.
+ * How the game progresses through rounds and the various stages thereof.
  */
-export const create = (): Rules => ({
-  handSize: 10,
-  scoreLimit: 25,
-  houseRules: HouseRules.create(),
-  timeLimits: defaultTimeLimits(),
-});
+export interface Stages {
+  timeLimitMode: TimeLimitMode;
+
+  /**
+   * The phase during which players choose responses to fill slots in the given call.
+   */
+  playing: Stage;
+
+  /**
+   * The phase during which the plays are revealed to everyone.
+   * If undefined, then this phase will be skipped.
+   */
+  revealing?: Stage;
+
+  /**
+   * The phase during which the winning play is picked.
+   */
+  judging: Stage;
+}
 
 /**
  * Configuration for the "Packing Heat" house rule.
@@ -123,4 +120,16 @@ export interface ComedyWriter {
 export const censor = (rules: Rules): Public => ({
   ...rules,
   houseRules: HouseRules.censor(rules.houseRules),
+});
+
+/**
+ * Create rules from some defaults.
+ * Importantly this doesn't correctly set up the rando house rule, use Rando.create after-the-fact.
+ */
+export const fromDefaults = (rules: Public): Rules => ({
+  ...rules,
+  houseRules: {
+    ...rules.houseRules,
+    rando: Rando.empty(),
+  },
 });

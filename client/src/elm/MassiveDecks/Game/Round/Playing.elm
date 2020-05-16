@@ -42,7 +42,7 @@ init wrap round pick =
 
 
 view : (Msg -> msg) -> Lobby.Auth -> Shared -> Config -> Dict User.Id User -> Model -> Round.Playing -> RoundView msg
-view wrap auth shared config users model round =
+view wrap auth shared config _ model round =
     let
         slots =
             Call.slotCount round.call

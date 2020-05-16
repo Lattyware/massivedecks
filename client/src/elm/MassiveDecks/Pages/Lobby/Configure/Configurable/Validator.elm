@@ -1,9 +1,10 @@
-module MassiveDecks.Pages.Lobby.Configure.Component.Validator exposing
-    ( Validator
+module MassiveDecks.Pages.Lobby.Configure.Configurable.Validator exposing
+    ( Def
+    , Validator
     , between
     , nonEmpty
     , none
-    , optional
+    , whenJust
     )
 
 import FontAwesome.Solid as Icon
@@ -12,23 +13,32 @@ import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
 
 
-type alias Validator value iMsg msg =
-    (iMsg -> msg) -> value -> List (Message msg)
+type alias Def value msg =
+    (value -> msg) -> Validator value msg
 
 
-between : Int -> Int -> (Int -> iMsg) -> Validator Int iMsg msg
-between min max set wrap value =
+type alias Validator value msg =
+    value -> List (Message msg)
+
+
+whenJust : Def value msg -> Def (Maybe value) msg
+whenJust base set value =
+    value |> Maybe.map (base (Just >> set)) |> Maybe.withDefault []
+
+
+between : Int -> Int -> Def Int msg
+between min max set value =
     List.filterMap identity
         [ Message.errorWithFix (Strings.MustBeMoreThanOrEqualValidationError { min = min })
             [ { description = Strings.SetValue { value = min }
-              , action = set min |> wrap
+              , action = set min
               , icon = Icon.arrowUp
               }
             ]
             |> Maybe.justIf (value < min)
         , Message.errorWithFix (Strings.MustBeLessThanOrEqualValidationError { max = max })
             [ { description = Strings.SetValue { value = max }
-              , action = set max |> wrap
+              , action = set max
               , icon = Icon.arrowDown
               }
             ]
@@ -36,21 +46,15 @@ between min max set wrap value =
         ]
 
 
-nonEmpty : Validator String iMsg msg
+nonEmpty : Def String msg
 nonEmpty _ value =
-    List.filterMap identity [ Strings.CantBeEmpty |> Message.error |> Maybe.justIf (String.isEmpty value) ]
+    let
+        len =
+            String.length value
+    in
+    List.filterMap identity [ Message.error Strings.CantBeEmpty |> Maybe.justIf (len < 1) ]
 
 
-optional : Validator value iMsg msg -> Validator (Maybe value) iMsg msg
-optional whenJust wrap maybeValue =
-    case maybeValue of
-        Just value ->
-            whenJust wrap value
-
-        Nothing ->
-            []
-
-
-none : Validator value iMsg msg
+none : Def value msg
 none _ _ =
     []

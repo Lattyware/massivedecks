@@ -101,6 +101,7 @@ module.exports = (env, argv) => {
     });
     // Load elm without refreshing in a dev env.
     // Disable if working with chromecasts.
+    // noinspection JSCheckFunctionSignatures
     elmLoaders.unshift({ loader: "elm-hot-webpack-loader" });
     plugins.push(new webpack.HotModuleReplacementPlugin());
   }

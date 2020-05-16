@@ -11,7 +11,7 @@ import MassiveDecks.Game.Rules as Rules exposing (Rules)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
 import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as Privacy
 import MassiveDecks.Pages.Lobby.Configure.Rules.Model as Rules
-import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model as TimeLimits
+import MassiveDecks.Pages.Lobby.Configure.Stages.Model as Stages
 
 
 {-| Where a config has come from.
@@ -24,26 +24,24 @@ type Source
 type Tab
     = Decks
     | Rules
-    | TimeLimits
+    | Stages
     | Privacy
 
 
 type Id
     = All
     | NameId
-    | DecksId Decks.Id
     | PrivacyId Privacy.Id
-    | TimeLimitsId TimeLimits.Id
+    | StagesId Stages.Id
     | RulesId Rules.Id
+    | DecksId Decks.Id
 
 
 type alias Model =
     { localConfig : Config
     , tab : Tab
     , decks : Decks.Model
-    , privacy : Privacy.Model
-    , timeLimits : TimeLimits.Model
-    , rules : Rules.Model
+    , passwordVisible : Bool
     , conflicts : List Id
     }
 
@@ -73,12 +71,11 @@ fake =
             , reboot = Nothing
             , comedyWriter = Nothing
             }
-        , timeLimits =
+        , stages =
             { mode = Rules.Soft
-            , playing = Nothing
+            , playing = { duration = Nothing, after = 0 }
             , revealing = Nothing
-            , judging = Nothing
-            , complete = 0
+            , judging = { duration = Nothing, after = 0 }
             }
         }
     , decks = []

@@ -24,9 +24,10 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.Pages.Lobby.Actions as Actions
-import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Component)
-import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator
-import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption exposing (ConfigOption)
+import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Model as Configurable exposing (Configurable)
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (Deck)
 import MassiveDecks.Pages.Lobby.Configure.Diff as Diff
@@ -36,11 +37,11 @@ import MassiveDecks.Pages.Lobby.Configure.Privacy as Privacy
 import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as Privacy
 import MassiveDecks.Pages.Lobby.Configure.Rules as Rules
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.ComedyWriter.Model as ComedyWriter
-import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model as HouseRule
+import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model as HouseRules
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Rando.Model as Rando
 import MassiveDecks.Pages.Lobby.Configure.Rules.Model as Rules
-import MassiveDecks.Pages.Lobby.Configure.TimeLimits as TimeLimits
-import MassiveDecks.Pages.Lobby.Configure.TimeLimits.Model as TimeLimits
+import MassiveDecks.Pages.Lobby.Configure.Stages as Stages
+import MassiveDecks.Pages.Lobby.Configure.Stages.Model as Stages
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Invite as Invite
 import MassiveDecks.Pages.Lobby.Messages as Lobby
@@ -51,87 +52,38 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.NeList exposing (NeList(..))
-import Material.Attributes as Material
 import Material.Button as Button
 import Material.Card as Card
 import Material.Fab as Fab
 import Material.Tabs as Tabs
-import Material.TextField as TextField
 
 
-init : Shared -> Model
-init shared =
-    { localConfig = default
+init : Shared -> Config -> Model
+init shared config =
+    { localConfig = config
     , tab = Decks
     , decks = Decks.init shared
-    , privacy = Privacy.init
-    , timeLimits = TimeLimits.init
-    , rules = Rules.init
+    , passwordVisible = False
     , conflicts = []
     }
 
 
 update : Shared -> Msg -> Model -> Config -> ( Model, Shared, Cmd msg )
 update shared msg model config =
+    let
+        allComponent =
+            all identity config
+
+        getComponent =
+            Configurable.getById allComponent
+    in
     case msg of
-        NameChange updatedName ->
-            let
-                localConfig =
-                    model.localConfig
-            in
-            ( { model | localConfig = { localConfig | name = updatedName } }, shared, Cmd.none )
-
-        PrivacyMsg privacyMsg ->
-            let
-                localConfig =
-                    model.localConfig
-
-                ( local, privacy, cmd ) =
-                    Privacy.update privacyMsg localConfig.privacy model.privacy
-            in
-            ( { model | privacy = privacy, localConfig = { localConfig | privacy = local } }, shared, cmd )
-
         DecksMsg decksMsg ->
             let
                 ( decks, newShared, cmd ) =
                     Decks.update shared decksMsg model.decks
             in
             ( { model | decks = decks }, newShared, cmd )
-
-        TimeLimitsMsg timeLimitsMsg ->
-            let
-                localConfig =
-                    model.localConfig
-
-                ( local, timeLimits, cmd ) =
-                    TimeLimits.update timeLimitsMsg localConfig.rules.timeLimits model.timeLimits
-
-                rules =
-                    localConfig.rules
-            in
-            ( { model
-                | timeLimits = timeLimits
-                , localConfig = { localConfig | rules = { rules | timeLimits = local } }
-              }
-            , shared
-            , cmd
-            )
-
-        RulesMsg rulesMsg ->
-            let
-                localConfig =
-                    model.localConfig
-
-                ( local, newRules, cmd ) =
-                    Rules.update config.version rulesMsg config.rules localConfig.rules model.rules
-            in
-            ( { model
-                | rules = newRules
-                , localConfig = { localConfig | rules = local }
-              }
-            , shared
-            , cmd
-            )
 
         StartGame ->
             ( model, shared, Actions.startGame )
@@ -140,29 +92,34 @@ update shared msg model config =
             ( { model | tab = t }, shared, Cmd.none )
 
         ResolveConflict source id ->
-            let
-                conflictComponent =
-                    componentById id
+            case getComponent id of
+                Just conflictComponent ->
+                    let
+                        local =
+                            model.localConfig
 
-                local =
-                    model.localConfig
+                        set =
+                            Configurable.set conflictComponent
 
-                ( newLocal, cmd ) =
-                    case source of
-                        Remote ->
-                            ( Component.update conflictComponent config local, Cmd.none )
+                        ( newLocal, cmd ) =
+                            case source of
+                                Remote ->
+                                    ( set config local, Cmd.none )
 
-                        Local ->
-                            ( local
-                            , patchFor (Component.update conflictComponent local config) config
-                                |> Maybe.map Actions.configure
-                                |> Maybe.withDefault Cmd.none
-                            )
-            in
-            ( { model | localConfig = newLocal, conflicts = model.conflicts |> List.filter ((/=) id) }, shared, cmd )
+                                Local ->
+                                    ( local
+                                    , patchFor (set local config) config
+                                        |> Maybe.map Actions.configure
+                                        |> Maybe.withDefault Cmd.none
+                                    )
+                    in
+                    ( { model | localConfig = newLocal, conflicts = model.conflicts |> List.filter ((/=) id) }, shared, cmd )
+
+                Nothing ->
+                    ( model, shared, Cmd.none )
 
         SaveChanges ->
-            if Component.isValid all model.localConfig then
+            if Configurable.isValid allComponent model.localConfig then
                 ( model
                 , shared
                 , patchFor config model.localConfig
@@ -179,10 +136,30 @@ update shared msg model config =
         NoOp ->
             ( model, shared, Cmd.none )
 
+        ApplyChange id change ->
+            case getComponent id of
+                Just conflictComponent ->
+                    ( { model | localConfig = Configurable.set conflictComponent change model.localConfig }, shared, Cmd.none )
 
-view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Maybe msg -> Message msg -> Model -> GameCode -> Lobby -> Html msg
-view wrap wrapLobby shared return disabledReason model gameCode lobby =
+                Nothing ->
+                    ( model, shared, Cmd.none )
+
+        SetPasswordVisibility visible ->
+            ( { model | passwordVisible = visible }, shared, Cmd.none )
+
+
+view : (Msg -> msg) -> (Lobby.Msg -> msg) -> Shared -> Maybe msg -> Message msg -> GameCode -> Lobby.LobbyAndConfigure -> Html msg
+view wrap wrapLobby shared return disabledReason gameCode { lobby, configure } =
     let
+        allComponent =
+            all wrap configure.localConfig
+
+        getComponent =
+            Configurable.getById allComponent
+
+        model =
+            configure
+
         canEdit =
             disabledReason |> Maybe.isNothing
 
@@ -193,23 +170,26 @@ view wrap wrapLobby shared return disabledReason model gameCode lobby =
             else
                 Html.div [ HtmlA.id "merge-overlay" ]
                     [ Card.view []
-                        [ model.conflicts |> viewMerge wrap shared model model.localConfig lobby.config (wrap NoOp) canEdit
+                        [ model.conflicts |> List.filterMap getComponent |> viewMerge wrap shared model model.localConfig lobby.config
                         ]
                     ]
+
+        viewComponent component =
+            Configurable.viewEditor component shared model model.localConfig canEdit
 
         tabComponent =
             case model.tab of
                 Decks ->
-                    Decks.All |> DecksId
+                    [ Decks.view (DecksMsg >> wrap) shared model.decks lobby.config.decks canEdit ]
 
                 Rules ->
-                    Rules.All |> RulesId
+                    Rules.All |> RulesId |> getComponent |> Maybe.map viewComponent |> Maybe.withDefault []
 
-                TimeLimits ->
-                    TimeLimits.All |> TimeLimitsId
+                Stages ->
+                    Stages.All |> StagesId |> getComponent |> Maybe.map viewComponent |> Maybe.withDefault []
 
                 Privacy ->
-                    Privacy.All |> PrivacyId
+                    Privacy.All |> PrivacyId |> getComponent |> Maybe.map viewComponent |> Maybe.withDefault []
 
         viewReturnButton msg =
             Button.view shared
@@ -221,17 +201,21 @@ view wrap wrapLobby shared return disabledReason model gameCode lobby =
 
         returnButton =
             return |> Maybe.map viewReturnButton |> Maybe.withDefault (Html.div [] [])
+
+        nameSection =
+            getComponent NameId |> Maybe.map viewComponent |> Maybe.withDefault []
+
+        joiningSection =
+            [ Html.div [ HtmlA.class "joining" ]
+                [ Invite.button wrapLobby shared
+                , Html.label [ Lobby.ToggleInviteDialog |> wrapLobby |> HtmlE.onClick ]
+                    [ Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared ]
+                ]
+            ]
     in
     Html.div [ HtmlA.class "configure" ]
         [ Card.view []
-            [ Html.div [ HtmlA.class "title" ]
-                [ Component.view (componentById NameId) wrap shared model model.localConfig lobby.config (wrap NoOp) canEdit ConfigOption.Local |> Maybe.withDefault Html.nothing
-                , Html.div [ HtmlA.class "joining" ]
-                    [ Invite.button wrapLobby shared
-                    , Html.label [ Lobby.ToggleInviteDialog |> wrapLobby |> HtmlE.onClick ]
-                        [ Strings.GameCode { code = GameCode.toString gameCode } |> Lang.html shared ]
-                    ]
-                ]
+            [ Html.div [ HtmlA.class "title" ] (nameSection ++ joiningSection)
             , disabledReason
                 |> Message.view shared
                 |> Maybe.withDefault Html.nothing
@@ -242,25 +226,16 @@ view wrap wrapLobby shared return disabledReason model gameCode lobby =
                 , tab = tab
                 , equals = (==)
                 }
-            , Component.view (componentById tabComponent)
-                wrap
-                shared
-                model
-                model.localConfig
-                lobby.config
-                (wrap NoOp)
-                canEdit
-                ConfigOption.Local
-                |> Maybe.withDefault Html.nothing
+            , Html.div [] tabComponent
             , startGameSegment wrap wrapLobby shared canEdit model lobby returnButton
             ]
-        , actions wrap shared (model.localConfig /= lobby.config)
+        , actions wrap shared (model.localConfig /= lobby.config) model.localConfig
         , conflicts
         ]
 
 
-applyChange : Json.Patch -> Config -> Model -> Result Error ( Config, Model )
-applyChange change config model =
+applyChange : (Msg -> msg) -> Json.Patch -> Config -> Model -> Result Error ( Config, Model )
+applyChange wrap change config model =
     let
         handleError error =
             case error of
@@ -275,20 +250,21 @@ applyChange change config model =
         |> Json.apply change
         |> Result.mapError (handleError >> Error.Config)
         |> Result.andThen (Json.decodeValue Decoders.config >> Result.mapError Error.Json)
-        |> Result.map (\c -> ( c, mergeChange config model.localConfig c model ))
+        |> Result.map (\c -> ( c, mergeChange wrap config model.localConfig c model ))
 
 
 
 {- Private -}
 
 
-actions wrap shared hasChanges =
+actions : (Msg -> msg) -> Shared -> Bool -> Config -> Html msg
+actions wrap shared hasChanges config =
     Html.div [ HtmlA.class "actions" ]
         [ Fab.view shared
             Fab.Normal
             Strings.SaveChanges
             (Icon.save |> Icon.present)
-            (SaveChanges |> wrap |> Just)
+            (SaveChanges |> wrap |> Maybe.justIf (Configurable.isValid (all wrap config) config))
             [ HtmlA.classList [ ( "action", True ), ( "important", True ), ( "exited", not hasChanges ) ] ]
         , Fab.view shared
             Fab.Mini
@@ -314,8 +290,8 @@ patchFor old new =
 
 {-| Show merge conflicts to a user to resolve.
 -}
-viewMerge : (Msg -> msg) -> Shared -> Model -> Config -> Config -> msg -> Bool -> List Id -> Html msg
-viewMerge wrap shared model local config noOp canEdit conflicts =
+viewMerge : (Msg -> msg) -> Shared -> Model -> Config -> Config -> List (Configurable.Component Id Config Model msg) -> Html msg
+viewMerge wrap shared model local config conflicts =
     Html.div [ HtmlA.class "merge" ]
         [ Html.div []
             [ Html.h2 [] [ Strings.Conflict |> Lang.html shared ]
@@ -323,21 +299,21 @@ viewMerge wrap shared model local config noOp canEdit conflicts =
             ]
         , Html.div
             [ HtmlA.class "conflicts" ]
-            (conflicts |> List.map (viewConflict wrap shared model local config noOp canEdit))
+            (conflicts |> List.map (viewConflict wrap shared model local config))
         ]
 
 
-viewConflict : (Msg -> msg) -> Shared -> Model -> Config -> Config -> msg -> Bool -> Id -> Html msg
-viewConflict wrap shared model local config noOp canEdit conflict =
+viewConflict : (Msg -> msg) -> Shared -> Model -> Config -> Config -> Configurable.Component Id Config Model msg -> Html msg
+viewConflict wrap shared model local config conflict =
     let
-        conflictComponent =
-            componentById conflict
+        id =
+            Configurable.id conflict
     in
     Html.div [ HtmlA.class "conflict" ]
-        [ Component.view conflictComponent wrap shared model local config noOp canEdit ConfigOption.Diff |> Maybe.withDefault Html.nothing
+        [ Configurable.viewDiff conflict shared model local config
         , Html.div [ HtmlA.class "resolution" ]
-            [ resolveButton wrap shared conflict Config.Local Strings.YourChanges
-            , resolveButton wrap shared conflict Config.Remote Strings.TheirChanges
+            [ resolveButton wrap shared id Config.Local Strings.YourChanges
+            , resolveButton wrap shared id Config.Remote Strings.TheirChanges
             ]
         ]
 
@@ -352,101 +328,53 @@ resolveButton wrap shared conflict source description =
         [ HtmlA.class "resolve", ResolveConflict source conflict |> wrap |> HtmlE.onClick ]
 
 
-default : Config
-default =
-    { name = ""
-    , decks = Decks.default
-    , privacy = Privacy.default
-    , rules = Rules.default
-    , version = ""
-    }
+all : (Msg -> msg) -> Config -> Configurable.Component Id Config Model msg
+all wrap config =
+    Configurable.group
+        { id = All
+        , editor = Editor.group Nothing False False
+        , children =
+            [ name |> Configurable.wrap identity (.name >> Just) (\v p -> { p | name = v })
+            , Rules.all |> Configurable.wrap RulesId (.rules >> Just) (\v p -> { p | rules = v })
+            , Stages.all
+                |> Configurable.wrap StagesId (.stages >> Just) (\v p -> { p | stages = v })
+                |> Configurable.wrap identity (.rules >> Just) (\v p -> { p | rules = v })
+            , Privacy.all (SetPasswordVisibility >> wrap)
+                |> Configurable.wrap PrivacyId (.privacy >> Just) (\v p -> { p | privacy = v })
+            , Decks.all |> Configurable.wrap DecksId (.decks >> Just) (\v p -> { p | decks = v })
+            ]
+        }
+        { noOp = wrap NoOp, config = Just config, update = \i c -> ApplyChange i c |> wrap }
 
 
-all : Component Config Model Id Msg msg
-all =
-    Component.group All
-        Nothing
-        [ NameId |> componentById
-        , Decks.All |> DecksId |> componentById
-        , Privacy.All |> PrivacyId |> componentById
-        , TimeLimits.All |> TimeLimitsId |> componentById
-        , Rules.All |> RulesId |> componentById
-        ]
-
-
-componentById : Id -> Component Config Model Id Msg msg
-componentById id =
-    case id of
-        All ->
-            all
-
-        NameId ->
-            name |> Component.liftConfig .name (\n -> \c -> { c | name = n })
-
-        DecksId decksId ->
-            decksId
-                |> Decks.componentById
-                |> Component.lift DecksId DecksMsg .decks (\d -> \c -> { c | decks = d }) .decks
-
-        PrivacyId privacyId ->
-            privacyId
-                |> Privacy.componentById
-                |> Component.lift PrivacyId PrivacyMsg .privacy (\p -> \c -> { c | privacy = p }) .privacy
-
-        TimeLimitsId timeLimitsId ->
-            timeLimitsId
-                |> TimeLimits.componentById
-                |> Component.lift
-                    TimeLimitsId
-                    TimeLimitsMsg
-                    .timeLimits
-                    (\tl -> \r -> { r | timeLimits = tl })
-                    .timeLimits
-                |> Component.liftConfig .rules (\r -> \c -> { c | rules = r })
-
-        RulesId rulesId ->
-            rulesId
-                |> Rules.componentById
-                |> Component.lift RulesId RulesMsg .rules (\r -> \c -> { c | rules = r }) .rules
-
-
-name : Component String Model Id Msg msg
+name : Configurable Id String model msg
 name =
-    Component.value
-        NameId
-        (ConfigOption.view nameOption)
-        (always False)
-        Validator.nonEmpty
+    Configurable.value
+        { id = NameId
+        , editor = Editor.string Strings.LobbyNameLabel
+        , validator = Validator.nonEmpty
+        , messages = always []
+        }
 
 
-nameOption : ConfigOption Model String Msg msg
-nameOption =
-    { id = "name-option"
-    , toggleable = Nothing
-    , primaryEditor =
-        \_ ->
-            ConfigOption.TextField
-                { placeholder = Strings.LobbyNameLabel
-                , inputType = TextField.Text
-                , toString = Just
-                , fromString = Just
-                , attrs = [ Material.minLength 1, Material.maxLength 100 ]
-                }
-    , extraEditor = \_ -> \_ -> \_ -> \_ -> Nothing
-    , set = ConfigOption.wrappedSetter NameChange
-    , messages = \_ -> []
-    }
-
-
-mergeChange : Config -> Config -> Config -> Model -> Model
-mergeChange base local remote model =
+mergeChange : (Msg -> msg) -> Config -> Config -> Config -> Model -> Model
+mergeChange wrap base local remote model =
     let
+        allComponent =
+            all wrap local
+
+        getComponent =
+            Configurable.getById allComponent
+
         { updated, conflicts } =
-            Diff.merge all base local remote { base | version = remote.version }
+            Diff.merge allComponent base local remote { base | version = remote.version }
+
+        conflictComponent id =
+            getComponent id |> Maybe.map (\c -> not (Configurable.equals c local remote)) |> Maybe.withDefault True
 
         -- If someone else changed the configuration to match yours, the conflict is resolved.
         oldConflicts =
-            model.conflicts |> List.filter (\c -> not (Component.equal (componentById c) local remote))
+            model.conflicts |> List.filter conflictComponent
 
         -- We can't have duplicate conflicts.
         newConflicts =
@@ -494,6 +422,12 @@ startGameProblems shared wrap wrapLobby users model remote =
     let
         config =
             model.localConfig
+
+        rules =
+            config.rules
+
+        houseRules =
+            rules.houseRules
 
         deckSummaries =
             Decks.getDecks config.decks |> List.map .summary
@@ -552,8 +486,22 @@ startGameProblems shared wrap wrapLobby users model remote =
                     old =
                         config.rules.houseRules.comedyWriter |> Maybe.map .number |> Maybe.withDefault 0
 
+                    comedyWriter =
+                        houseRules.comedyWriter |> Maybe.withDefault { number = 0, exclusive = False }
+
+                    newConfig =
+                        { config | rules = { rules | houseRules = { houseRules | comedyWriter = Just { comedyWriter | number = diff + old } } } }
+
                     fixMsg =
-                        diff + old |> Just |> ComedyWriter.SetNumber |> HouseRule.ComedyWriterMsg |> Rules.HouseRulesMsg |> RulesMsg |> wrap
+                        ApplyChange
+                            (ComedyWriter.Number
+                                |> ComedyWriter.Child
+                                |> HouseRules.ComedyWriterId
+                                |> Rules.HouseRulesId
+                                |> RulesId
+                            )
+                            newConfig
+                            |> wrap
                 in
                 [ Strings.MissingCardType { cardType = Strings.Call }
                     |> Message.error
@@ -576,6 +524,23 @@ startGameProblems shared wrap wrapLobby users model remote =
         playerCount =
             humanPlayerCount + computerPlayers
 
+        rando =
+            houseRules.rando |> Maybe.withDefault { number = max (3 - humanPlayerCount) 1 }
+
+        addAisConfig =
+            { config | rules = { rules | houseRules = { houseRules | rando = Just { rando | number = max (3 - humanPlayerCount) 1 } } } }
+
+        addAisFixMsg =
+            ApplyChange
+                (Rando.Number
+                    |> Rando.Child
+                    |> HouseRules.RandoId
+                    |> Rules.HouseRulesId
+                    |> RulesId
+                )
+                addAisConfig
+                |> wrap
+
         playerIssues =
             [ Message.errorWithFix
                 Strings.NeedAtLeastThreePlayers
@@ -585,13 +550,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                   }
                 , { description = Strings.AddAnAiPlayer
                   , icon = Icon.robot
-                  , action =
-                        { number = max (3 - humanPlayerCount) 1 }
-                            |> Rando.Set
-                            |> HouseRule.RandoMsg
-                            |> Rules.HouseRulesMsg
-                            |> RulesMsg
-                            |> wrap
+                  , action = addAisFixMsg
                   }
                 ]
                 |> Maybe.justIf (playerCount < 3)
@@ -605,28 +564,42 @@ startGameProblems shared wrap wrapLobby users model remote =
                 |> Maybe.justIf (humanPlayerCount < 1)
             ]
 
+        disableRandoConfig =
+            { config | rules = { rules | houseRules = { houseRules | rando = Nothing } } }
+
+        disableRandoFixMsg =
+            ApplyChange
+                (Rando.Enabled
+                    |> HouseRules.RandoId
+                    |> Rules.HouseRulesId
+                    |> RulesId
+                )
+                disableRandoConfig
+                |> wrap
+
+        disableComedyWriterConfig =
+            { config | rules = { rules | houseRules = { houseRules | comedyWriter = Nothing } } }
+
+        disableComedyWriterFixMsg =
+            ApplyChange
+                (ComedyWriter.Enabled
+                    |> HouseRules.ComedyWriterId
+                    |> Rules.HouseRulesId
+                    |> RulesId
+                )
+                disableComedyWriterConfig
+                |> wrap
+
         aisNoWriteGoodIssues =
             [ Message.errorWithFix
                 Strings.RandoCantWrite
                 [ { description = Strings.DisableRando
                   , icon = Icon.powerOff
-                  , action =
-                        False
-                            |> Rando.SetEnabled
-                            |> HouseRule.RandoMsg
-                            |> Rules.HouseRulesMsg
-                            |> RulesMsg
-                            |> wrap
+                  , action = disableRandoFixMsg
                   }
                 , { description = Strings.DisableComedyWriter
                   , icon = Icon.eraser
-                  , action =
-                        False
-                            |> ComedyWriter.SetEnabled
-                            |> HouseRule.ComedyWriterMsg
-                            |> Rules.HouseRulesMsg
-                            |> RulesMsg
-                            |> wrap
+                  , action = disableComedyWriterFixMsg
                   }
                 ]
                 |> Maybe.justIf (hr.rando /= Nothing && hr.comedyWriter /= Nothing)
@@ -639,7 +612,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                       , icon = Icon.save
                       , action = SaveChanges |> wrap
                       }
-                        |> Maybe.justIf (Component.isValid all config)
+                        |> Maybe.justIf (Configurable.isValid (all wrap config) config)
                     , { description = Strings.RevertChanges
                       , icon = Icon.undo
                       , action = RevertChanges |> wrap
@@ -655,7 +628,7 @@ startGameProblems shared wrap wrapLobby users model remote =
 
 tabs : NeList Tab
 tabs =
-    NeList Decks [ Rules, TimeLimits, Privacy ]
+    NeList Decks [ Rules, Stages, Privacy ]
 
 
 tab : Tab -> Tabs.TabModel
@@ -674,7 +647,7 @@ tabName target =
         Rules ->
             Strings.ConfigureRules
 
-        TimeLimits ->
+        Stages ->
             Strings.ConfigureTimeLimits
 
         Privacy ->

@@ -1,10 +1,10 @@
 module MassiveDecks.Pages.Lobby.Configure.Decks exposing
-    ( componentById
-    , default
+    ( all
     , getDecks
     , getSummary
     , init
     , update
+    , view
     )
 
 import FontAwesome.Attributes as Icon
@@ -22,9 +22,8 @@ import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.Pages.Lobby.Actions as Actions
-import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Component(..))
-import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator exposing (Validator)
-import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption
+import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (..)
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Strings as Strings
@@ -38,21 +37,21 @@ import Paper.Tooltip as Tooltip
 import Svg.Attributes as SvgA
 
 
-componentById : Id -> Component Config Model Id Msg msg
-componentById id =
-    case id of
-        All ->
-            all
-
-
 init : Shared -> Model
 init shared =
     { toAdd = Source.default shared }
 
 
-default : Config
-default =
-    []
+{-| We have this just to make sure it gets correctly updated, we'll never render it, decks are custom.
+-}
+all : Configurable Id Config model msg
+all =
+    Configurable.value
+        { id = All
+        , editor = \_ _ _ _ _ -> []
+        , validator = \_ _ -> []
+        , messages = always []
+        }
 
 
 {-| React to user input.
@@ -82,8 +81,8 @@ update shared msg model =
 
 {-| View the editor/viewer for decks.
 -}
-view : Validator Config Msg msg -> ConfigOption.ViewArgs Model Config Msg msg -> Html msg
-view _ { wrap, shared, model, remote, canEdit } =
+view : (Msg -> msg) -> Shared -> Model -> Config -> Bool -> Html msg
+view wrap shared model remote canEdit =
     let
         hint =
             if canEdit then
@@ -121,7 +120,8 @@ view _ { wrap, shared, model, remote, canEdit } =
                 Html.nothing
     in
     Html.div [ HtmlA.id "decks-tab", HtmlA.class "compressed-terms" ]
-        [ Html.table []
+        [ Html.h3 [] [ Strings.ConfigureDecks |> Lang.html shared ]
+        , Html.table []
             [ Html.colgroup []
                 [ Html.col [ HtmlA.class "deck-name" ] []
                 , Html.col [ HtmlA.class "count" ] []
@@ -166,15 +166,6 @@ getDecks config =
 
 
 {- Private -}
-
-
-all : Component Config Model Id Msg msg
-all =
-    Component.group
-        All
-        Nothing
-        [ Component.value All view (always False) Validator.none
-        ]
 
 
 getDeck : DeckOrError -> Maybe Deck

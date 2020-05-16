@@ -142,6 +142,7 @@ $users-width: 18rem;
     .scores {
       display: flex;
       flex-direction: column;
+      align-items: flex-end;
 
       .score {
         color: colors.$secondary;

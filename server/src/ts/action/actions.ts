@@ -26,11 +26,16 @@ export abstract class Implementation<
 > implements Actions<ParentType, ParentLobby> {
   protected abstract readonly name: Name;
 
-  public is(action: Action): action is Type {
-    return action.action === this.name;
+  // Should be Action, broken due to https://github.com/microsoft/TypeScript/pull/37195
+  // TODO: Better fix.
+  public is(action: unknown): action is Type {
+    return (action as Action).action === this.name;
   }
 
-  protected abstract handle: Handler.Custom<Type, ParentLobby>;
+  // Should be Type, broken due to https://github.com/microsoft/TypeScript/pull/37195
+  // TODO: Better fix.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected abstract handle: Handler.Custom<any, ParentLobby>;
 
   public tryHandle(
     auth: Token.Claims,

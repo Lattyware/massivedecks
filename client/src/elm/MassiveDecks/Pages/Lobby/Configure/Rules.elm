@@ -1,132 +1,55 @@
-module MassiveDecks.Pages.Lobby.Configure.Rules exposing
-    ( componentById
-    , init
-    , update
-    )
+module MassiveDecks.Pages.Lobby.Configure.Rules exposing (all)
 
 import MassiveDecks.Components.Form.Message as Message
-import MassiveDecks.Pages.Lobby.Configure.Component as Component exposing (Component)
-import MassiveDecks.Pages.Lobby.Configure.Component.Validator as Validator
-import MassiveDecks.Pages.Lobby.Configure.ConfigOption as ConfigOption exposing (ConfigOption)
-import MassiveDecks.Pages.Lobby.Configure.ConfigOption.Toggleable as Toggleable
+import MassiveDecks.Game.Rules exposing (Rules)
+import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
+import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules as HouseRules
-import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model as HouseRules
 import MassiveDecks.Pages.Lobby.Configure.Rules.Model exposing (..)
 import MassiveDecks.Strings as Strings
 
 
-init : Model
-init =
-    { houseRules = HouseRules.init
-    }
-
-
-update : String -> Msg -> Config -> Config -> Model -> ( Config, Model, Cmd msg )
-update version msg remote local model =
-    case msg of
-        HandSizeChange value ->
-            ( { local | handSize = value }, model, Cmd.none )
-
-        ScoreLimitChange value ->
-            ( { local | scoreLimit = value }, model, Cmd.none )
-
-        HouseRulesMsg houseRulesMsg ->
-            let
-                ( hrConfig, hrModel, cmd ) =
-                    HouseRules.update version houseRulesMsg remote.houseRules local.houseRules model.houseRules
-            in
-            ( { local | houseRules = hrConfig }, { model | houseRules = hrModel }, cmd )
-
-
-componentById : Id -> Component Config Model Id Msg msg
-componentById id =
-    case id of
-        All ->
-            all
-
-        GameRules ->
-            gameRules
-
-        HandSize ->
-            handSize |> Component.liftConfig .handSize (\hs -> \c -> { c | handSize = hs })
-
-        ScoreLimit ->
-            scoreLimit |> Component.liftConfig .scoreLimit (\sl -> \c -> { c | scoreLimit = sl })
-
-        HouseRulesId houseRule ->
-            HouseRules.componentById houseRule
-                |> Component.lift HouseRulesId HouseRulesMsg .houseRules (\hr -> \c -> { c | houseRules = hr }) .houseRules
-
-
-
-{- Private -}
-
-
-all : Component Config Model Id Msg msg
+all : Configurable Id Rules model msg
 all =
-    Component.group All
-        Nothing
-        [ componentById GameRules
-        , componentById (HouseRulesId HouseRules.All)
-        ]
+    Configurable.group
+        { id = All
+        , editor = Editor.group Nothing False False
+        , children =
+            [ gameRules
+            , HouseRules.all |> Configurable.wrap HouseRulesId (.houseRules >> Just) (\v p -> { p | houseRules = v })
+            ]
+        }
 
 
-gameRules : Component Config Model Id Msg msg
+gameRules : Configurable Id Rules model msg
 gameRules =
-    Component.group GameRules
-        (Just Strings.ConfigureRules)
-        [ componentById HandSize
-        , componentById ScoreLimit
-        ]
+    Configurable.group
+        { id = GameRules
+        , editor = Editor.group (Just Strings.ConfigureRules) False False
+        , children =
+            [ handSize |> Configurable.wrap identity (.handSize >> Just) (\v p -> { p | handSize = v })
+            , scoreLimit |> Configurable.wrap identity (.scoreLimit >> Just) (\v p -> { p | scoreLimit = v })
+            ]
+        }
 
 
-handSizeLimits : ConfigOption.IntBounds
-handSizeLimits =
-    ConfigOption.IntBounds 3 50
-
-
-handSize : Component Int Model Id Msg msg
+handSize : Configurable Id Int model msg
 handSize =
-    Component.value
-        HandSize
-        (ConfigOption.view handSizeOption)
-        (always False)
-        (ConfigOption.toValidator handSizeLimits HandSizeChange)
+    Configurable.value
+        { id = HandSize
+        , editor = Editor.int Strings.HandSize
+        , validator = Validator.between 3 50
+        , messages = always [ Message.info Strings.HandSizeDescription ]
+        }
 
 
-handSizeOption : ConfigOption Model Int Msg msg
-handSizeOption =
-    { id = "hand-size-option"
-    , toggleable = Nothing
-    , primaryEditor =
-        \_ -> ConfigOption.intEditor Strings.HandSize (ConfigOption.toMinMaxAttrs handSizeLimits)
-    , extraEditor = ConfigOption.noExtraEditor
-    , set = ConfigOption.wrappedSetter HandSizeChange
-    , messages = \_ -> [ Message.info Strings.HandSizeDescription ]
-    }
-
-
-scoreLimitBounds : ConfigOption.IntBounds
-scoreLimitBounds =
-    ConfigOption.IntBounds 1 10000
-
-
-scoreLimit : Component (Maybe Int) Model Id Msg msg
+scoreLimit : Configurable Id (Maybe Int) model msg
 scoreLimit =
-    Component.value
-        ScoreLimit
-        (ConfigOption.view scoreLimitOption)
-        (always False)
-        (Validator.optional (ConfigOption.toValidator scoreLimitBounds (Just >> ScoreLimitChange)))
-
-
-scoreLimitOption : ConfigOption Model (Maybe Int) Msg msg
-scoreLimitOption =
-    { id = "score-limit-option"
-    , toggleable = Toggleable.maybe 25
-    , primaryEditor =
-        \_ -> ConfigOption.maybeEditor (ConfigOption.intEditor Strings.ScoreLimit (ConfigOption.toMinMaxAttrs scoreLimitBounds))
-    , extraEditor = ConfigOption.noExtraEditor
-    , set = ConfigOption.wrappedSetter ScoreLimitChange
-    , messages = \_ -> [ Message.info Strings.ScoreLimitDescription ]
-    }
+    Configurable.value
+        { id = ScoreLimit
+        , editor = Editor.int Strings.ScoreLimit |> Editor.maybe 25
+        , validator = Validator.between 0 9999 |> Validator.whenJust
+        , messages = always [ Message.info Strings.ScoreLimitDescription ]
+        }

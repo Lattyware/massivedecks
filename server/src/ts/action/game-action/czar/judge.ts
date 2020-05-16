@@ -59,7 +59,7 @@ class JudgeAction extends Actions.Implementation<
         timeouts: [
           {
             timeout: RoundStart.of(),
-            after: game.rules.timeLimits.complete * 1000,
+            after: game.rules.stages.judging.after * 1000,
           },
         ],
       };

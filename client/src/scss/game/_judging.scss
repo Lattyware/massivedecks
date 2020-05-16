@@ -1,4 +1,5 @@
 @use "../_colors";
+@use "../_cards";
 
 .liked {
   .side::after {
@@ -14,5 +15,23 @@
     opacity: 0.3;
     background: colors.$primary;
     mask-image: url("../../../assets/images/certificate-thumbs-up.svg");
+  }
+}
+
+.judging {
+  .game-card {
+    @include cards.shadow(colors.$primary);
+  }
+}
+
+.judging.is-czar {
+  .picked {
+    .side {
+      border-color: colors.$secondary;
+    }
+  }
+
+  .game-card {
+    @include cards.shadow(colors.$secondary);
   }
 }

@@ -22,13 +22,13 @@ view wrap auth shared config round =
         role =
             Player.role (Round.R round) auth.claims.uid
 
-        instruction =
+        ( instruction, isCzar ) =
             case role of
                 Player.RCzar ->
-                    Strings.RevealPlaysInstruction
+                    ( Strings.RevealPlaysInstruction, True )
 
                 Player.RPlayer ->
-                    Strings.WaitingForCzarInstruction
+                    ( Strings.WaitingForCzarInstruction, False )
 
         slots =
             Call.slotCount round.call
@@ -46,7 +46,7 @@ view wrap auth shared config round =
     in
     { instruction = Just instruction
     , action = Nothing
-    , content = plays |> Plays.view "revealing" Nothing
+    , content = plays |> Plays.view [ ( "revealing", True ), ( "is-czar", isCzar ) ] Nothing
     , fillCallWith = lastRevealed |> Maybe.withDefault []
     }
 

@@ -3,6 +3,7 @@ module MassiveDecks.Pages.Lobby.Model exposing
     , Change(..)
     , Claims
     , Lobby
+    , LobbyAndConfigure
     , Model
     , Notification
     , NotificationId
@@ -40,8 +41,7 @@ type Change
 type alias Model =
     { route : Route
     , auth : Auth
-    , lobby : Maybe Lobby
-    , configure : Configure.Model
+    , lobbyAndConfigure : Maybe LobbyAndConfigure
     , notificationId : NotificationId
     , notifications : List (Animated Notification)
     , inviteDialogOpen : Bool
@@ -52,11 +52,16 @@ type alias Model =
     }
 
 
+type alias LobbyAndConfigure =
+    { lobby : Lobby
+    , configure : Configure.Model
+    }
+
+
 {-| A lobby.
 -}
 type alias Lobby =
-    { public : Bool
-    , users : Dict User.Id User
+    { users : Dict User.Id User
     , owner : User.Id
     , config : Configure.Config
     , game : Maybe Game.Model

@@ -2,11 +2,12 @@ import { dealWithLostPlayer } from "../action/game-action/set-presence";
 import * as Event from "../event";
 import * as StageTimerDone from "../events/game-event/stage-timer-done";
 import * as Round from "../games/game/round";
-import { RoundTimeLimits } from "../games/rules";
+import * as Rules from "../games/rules";
 import * as Lobby from "../lobby";
 import * as Change from "../lobby/change";
 import * as Timeout from "../timeout";
 import * as Util from "../util";
+import { Stages } from "../games/rules";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
@@ -20,19 +21,16 @@ export interface RoundStageTimerDone {
 /**
  * Note that the config has seconds, not milliseconds.
  * @param stage The stage you are in.
- * @param timeLimits The time limits in use.
+ * @param stages The time limits in use.
  */
-function timeFromConfig(
-  stage: Round.Stage,
-  timeLimits: RoundTimeLimits
-): number | undefined {
+function stageDuration(stage: Round.Stage, stages: Stages): number | undefined {
   switch (stage) {
     case "Playing":
-      return timeLimits.playing;
+      return stages.playing.after;
     case "Revealing":
-      return timeLimits.revealing;
+      return stages.revealing?.duration;
     case "Judging":
-      return timeLimits.judging;
+      return stages.judging?.after;
     case "Complete":
       return undefined;
     default:
@@ -43,16 +41,13 @@ function timeFromConfig(
 /**
  * Give a round stage timer if one is enabled.
  * @param round the active round.
- * @param timeLimits the active time limits.
+ * @param stages the active time limits.
  */
 export const ifEnabled = (
   round: Round.Round,
-  timeLimits: RoundTimeLimits | undefined
+  stages: Rules.Stages
 ): Timeout.After | undefined => {
-  if (timeLimits === undefined) {
-    return undefined;
-  }
-  const afterSeconds = timeFromConfig(round.stage, timeLimits);
+  const afterSeconds = stageDuration(round.stage, stages);
   if (afterSeconds === undefined) {
     return undefined;
   }
@@ -72,11 +67,11 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
   gameCode,
   lobby
 ) => {
-  const timeLimits = lobby.config.rules.timeLimits;
   const game = lobby.game;
-  if (timeLimits === undefined || game === undefined) {
+  if (game === undefined) {
     return {};
   }
+  const stages = game.rules.stages;
   const gameRound = game.round;
   if (
     gameRound.id !== timeout.round ||
@@ -91,7 +86,7 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
     return {};
   }
   gameRound.timedOut = true;
-  switch (timeLimits.mode) {
+  switch (stages.timeLimitMode) {
     case "Soft":
       return {
         events: [
@@ -103,7 +98,7 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
         dealWithLostPlayer(server, l, p)
       );
     default:
-      Util.assertNever(timeLimits.mode);
+      Util.assertNever(stages.timeLimitMode);
   }
   return {};
 };

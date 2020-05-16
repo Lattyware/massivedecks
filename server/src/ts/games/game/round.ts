@@ -7,6 +7,11 @@ import * as Card from "../cards/card";
 import * as Play from "../cards/play";
 import * as PublicRound from "./round/public";
 import * as StoredPlay from "./round/storedPlay";
+import * as RoundStageTimerDone from "../../timeout/round-stage-timer-done";
+import * as Timeout from "../../timeout";
+import * as Event from "../../event";
+import * as StartJudging from "../../events/game-event/start-judging";
+import * as Rules from "../rules";
 
 export type Round = Playing | Revealing | Judging | Complete;
 
@@ -175,6 +180,24 @@ export class Judging extends Base<"Judging"> implements Timed {
     this.timedOut = timedOut;
   }
 
+  public start(
+    rules: Rules.Rules,
+    previouslyRevealed: boolean
+  ): {
+    timeouts?: Iterable<Timeout.After>;
+    events?: Iterable<Event.Distributor>;
+  } {
+    const timeout = RoundStageTimerDone.ifEnabled(this, rules.stages);
+    const plays = previouslyRevealed
+      ? undefined
+      : Array.from(this.revealedPlays());
+    const event = Event.targetAll(StartJudging.of(plays));
+    return {
+      timeouts: Util.asOptionalIterable(timeout),
+      events: Util.asOptionalIterable(event),
+    };
+  }
+
   public advance(winner: User.Id): Complete {
     return new Complete(this.id, this.czar, this.call, this.plays, winner);
   }
@@ -248,11 +271,25 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     this.timedOut = timedOut;
   }
 
-  public advance(): Judging | null {
+  public advance(
+    rules: Rules.Rules,
+    previouslyRevealed = true
+  ):
+    | {
+        round: Judging;
+        events?: Iterable<Event.Distributor>;
+        timeouts?: Iterable<Timeout.After>;
+      }
+    | undefined {
     if (StoredPlay.allRevealed(this)) {
-      return new Judging(this.id, this.czar, this.call, this.plays);
+      const judging = new Judging(this.id, this.czar, this.call, this.plays);
+      const start = judging.start(rules, previouslyRevealed);
+      return {
+        round: judging,
+        ...start,
+      };
     } else {
-      return null;
+      return undefined;
     }
   }
 
@@ -333,6 +370,24 @@ export class Playing extends Base<"Playing"> implements Timed {
       this.call,
       Util.shuffled(this.plays)
     );
+  }
+
+  public skipToJudging(
+    rules: Rules.Rules
+  ): {
+    round: Judging;
+    timeouts?: Iterable<Timeout.After>;
+    events?: Iterable<Event.Distributor>;
+  } {
+    const revealing = this.advance();
+    for (const play of revealing.plays) {
+      play.revealed = true;
+    }
+    const advance = revealing.advance(rules, false);
+    if (advance === undefined) {
+      throw new Error("All plays should have been revealed automatically.");
+    }
+    return advance;
   }
 
   public waitingFor(): Set<User.Id> | null {

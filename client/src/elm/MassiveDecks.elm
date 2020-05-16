@@ -15,7 +15,6 @@ import MassiveDecks.Error.Overlay as Overlay
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
-import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages as Pages
 import MassiveDecks.Pages.Loading as Loading
@@ -351,7 +350,7 @@ view model =
         title =
             case model.page of
                 Pages.Lobby m ->
-                    m.lobby |> Maybe.map (\l -> l.config.name ++ " (" ++ (m.auth.claims.gc |> GameCode.toString) ++ ")")
+                    m.lobbyAndConfigure |> Maybe.map (\l -> l.lobby.config.name ++ " (" ++ (m.auth.claims.gc |> GameCode.toString) ++ ")")
 
                 _ ->
                     Nothing

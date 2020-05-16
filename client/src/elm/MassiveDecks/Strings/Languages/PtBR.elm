@@ -892,14 +892,41 @@ translate mdString =
         PlayingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) os ", Ref Players, Text " terão para fazer suas jogadas." ]
 
+        -- TODO: Translate
+        PlayingAfterDescription ->
+            [ Text "How long (in seconds) players have to change their play before the next stage starts." ]
+
         RevealingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " tem para revelar as cartas." ]
+
+        -- TODO: Translate
+        RevealingAfterDescription ->
+            [ Text "How long (in seconds) to wait after the last card is revealed before the next stage starts." ]
 
         JudgingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " tem para julgar as cartas." ]
 
         CompleteTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) para esperar depois que uma partida acaba antes de começar o próximo." ]
+
+        -- TODO: Translate
+        RevealingEnabledTitle ->
+            [ Text "Czar Reveals Plays" ]
+
+        -- TODO: Translate
+        RevealingEnabled ->
+            [ Text "If this is enabled, the "
+            , Ref Czar
+            , Text " reveals one play at a time before picking a winner."
+            ]
+
+        -- TODO: Translate
+        DuringTitle ->
+            [ Text "Time Limit" ]
+
+        -- TODO: Translate
+        AfterTitle ->
+            [ Text "After" ]
 
         Conflict ->
             [ Text "Conflito" ]

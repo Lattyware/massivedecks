@@ -27,23 +27,28 @@ type alias Details msg =
 
 {-| View a collection of plays.
 -}
-view : String -> Maybe Play.Id -> List (Details msg) -> Html msg
-view class picked details =
-    HtmlK.ul [ HtmlA.classList [ ( class, True ), ( "cards", True ), ( "plays", True ) ] ] (details |> List.map (viewPlay picked))
+view : List ( String, Bool ) -> Maybe Play.Id -> List (Details msg) -> Html msg
+view classes picked details =
+    HtmlK.ul [ HtmlA.classList (classes ++ [ ( "cards", True ), ( "plays", True ) ]) ]
+        (details |> List.map (viewPlay picked))
 
 
 {-| Create a byline.
 -}
-byLine : Shared -> Dict User.Id User -> User.Id -> Maybe Icon -> Maybe Int -> Html msg
+byLine : Shared -> Dict User.Id User -> User.Id -> Maybe ( String, Icon ) -> Maybe Int -> Html msg
 byLine shared users id icon likes =
     let
         name =
             users |> Dict.get id |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
     in
     Html.span [ HtmlA.class "byline", HtmlA.title name ]
-        [ icon |> Maybe.map Icon.viewIcon |> Maybe.withDefault Html.nothing
-        , Html.text name
-        , likes |> Maybe.map (\l -> Strings.Likes { total = l } |> Lang.html shared) |> Maybe.withDefault Html.nothing
+        [ icon
+            |> Maybe.map (\( cls, i ) -> Html.span [ HtmlA.class cls ] [ Icon.viewIcon i ])
+            |> Maybe.withDefault Html.nothing
+        , Html.span [ HtmlA.class "name" ] [ Html.text name ]
+        , likes
+            |> Maybe.map (\l -> Html.span [ HtmlA.class "likes" ] [ Strings.Likes { total = l } |> Lang.html shared ])
+            |> Maybe.withDefault Html.nothing
         ]
 
 

@@ -1,9 +1,4 @@
-module MassiveDecks.Pages.Lobby.Configure.Privacy.Model exposing
-    ( Config
-    , Id(..)
-    , Model
-    , Msg(..)
-    )
+module MassiveDecks.Pages.Lobby.Configure.Privacy.Model exposing (Config, Id(..))
 
 
 type Id
@@ -16,14 +11,3 @@ type alias Config =
     { password : Maybe String
     , public : Bool
     }
-
-
-type alias Model =
-    { passwordVisible : Bool
-    }
-
-
-type Msg
-    = PasswordChange (Maybe String)
-    | PublicChange Bool
-    | TogglePasswordVisibility

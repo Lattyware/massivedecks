@@ -1,4 +1,6 @@
 @use "../cards/_size";
+@use "../_colors";
+@use "../_cards";
 
 // A hand of cards.
 .hand {
@@ -8,8 +10,16 @@
 
   z-index: 1;
 
+  .game-card {
+    @include cards.shadow(colors.$primary);
+  }
+
   &.not-playing {
     pointer-events: none;
+
+    .game-card {
+      @include cards.shadow();
+    }
 
     .game-card .aspect::after {
       content: "";

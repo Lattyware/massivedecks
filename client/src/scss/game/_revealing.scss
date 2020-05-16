@@ -1,0 +1,8 @@
+@use "../_colors";
+@use "../_cards";
+
+.revealing.is-czar {
+  .game-card.face-down {
+    @include cards.shadow(colors.$primary);
+  }
+}

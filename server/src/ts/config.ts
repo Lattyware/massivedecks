@@ -1,5 +1,6 @@
 import Moment from "moment";
 import * as Util from "./util";
+import * as LobbyConfig from "./lobby/config";
 
 type Duration = UnparsedDuration | ParsedDuration;
 type UnparsedDuration = string;
@@ -27,6 +28,7 @@ export interface Config<D extends Duration> extends EnvironmentalConfig {
   tasks: Tasks<D>;
   storage: BaseStorage<D>;
   cache: BaseCache<D>;
+  defaults: LobbyConfig.Defaults;
 }
 
 export type Parsed = Config<ParsedDuration>;
@@ -35,7 +37,6 @@ export type Unparsed = Config<UnparsedDuration>;
 type Timeouts<D extends Duration> = {
   timeoutCheckFrequency: D;
   disconnectionGracePeriod: D;
-  finishedPlayingDelay: D;
 } & { [key: string]: D };
 
 type Tasks<D extends Duration> = {

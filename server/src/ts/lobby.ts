@@ -9,12 +9,13 @@ import * as Config from "./lobby/config";
 import { GameCode } from "./lobby/game-code";
 import * as User from "./user";
 import * as Util from "./util";
+import { LoadDeckSummary } from "./task/load-deck-summary";
+import * as Rando from "./games/rules/rando";
 
 /**
  * A game lobby.
  */
 export interface Lobby {
-  public: boolean;
   nextUserId: number;
   users: { [id: string]: User.User };
   owner: User.Id;
@@ -46,7 +47,6 @@ export const hasActiveGame = (lobby: Lobby): lobby is WithActiveGame =>
  * A game lobby containing only state all users can see.
  */
 export interface Public {
-  public: boolean;
   users: { [id: string]: User.Public };
   owner: User.Id;
   config: Config.Public;
@@ -72,28 +72,61 @@ export interface Summary {
 
 /**
  * Create a config with default values.
+ * Importantly this doesn't correctly set up the rando house rule, use Rando.create after-the-fact.
  */
-export const defaultConfig = (name: string): Config.Config => ({
-  version: 0,
-  name,
-  rules: Rules.create(),
-  decks: [],
-  public: false,
-});
+export const fromDefaults = (
+  gameCode: GameCode,
+  name: string,
+  defaults: Config.Defaults
+): {
+  config: Config.Config;
+  tasks: LoadDeckSummary[];
+} => {
+  const tasks = defaults.decks.map(
+    (source) => new LoadDeckSummary(gameCode, source)
+  );
+  return {
+    config: {
+      version: 0,
+      name,
+      rules: Rules.fromDefaults(defaults.rules),
+      public: defaults.public,
+      decks: [],
+    },
+    tasks: tasks,
+  };
+};
 
 /**
  * Create a new lobby.
+ * @param gameCode The game code for the lobby when it is created.
  * @param creation The details of the lobby to create.
+ * @param defaults The defaults to use.
  */
-export function create(creation: CreateLobby): Lobby {
-  const id = (0).toString();
-  return {
-    public: false,
+export function create(
+  gameCode: GameCode,
+  creation: CreateLobby,
+  defaults: Config.Defaults
+): {
+  lobby: Lobby;
+  tasks: LoadDeckSummary[];
+} {
+  const ownerId = (0).toString();
+  const { config, tasks } = fromDefaults(gameCode, creation.name, defaults);
+  const lobby = {
     nextUserId: 1,
-    users: { [id]: User.create(creation.owner, "Privileged") },
-    owner: id,
-    config: defaultConfig(creation.name),
+    users: { [ownerId]: User.create(creation.owner, "Privileged") },
+    owner: ownerId,
+    config: config,
     errors: [],
+  };
+  config.rules.houseRules.rando = Rando.create(
+    lobby,
+    defaults.rules.houseRules.rando
+  );
+  return {
+    lobby,
+    tasks,
   };
 }
 
@@ -128,7 +161,6 @@ function usersObj(lobby: Lobby): { [id: string]: User.Public } {
 }
 
 export const censor = (lobby: Lobby): Public => ({
-  public: lobby.public,
   users: usersObj(lobby),
   owner: lobby.owner,
   config: Config.censor(lobby.config),

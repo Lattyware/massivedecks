@@ -2,7 +2,6 @@
 
 .configure {
   padding: 1em;
-  height: 100%;
 
   .mdc-card {
     max-width: 60em;
@@ -15,12 +14,13 @@
     align-items: center;
     align-content: center;
     flex-wrap: wrap;
+    margin-bottom: 1em;
 
     .game-code {
       font-size: 1.5em;
     }
 
-    #name-option {
+    .config-option {
       flex-grow: 1;
       flex-basis: 6em;
     }
@@ -54,6 +54,46 @@
 
     .action {
       pointer-events: all;
+    }
+  }
+}
+
+.folded {
+  display: none;
+}
+
+.form-group {
+  margin: 1em 0;
+}
+
+.indent .form-group {
+  margin: 0;
+}
+
+.config-option {
+  display: flex;
+  flex-direction: column;
+
+  .control {
+    display: flex;
+    align-items: center;
+
+    & > * {
+      margin: 0 0.5em;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      margin: 0;
+
+      & > * {
+        margin: 0 0.5em;
+      }
+    }
+
+    .primary {
+      flex-grow: 1;
     }
   }
 }
@@ -171,10 +211,12 @@
 
 #merge-overlay {
   position: fixed;
-  top: 0;
+  top: 4rem;
   right: 0;
   bottom: 0;
   left: 0;
+
+  padding: 1em;
 
   background-color: transparentize(colors.$secondary-background, 0.6);
 
@@ -185,13 +227,35 @@
   justify-content: center;
   align-items: center;
 
+  .mdc-card {
+    max-height: 100%;
+  }
+
+  .merge {
+    overflow: auto;
+  }
+
   .conflict {
     display: flex;
     flex-direction: column;
 
+    .local,
+    .remote {
+      flex-grow: 1;
+      display: flex;
+
+      .primary {
+        flex-grow: 1;
+      }
+    }
+
     .resolution {
       display: flex;
       flex-direction: row;
+
+      mwc-button {
+        margin: 0 0.5em;
+      }
 
       .resolve {
         flex-basis: 0;

@@ -28,6 +28,9 @@ export const Schema = {
     Action: {
       anyOf: [
         {
+          $ref: "#/definitions/Authenticate",
+        },
+        {
           $ref: "#/definitions/SetPresence",
         },
         {
@@ -53,9 +56,6 @@ export const Schema = {
         },
         {
           $ref: "#/definitions/EnforceTimeLimit",
-        },
-        {
-          $ref: "#/definitions/Authenticate",
         },
         {
           $ref: "#/definitions/Configure",
@@ -499,19 +499,26 @@ export const Schema = {
       defaultProperties: [],
       properties: {
         handSize: {
+          description: "The number of cards in each player's hand.",
+          maximum: 50,
+          minimum: 3,
           type: "number",
         },
         houseRules: {
           $ref: "#/definitions/Public_1",
         },
         scoreLimit: {
+          description:
+            "The score threshold for the game - when a player hits this they win.\nIf not set, then there is end - the game goes on infinitely.",
+          maximum: 10000,
+          minimum: 1,
           type: "number",
         },
-        timeLimits: {
-          $ref: "#/definitions/RoundTimeLimits",
+        stages: {
+          $ref: "#/definitions/Stages",
         },
       },
-      required: ["handSize", "houseRules", "timeLimits"],
+      required: ["handSize", "houseRules", "stages"],
       type: "object",
     },
     PublicConfig: {
@@ -702,35 +709,6 @@ export const Schema = {
       enum: ["Player", "Spectator"],
       type: "string",
     },
-    RoundTimeLimits: {
-      additionalProperties: false,
-      defaultProperties: [],
-      description: "The time limits for the stages of a round.",
-      properties: {
-        complete: {
-          $ref: "#/definitions/TimeLimit_1",
-          description:
-            "The amount of time in seconds after one round completes the next one\nstarts.",
-        },
-        judging: {
-          $ref: "#/definitions/TimeLimit",
-          description: "The time limit for the judge to pick a winner.",
-        },
-        mode: {
-          $ref: "#/definitions/TimeLimitMode",
-        },
-        playing: {
-          $ref: "#/definitions/TimeLimit",
-          description: "The time limit for players to make their play.",
-        },
-        revealing: {
-          $ref: "#/definitions/TimeLimit",
-          description: "The time limit for the judge  to reveal the plays.",
-        },
-      },
-      required: ["complete", "mode"],
-      type: "object",
-    },
     SetPlayerAway: {
       additionalProperties: false,
       defaultProperties: [],
@@ -802,6 +780,56 @@ export const Schema = {
     Stage: {
       enum: ["Complete", "Judging", "Playing", "Revealing"],
       type: "string",
+    },
+    Stage_1: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "Rules specific to a stage of a round.",
+      properties: {
+        after: {
+          $ref: "#/definitions/TimeLimit_1",
+          description:
+            "The amount of time to wait after the phase is done (for players to see what has happened, change things, etc...).",
+        },
+        duration: {
+          $ref: "#/definitions/TimeLimit",
+          description:
+            "The amount of time the phase can last before action can be taken.\nIf undefined, then there will be no time limit.",
+        },
+      },
+      required: ["after"],
+      type: "object",
+    },
+    Stage_2: {
+      $ref: "#/definitions/Stage_1",
+      description: "Rules specific to a stage of a round.",
+    },
+    Stages: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        "How the game progresses through rounds and the various stages thereof.",
+      properties: {
+        judging: {
+          $ref: "#/definitions/Stage_1",
+          description: "The phase during which the winning play is picked.",
+        },
+        playing: {
+          $ref: "#/definitions/Stage_1",
+          description:
+            "The phase during which players choose responses to fill slots in the given call.",
+        },
+        revealing: {
+          $ref: "#/definitions/Stage_2",
+          description:
+            "The phase during which the plays are revealed to everyone.\nIf undefined, then this phase will be skipped.",
+        },
+        timeLimitMode: {
+          $ref: "#/definitions/TimeLimitMode",
+        },
+      },
+      required: ["judging", "playing", "timeLimitMode"],
+      type: "object",
     },
     StartGame: {
       additionalProperties: false,
@@ -920,7 +948,7 @@ export const Schema = {
     },
     TimeLimitMode: {
       description:
-        'Indicated what happens when the time limit runs out.\n"Hard": Non-ready players are automatically set to away.\n"Soft": Ready players are given the option to set non-ready players to away.',
+        'Indicated what happens when duration time limits runs out.\n"Hard": Non-ready players are automatically set to away.\n"Soft": Ready players are given the option to set non-ready players to away.',
       enum: ["Hard", "Soft"],
       type: "string",
     },

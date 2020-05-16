@@ -24,13 +24,16 @@ view wrap auth shared config round =
         role =
             Player.role (Round.J round) auth.claims.uid
 
-        ( action, instruction ) =
+        ( action, instruction, isCzar ) =
             case role of
                 Player.RCzar ->
-                    ( Maybe.map (always Action.Judge) round.pick, Strings.RevealPlaysInstruction )
+                    ( Maybe.map (always Action.Judge) round.pick, Strings.RevealPlaysInstruction, True )
 
                 Player.RPlayer ->
-                    ( Maybe.andThen (\p -> Maybe.justIf (not (Set.member p round.liked)) Action.Like) round.pick, Strings.WaitingForCzarInstruction )
+                    ( Maybe.andThen (\p -> Maybe.justIf (not (Set.member p round.liked)) Action.Like) round.pick
+                    , Strings.WaitingForCzarInstruction
+                    , False
+                    )
 
         picked =
             round.plays
@@ -44,7 +47,7 @@ view wrap auth shared config round =
     in
     { instruction = Just instruction
     , action = action
-    , content = details |> Plays.view "judging" round.pick
+    , content = details |> Plays.view [ ( "judging", True ), ( "is-czar", isCzar ) ] round.pick
     , fillCallWith = picked
     }
 
