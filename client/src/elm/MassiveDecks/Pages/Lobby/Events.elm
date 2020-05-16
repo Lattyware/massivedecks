@@ -48,6 +48,7 @@ type PresenceState
 
 type GameEvent
     = HandRedrawn { player : User.Id, hand : Maybe (List Card.Response) }
+    | CardDiscarded { player : User.Id, card : Card.Response, replacement : Maybe Card.Response }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }
     | PlayerAway { player : User.Id }

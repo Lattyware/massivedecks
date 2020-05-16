@@ -103,6 +103,10 @@ export interface Reboot {
   cost: number;
 }
 
+/**
+ * Configuration for the "Comedy Writer" house rule.
+ * This rule adds blank cards that players write as they play them.
+ */
 export interface ComedyWriter {
   /**
    * The number of blank cards to add.
@@ -116,6 +120,12 @@ export interface ComedyWriter {
    */
   exclusive: boolean;
 }
+
+/**
+ * Configuration for the "Never Have I Ever" house rule.
+ * This rule allows players to discard cards, but everyone else in the game can see the discarded card.
+ */
+export interface NeverHaveIEver {}
 
 export const censor = (rules: Rules): Public => ({
   ...rules,

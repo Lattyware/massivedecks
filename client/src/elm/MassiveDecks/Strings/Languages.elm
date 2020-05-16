@@ -11,7 +11,6 @@ module MassiveDecks.Strings.Languages exposing
     , label
     , languageName
     , languages
-    , placeholder
     , recommended
     , sortClosestFirst
     , string
@@ -127,7 +126,7 @@ string shared mdString =
 -}
 givenLanguageString : Language -> MdString -> String
 givenLanguageString lang mdString =
-    mdString |> Render.asString ( lang, translate lang )
+    mdString |> Render.asString { lang = lang, translate = translate lang, parent = mdString }
 
 
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings
@@ -139,14 +138,7 @@ html shared mdString =
         lang =
             currentLanguage shared
     in
-    mdString |> Render.asHtml ( lang, translate lang )
-
-
-{-| Convenience for an HTML `placeholder` attribute from the given `MdString`.
--}
-placeholder : Shared -> MdString -> Html.Attribute msg
-placeholder shared =
-    string shared >> String.capitalise >> HtmlA.placeholder
+    mdString |> Render.asHtml { lang = lang, translate = translate lang, parent = mdString }
 
 
 {-| Convenience for an HTML `title` attribute from the given `MdString`.

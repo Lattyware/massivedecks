@@ -33,25 +33,28 @@ normal =
 view : (Msg -> msg) -> Shared -> Maybe Action -> Action -> Html msg
 view wrap shared visible action =
     let
-        { icon, attrs, title, onClick } =
+        { icon, attrs, type_, title, onClick } =
             case action of
                 Submit ->
-                    IconView Icon.check blocking Strings.SubmitPlay Game.Submit
+                    IconView Icon.check blocking Fab.Normal Strings.SubmitPlay Game.Submit
 
                 TakeBack ->
-                    IconView Icon.undo normal Strings.TakeBackPlay Game.TakeBack
+                    IconView Icon.undo normal Fab.Normal Strings.TakeBackPlay Game.TakeBack
 
                 Judge ->
-                    IconView Icon.trophy blocking Strings.JudgePlay Game.Judge
+                    IconView Icon.trophy blocking Fab.Normal Strings.JudgePlay Game.Judge
 
                 Like ->
-                    IconView Icon.thumbsUp normal Strings.LikePlay Game.Like
+                    IconView Icon.thumbsUp normal Fab.Normal Strings.LikePlay Game.Like
 
                 Advance ->
-                    IconView Icon.forward blocking Strings.AdvanceRound Game.AdvanceRound
+                    IconView Icon.forward blocking Fab.Normal Strings.AdvanceRound Game.AdvanceRound
+
+                Discard ->
+                    IconView Icon.trash normal Fab.Mini Strings.HouseRuleNeverHaveIEver Game.Discard
     in
     Fab.view shared
-        Fab.Normal
+        type_
         title
         (icon |> Icon.present)
         (onClick |> wrap |> Just)
@@ -61,6 +64,7 @@ view wrap shared visible action =
 type alias IconView msg =
     { icon : Icon
     , attrs : List (Html.Attribute msg)
+    , type_ : Fab.Type
     , title : MdString
     , onClick : Game.Msg
     }

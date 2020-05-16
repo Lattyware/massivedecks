@@ -1,5 +1,6 @@
 module MassiveDecks.Pages.Lobby.Actions exposing
     ( configure
+    , discard
     , endGame
     , enforceTimeLimit
     , fill
@@ -37,6 +38,11 @@ configure patch =
 startGame : Cmd msg
 startGame =
     action "StartGame" []
+
+
+discard : Card.Id -> Cmd msg
+discard card =
+    action "Discard" [ ( "card", card |> Json.string ) ]
 
 
 fill : Card.Id -> String -> Cmd msg

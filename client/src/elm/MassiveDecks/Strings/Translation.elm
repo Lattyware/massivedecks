@@ -15,6 +15,7 @@ type Result
     | Text String -- The given static text.
     | Em (List Result) -- The contained text will be emphasised if possible (e.g: bold).
     | Segment (List Result) -- Indicates a "line" of text that will be wrapped independently (but not actively line broken).
+    | Missing -- Indicates that this string hasn't been translated.
 
 
 {-| The details of a language.

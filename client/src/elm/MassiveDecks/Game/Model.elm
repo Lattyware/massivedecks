@@ -33,6 +33,7 @@ type alias Model =
     , time : Maybe Time
     , helpVisible : Bool
     , confetti : Bool
+    , discarded : List ( User.Id, Card.Response )
     }
 
 
@@ -49,6 +50,7 @@ emptyModel game =
     , time = Nothing
     , helpVisible = False
     , confetti = False
+    , discarded = []
     }
 
 

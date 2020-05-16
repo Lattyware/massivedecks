@@ -69,11 +69,17 @@ translate mdString =
         NewGame ->
             [ Text "New" ]
 
+        NewGameDescription ->
+            [ Text "Start a new game of ", Ref MassiveDecks, Text "." ]
+
         FindPublicGame ->
             [ Text "Find" ]
 
         JoinPrivateGame ->
             [ Text "Join" ]
+
+        JoinPrivateGameDescription ->
+            [ Text "Join a game someone invited you to." ]
 
         PlayGame ->
             [ Text "Play" ]
@@ -284,6 +290,14 @@ translate mdString =
 
         HouseRuleRandoCardrissianNumberDescription ->
             [ Text "The number of AI players that will be in the game." ]
+
+        HouseRuleNeverHaveIEver ->
+            [ Text "Never Have I Ever" ]
+
+        HouseRuleNeverHaveIEverDescription ->
+            [ Text "At any time, a player may discard cards they don't understand, however, they must confess their "
+            , Text "ignorance: the card is shared publicly."
+            ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
@@ -984,6 +998,14 @@ translate mdString =
         ClientAway ->
             [ Text "You are currently set as away from the game, and are not playing." ]
 
+        Discard ->
+            [ Text "Discard the selected card, revealing it to the other users in the game." ]
+
+        Discarded { player } ->
+            [ Text player
+            , Text " discarded the following card:"
+            ]
+
         -- Instructions
         PlayInstruction { numberOfCards } ->
             [ Text "You need to choose "
@@ -1029,6 +1051,9 @@ translate mdString =
         -- Actions
         Refresh ->
             [ Text "Refresh" ]
+
+        Accept ->
+            [ Text "OK" ]
 
         -- Errors
         Error ->

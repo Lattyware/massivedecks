@@ -21,6 +21,7 @@ import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
@@ -50,6 +51,7 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Events as HtmlE
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.NeList as NeList
 import Material.Button as Button
@@ -309,6 +311,25 @@ update wrap shared msg model =
 
         Redraw ->
             ( model, Actions.redraw )
+
+        Discard ->
+            case model.game.round of
+                Round.P p ->
+                    let
+                        action =
+                            p.pick.cards |> List.head |> Maybe.map Actions.discard
+                    in
+                    ( model, action |> Maybe.withDefault Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        DismissDiscard ->
+            let
+                discarded =
+                    model.discarded |> List.tail |> Maybe.withDefault []
+            in
+            ( { model | discarded = discarded }, Cmd.none )
 
         ToggleHistoryView ->
             ( { model | viewingHistory = not model.viewingHistory }, Cmd.none )
@@ -785,6 +806,26 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
             in
             ( { model | game = { game | winner = Just winner }, confetti = False }, Cmd.none )
 
+        Events.CardDiscarded { player, card, replacement } ->
+            let
+                ( hand, discarded ) =
+                    case replacement of
+                        Just replacementCard ->
+                            let
+                                replace c =
+                                    if c.details.id == card.details.id then
+                                        replacementCard
+
+                                    else
+                                        c
+                            in
+                            ( model.hand |> List.map replace, model.discarded )
+
+                        Nothing ->
+                            ( model.hand, model.discarded ++ [ ( player, card ) ] )
+            in
+            ( { model | hand = hand, discarded = discarded }, Cmd.none )
+
 
 applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
 applyGameStarted wrap lobby round hand =
@@ -934,7 +975,38 @@ viewRound wrap shared auth timeAnchor config users model =
     -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
     , Html.div [ HtmlA.class "scroll-top" ]
         [ IconButton.view shared Strings.ScrollToTop (Icon.arrowUp |> Icon.present |> NeList.just) (ScrollToTop |> wrap |> Just) ]
+    , renderDiscarded wrap shared config users model.discarded |> Maybe.withDefault Html.nothing
     ]
+
+
+renderDiscarded : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> List ( User.Id, Card.Response ) -> Maybe (Html msg)
+renderDiscarded wrap shared config users discarded =
+    case discarded of
+        ( player, card ) :: _ ->
+            let
+                name =
+                    Dict.get player users
+                        |> Maybe.map .name
+                        |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)
+            in
+            Html.div [ HtmlA.class "discarded", DismissDiscard |> wrap |> HtmlE.onClick ]
+                [ Card.view [ NoOp |> wrap |> HtmlE.onClickNoPropagation ]
+                    [ Html.span [ HtmlA.class "title" ]
+                        [ Strings.Discarded { player = name } |> Lang.html shared
+                        ]
+                    , card |> Response.view shared config Card.Front []
+                    , Button.view shared
+                        Button.Standard
+                        Strings.Accept
+                        Strings.Accept
+                        (Icon.check |> Icon.viewIcon)
+                        [ DismissDiscard |> wrap |> HtmlE.onClick ]
+                    ]
+                ]
+                |> Just
+
+        [] ->
+            Nothing
 
 
 toggleHelp : (Msg -> msg) -> Shared -> Bool -> Html msg
@@ -1058,9 +1130,27 @@ minorActions wrap shared auth game helpEnabled =
             , Maybe.map2 (\score -> \reboot -> rebootButton wrap shared score reboot)
                 (localPlayer |> Maybe.map .score)
                 game.rules.houseRules.reboot
+            , game.rules.houseRules.neverHaveIEver |> Maybe.map (discardButton wrap shared game |> always)
             , enforceTimeLimit
             ]
         )
+
+
+discardButton : (Msg -> msg) -> Shared -> Game -> Html msg
+discardButton wrap shared game =
+    let
+        action =
+            case game.round of
+                Round.P p ->
+                    Discard |> wrap |> Maybe.justIf (p.pick.cards |> List.length |> (==) 1)
+
+                _ ->
+                    Nothing
+    in
+    IconButton.view shared
+        Strings.Discard
+        (Icon.trash |> Icon.present |> NeList.just)
+        action
 
 
 historyButton : (Msg -> msg) -> Shared -> Html msg

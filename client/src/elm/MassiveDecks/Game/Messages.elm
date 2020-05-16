@@ -21,6 +21,8 @@ type Msg
     | ScrollToTop
     | SetPlayStyles PlayStyles
     | AdvanceRound
+    | Discard
+    | DismissDiscard
     | Redraw
     | ToggleHistoryView
     | SetPresence Player.Presence

@@ -6,7 +6,6 @@ module MassiveDecks.Requests.Api exposing
     , sourceInfo
     )
 
-import Dict exposing (Dict)
 import Http
 import Json.Decode as Json
 import MassiveDecks.Card.Source.Model as Source

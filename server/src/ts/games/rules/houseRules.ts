@@ -1,4 +1,4 @@
-import { PackingHeat, Reboot, ComedyWriter } from "../rules";
+import { PackingHeat, Reboot, ComedyWriter, NeverHaveIEver } from "../rules";
 import * as Rando from "./rando";
 
 /**
@@ -9,6 +9,7 @@ export interface HouseRules {
   reboot?: Reboot;
   comedyWriter?: ComedyWriter;
   rando: Rando.Rando;
+  neverHaveIEver?: NeverHaveIEver;
 }
 
 /**
@@ -19,6 +20,7 @@ export interface Public {
   reboot?: Reboot;
   comedyWriter?: ComedyWriter;
   rando?: Rando.Public;
+  neverHaveIEver?: NeverHaveIEver;
 }
 
 export const censor = (houseRules: HouseRules): Public => ({

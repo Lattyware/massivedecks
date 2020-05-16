@@ -387,7 +387,7 @@ newContent shared model =
     Html.div [ HtmlA.class "new-game start-tab" ]
         [ Html.div [ HtmlA.class "tab-content" ]
             [ Html.h2 [] [ Strings.NewGame |> Lang.html shared ]
-            , Html.p [] [ Html.text "Start a new game of Massive Decks." ]
+            , Html.p [] [ Strings.NewGameDescription |> Lang.html shared ]
             , error
             , nameField shared model Nothing
             , Button.view shared
@@ -445,7 +445,7 @@ joinContent shared model =
         [ Html.div [ HtmlA.class "tab-content" ]
             (List.concat
                 [ [ Html.h2 [] [ Strings.JoinPrivateGame |> Lang.html shared ]
-                  , Html.p [] [ Html.text "Join a game someone invited you to." ]
+                  , Html.p [] [ Strings.JoinPrivateGameDescription |> Lang.html shared ]
                   , error
                   ]
                 , rejoinSection shared model
@@ -572,6 +572,7 @@ houseRules =
     , ( Strings.HouseRulePackingHeat, Strings.HouseRulePackingHeatDescription )
     , ( Strings.HouseRuleRandoCardrissian, Strings.HouseRuleRandoCardrissianDescription )
     , ( Strings.HouseRuleComedyWriter, Strings.HouseRuleComedyWriterDescription )
+    , ( Strings.HouseRuleNeverHaveIEver, Strings.HouseRuleNeverHaveIEverDescription )
     ]
 
 

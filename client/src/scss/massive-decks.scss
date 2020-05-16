@@ -238,6 +238,20 @@ a,
   }
 }
 
-.remove-from-flow {
-  position: absolute;
+.not-translated {
+  > .string::before {
+    content: "[";
+  }
+
+  > .string::after {
+    content: "]";
+  }
+
+  > a {
+    display: none;
+  }
+
+  &:hover > a {
+    display: inline;
+  }
 }

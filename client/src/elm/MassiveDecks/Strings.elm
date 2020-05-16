@@ -21,8 +21,10 @@ type MdString
     | WhatIsThis -- A title for a section describing the game.
     | GameDescription -- A long description of the game.
     | NewGame -- The action of creating a new game. (Short, ideally one word).
+    | NewGameDescription -- A description of starting a new game.
     | FindPublicGame -- The action of finding a public game to join. (Short, ideally one word).
     | JoinPrivateGame -- The action of joining a private game the user was invited to. (Short, ideally one word).
+    | JoinPrivateGameDescription -- A description of joining a private game the user was invited to.
     | PlayGame -- The action of joining a game to play it. (Short, ideally one word).
     | AboutTheGame -- The action of finding out more information about the game. (Short, ideally one word).
     | AboutTheGameDescription -- A description of the action of finding out about the game.
@@ -74,6 +76,8 @@ type MdString
     | HouseRuleRandoCardrissianDescription -- A description of the "Rando Cardrissian" house rule.
     | HouseRuleRandoCardrissianNumber -- A name of the setting for the number of bots added to the game.
     | HouseRuleRandoCardrissianNumberDescription -- A description of the setting for the number of bots added to the game.
+    | HouseRuleNeverHaveIEver -- The name of the house rule where players can discard cards, sharing the discarded card.
+    | HouseRuleNeverHaveIEverDescription -- A description of the house rule where players can discard cards, sharing the discarded card.
     | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
     | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
     | SetValue { value : Int } -- A description of the action of resolving a problem by setting the value to the given one.
@@ -283,6 +287,8 @@ type MdString
     | JudgingStarted -- A title for judging having started.
     | Paused -- A message explaining that the game has been paused due to too few active players.
     | ClientAway -- A message explaining that the player is set to "away" from the game.
+    | Discard -- A short description of the act of discarding a card.
+    | Discarded { player : String } -- A message explaining that the given player discarded the card being shown.
       -- Instructions
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
     | SubmitInstruction -- Instruction to the player on how to submit their play.
@@ -297,6 +303,7 @@ type MdString
     | GoBackHome -- The action to go back to the main page of the application.
       -- Actions
     | Refresh -- The action to refresh the page with newer information.
+    | Accept -- A term for accepting something.
       -- Errors
     | Error -- A title for a generic error (something having gone wrong).
     | ErrorHelp -- A message telling the user that an error has occurred and what to do.

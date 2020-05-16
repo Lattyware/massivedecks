@@ -5,14 +5,18 @@ import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Icon as Icon
-import MassiveDecks.Strings exposing (..)
+import MassiveDecks.Strings as Strings exposing (..)
+import MassiveDecks.Strings.Languages.En as En
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Util.Html as Html
 
 
 type alias Context =
-    ( Language, MdString -> List Translation.Result )
+    { lang : Language
+    , translate : MdString -> List Translation.Result
+    , parent : MdString
+    }
 
 
 {-| Build an actual string from an `MdString` in the user's language.
@@ -42,11 +46,11 @@ resultsToString context results =
 resultToString : Context -> Translation.Result -> String
 resultToString context result =
     let
-        ( _, translate ) =
+        { translate, parent } =
             context
 
         mdStringToString =
-            \mdString -> mdString |> translate |> resultsToString context
+            \mdString -> mdString |> translate |> resultsToString { context | parent = mdString }
 
         partsToString =
             List.map (resultToString context) >> String.join ""
@@ -67,6 +71,9 @@ resultToString context result =
         Translation.Segment segment ->
             partsToString segment
 
+        Translation.Missing ->
+            En.pack.translate parent |> partsToString
+
 
 resultsToHtml : Context -> List Translation.Result -> List (Html msg)
 resultsToHtml context results =
@@ -76,24 +83,46 @@ resultsToHtml context results =
 resultToHtml : Context -> Translation.Result -> List (Html msg)
 resultToHtml context result =
     let
-        ( _, translate ) =
+        { translate, parent } =
             context
     in
     case result of
         Translation.Ref mdString ->
-            mdString |> translate |> resultsToHtml context |> enhanceHtml context mdString
+            let
+                childContext =
+                    { context | parent = mdString }
+            in
+            mdString
+                |> translate
+                |> resultsToHtml childContext
+                |> enhanceHtml childContext mdString
 
         Translation.Text text ->
             [ Html.text text ]
 
         Translation.Raw mdString ->
-            [ mdString |> translate |> resultsToString context |> Html.text ]
+            [ mdString |> translate |> resultsToString { context | parent = mdString } |> Html.text ]
 
         Translation.Em emphasised ->
-            [ Html.strong [] (emphasised |> List.concatMap (resultToHtml context)) ]
+            [ Html.strong [] (emphasised |> resultsToHtml context) ]
 
         Translation.Segment cluster ->
-            [ Html.span [ HtmlA.class "segment" ] (cluster |> List.concatMap (resultToHtml context)) ]
+            [ Html.span [ HtmlA.class "segment" ] (cluster |> resultsToHtml context) ]
+
+        Translation.Missing ->
+            let
+                english =
+                    Html.span [ HtmlA.class "string", HtmlA.lang "en" ]
+                        (En.pack.translate parent |> resultsToHtml context)
+
+                translationBeg =
+                    Html.blankA
+                        [ HtmlA.href "https://github.com/Lattyware/massivedecks/wiki/Translation"
+                        , Strings.TranslationBeg |> asString context |> HtmlA.title
+                        ]
+                        [ Icon.language |> Icon.viewIcon ]
+            in
+            [ Html.span [ HtmlA.class "not-translated" ] [ english, Html.text " ", translationBeg ] ]
 
 
 enhanceHtml : Context -> MdString -> List (Html msg) -> List (Html msg)
@@ -173,6 +202,9 @@ enhanceHtml context mdString unenhanced =
 
         HouseRuleRandoCardrissian ->
             prefixed unenhanced Icon.robot
+
+        HouseRuleNeverHaveIEver ->
+            prefixed unenhanced Icon.trash
 
         RereadGames ->
             [ Html.blankA [ HtmlA.class "no-wrap", HtmlA.href "https://www.rereadgames.com/" ] unenhanced ]

@@ -215,5 +215,36 @@ ol.card-set {
   background-color: transparentize(#cccccc, 0.3);
   font-size: 4em;
   text-align: center;
+  z-index: 4;
+}
+
+.discarded {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 3;
+
+  background-color: transparentize(#cccccc, 0.3);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .mdc-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .title {
+      display: block;
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    mwc-button {
+      align-self: flex-end;
+    }
+  }
 }

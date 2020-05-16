@@ -115,6 +115,7 @@ houseRules h =
             , h.packingHeat |> Maybe.map (\p -> ( "packingHeat", packingHeat p ))
             , h.reboot |> Maybe.map (\r -> ( "reboot", reboot r ))
             , h.comedyWriter |> Maybe.map (\c -> ( "comedyWriter", comedyWriter c ))
+            , h.neverHaveIEver |> Maybe.map (\n -> ( "neverHaveIEver", neverHaveIEver n ))
             ]
         )
 
@@ -131,6 +132,11 @@ reboot { cost } =
 
 packingHeat : Rules.PackingHeat -> Json.Value
 packingHeat _ =
+    Json.object []
+
+
+neverHaveIEver : Rules.NeverHaveIEver -> Json.Value
+neverHaveIEver _ =
     Json.object []
 
 

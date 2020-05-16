@@ -6,6 +6,7 @@ import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.ComedyWriter as ComedyWriter
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model exposing (..)
+import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.NeverHaveIEver as NeverHaveIEver
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.PackingHeat as PackingHeat
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Rando as Rando
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Reboot as Reboot
@@ -22,5 +23,6 @@ all =
             , PackingHeat.all |> Configurable.wrap PackingHeatId (.packingHeat >> Just) (\v p -> { p | packingHeat = v })
             , Reboot.all |> Configurable.wrap RebootId (.reboot >> Just) (\v p -> { p | reboot = v })
             , ComedyWriter.all |> Configurable.wrap ComedyWriterId (.comedyWriter >> Just) (\v p -> { p | comedyWriter = v })
+            , NeverHaveIEver.all |> Configurable.wrap NeverHaveIEverId (.neverHaveIEver >> Just) (\v p -> { p | neverHaveIEver = v })
             ]
         }

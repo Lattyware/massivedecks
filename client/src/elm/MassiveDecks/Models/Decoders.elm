@@ -379,11 +379,12 @@ timeLimitModeByName name =
 
 houseRules : Json.Decoder Rules.HouseRules
 houseRules =
-    Json.map4 Rules.HouseRules
-        (Json.maybe (Json.field "rando" rando))
-        (Json.maybe (Json.field "packingHeat" packingHeat))
-        (Json.maybe (Json.field "reboot" reboot))
-        (Json.maybe (Json.field "comedyWriter" comedyWriter))
+    Json.succeed Rules.HouseRules
+        |> Json.optional "rando" (rando |> Json.map Just) Nothing
+        |> Json.optional "packingHeat" (packingHeat |> Json.map Just) Nothing
+        |> Json.optional "reboot" (reboot |> Json.map Just) Nothing
+        |> Json.optional "comedyWriter" (comedyWriter |> Json.map Just) Nothing
+        |> Json.optional "neverHaveIEver" (neverHaveIEver |> Json.map Just) Nothing
 
 
 comedyWriter : Json.Decoder Rules.ComedyWriter
@@ -395,6 +396,11 @@ comedyWriter =
 
 packingHeat : Json.Decoder Rules.PackingHeat
 packingHeat =
+    {} |> Json.succeed
+
+
+neverHaveIEver : Json.Decoder Rules.NeverHaveIEver
+neverHaveIEver =
     {} |> Json.succeed
 
 
@@ -657,6 +663,9 @@ eventByName name =
         "HandRedrawn" ->
             gameEvent handRedrawn
 
+        "CardDiscarded" ->
+            gameEvent cardDiscarded
+
         "Away" ->
             gameEvent playerAway
 
@@ -735,6 +744,14 @@ handRedrawn =
     Json.map2 (\pl -> \ha -> Events.HandRedrawn { player = pl, hand = ha })
         (Json.field "player" userId)
         (Json.maybe (Json.field "hand" (Json.list response)))
+
+
+cardDiscarded : Json.Decoder Events.GameEvent
+cardDiscarded =
+    Json.succeed (\pl -> \ca -> \re -> Events.CardDiscarded { player = pl, card = ca, replacement = re })
+        |> Json.required "player" userId
+        |> Json.required "card" response
+        |> Json.optional "replacement" (response |> Json.map Just) Nothing
 
 
 roundFinished : Json.Decoder Events.TimedGameEvent

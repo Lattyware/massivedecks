@@ -7,3 +7,4 @@ type Action
     | Judge
     | Like
     | Advance
+    | Discard

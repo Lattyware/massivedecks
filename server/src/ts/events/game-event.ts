@@ -11,6 +11,7 @@ import { RoundStarted } from "./game-event/round-started";
 import { StageTimerDone } from "./game-event/stage-timer-done";
 import { StartRevealing } from "./game-event/start-revealing";
 import { StartJudging } from "./game-event/start-judging";
+import { CardDiscarded } from "./game-event/card-discarded";
 
 export type GameEvent =
   | GameStarted
@@ -22,6 +23,7 @@ export type GameEvent =
   | PlayRevealed
   | PlayTakenBack
   | HandRedrawn
+  | CardDiscarded
   | PlayerPresenceChanged
   | PauseStateChanged
   | StageTimerDone

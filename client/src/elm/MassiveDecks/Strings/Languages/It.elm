@@ -85,11 +85,19 @@ translate mdString =
         NewGame ->
             [ Text "Nuovo" ]
 
+        -- TODO: Translate
+        NewGameDescription ->
+            [ Missing ]
+
         FindPublicGame ->
             [ Text "Trova" ]
 
         JoinPrivateGame ->
             [ Text "Partecipa" ]
+
+        -- TODO: Translate
+        JoinPrivateGameDescription ->
+            [ Missing ]
 
         PlayGame ->
             [ Text "Gioca" ]
@@ -138,11 +146,11 @@ translate mdString =
 
         -- TODO: Translate
         ScrollToTop ->
-            [ Text "Scroll to the top." ]
+            [ Missing ]
 
         -- TODO: Translate
         Copy ->
-            [ Text "Copy" ]
+            [ Missing ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -303,6 +311,14 @@ translate mdString =
         HouseRuleRandoCardrissianNumberDescription ->
             [ Text "Il numero di giocatori IA che saranno presenti nel gioco." ]
 
+        -- TODO: Translate
+        HouseRuleNeverHaveIEver ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleNeverHaveIEverDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Il valore deve essere almeno ", Text (String.fromInt min), Text "." ]
 
@@ -433,19 +449,19 @@ translate mdString =
 
         -- TODO: Translate
         DeckSource ->
-            [ Ref Deck, Text " Source" ]
+            [ Missing ]
 
         -- TODO: Translate
         DeckLanguage { language } ->
-            [ Text "in ", Ref language ]
+            [ Missing ]
 
         -- TODO: Translate
         DeckAuthor { author } ->
-            [ Text "by ", Text author ]
+            [ Missing ]
 
         -- TODO: Translate
         DeckTranslator { translator } ->
-            [ Text "translation by ", Text translator ]
+            [ Missing ]
 
         StillPlaying ->
             [ Text "Sta giocando" ]
@@ -511,11 +527,11 @@ translate mdString =
         -- Lobby
         -- TODO: Translate
         LobbyNameLabel ->
-            [ Text "Game Name" ]
+            [ Missing ]
 
         -- TODO: Translate
         DefaultLobbyName { owner } ->
-            [ Text owner, Text "'s Game" ]
+            [ Missing ]
 
         Invite ->
             [ Text "Invita giocatori al gioco." ]
@@ -740,11 +756,7 @@ translate mdString =
 
         -- TODO: Translate
         AddBlankCards { amount } ->
-            [ Text "Add "
-            , amount |> String.fromInt |> Text
-            , Text " blank "
-            , Ref (Plural { singular = Response, amount = Just amount })
-            ]
+            [ Missing ]
 
         AddDeck ->
             [ Text "Aggiungi mazzo." ]
@@ -769,7 +781,7 @@ translate mdString =
 
         -- TODO: Translate
         BuiltIn ->
-            [ Text "Built-in" ]
+            [ Missing ]
 
         APlayer ->
             [ Text "Un giocatore" ]
@@ -865,13 +877,11 @@ translate mdString =
 
         -- TODO: Translate
         AudienceMode ->
-            [ Text "Audience Mode" ]
+            [ Missing ]
 
         -- TODO: Translate
         AudienceModeDescription ->
-            [ Text "If enabled, newly joining users will be spectators by default, and only you will be able to "
-            , Text "make them players."
-            ]
+            [ Missing ]
 
         StartGame ->
             [ Text "Inizia gioco" ]
@@ -907,14 +917,14 @@ translate mdString =
 
         -- TODO: Translate
         PlayingAfterDescription ->
-            [ Text "How long (in seconds) players have to change their play before the next stage starts." ]
+            [ Missing ]
 
         RevealingTimeLimitDescription ->
             [ Text "Quanto tempo (in secondi) il ", Ref Czar, Text " ha per rivelare le giocate." ]
 
         -- TODO: Translate
         RevealingAfterDescription ->
-            [ Text "How long (in seconds) to wait after the last card is revealed before the next stage starts." ]
+            [ Missing ]
 
         JudgingTimeLimitDescription ->
             [ Text "Quanto tempo (in secondi) il ", Ref Czar, Text " ha per giudicare le giocate." ]
@@ -924,22 +934,19 @@ translate mdString =
 
         -- TODO: Translate
         RevealingEnabledTitle ->
-            [ Text "Czar Reveals Plays" ]
+            [ Missing ]
 
         -- TODO: Translate
         RevealingEnabled ->
-            [ Text "If this is enabled, the "
-            , Ref Czar
-            , Text " reveals one play at a time before picking a winner."
-            ]
+            [ Missing ]
 
         -- TODO: Translate
         DuringTitle ->
-            [ Text "Time Limit" ]
+            [ Missing ]
 
         -- TODO: Translate
         AfterTitle ->
-            [ Text "After" ]
+            [ Missing ]
 
         Conflict ->
             [ Text "Conflitto" ]
@@ -957,15 +964,15 @@ translate mdString =
 
         -- TODO: Translate
         ConfigurationDisabledWhileInGame ->
-            [ Text "While the game in progress, you can't change the configuration." ]
+            [ Missing ]
 
         -- TODO: Translate
         ConfigurationDisabledIfNotPrivileged ->
-            [ Text "You can't change the configuration of this game." ]
+            [ Missing ]
 
         -- TODO: Translate
         ConfigureNextGame ->
-            [ Text "Configure Next Game" ]
+            [ Missing ]
 
         -- Game
         SubmitPlay ->
@@ -1021,6 +1028,14 @@ translate mdString =
         ClientAway ->
             [ Text "Sei impostato come Allontanato e non stai giocando." ]
 
+        -- TODO: Translate
+        Discard ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Discarded { player } ->
+            [ Missing ]
+
         -- Instructions
         PlayInstruction { numberOfCards } ->
             [ Text "Devi scegliere altre "
@@ -1066,6 +1081,10 @@ translate mdString =
         -- Actions
         Refresh ->
             [ Text "Aggiorna" ]
+
+        -- TODO: Translate
+        Accept ->
+            [ Missing ]
 
         -- Errors
         Error ->

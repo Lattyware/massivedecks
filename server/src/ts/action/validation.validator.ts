@@ -46,6 +46,9 @@ export const Schema = {
           $ref: "#/definitions/Fill",
         },
         {
+          $ref: "#/definitions/Discard",
+        },
+        {
           $ref: "#/definitions/Judge",
         },
         {
@@ -190,10 +193,14 @@ export const Schema = {
     },
     ComedyWriter: {
       $ref: "#/definitions/ComedyWriter_1",
+      description:
+        'Configuration for the "Comedy Writer" house rule.\nThis rule adds blank cards that players write as they play them.',
     },
     ComedyWriter_1: {
       additionalProperties: false,
       defaultProperties: [],
+      description:
+        'Configuration for the "Comedy Writer" house rule.\nThis rule adds blank cards that players write as they play them.',
       properties: {
         exclusive: {
           description: "If only blank cards will be used.",
@@ -288,6 +295,22 @@ export const Schema = {
         },
       },
       required: ["name"],
+      type: "object",
+    },
+    Discard: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "Indicates the user is discarding their hand.",
+      properties: {
+        action: {
+          enum: ["Discard"],
+          type: "string",
+        },
+        card: {
+          $ref: "#/definitions/Id",
+        },
+      },
+      required: ["action", "card"],
       type: "object",
     },
     EndGame: {
@@ -470,6 +493,18 @@ export const Schema = {
       enum: ["Authenticate"],
       type: "string",
     },
+    NeverHaveIEver: {
+      $ref: "#/definitions/NeverHaveIEver_1",
+      description:
+        'Configuration for the "Never Have I Ever" house rule.\nThis rule allows players to discard cards, but everyone else in the game can see the discarded card.',
+    },
+    NeverHaveIEver_1: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        'Configuration for the "Never Have I Ever" house rule.\nThis rule allows players to discard cards, but everyone else in the game can see the discarded card.',
+      type: "object",
+    },
     PackingHeat: {
       $ref: "#/definitions/PackingHeat_1",
       description: 'Configuration for the "Packing Heat" house rule.',
@@ -576,6 +611,9 @@ export const Schema = {
       properties: {
         comedyWriter: {
           $ref: "#/definitions/ComedyWriter",
+        },
+        neverHaveIEver: {
+          $ref: "#/definitions/NeverHaveIEver",
         },
         packingHeat: {
           $ref: "#/definitions/PackingHeat",

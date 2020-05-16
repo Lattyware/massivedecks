@@ -70,6 +70,7 @@ fake =
             , packingHeat = Nothing
             , reboot = Nothing
             , comedyWriter = Nothing
+            , neverHaveIEver = Nothing
             }
         , stages =
             { mode = Rules.Soft

@@ -1,6 +1,7 @@
 module MassiveDecks.Game.Rules exposing
     ( ComedyWriter
     , HouseRules
+    , NeverHaveIEver
     , PackingHeat
     , Rando
     , Reboot
@@ -29,6 +30,7 @@ type alias HouseRules =
     , packingHeat : Maybe PackingHeat
     , reboot : Maybe Reboot
     , comedyWriter : Maybe ComedyWriter
+    , neverHaveIEver : Maybe NeverHaveIEver
     }
 
 
@@ -67,3 +69,7 @@ type alias ComedyWriter =
     { number : Int
     , exclusive : Bool
     }
+
+
+type alias NeverHaveIEver =
+    {}
