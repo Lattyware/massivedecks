@@ -45,7 +45,7 @@ translate mdString =
 
         -- Start screen.
         Version { versionNumber } ->
-            [ Text "Version “", Text versionNumber, Text "”" ]
+            [ Text "Forked by Bolly for LeedsFurs - Version “", Text versionNumber, Text "”" ]
 
         ShortGameDescription ->
             [ Text "A comedy party game." ]
