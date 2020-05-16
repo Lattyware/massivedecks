@@ -32,7 +32,7 @@
       decks: [
         "cah-base-en",
         "cah-base-ptbr",
-        "crimes-against-leedsfurs-en.deck.json5"
+        "crimes-against-leedsfurs-en"
       ]
     },
 
