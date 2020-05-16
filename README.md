@@ -51,7 +51,7 @@ There are example docker deployments in [the deployment folder](deployment).
 
 You can deploy to Heroku with the button below:
 
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/dantherussell/massivedecks)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/dantherussell/massivedecks/tree/leeds_furs)
 
 If you want to customise the deployment further, you can deploy through heroku from your own fork of the project with
 modification (note the button above is hard-coded to this repository).
