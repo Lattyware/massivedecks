@@ -237,6 +237,8 @@ type MdString
     | PasswordNotSecured -- A warning that game passwords are not stored securely and should not be used elsewhere.
     | LobbyPassword -- A short label for the lobby password.
     | LobbyPasswordDescription -- A description of a password to stop random people entering your lobby.
+    | AudienceMode -- A short label for a setting that means users can only play if a privileged user lets them.
+    | AudienceModeDescription -- A description of the setting that means users can only play if a privileged user lets them.
     | StartGame -- A short description of the action of starting the game.
     | Public -- The name of the setting for making the lobby public.
     | PublicDescription -- A description of what the public setting does (makes the game visible in the lobby browser).

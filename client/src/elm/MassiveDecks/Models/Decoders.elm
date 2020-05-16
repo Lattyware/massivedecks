@@ -282,9 +282,10 @@ config =
 
 privacyConfig : Json.Decoder PrivacyConfig.Config
 privacyConfig =
-    Json.map2 PrivacyConfig.Config
-        (Json.maybe (Json.field "password" Json.string))
-        (Json.maybe (Json.field "public" Json.bool) |> Json.map (Maybe.withDefault False))
+    Json.succeed PrivacyConfig.Config
+        |> Json.optional "password" (Json.string |> Json.map Just) Nothing
+        |> Json.optional "public" Json.bool False
+        |> Json.optional "audienceMode" Json.bool False
 
 
 deckOrError : Json.Decoder DeckConfig.DeckOrError

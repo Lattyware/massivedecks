@@ -60,7 +60,7 @@ update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         BecomePlayer ->
-            ( model, Actions.setUserRole User.Player )
+            ( model, Actions.setUserRole Nothing User.Player )
 
         ToggleAdvert ->
             ( { model | advertise = not model.advertise }, Cmd.none )

@@ -91,6 +91,7 @@ export const fromDefaults = (
       name,
       rules: Rules.fromDefaults(defaults.rules),
       public: defaults.public,
+      audienceMode: defaults.audienceMode,
       decks: [],
     },
     tasks: tasks,
@@ -115,7 +116,7 @@ export function create(
   const { config, tasks } = fromDefaults(gameCode, creation.name, defaults);
   const lobby = {
     nextUserId: 1,
-    users: { [ownerId]: User.create(creation.owner, "Privileged") },
+    users: { [ownerId]: User.create(creation.owner, "Player", "Privileged") },
     owner: ownerId,
     config: config,
     errors: [],
@@ -171,12 +172,13 @@ export const censor = (lobby: Lobby): Public => ({
 export const addUser = (
   lobby: Lobby,
   registration: RegisterUser,
+  role: User.Role,
   change?: (user: User.User) => User.User
 ): {
   user: User.Id;
   events: Iterable<Event.Distributor>;
 } => {
-  const newUser = User.create(registration);
+  const newUser = User.create(registration, role);
   const changedUser = change === undefined ? newUser : change(newUser);
   const id = lobby.nextUserId.toString();
   lobby.nextUserId += 1;

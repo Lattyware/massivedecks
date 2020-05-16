@@ -58,12 +58,11 @@ maybe default base noOp update model value args =
     in
     Switch.view
         [ checked |> HtmlA.checked
-        , if readOnly then
-            HtmlA.readonly True
+        , if readOnly || disabled then
+            HtmlA.disabled True
 
           else
             HtmlE.onCheck (\c -> default |> Maybe.justIf c |> update)
-        , HtmlA.disabled disabled
         ]
         :: base noOp (Just >> update) model (value |> Maybe.andThen identity) args
 
@@ -71,8 +70,11 @@ maybe default base noOp update model value args =
 bool : MdString -> Def Bool model msg
 bool label _ update _ value { shared, readOnly } =
     let
+        disabled =
+            readOnly || value == Nothing
+
         labelClick =
-            value |> Maybe.map (not >> update >> HtmlE.onClick)
+            value |> Maybe.andThen (Maybe.justIf (not disabled)) |> Maybe.map (not >> update >> HtmlE.onClick)
     in
     [ Html.label
         (List.filterMap identity
@@ -82,8 +84,8 @@ bool label _ update _ value { shared, readOnly } =
         )
         [ Switch.view
             [ value |> Maybe.withDefault False |> HtmlA.checked
-            , if readOnly || value == Nothing then
-                HtmlA.readonly True
+            , if disabled then
+                HtmlA.disabled True
 
               else
                 HtmlE.onCheckNoPropagation update
@@ -116,12 +118,11 @@ string label _ update _ value { shared, readOnly } =
         label
         TextField.Text
         (value |> Maybe.withDefault "")
-        [ if readOnly then
-            HtmlA.readonly True
+        [ if readOnly || value == Nothing then
+            HtmlA.disabled True
 
           else
             HtmlE.onInput update
-        , HtmlA.disabled (value == Nothing)
         , HtmlA.class "primary"
         ]
     ]
@@ -133,12 +134,11 @@ int label noOp update _ value { shared, readOnly } =
         label
         TextField.Number
         (value |> Maybe.withDefault 0 |> String.fromInt)
-        [ if readOnly then
-            HtmlA.readonly True
+        [ if readOnly || value == Nothing then
+            HtmlA.disabled True
 
           else
             HtmlE.onInput (String.toInt >> Maybe.map update >> Maybe.withDefault noOp)
-        , HtmlA.disabled (value == Nothing)
         , HtmlA.class "primary"
         ]
     ]
@@ -188,12 +188,11 @@ password setPasswordVisibility label _ update model value { shared, readOnly } =
         label
         type_
         (value |> Maybe.withDefault "")
-        [ if readOnly then
-            HtmlA.readonly True
+        [ if readOnly || (value == Nothing) then
+            HtmlA.disabled True
 
           else
             HtmlE.onInput update
-        , HtmlA.disabled (value == Nothing)
         , HtmlA.class "primary"
         ]
     , toggleVisibility

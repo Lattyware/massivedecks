@@ -66,6 +66,7 @@ config c =
             , Just ( "decks", c.decks |> decks )
             , Just ( "version", c.version |> Json.string )
             , ( "public", True |> Json.bool ) |> Maybe.justIf c.privacy.public
+            , ( "audienceMode", True |> Json.bool ) |> Maybe.justIf c.privacy.audienceMode
             , c.privacy.password |> Maybe.map (\p -> ( "password", p |> Json.string ))
             ]
         )

@@ -837,6 +837,14 @@ translate mdString =
         LobbyPasswordDescription ->
             [ Text "A password to users must enter before they can join the game." ]
 
+        AudienceMode ->
+            [ Text "Audience Mode" ]
+
+        AudienceModeDescription ->
+            [ Text "If enabled, newly joining users will be spectators by default, and only you will be able to "
+            , Text "make them players."
+            ]
+
         StartGame ->
             [ Text "Start Game" ]
 

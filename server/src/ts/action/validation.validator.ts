@@ -377,6 +377,10 @@ export const Schema = {
       description: "A unique id for a play.",
       type: "string",
     },
+    Id_1: {
+      description: "A unique id for a user.",
+      type: "string",
+    },
     Judge: {
       additionalProperties: false,
       defaultProperties: [],
@@ -525,6 +529,9 @@ export const Schema = {
       additionalProperties: false,
       defaultProperties: [],
       properties: {
+        audienceMode: {
+          type: "boolean",
+        },
         decks: {
           items: {
             anyOf: [
@@ -769,6 +776,9 @@ export const Schema = {
         action: {
           enum: ["SetUserRole"],
           type: "string",
+        },
+        id: {
+          $ref: "#/definitions/Id_1",
         },
         role: {
           $ref: "#/definitions/Role",

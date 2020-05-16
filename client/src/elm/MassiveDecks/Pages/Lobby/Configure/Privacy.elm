@@ -17,6 +17,7 @@ all setPasswordVisibility =
         , children =
             [ public |> Configurable.wrap identity (.public >> Just) (\v p -> { p | public = v })
             , password setPasswordVisibility |> Configurable.wrap identity (.password >> Just) (\v p -> { p | password = v })
+            , audienceMode |> Configurable.wrap identity (.audienceMode >> Just) (\v p -> { p | audienceMode = v })
             ]
         }
 
@@ -43,4 +44,14 @@ password setPasswordVisibility =
                 , Message.warning Strings.PasswordShared
                 , Message.warning Strings.PasswordNotSecured
                 ]
+        }
+
+
+audienceMode : Configurable Id Bool model msg
+audienceMode =
+    Configurable.value
+        { id = AudienceMode
+        , editor = Editor.bool Strings.AudienceMode
+        , validator = Validator.none
+        , messages = always [ Message.info Strings.AudienceModeDescription ]
         }

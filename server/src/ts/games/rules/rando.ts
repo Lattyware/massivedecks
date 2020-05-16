@@ -84,7 +84,7 @@ export const createIfNeeded = (
       events: [Event.targetAll(PresenceChanged.joined(ai, inLobby.users[ai]))],
     };
   } else {
-    return Lobby.addUser(inLobby, ai, (user) => ({
+    return Lobby.addUser(inLobby, ai, "Player", (user) => ({
       ...user,
       control: "Computer",
     }));

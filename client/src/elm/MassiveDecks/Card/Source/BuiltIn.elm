@@ -18,7 +18,7 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang exposing (sortClosestFirst)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NonEmptyList
+import MassiveDecks.Util.NeList as NeList
 import MassiveDecks.Util.Order as Order
 import Material.Select as Select
 
@@ -63,7 +63,7 @@ sourceName () =
 empty : Shared -> Source.External
 empty shared =
     shared.sources.builtIn
-        |> Maybe.map (.decks >> NonEmptyList.head)
+        |> Maybe.map (.decks >> NeList.head)
         |> Maybe.map .id
         |> Maybe.withDefault (hardcoded "")
         |> Source.BuiltIn
@@ -133,7 +133,7 @@ editor selected shared existing update _ _ =
                     }
                     [ HtmlA.id "built-in-selector" ]
                     (decks
-                        |> NonEmptyList.toList
+                        |> NeList.toList
                         |> List.sortWith (sortClosestFirst (Lang.currentLanguage shared) |> Order.map (.language >> Just))
                         |> List.map deck
                     )
@@ -151,7 +151,7 @@ details given shared =
 
         info =
             shared.sources.builtIn
-                |> Maybe.andThen (.decks >> NonEmptyList.toList >> List.filter isSame >> List.head)
+                |> Maybe.andThen (.decks >> NeList.toList >> List.filter isSame >> List.head)
     in
     { name = info |> Maybe.map .name |> Maybe.withDefault ""
     , url = Nothing

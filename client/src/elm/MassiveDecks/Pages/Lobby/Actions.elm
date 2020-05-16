@@ -89,9 +89,13 @@ setPrivilege player privilege =
     action "SetPrivilege" [ ( "user", player |> Json.string ), ( "privilege", privilege |> Encoders.privilege ) ]
 
 
-setUserRole : User.Role -> Cmd msg
-setUserRole role =
-    action "SetUserRole" [ ( "role", role |> Encoders.userRole ) ]
+setUserRole : Maybe User.Id -> User.Role -> Cmd msg
+setUserRole id role =
+    [ id |> Maybe.map (\i -> ( "id", i |> Json.string ))
+    , Just ( "role", role |> Encoders.userRole )
+    ]
+        |> List.filterMap identity
+        |> action "SetUserRole"
 
 
 kick : User.Id -> Cmd msg

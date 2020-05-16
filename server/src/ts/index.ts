@@ -127,11 +127,14 @@ async function main(): Promise<void> {
     const gameCode: GameCode = req.params.gameCode;
 
     const registration = RegisterUser.validate(req.body);
-    const newUser = User.create(registration);
     const id = await Change.applyAndReturn(state, gameCode, (lobby) => {
       if (lobby.config.password !== registration.password) {
         throw new InvalidLobbyPasswordError();
       }
+      const newUser = User.create(
+        registration,
+        lobby.config.audienceMode ? "Spectator" : "Player"
+      );
       if (
         wu(Object.values(lobby.users)).find((u) => u.name === registration.name)
       ) {

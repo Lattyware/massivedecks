@@ -404,8 +404,8 @@ update wrap shared msg model =
         SetTimeAnchor anchor ->
             ( Stay { model | timeAnchor = Just anchor }, shared, Cmd.none )
 
-        SetUserRole role ->
-            ( Stay model, shared, Actions.setUserRole role )
+        SetUserRole id role ->
+            ( Stay model, shared, Actions.setUserRole id role )
 
         EndGame ->
             ( Stay model, shared, Actions.endGame )
@@ -557,6 +557,9 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
 
         localPlayer =
             maybeGame |> Maybe.andThen (.game >> .players >> Dict.get model.auth.claims.uid)
+
+        audienceMode =
+            lobby |> Maybe.map (.config >> .privacy >> .audienceMode) |> Maybe.withDefault True
     in
     [ Html.div
         [ HtmlA.id "lobby"
@@ -570,7 +573,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                             Strings.ToggleUserList
                             (usersIcon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
-                      , lobbyMenu wrap shared model.gameMenu model.route s localUser localPlayer (maybeGame |> Maybe.map .game)
+                      , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
                     , castButton
                     ]
@@ -623,7 +626,7 @@ viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobbyAndConfigure
                 Message.none
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
-        [ viewUsers wrap shared auth.claims.uid lobby.users openUserMenu game
+        [ viewUsers wrap shared auth.claims.uid lobby openUserMenu game
         , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobbyAndConfigure ]
         , lobby.errors |> viewErrors shared
         ]
@@ -643,8 +646,8 @@ cardSizeToAttr cardSize =
             HtmlA.nothing
 
 
-lobbyMenu : (Msg -> msg) -> Shared -> Menu.State -> Route -> Section -> Maybe User -> Maybe Player -> Maybe Game -> Html msg
-lobbyMenu wrap shared menuState r s user player game =
+lobbyMenu : (Msg -> msg) -> Shared -> Menu.State -> Route -> Section -> Bool -> Maybe User -> Maybe Player -> Maybe Game -> Html msg
+lobbyMenu wrap shared menuState r s audienceMode user player game =
     let
         lobbyMenuItems =
             [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
@@ -655,15 +658,22 @@ lobbyMenu wrap shared menuState r s user player game =
         playerState role =
             case role of
                 User.Player ->
-                    Menu.button Icon.eye Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole User.Spectator |> wrap |> Just)
+                    Menu.button Icon.eye Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole Nothing User.Spectator |> wrap |> Just)
 
                 User.Spectator ->
-                    Menu.button Icon.chessPawn Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole User.Player |> wrap |> Just)
+                    Menu.button Icon.chessPawn Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole Nothing User.Player |> wrap |> Just)
 
         userLobbyMenuItems =
             [ setPresence |> Just
-            , user |> Maybe.map (.role >> playerState)
-            , Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGameDescription (Leave |> wrap |> Just) |> Just
+            , user
+                |> Maybe.andThen (\u -> u |> Maybe.justIf (u.privilege == User.Privileged || not audienceMode))
+                |> Maybe.map (.role >> playerState)
+            , Menu.button
+                Icon.signOutAlt
+                Strings.LeaveGame
+                Strings.LeaveGameDescription
+                (Leave |> wrap |> Just)
+                |> Just
             ]
                 |> List.filterMap identity
 
@@ -888,9 +898,12 @@ viewError shared error =
     error |> MdError.Game |> MdError.viewSpecific shared
 
 
-viewUsers : (Msg -> msg) -> Shared -> User.Id -> Dict User.Id User -> Maybe User.Id -> Maybe Game -> Html msg
-viewUsers wrap shared localUserId users openUserMenu game =
+viewUsers : (Msg -> msg) -> Shared -> User.Id -> Lobby -> Maybe User.Id -> Maybe Game -> Html msg
+viewUsers wrap shared localUserId lobby openUserMenu game =
     let
+        users =
+            lobby.users
+
         localUserPrivilege =
             users |> Dict.get localUserId |> Maybe.map .privilege |> Maybe.withDefault User.Unprivileged
 
@@ -898,14 +911,14 @@ viewUsers wrap shared localUserId users openUserMenu game =
             users |> Dict.toList |> List.partition (\( _, user ) -> user.presence == User.Joined)
 
         activeGroups =
-            active |> byRole |> List.map (viewRoleGroup wrap shared localUserId localUserPrivilege openUserMenu game)
+            active |> byRole |> List.map (viewRoleGroup wrap shared localUserId localUserPrivilege lobby.config.privacy.audienceMode openUserMenu game)
 
         inactiveGroup =
             if List.isEmpty inactive then
                 []
 
             else
-                [ viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( ( "left", Strings.Left ), inactive ) ]
+                [ viewUserListGroup wrap shared localUserId localUserPrivilege lobby.config.privacy.audienceMode openUserMenu game ( ( "left", Strings.Left ), inactive ) ]
 
         groups =
             List.concat [ activeGroups, inactiveGroup ]
@@ -913,8 +926,8 @@ viewUsers wrap shared localUserId users openUserMenu game =
     Card.view [ HtmlA.id "users" ] [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
 
 
-viewRoleGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html msg )
-viewRoleGroup wrap shared localUserId localUserPrivilege openUserMenu game ( role, users ) =
+viewRoleGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Bool -> Maybe User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html msg )
+viewRoleGroup wrap shared localUserId localUserPrivilege audienceMode openUserMenu game ( role, users ) =
     let
         idAndDescription =
             case role of
@@ -924,15 +937,15 @@ viewRoleGroup wrap shared localUserId localUserPrivilege openUserMenu game ( rol
                 User.Spectator ->
                     ( "spectators", Strings.Spectators )
     in
-    viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( idAndDescription, users )
+    viewUserListGroup wrap shared localUserId localUserPrivilege audienceMode openUserMenu game ( idAndDescription, users )
 
 
-viewUserListGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html msg )
-viewUserListGroup wrap shared localUserId localUserPrivilege openUserMenu game ( ( id, description ), users ) =
+viewUserListGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Bool -> Maybe User.Id -> Maybe Game -> ( ( String, MdString ), List ( User.Id, User ) ) -> ( String, Html msg )
+viewUserListGroup wrap shared localUserId localUserPrivilege audienceMode openUserMenu game ( ( id, description ), users ) =
     ( id
     , Html.li [ HtmlA.class id ]
         [ Html.span [] [ description |> Lang.html shared ]
-        , HtmlK.ol [] (users |> List.map (viewUser wrap shared localUserId localUserPrivilege openUserMenu game))
+        , HtmlK.ol [] (users |> List.map (viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu game))
         ]
     )
 
@@ -949,8 +962,8 @@ byRole users =
         |> List.filter (\( _, us ) -> not (List.isEmpty us))
 
 
-viewUser : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Maybe User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html msg )
-viewUser wrap shared localUserId localUserPrivilege openUserMenu game ( userId, user ) =
+viewUser : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Bool -> Maybe User.Id -> Maybe Game -> ( User.Id, User ) -> ( String, Html msg )
+viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu game ( userId, user ) =
     let
         ( secondary, score ) =
             userDetails shared game userId user
@@ -970,10 +983,21 @@ viewUser wrap shared localUserId localUserPrivilege openUserMenu game ( userId, 
                                 if localUserId /= userId then
                                     case user.privilege of
                                         User.Unprivileged ->
-                                            [ Menu.button Icon.userPlus Strings.Promote Strings.Promote (SetPrivilege userId User.Privileged |> wrap |> Just) |> Just ]
+                                            [ Menu.button Icon.userPlus
+                                                Strings.Promote
+                                                Strings.Promote
+                                                (SetPrivilege userId User.Privileged |> wrap |> Just)
+                                                |> Just
+                                            ]
 
                                         User.Privileged ->
-                                            [ Menu.button Icon.userMinus Strings.Demote Strings.Demote (SetPrivilege userId User.Unprivileged |> wrap |> Just) |> Just ]
+                                            [ Menu.button
+                                                Icon.userMinus
+                                                Strings.Demote
+                                                Strings.Demote
+                                                (SetPrivilege userId User.Unprivileged |> wrap |> Just)
+                                                |> Just
+                                            ]
 
                                 else
                                     []
@@ -982,13 +1006,23 @@ viewUser wrap shared localUserId localUserPrivilege openUserMenu game ( userId, 
                                 []
 
                     playerState =
-                        if localUserId == userId then
+                        if (localUserId == userId && not audienceMode) || localUserPrivilege == User.Privileged then
                             case user.role of
                                 User.Player ->
-                                    [ Menu.button Icon.eye Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole User.Spectator |> wrap |> Just) |> Just ]
+                                    [ Menu.button Icon.eye
+                                        Strings.BecomeSpectator
+                                        Strings.BecomeSpectatorDescription
+                                        (SetUserRole (Just userId) User.Spectator |> wrap |> Just)
+                                        |> Just
+                                    ]
 
                                 User.Spectator ->
-                                    [ Menu.button Icon.chessPawn Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole User.Player |> wrap |> Just) |> Just ]
+                                    [ Menu.button Icon.chessPawn
+                                        Strings.BecomePlayer
+                                        Strings.BecomePlayerDescription
+                                        (SetUserRole (Just userId) User.Player |> wrap |> Just)
+                                        |> Just
+                                    ]
 
                         else
                             []

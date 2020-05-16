@@ -74,6 +74,7 @@
       },
     },
     public: false,
+    audienceMode: false,
     decks: [
       // {
       //   source: "BuiltIn",

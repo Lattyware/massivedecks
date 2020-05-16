@@ -5,9 +5,11 @@ type Id
     = All
     | Password
     | Public
+    | AudienceMode
 
 
 type alias Config =
     { password : Maybe String
     , public : Bool
+    , audienceMode : Bool
     }

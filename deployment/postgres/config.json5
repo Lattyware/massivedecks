@@ -57,7 +57,7 @@
         // comedyWriter: { number: 300, exclusive: true },
         // rando: { number: 1 },
       },
-      phases: {
+      stages: {
         timeLimitMode: "Soft",
         playing: {
           duration: 60,
@@ -65,7 +65,7 @@
         },
         revealing: {
           duration: 45,
-          after: 5,
+          after: 2,
         },
         judging: {
           duration: 20,
@@ -74,6 +74,7 @@
       },
     },
     public: false,
+    audienceMode: false,
     decks: [
       // {
       //   source: "BuiltIn",

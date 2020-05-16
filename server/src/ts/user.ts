@@ -74,18 +74,20 @@ export const isSpectating: (user: User) => boolean = (user) =>
 /**
  * Create a new user.
  * @param registration The details of the user to create.
+ * @param role The role the user will have in the game.
  * @param privilege The level of privilege the user has.
  */
 export const create = (
   registration: RegisterUser,
+  role: Role,
   privilege: Privilege = "Unprivileged"
 ): User => ({
   name: registration.name,
   presence: "Joined",
   connection: "Connected",
-  privilege: privilege,
+  privilege,
   control: "Human",
-  role: "Player",
+  role,
 });
 
 /**

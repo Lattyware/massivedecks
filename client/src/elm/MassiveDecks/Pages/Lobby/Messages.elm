@@ -23,7 +23,7 @@ type Msg
     | ToggleInviteDialog
     | SetAway User.Id
     | SetPrivilege User.Id User.Privilege
-    | SetUserRole User.Role
+    | SetUserRole (Maybe User.Id) User.Role
     | Leave
     | Kick User.Id
     | SetTimeAnchor Time.Anchor

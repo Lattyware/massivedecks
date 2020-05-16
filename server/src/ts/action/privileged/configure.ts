@@ -105,6 +105,8 @@ function apply(
       version: existing.version + 1,
       rules: result,
       public: updated.public !== undefined ? updated.public : false,
+      audienceMode:
+        updated.audienceMode !== undefined ? updated.audienceMode : false,
     },
     events,
     tasks: allTasks,
@@ -163,7 +165,11 @@ class ConfigureActions extends Actions.Implementation<
         throw new InvalidActionError(`${error.name}: ${error.message}`);
       }
     }
-    validated = _validateConfig(patched);
+    try {
+      validated = _validateConfig(patched);
+    } catch (error) {
+      throw new InvalidActionError(`${error.name}: ${error.message}`);
+    }
     const { result, events, tasks } = apply(
       server,
       auth.gc,

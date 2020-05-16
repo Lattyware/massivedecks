@@ -16,7 +16,6 @@ module MassiveDecks.Pages.Lobby.Configure.Configurable exposing
 
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor exposing (Editor)

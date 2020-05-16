@@ -82,6 +82,7 @@ fake =
     , privacy =
         { password = Nothing
         , public = False
+        , audienceMode = False
         }
     , version = ""
     }

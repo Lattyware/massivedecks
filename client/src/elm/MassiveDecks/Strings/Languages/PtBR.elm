@@ -860,6 +860,16 @@ translate mdString =
         LobbyPasswordDescription ->
             [ Text "Uma senha que os jogadores devem usar para entrar no jogo." ]
 
+        -- TODO: Translate
+        AudienceMode ->
+            [ Text "Audience Mode" ]
+
+        -- TODO: Translate
+        AudienceModeDescription ->
+            [ Text "If enabled, newly joining users will be spectators by default, and only you will be able to "
+            , Text "make them players."
+            ]
+
         StartGame ->
             [ Text "Iniciar Jogo" ]
 
