@@ -4,1299 +4,497 @@
 {
   name: "Crimes Against LeedsFurs",
   "calls": [
-    [
-      [
-        "Hey Reddit! I’m ",
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "Ask me anything."
-      ]
-    ],
-    [
-      [
-        "Introducing X-treme Baseball!"
-      ],
-      [
-        "It’s like baseball, but with ",
-        {},
-        "!"
-      ]
-    ],
-    [
-      [
-        "What is Batman’s guilty pleasure?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "TSA guidelines now prohibit ",
-        {},
-        " on airplanes."
-      ]
-    ],
-    [
-      [
-        "Next from J.K. Rowling: ",
-        {
-          text: "Harry Potter and the Chamber of ",
-          style: "Em",
-        },
-        {
-          "transform": "Capitalize",
-          "style": "Em",
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "That’s right, I killed ",
-        {},
-        "."
-      ],
-      [
-        "How, you ask?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "I’m sorry professor, but I couldn’t complete my homework because of ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "And the Academy Award for ",
-        {},
-        " goes to ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Dude, do not go in that bathroom."
-      ],
-      [
-        "There’s ",
-        {},
-        " in there."
-      ]
-    ],
-    [
-      [
-        "How did I lose my virginity?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "It’s a pity that kids these days are all getting involved with ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Step 1: ",
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "Step 2: ",
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "Step 3: Profit."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "Becha can’t have just one!"
-      ]
-    ],
-    [
-      [
-        "Kids, I don’t need drugs to get high. I’m high on ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "For my next trick, I will pull ",
-        {},
-        " out of ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "While the United States raced the Soviet Union to the moon, the Mexican government funneled millions of pesos into research on ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "In the new Disney Channel Original Movie, Hannah Montana struggles with ",
-        {},
-        " for the first time."
-      ]
-    ],
-    [
-      [
-        "What’s my secret power?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "I’m going on a cleanse this week. Nothing but kale juice and ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        " + ",
-        {
-          "transform": "Capitalize"
-        }
-      ],
-      [
-        " = ",
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "When Pharaoh remained unmoved, Moses called down a Plague of ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Just once, I’d like to hear you say “Thanks, Mom. Thanks for ",
-        {},
-        ".”"
-      ]
-    ],
-    [
-      [
-        "Daddy, why is mommy crying?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "When I was tripping on acid, ",
-        {},
-        " turned into ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "50% of all marriages end in ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "My fellow Americans: Before this decade is out, we ",
-        {
-          text: "will",
-          style: "Em"
-        },
-        ", have ",
-        {},
-        " on the moon."
-      ]
-    ],
-    [
-      [
-        "This season at Steppenwolf, Samuel Beckett’s classic existential play: ",
-        {
-          text: "Waiting for",
-          style: "Em"
-        },
-        {
-          style: "Em"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Instead of coal, Santa now gives the bad children ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Life for American Indians was forever changed when the White Man introduced them to ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s Teach for America using to inspire inner city students to succeed?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Maybe she’s born with it."
-      ],
-      [
-        "Maybe it’s ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What is George W. Bush thinking about right now?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "White people like ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        " is a slippery slope that leads to ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Why do I hurt all over?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "A romantic, candlelit dinner would be incomplete without ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Just saw this upsetting video! Please retweet!!"
-      ],
-      [
-        "#stop",
-        {
-          "transform": "Capitalize"
-        }
-      ]
-    ],
-    [
-      [
-        "Fun tip! When your man asks you to go down on him, try surprising him with ",
-        {},
-        " instead."
-      ]
-    ],
-    [
-      [
-        "The class field trip was completely ruined by ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s a girl’s best friend?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Dear Abby, I’m having some trouble with ",
-        {},
-        " and would like your advice."
-      ]
-    ],
-    [
-      [
-        "In M. Night Shyamalan’s new movie, Bruce Willis discovers that ",
-        {},
-        " had really been ",
-        {},
-        " all along."
-      ]
-    ],
-    [
-      [
-        "When I am President of the United States, I will create the Department of ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What are my parents hiding from me?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "What never fails to liven up the party?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "IF you like ",
-        {
-          "transform": "UpperCase"
-        },
-        ","
-      ],
-      [
-        "YOU MIGHT BE A REDNECK."
-      ]
-    ],
-    [
-      [
-        "Make a haiku."
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        ","
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        ","
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "What made my first kiss so awkward?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Hey guys, welcome to Chili’s! Would you like to start the night off right with ",
-        {},
-        "?"
-      ]
-    ],
-    [
-      [
-        "I got 99 problems but ",
-        {},
-        " ain’t one."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "It’s a trap!"
-      ]
-    ],
-    [
-      [
-        "Bravo’s new reality show features eight washed-up celebrities living with ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What would grandma find disturbing, yet oddly charming?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ],
-      [
-        "That was so metal."
-      ]
-    ],
-    [
-      [
-        "I never truly understood ",
-        {},
-        " until I encountered ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "During sex, I like to think about ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What ended my last relationship?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s that sound?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Uh, hey guys, I know this was my idea, but I’m having serious doubts about ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Why am I sticky?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "I’m no doctor but I’m pretty sure what you’re suffering from is called “",
-        {},
-        ".”"
-      ]
-    ],
-    [
-      [
-        "What’s there a ton of in heaven?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "After four platinum albums and three Grammys, it’s time to get back to my roots, to what inspired me to make music in the first place: ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What will always get you laid?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "They said we were crazy. They said we couldn’t put ",
-        {},
-        " inside of ",
-        {},
-        "."
-      ],
-      [
-        "They were wrong."
-      ]
-    ],
-    [
-      [
-        "Lifetime® presents “",
-        {},
-        ": the Story of ",
-        {},
-        ".”"
-      ]
-    ],
-    [
-      [
-        {
-          "transform": "Capitalize"
-        },
-        ": kid-tested, mother-approved."
-      ]
-    ],
-    [
-      [
-        "Why can’t I sleep at night?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s that smell?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "After eight years in the White House, how is Obama finally letting loose?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "This is the way the world ends"
-      ],
-      [
-        "This is the way the world ends"
-      ],
-      [
-        "Not with a bang but with ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Coming to Broadway this season, ",
-        {},
-        ": The Musical."
-      ]
-    ],
-    [
-      [
-        "Here is the church"
-      ],
-      [
-        "Here is the steeple"
-      ],
-      [
-        "Open the doors"
-      ],
-      [
-        "And there is",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "But before I kill you, Mr. Bond, I must show you ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Studies show that lab rats navigate mazes 50% faster after being exposed to ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "What’s the next superhero/sidekick duo?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "/",
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ],
-    [
-      [
-        "Next on ESPN2, the World Series of ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "When I am a billionaire, I shall erect a 50-foot statue to commemorate ",
-        {},
-        "."
-      ]
-    ],
-    [
-      [
-        "Military historians remember Alexander the Great for his brilliant use of ",
-        {},
-        " against the Persians."
-      ]
-    ],
-    [
-      [
-        "War!"
-      ],
-      [
-        "What is it good for?"
-      ],
-      [
-        {
-          "transform": "Capitalize"
-        },
-        "."
-      ]
-    ]
-  ],
-  "responses": [
-    "silence",
-    "the illusion of choice ina late-stage capitalist society",
-    "many bats",
-    "famine",
-    "flesh-eating bacteria",
-    "flying sex snakes",
-    "not giving a shit about the Third World",
-    "magnets",
-    "shapeshifters",
-    "seeing what happens when you lock people in a room with hungry seagulls",
-    "a crucifixion",
-    "Jennifer Lawrence",
-    "72 virgins",
-    "a live studio audience",
-    "a time travel paradox",
-    "authentic Mexican cuisine",
-    "doing crimes",
-    "synergistic management solutions",
-    "crippling debt",
-    "daddy issues",
-    "used panties",
-    "a fart so powerful that it wakes the giants from their thousand-year slumber",
-    "former president George W. Bush",
-    "full frontal nudity",
-    "covering myself with Parmesan cheese and chili flakes because I am pizza",
-    "laying an egg",
-    "getting naked and watching Nickelodeon",
-    "pretending to care",
-    "having big dreams but no realistic way to achieve them",
-    "seeing Grandma naked",
-    "boogers",
-    "the inevitable heat death of the universe",
-    "the miracle of childbirth",
-    "the rapture",
-    "whipping it out",
-    "white privilege",
-    "emerging from the sea and rampaging through Tokyo",
-    "the Hamburglar",
-    "AXE Body Spray",
-    "the Blood of Christ",
-    "soft, kissy missionary sex",
-    "BATMAN!",
-    "agriculture",
-    "barely making $25,000 a year",
-    "natural selection",
-    "coat hanger abortions",
-    "sex with Patrick Stewart",
-    "my abusive boyfriend who really isn’t so bad once you get to know him",
-    "prescription pain killers",
-    "swooping",
-    "mansplaining",
-    "a homoerotic volleyball montage",
-    "Alexandria Ocasio-Cortez",
-    "putting things where they go",
-    "fragile masculinity",
-    "all-you-can-eat shrimp for $8.99",
-    "an old guy who’s almost dead",
-    "Kanye West",
-    "hot cheese",
-    "raptor attacks",
-    "seven dead and three in critical condition",
-    "smegma",
-    "alcoholism",
-    "a middle-aged man on roller skates",
-    "looking in the mirror, applying lipstick, and whispering “tonight, you will have sex with Tom Cruise”",
-    "bingeing and purging",
-    "an oversized lollipop",
-    "self-loathing",
-    "sitting on my face and telling me I’m garbage",
-    "half-assed foreplay",
-    "the Holy Bible",
-    "german dungeon porn",
-    "being on fire",
-    "teenage pregnancy",
-    "Gandhi",
-    "your weird brother",
-    "a Fleshlight®",
-    "a pyramid of severed heads",
-    "an erection that lasts longer than four hours",
-    "a three-way with my wife and Shaquille O’Neal",
-    "the past",
-    "my genitals",
-    "an endless stream of diarrhea",
-    "science",
-    "not reciprocating oral sex",
-    "flightless birds",
-    "a good sniff",
-    "50,000 volts straight to the nipples",
-    "a balanced breakfast",
-    "dead birds everywhere",
-    "the arrival of the pizza",
-    "Permanent Orgasm-Face Disorder",
-    "the cool, refreshing taste of Pepsi®",
-    "chemical weapons",
-    "Oprah",
-    "wondering if it’s possible to get some of that salsa to go",
-    "bananas",
-    "passive aggressive Post-it notes",
-    "Hillary Clinton’s emails",
-    "switching to Geico®",
-    "peeing a little bit",
-    "wet dreams",
-    "the Jews",
-    "my cheating son-of-a-bitch husband",
-    "powerful thighs",
-    "these hoes",
-    "the only gay person in a hundred miles",
-    "having sex for the first time",
-    "Donald J. Trump",
-    "kissing grandma on the forehead and turning off her life support",
-    "sexual tension",
-    "an AR-15 assault rifle",
-    "my good bra",
-    "punching a congressman in the face",
-    "Fancy Feast®",
-    "being rich",
-    "sweet, sweet vengeance",
-    "Republicans",
-    "sniffing and kissing my feet",
-    "a much younger woman",
-    "poverty",
-    "kamikaze pilots",
-    "committing suicide",
-    "the homosexual agenda",
-    "a Mexican",
-    "a falcon with a cap on its head",
-    "wizard music",
-    "the Kool-Aid Man",
-    "Juuling",
-    "free samples",
-    "hurting those closest to me",
-    "doing the right thing",
-    "the Three-Fifths Compromise",
-    "lactation",
-    "world peace",
-    "shutting up so I can watch the game",
-    "eating a hard boiled egg out of my husband’s asshole",
-    "RoboCop",
-    "one titty hanging out",
-    "Justin Bieber",
-    "Oompa-Loompas",
-    "inappropriate yodeling",
-    "puberty",
-    "ghosts",
-    "50 mg of Zoloft daily",
-    "fucking my sister",
-    "braiding three penises into a Twizzler",
-    "vigorous jazz hands",
-    "getting fingered",
-    "my Uber driver, Pavel",
-    "GoGurt®",
-    "police brutality",
-    "filling my briefcase with business stuff",
-    "preteens",
-    "my fat daughter",
-    "rap music",
-    "fading away into nothingness",
-    "Darth Vader",
-    "a sad handjob",
-    "exactly what you’d expect",
-    "expecting a burp and vomiting on the floor",
-    "Adderall®",
-    "the Red Hot Chili Peppers",
-    "sideboob",
-    "an octopus giving seven handjobs and smoking a cigarette",
-    "my neck, my back, my pussy, and my crack",
-    "J. D. Power and his associates",
-    "mouth herpes",
-    "sperm whales",
-    "women of color",
-    "men discussing their feelings in an emotionally healthy way",
-    "incest",
-    "Pac-Man uncontrollably guzzling cum",
-    "casually suggesting a threesome",
-    "running out of semen",
-    "god",
-    "the wonders of the Orient",
-    "sexual peeing",
-    "emotions",
-    "licking things to claim them as your own",
-    "jobs",
-    "the placenta",
-    "spontaneous human combustion",
-    "the Bachelorette season finale",
-    "throwing grapes at a man until he loses touch with reality",
-    "establishing dominance",
-    "finger painting",
-    "old-people smell",
-    "getting crushed by a vending machine",
-    "my inner demons",
-    "a Super Soaker™ full of cat pee",
-    "Aaron Burr",
-    "cuddling",
-    "however much weed $20 can buy",
-    "battlefield amputations",
-    "Spaghetti? Again?",
-    "Ronald Reagan",
-    "a disappointing birthday party",
-    "nachos for the table",
-    "becoming a blueberry",
-    "a tiny horse",
-    "William Shatner",
-    "selling crack to children",
-    "an M. Night Shyamalan plot twist",
-    "brown people",
-    "mutually assured destruction",
-    "pedophiles",
-    "yeast",
-    "how bad my daughter fucked up her dance recital",
-    "rectangles",
-    "catapults",
-    "poor people",
-    "only dating Asian women",
-    "the Hustle",
-    "the Force",
-    "how amazing it is to be on mushrooms",
-    "judging everyone",
-    "Kourtney, Kim, Khloe, Kendall, and Kylie",
-    "getting married, having a few kids, buying some stuff, retiring to Florida, and dying",
-    "some god damn peace and quiet",
-    "AIDS",
-    "pictures of boobs",
-    "strong female characters",
-    "some foundation, mascara, and a touch of blush",
-    "hospice care",
-    "getting really high",
-    "the opiod epidemic",
-    "penis envy",
-    "gay conversion therapy",
-    "Ruth Bader Ginsburg brutally gaveling your penis",
-    "German Chancellor Angela Merkel",
-    "the KKK",
-    "a pangender octopus who roams the cosmos in search of love",
-    "meth",
-    "serfdom",
-    "holding down a child and farting all over him",
-    "a Bop It™",
-    "a whole thing of butter",
-    "still being a virgin",
-    "solving problems with violence",
-    "getting cummed on",
-    "pixelated bukkake",
-    "a lifetime of sadness",
-    "going an entire day without masturbating",
-    "dick pics",
-    "racism",
-    "menstrual rage",
-    "sunshine and rainbows",
-    "radical Islamic terrorism",
-    "huge biceps",
-    "my little boner",
-    "dry heaving",
-    "a gossamer stream of jizz that catches the light as it arcs through the morning air",
-    "executing a hostage every hour",
-    "the rhythms of Africa",
-    "breaking out into song and dance",
-    "leprosy",
-    "gloryholes",
-    "nipple blades",
-    "the heart of a child",
-    "puppies!",
-    "fellowship in Christ",
-    "little boy penises",
-    "waking up half-naked in a Denny’s parking lot",
-    "an older woman who knows her way around the penis",
-    "getting drugs off the street and into my body",
-    "Daniel Radcliffe’s delicious asshole",
-    "active listening",
-    "ethnic cleansing",
-    "itchy pussy",
-    "blowing my boyfriend so hard he shits",
-    "a fuck-ton of almonds",
-    "a salad for men that’s made of metal",
-    "waiting till marriage",
-    "unfathomable stupidity",
-    "shiny objects",
-    "the Devil himself",
-    "autocannibalism",
-    "erectile dysfunction",
-    "my collection of Japanese sex toys",
-    "the Pope",
-    "white people",
-    "tentacle porn",
-    "my bright pink fuckhole",
-    "how far I can get my own penis up my butt",
-    "having anuses for eyes",
-    "the penny whistle solo from “My Heart Will Go On”",
-    "seppuku",
-    "Danny DeVito",
-    "the magic of live theatre",
-    "throwing a virgin into a volcano",
-    "Dwayne “The Rock” Johnson",
-    "accepting the way things are",
-    "NBA superstar LeBron James",
-    "listening to her problems without trying to solve them",
-    "therapy",
-    "being fat and stupid",
-    "pooping back and forth. Forever",
-    "tearing that ass up like wrapping paper on Christmas morning",
-    "more elephant cock than I bargained for",
-    "a salty surprise",
-    "the South",
-    "the violation of our most basic human rights",
-    "tap dancing like there’s no tomorrow",
-    "consensual sex",
-    "telling a shitty story that goes nowhere",
-    "a good, strong gorilla",
-    "seeing my father cry",
-    "necrophilia",
-    "being a woman",
-    "getting into a pretty bad car accident",
-    "Bill Nye the Science Guy",
-    "black people",
-    "The Boy Scouts of America",
-    "Lunchables™",
-    "bitches",
-    "some punk kid who stole my turkey sandwich",
-    "heartwarming orphans",
-    "Spirit Airlines",
-    "bubble butt bottom boys",
-    "a bowl of mayonnaise and human teeth",
-    "fiery poops",
-    "saying “I love you”",
-    "inserting a Mason jar into my anus",
-    "the true meaning of Christmas",
-    "some of the best rappers in the game",
-    "owning and operating a Chili’s franchise",
-    "estrogen",
-    "girls",
-    "the Russians",
-    "a bleached asshole",
-    "fucking the weatherman on live television",
-    "PTSD",
-    "dark and mysterious forces beyond our control",
-    "smallpox blankets",
-    "masturbating",
-    "hobos",
-    "queefing",
-    "the guys from Queer Eye",
-    "Cardi B.",
-    "Viagra®",
-    "soup that is too hot",
-    "Muhammad (Peace Be Upon Him)",
-    "explaining how vaginas work",
-    "Academy Award winner Meryl Streep",
-    "drinking alone",
-    "dick fingers",
-    "multiple stab wounds",
-    "poopy diapers",
-    "child abuse",
-    "anal beads",
-    "slaughtering innocent civilians",
-    "pulling out",
-    "being able to talk to elephants",
-    "horse meat",
-    "a really cool hat",
-    "Stalin",
-    "a stray pube",
-    "worshipping that pussy",
-    "completely unwarranted confidence",
-    "doin’ it in the butt",
-    "my ex-wife",
-    "teaching a robot to love",
-    "touching a pug right on his penis",
-    "a windmill full of corpses",
-    "Count Chocula",
-    "Vladimir Putin",
-    "the Patriarchy",
-    "the glass ceiling",
-    "vomiting seafood and bleeding anally",
-    "The American Dream",
-    "not wearing pants",
-    "my balls on your face",
-    "pooping in a laptop and closing it",
-    "dead babies",
-    "foreskin",
-    "a saxophone solo",
-    "Italians",
-    "a fetus",
-    "firing a rifle into the air while balls deep in a squealing hog",
-    "Mike Pence",
-    "10,000 Syrian refugees",
-    "forced sterilization",
-    "my relationship status",
-    "an unwanted pregnancy",
-    "diversity",
-    "a white ethnostate",
-    "Bees?",
-    "Harry Potter erotica",
-    "giving birth to the Antichrist",
-    "three dicks at the same time",
-    "Nazis",
-    "8 oz. of sweet Mexican black-tar heroin",
-    "what that mouth do",
-    "dead parents",
-    "object permanence",
-    "opposable thumbs",
-    "racially-biased SAT questions",
-    "the Great Depression",
-    "chainsaws for hands",
-    "Nicolas Cage",
-    "child beauty pageants",
-    "explosions",
-    "not vaccinating my children because I am stupid",
-    "Lena Dunham",
-    "huffing spray paint",
-    "a man on the brink of orgasm",
-    "repression",
-    "invading Poland",
-    "my vagina",
-    "assless chaps",
-    "murder",
-    "giving 110%",
-    "Her Majesty, Queen Elizabeth II",
-    "the Trail of Tears",
-    "memes",
-    "sex with animals",
-    "being marginalized",
-    "goblins",
-    "hope",
-    "liberals",
-    "a micropenis",
-    "my soul",
-    "a ball of earwax, semen, and toenail clippings",
-    "a horde of Vikings",
-    "hot people",
-    "seething with quiet resentment",
-    "an Oedipus complex",
-    "geese",
-    "extremely tight pants",
-    "Fox News",
-    "a little boy who won’t shut the fuck up about dinosaurs",
-    "making a pouty face",
-    "vehicular manslaughter",
-    "women’s suffrage",
-    "some guy",
-    "Judge Judy",
-    "African children",
-    "this month’s mass shooting",
-    "Barack Obama",
-    "illegal immigrants",
-    "elderly Japanese men",
-    "the female orgasm",
-    "heteronormativity",
-    "crumbs all over the god damn carpet",
-    "Arnold Schwarzenegger",
-    "the wifi password",
-    "spectacular abs",
-    "a bird that shits human turds",
-    "a mopey zoo lion",
-    "a bag of magic beans",
-    "poor life choices",
-    "my sex life",
-    "Auschwitz",
-    "a snapping turtle biting the tip of your penis",
-    "all the dudes I’ve fucked",
-    "the clitoris",
-    "the Big Bang",
-    "land mines",
-    "The entire Mormon Tabernacle Choir",
-    "a micropig wearing a tiny raincoat and booties",
-    "penis breath",
-    "jerking off into a pool of children’s tears",
-    "man meat",
-    "me time",
-    "the Underground Railroad",
-    "poorly-timed Holocaust jokes",
-    "a sea of troubles",
-    "lumberjack fantasies",
-    "Morgan Freeman’s voice",
-    "women in yogurt commercials",
-    "natural male enhancement",
-    "being a motherfucking sorcerer",
-    "my black ass",
-    "genuine human connection",
-    "announcing that I am about to cum",
-    "balls",
-    "Grandma",
-    "friction",
-    "chunks of dead hitchhiker",
-    "farting and walking away",
-    "being a dick to children",
-    "one trillion dollars",
-    "drowning the kids in the bathtub",
-    "dying",
-    "drinking out of the toilet and eating garbage",
-    "the gays",
-    "the screams… the terrible screams",
-    "men",
-    "the bombing of Nagasaki",
-    "fake tits",
-    "the Amish",
-    "David Bowie flying in on a tiger made of lightning",
-    "my ugly face and bad personality",
-    "a bitch slap",
-    "a brain tumor",
-    "fear itself",
-    "Jews, gypsies, and homosexuals",
-    "the milkman",
-    "Cards Against Humanity"
-  ]
+		[["#",{}," - LeedsFurs Approved!"]],
+		[[{}," - what can't they do?"]],
+		[[{}," and ",{},": the Prime Minister's fursona."]],
+		[[{}," and ",{}," caused the latest drama"]],
+		[[{}," and ",{}," make the best combination"]],
+		[[{}," is a fast-track to becoming staff!"]],
+		[[{}," is good, but ",{}," is better!"]],
+		[[{}," would never have happened if they'd let me combine ",{}," and ",{},"!"]],
+		[[{},", the latest fursuit game!"]],
+		[[{},". Horny on main."]],
+		[[{},"!? that's it, I'm leaving the fandom forever!"]],
+		[[{}," AND ",{},"?!"]],
+		[[{}," and ",{}," make the best furry convention"]],
+		[[{}," is the worst pizza topping."]],
+		[[{}," was founded when ",{}," met ",{}]],
+		[[{},"! Somebody call an ambulance!"]],
+		[[{},"! Woo-hoo!"]],
+		[[{},": £200. ",{},": £150. ",{},": Priceless"]],
+		[[{}," and ",{}," and ",{},", OH MY!"]],
+		[[{}," happened, we need a new venue."]],
+		[[{}," + ",{}," = my fetish"]],
+		[[{}," makes me hard..."]],
+		[[{}," me, Daddy"]],
+		[[{}," ruined the magic!"]],
+		[[{},"'s kink is ",{}]],
+		[[{}," was cancelled. Why? Because ",{},"."]],
+		[[{},": Does A Body Good"]],
+		[[{},"? Yes please!"]],
+		[["6 ",{},", 2 ",{}," and 1 ",{}]],
+		[["A fur was arrested at the train station last meet because they brought ",{}]],
+		[["Animal Crossing: ",{}," Edition"]],
+		[["Bad Dragon's orders exploded when they revealed their new toy would be called ",{}]],
+		[["Can You Feel The ",{}," Tonight?"]],
+		[["Come over here, and bring the ",{}]],
+		[["Daddy Xantin loves ",{}]],
+		[["Dragons really are ",{}]],
+		[["Eat, Sleep, ",{},", Repeat"]],
+		[["For Comic Relief I did a sponsored ",{},", I didn't raise too much..."]],
+		[["Foxes like ",{},", but werefoxes like ",{}]],
+		[["Furries around the world lost their shit over ",{}]],
+		[["Furries make ",{}," look acceptable."]],
+		[["Fursuit walk cancelled due to ",{}," on Briggate"]],
+		[["Get to ",{}," by going via ",{}]],
+		[["Grab ",{}," and ",{},", go to the Winchester, wait for this all to blow over"]],
+		[["GTA VI: ",{}," Edition"]],
+		[["Harry Potter and the ",{}]],
+		[["Hold my ",{}," and watch this!"]],
+		[["How To Train Your ",{}]],
+		[["I can't start my day without a daily dose of ",{},"."]],
+		[["I commissioned ",{},", but I got ",{}," instead!"]],
+		[["I don't RP, but I do enjoy ",{}]],
+		[["I got banned from ",{},". Why you ask? Because ",{},"."]],
+		[["I improvised some dungeon equipment out of ",{}," and ",{}]],
+		[["I just realised that ",{}," are ",{},"!"]],
+		[["I like ",{}," because of ",{}]],
+		[["I made my fursona by combining ",{}," and ",{}]],
+		[["I never knew I was into ",{}," until I found ",{}]],
+		[["I once met a wolf who was always ",{}]],
+		[["I sunk the party boat with ",{}," and ",{},"..."]],
+		[["I was a fox until ",{}," got involved"]],
+		[["I was horrified when I found ",{}," in the bottom of Mum and Dad's wardrobe"]],
+		[["I was hospitalised for drinking too much ",{}]],
+		[["I was sent to the naughty step for ",{}]],
+		[["I was staff and all I got was this lousy ",{}]],
+		[["I went back in time to ensure ",{}," never happened"]],
+		[["I went to the furcon and all I got was ",{}]],
+		[["I would be a ",{}," for you."]],
+		[["If you happen to find ",{},", please return it to ",{}]],
+		[["I'm as happy as a ",{}," in ",{},"!"]],
+		[["In order to protect against ",{},", furries turned to using ",{}]],
+		[["Is that a ",{}," in your pocket? Or are you just happy to see me?"]],
+		[["Last time I went to the meet I ate a ",{}]],
+		[["Lord of the ",{}]],
+		[["Lynxes are only good for ",{}]],
+		[["Milkshakes unavailable due to ",{}]],
+		[["Mistaking ",{}," for ",{},"."]],
+		[["Monty Python and the ",{}]],
+		[["My eyes needed bleach when I saw ",{}," at the convention"]],
+		[["My innocent mind was blown when I discovered ",{}]],
+		[["My latest drunk escapade involved ",{}," and ",{}]],
+		[["Newsflash! The President just banned ",{},"!"]],
+		[["No ",{}," like ",{}]],
+		[["No Leeds Furs meet is complete without ",{},"."]],
+		[["Normies invaded the furmeet venue and we brought out the ",{},"."]],
+		[["Oh crap! I accidentally sent ",{}," to the meet chat"]],
+		[["On the way to the con, Customs confiscated my ",{}]],
+		[["Our new furmeet mascot is ",{},"!"]],
+		[["OwO, what's this? ",{}]],
+		[["Peace between Yorkshire and Lancashire was eventually established by ",{},"."]],
+		[["Quick! We need more ",{},"!"]],
+		[["Quick, ",{}," are coming!"]],
+		[["Rub my ",{},"?"]],
+		[["Rule Change!! ",{}," is now banned"]],
+		[["So, ",{}," just happened"]],
+		[["Something you shouldn't do in fursuit ",{}]],
+		[["The best dungeon has rope, paddles, a cage and ",{}]],
+		[["The best furry cocktails are made by combining ",{}," and ",{}]],
+		[["The birthday party was ruined by the introduction of ",{}]],
+		[["The bouncy castle deflated because of ",{}]],
+		[["The DnD session took a turn for the worse when the GM introduced ",{}]],
+		[["The easiest way to get banned from the group chat. ",{}]],
+		[["The fursuit walk was cancelled due to ",{}]],
+		[["The light at the end of the tunnel is the light of an oncoming ",{}]],
+		[["The meet staff had to have a chat with me after ",{}]],
+		[["The new LeedsFurs Meet venue is ",{},"."]],
+		[["The next con is ",{}]],
+		[["The Pinkest ",{}]],
+		[["The room party took an odd turn when someone turned up with ",{}]],
+		[["The thing I'll remember about my first furmeet was ",{}]],
+		[["The worst thing to apply Rule 34 to: ",{}]],
+		[["They say you can fit ",{}," in a fox"]],
+		[["This Rail Service is delayed due to ",{}]],
+		[["This year's SuperSponsor gifts: ",{},", ",{}," and ",{},"."]],
+		[["Uncle Kage ran out of wine. ",{}," happened."]],
+		[["UwU *notices ur ",{},"*"]],
+		[["Wanna get me weak at the knees? Just call me ",{}]],
+		[["We were all shocked when ",{}," was spelled out on Countdown last night."]],
+		[["Weirdest thing found in the Lost Property box after the meet? ",{}]],
+		[["What brought the livestream to a halt? ",{}]],
+		[["What can I say except, ",{}]],
+		[["What did Hitler do on his vacation? ",{}]],
+		[["What did I buy in the Art Show this year? ",{}]],
+		[["What did I find in the closet? ",{}]],
+		[["What did we pull out of the otter? ",{}]],
+		[["What do German Shepherds love the most? ",{}]],
+		[["What does the fox say? ",{}]],
+		[["What is ",{},"? We just don't know"]],
+		[["What is hotter ",{}," or ",{},"?"]],
+		[["What IS that smell? ",{}]],
+		[["What just did me a frighten? ",{}]],
+		[["What made me go ARRRRRRRRRRRRRRRGH!!! today? ",{}]],
+		[["What made me late for work today? ",{}]],
+		[["What was found in the ball pit? ",{}]],
+		[["What was I caught doing in the Art Show? ",{}]],
+		[["What will make me lift my tail? ",{}]],
+		[["What would go well in a Yorkshire Pudding wrap? ",{}]],
+		[["What's behind the door of Room 366? ",{}]],
+		[["What's in Wolfies basement? ",{}]],
+		[["What's the worst thing that can happen at a furmeet? ",{}]],
+		[["When everything was cancelled, furries resorted to ",{}," to entertain themselves"]],
+		[["When I was younger, I found ",{}," weirdly attractive"]],
+		[["Where is the changing area ?",{}]],
+		[["Who is horny on main? ",{}]],
+		[["Who's a good boy? ",{}]],
+		[["Why are YOU wet? ",{}]],
+		[["Why did I get fined £350? ",{}]],
+		[["Why did I get thrown out of the zoo? ",{}]],
+		[["Why did I leave the room party early? ",{}]],
+		[["Why do birds suddenly appear? ",{}]],
+		[["Why do I drink? ",{}]],
+		[["Why does ",{}," suck? Because ",{}]],
+		[["Why is my fursuit moist? ",{}]],
+		[["Why is there ",{}," in my glass?"]],
+		[["Why is Xantin mad at the Telegram chat? ",{}]],
+		[["Why was I late to the meet? ",{}]],
+		[["Why was I walking funny coming out of the room party? ",{}]],
+		[["Why were we thrown out of the shopping centre? ",{}]],
+		[["You can't go to a furmeet without ",{},", ",{}," and ",{}]],
+		[["You, me, ",{},", NOW"]],
+		[["An hourly Twitter bot that posts pictures of ",{}]],
+		[[{},"! What is it good for? Absolutely nothing!"]],
+		[["What could pawsibly go wrong with ",{},"?"]],
+		[["The theme for next year's con is ",{}]],
+		[["What time is it Mr Wolf? It's ",{}," time!"]],
+		[["Why is Dexter handcuffed to a ",{},"?"]],
+		[["The worst furcon is ",{}]]
+	],
+	"responses": [
+		"THAT fur",
+		"*crinkle* *crinkle*",
+		"£350 awoo fine",
+		"10 furries performing a Satanic ritual",
+		"200°",
+		"2Gryphon",
+		"55 gallons of lube",
+		"700 litres of isopropyl alcohol",
+		"Baby fur who loves to twerk.",
+		"Big gulp of Mountain Dew Code Red",
+		"Bowl of oatmeal",
+		"Broken murrsuit zipper",
+		"Collapsed fursuiter",
+		"Costly silicone sculpture",
+		"Crotchless thong",
+		"Fox",
+		"Fursuit full of bees",
+		"Gay pride flag",
+		"Green hedgehog",
+		"Gregg's sausage and bean melt",
+		"Horse with a dog cock and a dog with a horse cock",
+		"Lynx",
+		"McFlurry",
+		"Meat slinky",
+		"Nazi fur who swears they aren't a Nazi.",
+		"Nerd­³ look-a-like",
+		"Pair of fake breasts",
+		"Penis pushed up against The Old Red Bus Station's window",
+		"Potato from Rio called Jose",
+		"Pup hood from WISH",
+		"Rubber gimp suit",
+		"Sergal cheesecake",
+		"Sergal that doesn't smell of cheese",
+		"Shock collar",
+		"Shrubbery",
+		"Sickly cloud of vape",
+		"Slow-motion car crash",
+		"Soggy diaper in the corner",
+		"Vegan cupcake",
+		"VR fursona",
+		"White Christmas",
+		"AA Battery Controlled Telescopic Knife",
+		"Adolf Kitler",
+		"Aggressive dabbing",
+		"Alkali Bismuth",
+		"Alkali's Tequila",
+		"Out of tune piano",
+		"Untitled message just saying 'hi'",
+		"Anal prolapse",
+		"Anal-vore",
+		"Anne Widdecummies",
+		"Another bloody conversation about trains.",
+		"AnthroCon",
+		"Asbestos",
+		"Atlas Brauhaus",
+		"Autofellatio",
+		"Awoo permit",
+		"BaaBar",
+		"Baby Furs",
+		"Bar Soba",
+		"BarPop",
+		"Bathroom blowjobs",
+		"Bazil Cat",
+		"Bazil's first aid kit",
+		"Beating a mugger with a Chance XL",
+		"Being a tiger for you",
+		"Being forced to eat dinner at MOD Pizza... again",
+		"Being really into trains",
+		"Being trapped in a fursuit",
+		"Being weirdly obsessive over airsoft",
+		"Big THROBBING Dog Dick",
+		"Blubberfurs",
+		"Bluetooth speakers",
+		"Bonghits Jointson",
+		"Boom! Boom!",
+		"Boomers",
+		"Boozy Badger",
+		"Boris Johnson's sizable appendage",
+		"Bradford",
+		"Brexit",
+		"Briggate",
+		"BritFur",
+		"Brushing your damn suit",
+		"Bukkake",
+		"CabinCon",
+		"Canal Street",
+		"Caramelldansen",
+		"Casual racism",
+		"CDcumber",
+		"Chance XL",
+		"Chance XL flared",
+		"Chance XL flared... Extra firm.",
+		"Chicago Winter Meet & Fuck",
+		"Circle Perch! Circle Perch! Circle Perch!",
+		"Class 142 Pacer",
+		"Cock",
+		"Cock transformation",
+		"Cock-vore",
+		"ConFuzzled",
+		"Corey Coyote",
+		"Corey Coyote's $99 fascist mug",
+		"Furry called Cosmo",
+		"Cosmo Snowmew",
+		"Cosmo's fursuit collection",
+		"COVID-19",
+		"C-OWO-navirus",
+		"Crusty mursuits",
+		"CUMMIES",
+		"Daddy",
+		"Daddy's cummies",
+		"Darth Vader on Helium",
+		"Dead orphans stuffed into a fursuit",
+		"Dexta",
+		"Dexter",
+		"Dick Money House",
+		"Diggy Diggy Hole",
+		"Doctor Who's third nipple",
+		"Doing a fursuit walk in Beeston",
+		"Donald Trump's fursona",
+		"Drama",
+		"Driving from Berlin to England on a slashed tyre",
+		"Drowning in cum",
+		"Edwolf's trombone",
+		"Edwolf",
+		"Eggs",
+		"Emergency fursuit fund",
+		"Erotic pups",
+		"Even more trains",
+		"Evil Uncle Oracle",
+		"Extreme bondage",
+		"Extreme musk",
+		"Fox Amoore",
+		"Fox storage",
+		"Foxes",
+		"Foxler",
+		"FurCast",
+		"Furcation",
+		"FurIsle Con",
+		"Furries in tanks",
+		"Furry Jesus",
+		"Jesus Fox forgiving your yiffs",
+		"Fursuit sweat",
+		"Geordies",
+		"German Army Boots",
+		"Getting blackout drunk and waking up in Scarbrough",
+		"Getting Brexit done",
+		"Getting furry business cards",
+		"Getting kicked out of Trinity",
+		"Getting your toes sucked off in a corner.",
+		"Giant Fox and Falco fucking Bridgewater Place",
+		"Gimps",
+		"Green Sonic",
+		"Hand-holding",
+		"Hate preachers on Briggate",
+		"Having more hair than most",
+		"Hitler baby",
+		"Horny stickers",
+		"Horse cock",
+		"Humphrey Smith banning smartphones from your pub",
+		"Inserting your fetishes into everything",
+		"Introducing my family to Telegram",
+		"James The Dog",
+		"Jesus Fox",
+		"Karen's collection of essential oils",
+		"Knot Cheese",
+		"Knots",
+		"Laynes Espresso",
+		"Le Boite du Jacques",
+		"Leaving the fandom forever",
+		"Leeds",
+		"Leeds Pride Parade",
+		"Leeds train station",
+		"Licking the floor at TORBS",
+		"Literally an entire box of eggs",
+		"London",
+		"LondonFurs",
+		"MancFurs",
+		"Lupestripe",
+		"Lynden's missing beard",
+		"Lysander",
+		"Lysander's newest fursona",
+		"Malfunctioning walkie-talkies",
+		"Manchester",
+		"Masturbating in the art show",
+		"Matt Lion",
+		"Maws",
+		"Meeesh's sword",
+		"MidWest FurFest",
+		"MilesDF artwork",
+		"Minding the fap",
+		"Mod Pizza",
+		"Molesting Kage's wine",
+		"More eggs.",
+		"More trains",
+		"My crippling depression",
+		"Nando's",
+		"Naughty Children will be Punished",
+		"NaziFurs",
+		"Nicolas Cage from Face/Off in a fursuit",
+		"Northern Trains",
+		"Northern Trains' Customer Service",
+		"Not being from the sea",
+		"Nudes",
+		"One extremely crusty unwashed fursuit",
+		"Oracle Sage",
+		"Otterspace",
+		"Over 9000 penises",
+		"Owls",
+		"Passing out on the fursuit walk",
+		"Paws",
+		"Penis",
+		"Pepper Coyote",
+		"Pizza Fella",
+		"Pokémon-themed gimp suits",
+		"Poodling",
+		"Pooltoy Furs",
+		"Punching a dog.",
+		"Pup hood discourse",
+		"Pups",
+		"RBW",
+		"Really good head",
+		"Rizzo Rat",
+		"Rubberfurs",
+		"Rubbing Wolfie's belly until he falls asleep.",
+		"Rutting",
+		"Samuel Smith's Nut Brown Ale",
+		"Scarborough Fair, but for degenerates",
+		"ScotiaCon",
+		"Seadragom",
+		"Seadragom's Secret Sea Cave",
+		"Secretly wearing /padding/ to the meet",
+		"Seitan meat substitute",
+		"Sergal circle perch!",
+		"Sergals",
+		"Sheffield",
+		"SheffieldFurs",
+		"Shitting dicknipples",
+		"Slut dragons",
+		"Small, blue canine from Leeds",
+		"Smelly wolves",
+		"Snep Excellence",
+		"Sonic the Hedgehog (2020 film)",
+		"Spending money on art instead of rent",
+		"Stalin with a tail and ears",
+		"Sticker spam",
+		"Sticking a micro up your bum",
+		"Sticking one dildo down your throat and another up your bum till they kiss in the middle",
+		"Sticking your dick in the owl",
+		"Sticking your dick where you shouldn't",
+		"Stonks",
+		"StrayJim's cold, dead heart",
+		"Suspiciously Nazi-like aesthetics",
+		"Swearing at another species in their language",
+		"Taking a piss off York Minster",
+		"Taking the Gherkin building",
+		"Talkie Toaster",
+		"Talking bullshit",
+		"Tennacious Vulpine",
+		"That lady who put the cat in the bin.",
+		"That smell",
+		"The 8 hour walk to Leeds",
+		"The badger cull",
+		"The Cat's Strawberry",
+		"The creepy one nobody wants to sit next to.",
+		"The eighth rendition of Megalovania on the piano",
+		"The entire Bad Dragon back catalogue",
+		"The Furluminati",
+		"The Furmasons",
+		"The Intercity 125 High Speed Train",
+		"The Knot",
+		"The last brick of the Adam's Mark hotel",
+		"The Northern Furs Main Meet rotation",
+		"The Old Red Bus Station",
+		"The Old Red Bus Station, but it's an actual bus station",
+		"The Old Red Bus Station's disintegrating burgers",
+		"The smouldering sexual tension between Leeds and York",
+		"The upstairs bedroom at Lupe & Wolfie's",
+		"The venue being turned into a cocktail bar.",
+		"The White Rabbit",
+		"Their huge ego",
+		"Those bastard Manchester Furs",
+		"Tonks' collection of novelty dildos",
+		"Tonks Moriarty",
+		"Tonks Moriarty's Original Vintage Tufts",
+		"Too many stickers!",
+		"Trains",
+		"Transformation",
+		"Transforming into a pooltoy",
+		"Transforming into literal semen.",
+		"Trash Cat",
+		"Travelling 6 hours drunk on a coach",
+		"Tuft Snipping",
+		"Tufts",
+		"Turning into your fursona",
+		"Turning yourself into a sex doll",
+		"Uncle Kage",
+		"Uncle Kage's Wine",
+		"Vegan milkshakes",
+		"Vegans",
+		"Walking around with your cock out",
+		"Walking from York to Leeds for a furmeet",
+		"Washing your damn suit",
+		"Watership Down",
+		"Way too many swords",
+		"Wearing a harness when you're not a sled dog",
+		"Wetherspoons",
+		"What the fox said",
+		"Wild North",
+		"Wolfie",
+		"Wolfie's beer",
+		"Woo-hoo",
+		"Xantin Havelock",
+		"Xantin's secret sticker addiction",
+		"Yiffing in the corner",
+		"Yiffing in the fursuit lounge",
+		"Yiffing in the toilets",
+		"York",
+		"Yiff",
+		"Yiffing",
+		"Wearing a stab vest on a fursuit walk",
+		"Chain lynx fence",
+		"Failed video game mascot",
+		"Furcon with no Internet connection",
+		"Free Wi-Fi"
+	]
 }
