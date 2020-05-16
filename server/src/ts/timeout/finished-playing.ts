@@ -7,6 +7,8 @@ import * as Timeout from "../timeout";
 import * as Util from "../util";
 import * as RoundStageTimerDone from "./round-stage-timer-done";
 import * as Rules from "../games/rules";
+import * as User from "../user";
+import * as Game from "../games/game";
 /**
  * Indicates that the round should start the revealing phase if it is appropriate
  * to do so.
@@ -49,59 +51,18 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
 
   // We discard the plays first so if the deck runs out, all the cards get
   // rotated in.
-  const responses = game.decks.responses;
   for (const play of game.round.plays) {
-    responses.discard(play.play);
+    game.decks.responses.discard(play.play);
   }
 
-  const slotCount = Card.slotCount(game.round.call);
-  const extraCards =
-    slotCount > 2 ||
-    (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
-      ? slotCount - 1
-      : 0;
-  const newCardsByPlayer = new Map();
-  for (const play of game.round.plays) {
-    const idSet = new Set(play.play.map((c) => c.id));
-    const player = game.players[play.playedBy];
-    if (player !== undefined) {
-      player.hand = player.hand.filter((card) => !idSet.has(card.id));
-      const toDraw = play.play.length - extraCards;
-      const drawn = responses.draw(toDraw);
-      newCardsByPlayer.set(play.playedBy, { drawn });
-      player.hand.push(...drawn);
-    }
-  }
-
-  if (game.rules.stages.revealing === undefined) {
-    const { round, events, timeouts } = game.round.skipToJudging(game.rules);
-    game.round = round;
-    return {
-      lobby,
-      events,
-      timeouts,
-    };
-  } else {
-    game.round = game.round.advance();
-
-    const playsToBeRevealed = Array.from(
-      wu(game.round.plays).map((play) => play.id)
-    );
-    const events = [
-      Event.additionally(
-        StartRevealing.of(playsToBeRevealed),
-        newCardsByPlayer
-      ),
-    ];
-
-    const timeouts = Util.asOptionalIterable(
-      RoundStageTimerDone.ifEnabled(game.round, game.rules.stages)
-    );
-
-    return {
-      lobby,
-      events: events,
-      timeouts: timeouts,
-    };
-  }
+  const { round, events, timeouts } =
+    game.rules.stages.revealing === undefined
+      ? game.round.skipToJudging(game)
+      : game.round.advance(game);
+  game.round = round;
+  return {
+    lobby,
+    events,
+    timeouts,
+  };
 };

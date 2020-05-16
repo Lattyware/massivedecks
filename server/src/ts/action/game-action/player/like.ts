@@ -29,6 +29,7 @@ class LikeActions extends Actions.Implementation<
     if (
       lobby.game.round.verifyStage<Round.Revealing | Round.Judging>(
         action,
+        "Revealing",
         "Judging"
       )
     ) {

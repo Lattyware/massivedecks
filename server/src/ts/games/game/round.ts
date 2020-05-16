@@ -11,7 +11,9 @@ import * as RoundStageTimerDone from "../../timeout/round-stage-timer-done";
 import * as Timeout from "../../timeout";
 import * as Event from "../../event";
 import * as StartJudging from "../../events/game-event/start-judging";
+import * as StartRevealing from "../../events/game-event/start-revealing";
 import * as Rules from "../rules";
+import * as Game from "../game";
 
 export type Round = Playing | Revealing | Judging | Complete;
 
@@ -45,12 +47,13 @@ export abstract class Base<TStage extends Stage> {
    */
   public verifyStage<TRound extends Round>(
     action: Action,
-    expected: TRound["stage"]
+    ...expected: TRound["stage"][]
   ): this is TRound {
-    if (this.stage !== expected) {
-      throw new IncorrectRoundStageError(action, this.stage, expected);
+    if (expected.some((n) => n == this.stage)) {
+      return true;
+    } else {
+      throw new IncorrectRoundStageError(action, this.stage, ...expected);
     }
-    return true;
   }
 }
 
@@ -182,7 +185,8 @@ export class Judging extends Base<"Judging"> implements Timed {
 
   public start(
     rules: Rules.Rules,
-    previouslyRevealed: boolean
+    previouslyRevealed: boolean,
+    newCardsAndPlayedByPlayer: Map<User.Id, StartRevealing.AfterPlaying>
   ): {
     timeouts?: Iterable<Timeout.After>;
     events?: Iterable<Event.Distributor>;
@@ -191,7 +195,15 @@ export class Judging extends Base<"Judging"> implements Timed {
     const plays = previouslyRevealed
       ? undefined
       : Array.from(this.revealedPlays());
-    const event = Event.targetAll(StartJudging.of(plays));
+    if (previouslyRevealed) {
+      for (const [_, v] of newCardsAndPlayedByPlayer) {
+        delete v.played;
+      }
+    }
+    const event = Event.additionally(
+      StartJudging.of(plays),
+      newCardsAndPlayedByPlayer
+    );
     return {
       timeouts: Util.asOptionalIterable(timeout),
       events: Util.asOptionalIterable(event),
@@ -271,9 +283,30 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     this.timedOut = timedOut;
   }
 
+  public start(
+    game: Game.Game
+  ): {
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
+  } {
+    const playsToBeRevealed = Array.from(
+      wu(game.round.plays).map((play) => play.id)
+    );
+    const events = Util.asOptionalIterable(
+      Event.additionally(
+        StartRevealing.of(playsToBeRevealed),
+        this.getAfterPlayingDetails(game)
+      )
+    );
+    const timeouts = Util.asOptionalIterable(
+      RoundStageTimerDone.ifEnabled(game.round, game.rules.stages)
+    );
+    return { events, timeouts };
+  }
+
   public advance(
-    rules: Rules.Rules,
-    previouslyRevealed = true
+    game: Game.Game,
+    previouslyRevealed: boolean
   ):
     | {
         round: Judging;
@@ -283,7 +316,11 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     | undefined {
     if (StoredPlay.allRevealed(this)) {
       const judging = new Judging(this.id, this.czar, this.call, this.plays);
-      const start = judging.start(rules, previouslyRevealed);
+      const start = judging.start(
+        game.rules,
+        previouslyRevealed,
+        this.getAfterPlayingDetails(game)
+      );
       return {
         round: judging,
         ...start,
@@ -291,6 +328,36 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     } else {
       return undefined;
     }
+  }
+
+  private getAfterPlayingDetails(
+    game: Game.Game
+  ): Map<User.Id, StartRevealing.AfterPlaying> {
+    const slotCount = Card.slotCount(game.round.call);
+    const extraCards =
+      slotCount > 2 ||
+      (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
+        ? slotCount - 1
+        : 0;
+    const newCardsAndPlayedByPlayer = new Map<
+      User.Id,
+      StartRevealing.AfterPlaying
+    >();
+    for (const play of game.round.plays) {
+      const idSet = new Set(play.play.map((c) => c.id));
+      const player = game.players[play.playedBy];
+      if (player !== undefined) {
+        player.hand = player.hand.filter((card) => !idSet.has(card.id));
+        const toDraw = play.play.length - extraCards;
+        const drawn = game.decks.responses.draw(toDraw);
+        newCardsAndPlayedByPlayer.set(play.playedBy, {
+          drawn,
+          played: play.id,
+        });
+        player.hand.push(...drawn);
+      }
+    }
+    return newCardsAndPlayedByPlayer;
   }
 
   public waitingFor(): Set<User.Id> | null {
@@ -363,31 +430,42 @@ export class Playing extends Base<"Playing"> implements Timed {
     this.timedOut = timedOut;
   }
 
-  public advance(): Revealing {
-    return new Revealing(
+  public advance(
+    game: Game.Game,
+    doNotStart = false
+  ): {
+    round: Revealing;
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
+  } {
+    const revealing = new Revealing(
       this.id,
       this.czar,
       this.call,
       Util.shuffled(this.plays)
     );
+    return {
+      round: revealing,
+      ...(doNotStart ? {} : revealing.start(game)),
+    };
   }
 
   public skipToJudging(
-    rules: Rules.Rules
+    game: Game.Game
   ): {
     round: Judging;
     timeouts?: Iterable<Timeout.After>;
     events?: Iterable<Event.Distributor>;
   } {
-    const revealing = this.advance();
-    for (const play of revealing.plays) {
+    const advanceRevealing = this.advance(game, true);
+    for (const play of advanceRevealing.round.plays) {
       play.revealed = true;
     }
-    const advance = revealing.advance(rules, false);
-    if (advance === undefined) {
+    const advanceJudging = advanceRevealing.round.advance(game, false);
+    if (advanceJudging === undefined) {
       throw new Error("All plays should have been revealed automatically.");
     }
-    return advance;
+    return advanceJudging;
   }
 
   public waitingFor(): Set<User.Id> | null {

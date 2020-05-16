@@ -154,18 +154,24 @@ update wrap shared msg model =
 
         PickPlay id ->
             let
+                makePick r wrapRound =
+                    let
+                        pick =
+                            if r.pick == Just id then
+                                Nothing
+
+                            else
+                                Just id
+                    in
+                    { r | pick = pick } |> wrapRound
+
                 newRound =
                     case game.round of
                         Round.J judging ->
-                            let
-                                pick =
-                                    if judging.pick == Just id then
-                                        Nothing
+                            makePick judging Round.J
 
-                                    else
-                                        Just id
-                            in
-                            { judging | pick = pick } |> Round.J
+                        Round.R revealing ->
+                            makePick revealing Round.R
 
                         _ ->
                             game.round
@@ -251,17 +257,30 @@ update wrap shared msg model =
         Like ->
             let
                 ( newRound, action ) =
+                    let
+                        like r roundWrap =
+                            let
+                                likeDetail =
+                                    r.likeDetail
+
+                                insert =
+                                    r.pick
+                                        |> Maybe.map Set.insert
+                                        |> Maybe.withDefault identity
+
+                                newLikeDetail =
+                                    { likeDetail | liked = insert likeDetail.liked }
+                            in
+                            ( { r | pick = Nothing, likeDetail = newLikeDetail } |> roundWrap
+                            , r.pick |> Maybe.map Actions.like |> Maybe.withDefault Cmd.none
+                            )
+                    in
                     case game.round of
                         Round.J judging ->
-                            ( { judging
-                                | liked =
-                                    judging.pick
-                                        |> Maybe.map (\p -> Set.insert p judging.liked)
-                                        |> Maybe.withDefault judging.liked
-                              }
-                                |> Round.J
-                            , judging.pick |> Maybe.map Actions.like |> Maybe.withDefault Cmd.none
-                            )
+                            like judging Round.J
+
+                        Round.R revealing ->
+                            like revealing Round.R
 
                         _ ->
                             ( game.round, Cmd.none )
@@ -455,15 +474,19 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
         Events.Timed (Events.WithTime { event, time }) ->
             case event of
-                Events.StartRevealing { plays, drawn } ->
+                Events.StartRevealing { plays, afterPlaying } ->
                     case model.game.round of
                         Round.P r ->
                             let
+                                { played, drawn } =
+                                    afterPlaying
+
                                 oldGame =
                                     model.game
 
                                 newRound =
                                     Round.revealing
+                                        (Just { played = played, liked = Set.empty })
                                         r.id
                                         r.czar
                                         r.players
@@ -638,33 +661,62 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                     in
                     ( { model | game = { game | round = newRound } }, speech )
 
-                Events.StartJudging { plays } ->
+                Events.StartJudging { plays, afterPlaying } ->
                     let
+                        { played, drawn } =
+                            afterPlaying
+
                         game =
                             model.game
 
-                        newRound =
+                        makeNewRound r pick ld known =
+                            case known of
+                                Just k ->
+                                    Round.judging pick
+                                        ld
+                                        r.id
+                                        r.czar
+                                        r.players
+                                        r.call
+                                        k
+                                        time
+                                        False
+                                        |> Round.J
+
+                                Nothing ->
+                                    -- TODO: Error.
+                                    game.round
+
+                        ( newRound, newHand ) =
                             case game.round of
                                 Round.P r ->
                                     let
-                                        known =
-                                            -- TODO: Error on default here.
-                                            plays |> Maybe.withDefault []
+                                        picked =
+                                            r.pick.cards |> Set.fromList
+
+                                        nH =
+                                            model.hand
+                                                |> List.filter (\c -> not (Set.member c.details.id picked))
+                                                |> (\h -> h ++ (drawn |> Maybe.withDefault []))
                                     in
-                                    Round.judging r.id r.czar r.players r.call known time False |> Round.J
+                                    ( makeNewRound r Nothing (Just { played = played, liked = Set.empty }) plays
+                                    , nH
+                                    )
 
                                 Round.R r ->
                                     let
-                                        known =
-                                            plays |> Maybe.withDefault (r.plays |> List.filterMap Play.asKnown)
+                                        p =
+                                            plays
+                                                |> Maybe.withDefault (r.plays |> List.filterMap Play.asKnown)
+                                                |> Just
                                     in
-                                    Round.judging r.id r.czar r.players r.call known time False |> Round.J
+                                    ( makeNewRound r r.pick (Just r.likeDetail) p, model.hand )
 
                                 _ ->
-                                    -- TODO: Error
-                                    game.round
+                                    -- TODO: Error.
+                                    ( game.round, model.hand )
                     in
-                    ( { model | game = { game | round = newRound } }, Cmd.none )
+                    ( { model | game = { game | round = newRound }, hand = newHand }, Cmd.none )
 
         Events.PlayerAway { player } ->
             let

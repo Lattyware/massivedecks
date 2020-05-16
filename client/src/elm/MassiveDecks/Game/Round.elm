@@ -3,6 +3,7 @@ module MassiveDecks.Game.Round exposing
     , Data
     , Id
     , Judging
+    , LikeDetail
     , Pick
     , PickState(..)
     , Playing
@@ -139,12 +140,31 @@ playing id czar players call played startedAt timedOut =
     }
 
 
+type alias LikeDetail =
+    { played : Maybe Play.Id
+    , liked : Set Play.Id
+    }
+
+
+defaultLikeDetail : LikeDetail
+defaultLikeDetail =
+    { played = Nothing
+    , liked = Set.empty
+    }
+
+
 type alias Revealing =
-    Data { plays : List Play, lastRevealed : Maybe Play.Id, timedOut : Bool }
+    Data
+        { plays : List Play
+        , lastRevealed : Maybe Play.Id
+        , pick : Maybe Play.Id
+        , likeDetail : LikeDetail
+        , timedOut : Bool
+        }
 
 
-revealing : Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Time -> Bool -> Revealing
-revealing id czar players call plays startedAt timedOut =
+revealing : Maybe LikeDetail -> Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Time -> Bool -> Revealing
+revealing likeDetail id czar players call plays startedAt timedOut =
     { id = id
     , czar = czar
     , players = players
@@ -152,6 +172,8 @@ revealing id czar players call plays startedAt timedOut =
     , plays = plays
     , lastRevealed = Nothing
     , startedAt = startedAt
+    , pick = Nothing
+    , likeDetail = likeDetail |> Maybe.withDefault defaultLikeDetail
     , timedOut = timedOut
     }
 
@@ -159,18 +181,33 @@ revealing id czar players call plays startedAt timedOut =
 {-| A round while the czar is judging a round.
 -}
 type alias Judging =
-    Data { plays : List Play.Known, pick : Maybe Play.Id, liked : Set Play.Id, timedOut : Bool }
+    Data
+        { plays : List Play.Known
+        , pick : Maybe Play.Id
+        , likeDetail : LikeDetail
+        , timedOut : Bool
+        }
 
 
-judging : Id -> User.Id -> Set User.Id -> Card.Call -> List Play.Known -> Time -> Bool -> Judging
-judging id czar players call plays startedAt timedOut =
+judging :
+    Maybe Play.Id
+    -> Maybe LikeDetail
+    -> Id
+    -> User.Id
+    -> Set User.Id
+    -> Card.Call
+    -> List Play.Known
+    -> Time
+    -> Bool
+    -> Judging
+judging pick likeDetail id czar players call plays startedAt timedOut =
     { id = id
     , czar = czar
     , players = players
     , call = call
     , plays = plays
-    , pick = Nothing
-    , liked = Set.empty
+    , pick = pick
+    , likeDetail = likeDetail |> Maybe.withDefault defaultLikeDetail
     , startedAt = startedAt
     , timedOut = timedOut
     }

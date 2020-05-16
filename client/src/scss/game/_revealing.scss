@@ -1,8 +1,17 @@
 @use "../_colors";
 @use "../_cards";
 
-.revealing.is-czar {
-  .game-card.face-down {
+.revealing {
+  .active .game-card {
     @include cards.shadow(colors.$primary);
+  }
+
+  &.is-czar {
+    .active .game-card {
+      @include cards.shadow(colors.$secondary);
+    }
+    .picked .game-card .side {
+      border-color: colors.$secondary;
+    }
   }
 }

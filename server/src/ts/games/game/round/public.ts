@@ -23,6 +23,11 @@ export interface Playing extends Base, Timed {
   played: User.Id[];
 }
 
+export interface LikeDetail {
+  liked: Play.Id[];
+  played?: Play.Id;
+}
+
 export interface Revealing extends Base, Timed {
   stage: "Revealing";
   plays: Play.PotentiallyRevealed[];

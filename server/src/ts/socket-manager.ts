@@ -139,6 +139,7 @@ export class SocketManager {
             await Change.apply(server, auth.gc, (lobby) => {
               let hand = undefined;
               let play = undefined;
+              let likeDetail = undefined;
               if (lobby.game !== undefined) {
                 const player = lobby.game.players[uid];
                 if (player !== undefined) {
@@ -150,6 +151,16 @@ export class SocketManager {
                 if (potentialPlay !== undefined) {
                   play = potentialPlay.play.map((card) => card.id);
                 }
+                const round = lobby.game.round;
+                const stage = round.stage;
+                if (stage === "Revealing" || stage === "Judging") {
+                  const liked = round.plays
+                    .filter((p) => p.likes.some((l) => l === uid))
+                    .map((p) => p.id);
+                  const played = round.plays.find((p) => p.playedBy === uid)
+                    ?.id;
+                  likeDetail = { played, liked };
+                }
               }
 
               const user = lobby.users[uid];
@@ -158,7 +169,7 @@ export class SocketManager {
                 lobby,
                 events: [
                   Event.targetOnly(
-                    Sync.of(Lobby.censor(lobby), hand, play),
+                    Sync.of(Lobby.censor(lobby), hand, play, likeDetail),
                     uid
                   ),
                 ],

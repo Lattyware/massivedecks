@@ -19,19 +19,16 @@
 }
 
 .judging {
-  .game-card {
+  .active .game-card {
     @include cards.shadow(colors.$primary);
   }
-}
 
-.judging.is-czar {
-  .picked {
-    .side {
+  &.is-czar {
+    .active .game-card {
+      @include cards.shadow(colors.$secondary);
+    }
+    .picked .game-card .side {
       border-color: colors.$secondary;
     }
-  }
-
-  .game-card {
-    @include cards.shadow(colors.$secondary);
   }
 }

@@ -30,7 +30,7 @@ export const handle: Timeout.Handler<FinishedRevealing> = (
   if (round.stage !== "Revealing") {
     return {};
   }
-  const advanced = round.advance(game.rules);
+  const advanced = round.advance(game, true);
   if (advanced === undefined) {
     return {};
   }

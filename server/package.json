@@ -64,7 +64,7 @@
     "@types/qs": "^6.9.2",
     "@types/source-map-support": "^0.5.1",
     "@types/uuid": "^7.0.3",
-    "@types/wu": "^2.1.41",
+    "@types/wu": "^2.1.42",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "eslint": "^7.0.0",
