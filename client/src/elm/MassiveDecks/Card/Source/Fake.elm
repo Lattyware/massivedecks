@@ -18,4 +18,5 @@ methods name =
             , language = Nothing
             }
     , tooltip = \_ -> Nothing
+    , messages = \() -> []
     }

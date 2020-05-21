@@ -1,10 +1,20 @@
-.cardcast-logo {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  font-size: inherit;
-  vertical-align: -0.125em;
-  background-image: url(../../../assets/images/cardcast.png);
-  background-size: contain;
-  margin-right: 0.5em;
+.many-decks-deck-code {
+  font-family: monospace;
+  background-color: #00796b;
+  color: #ffffff;
+  padding: 0.5em;
+  letter-spacing: 0.2em;
+  border: none;
+  min-width: 5em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.source-id {
+  display: flex;
+  align-items: center;
+
+  > svg {
+    margin-right: 0.5em;
+  }
 }

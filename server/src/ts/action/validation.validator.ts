@@ -332,7 +332,7 @@ export const Schema = {
     External: {
       anyOf: [
         {
-          $ref: "#/definitions/JsonUrl",
+          $ref: "#/definitions/ManyDecks",
         },
         {
           $ref: "#/definitions/BuiltIn",
@@ -387,22 +387,6 @@ export const Schema = {
     Id_1: {
       description: "A unique id for a user.",
       type: "string",
-    },
-    JsonUrl: {
-      additionalProperties: false,
-      defaultProperties: [],
-      description: "A source that just tries to load an arbitrary URL.",
-      properties: {
-        source: {
-          enum: ["JsonUrl"],
-          type: "string",
-        },
-        url: {
-          type: "string",
-        },
-      },
-      required: ["source", "url"],
-      type: "object",
     },
     Judge: {
       additionalProperties: false,
@@ -463,6 +447,22 @@ export const Schema = {
         },
       },
       required: ["action", "play"],
+      type: "object",
+    },
+    ManyDecks: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A source that just tries to load an arbitrary URL.",
+      properties: {
+        deckCode: {
+          type: "string",
+        },
+        source: {
+          enum: ["ManyDecks"],
+          type: "string",
+        },
+      },
+      required: ["deckCode", "source"],
       type: "object",
     },
     MoveOperation: {

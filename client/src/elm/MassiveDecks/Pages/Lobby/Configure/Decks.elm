@@ -108,9 +108,7 @@ view wrap shared model remote canEdit =
                 ]
 
             else
-                List.concat
-                    [ remote |> List.indexedMap (viewDeck wrap shared canEdit)
-                    ]
+                remote |> List.indexedMap (viewDeck wrap shared canEdit)
 
         editor =
             if canEdit then
@@ -208,7 +206,7 @@ addDeckWidget wrap shared existing deckToAdd =
                 ]
             )
         )
-        (submit |> Result.error |> Maybe.withDefault [])
+        ((deckToAdd |> Source.generalMatching |> Source.messages) ++ (submit |> Result.error |> Maybe.withDefault []))
 
 
 submitDeckAction : (Msg -> msg) -> List DeckOrError -> Source.External -> Result (List (Message msg)) msg

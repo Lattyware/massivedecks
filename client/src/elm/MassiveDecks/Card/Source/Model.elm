@@ -13,15 +13,15 @@ module MassiveDecks.Card.Source.Model exposing
 
 import Json.Decode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Strings.Languages.Model exposing (Language)
-import Url exposing (Url)
 
 
 {-| A representation of a source in general terms, not a specific deck.
 -}
 type General
     = GBuiltIn
-    | GJsonUrl
+    | GManyDecks
 
 
 {-| Details on where game data came from.
@@ -45,7 +45,7 @@ sources are more limited and specific.
 -}
 type External
     = BuiltIn BuiltIn.Id
-    | JsonUrl String
+    | ManyDecks ManyDecks.DeckCode
 
 
 {-| A summary of the contents of the source deck.
@@ -79,7 +79,7 @@ type LoadFailureReason
 -}
 type alias Info =
     { builtIn : Maybe BuiltIn.Info
-    , jsonUrl : Bool
+    , manyDecks : Maybe ManyDecks.Info
     }
 
 
@@ -91,8 +91,8 @@ generalToString source =
         GBuiltIn ->
             "BuiltIn"
 
-        GJsonUrl ->
-            "JsonUrl"
+        GManyDecks ->
+            "ManyDecks"
 
 
 {-| Get a general source by a string name.
@@ -103,8 +103,8 @@ generalFromString sourceName =
         "BuiltIn" ->
             Just GBuiltIn
 
-        "JsonUrl" ->
-            Just GJsonUrl
+        "ManyDecks" ->
+            Just GManyDecks
 
         _ ->
             Nothing

@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.0.0",
-    "@types/chrome": "^0.0.112",
+    "@types/chrome": "^0.0.113",
     "@types/chromecast-caf-receiver": "^5.0.5",
     "@types/chromecast-caf-sender": "^1.0.3",
     "app-manifest-loader": "^2.4.1",
@@ -59,7 +59,7 @@
     "extract-loader": "^5.0.1",
     "fibers": "^5.0.0",
     "file-loader": "^6.0.0",
-    "google-closure-compiler": "^20200504.0.0",
+    "google-closure-compiler": "^20200517.0.0",
     "html-loader": "^1.1.0",
     "html-webpack-plugin": "^4.3.0",
     "postcss-import": "^12.0.1",
@@ -73,7 +73,7 @@
     "style-loader": "^1.2.1",
     "terser-webpack-plugin": "^3.0.1",
     "ts-loader": "^7.0.4",
-    "typescript": "^3.9.2",
+    "typescript": "^3.9.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0"

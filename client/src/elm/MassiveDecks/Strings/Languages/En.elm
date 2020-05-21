@@ -747,20 +747,17 @@ translate mdString =
         SourceServiceFailure { source } ->
             [ Ref source, Text " failed to provide the deck. Please try again later or try another source." ]
 
-        Cardcast ->
-            [ Text "Cardcast" ]
+        ManyDecks ->
+            [ Text "Many Decks" ]
 
-        CardcastPlayCode ->
-            [ Ref Cardcast, Text " Play Code" ]
+        ManyDecksDeckCodeTitle ->
+            [ Text "Deck Code" ]
 
-        CardcastEmptyPlayCode ->
-            [ Text "Enter a ", Ref CardcastPlayCode, Text " for the deck you want to add." ]
+        ManyDecksDeckCodeShort ->
+            [ Text "A deck code must be at least five characters long." ]
 
-        JsonUrl ->
-            [ Text "Url" ]
-
-        JsonUrlUrl ->
-            [ Text "A Url to a .md.json5 deck." ]
+        ManyDecksWhereToGet ->
+            [ Text "You can create decks to play with at Many Decks." ]
 
         BuiltIn ->
             [ Text "Built-in" ]

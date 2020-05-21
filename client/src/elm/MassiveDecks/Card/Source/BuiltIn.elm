@@ -29,6 +29,7 @@ methods given =
     , logo = logo
     , empty = empty
     , id = sourceId
+    , messages = \() -> []
     , problems = problems given
     , defaultDetails = details given
     , tooltip = tooltip given
@@ -43,6 +44,7 @@ generalMethods =
     , logo = logo
     , empty = empty
     , id = sourceId
+    , messages = \() -> []
     }
 
 

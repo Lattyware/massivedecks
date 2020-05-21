@@ -5,7 +5,7 @@ import * as Player from "./sources/custom";
 import * as Config from "../../config";
 import * as BuiltIn from "./sources/builtIn";
 import { SourceNotFoundError } from "../../errors/action-execution-error";
-import * as JsonUrl from "./sources/json-url";
+import * as ManyDecks from "./sources/many-decks";
 
 async function loadIfEnabled<Config, MetaResolver>(
   config: Config | undefined,
@@ -20,22 +20,22 @@ async function loadIfEnabled<Config, MetaResolver>(
 
 export interface ClientInfo {
   builtIn?: BuiltIn.ClientInfo;
-  cardcast?: boolean;
+  manyDecks?: ManyDecks.ClientInfo;
 }
 
 export class Sources {
   public readonly builtIn?: BuiltIn.MetaResolver;
-  public readonly jsonUrl?: JsonUrl.MetaResolver;
+  public readonly manyDecks?: ManyDecks.MetaResolver;
 
   public constructor(
     builtIn?: BuiltIn.MetaResolver,
-    jsonUrl?: JsonUrl.MetaResolver
+    manyDecks?: ManyDecks.MetaResolver
   ) {
-    if (builtIn === undefined && jsonUrl === undefined) {
+    if (builtIn === undefined && manyDecks === undefined) {
       throw new Error("At least one source must be enabled.");
     }
     this.builtIn = builtIn;
-    this.jsonUrl = jsonUrl;
+    this.manyDecks = manyDecks;
   }
 
   public clientInfo(): ClientInfo {
@@ -45,7 +45,9 @@ export class Sources {
             builtIn: this.builtIn.clientInfo(),
           }
         : {}),
-      ...(this.jsonUrl !== undefined ? { jsonUrl: true } : {}),
+      ...(this.manyDecks !== undefined
+        ? { manyDecks: this.manyDecks.clientInfo() }
+        : {}),
     };
   }
 
@@ -56,8 +58,8 @@ export class Sources {
       case "BuiltIn":
         return this.builtIn;
 
-      case "JsonUrl":
-        return this.jsonUrl;
+      case "ManyDecks":
+        return this.manyDecks;
 
       default:
         Util.assertNever(source);
@@ -117,10 +119,10 @@ export class Sources {
   public static async from(config: Config.Sources): Promise<Sources> {
     const [builtInMeta, jsonUrlMeta] = await Promise.all<
       BuiltIn.MetaResolver | undefined,
-      JsonUrl.MetaResolver | undefined
+      ManyDecks.MetaResolver | undefined
     >([
       loadIfEnabled(config.builtIn, BuiltIn.load),
-      loadIfEnabled(config.jsonUrl, JsonUrl.load),
+      loadIfEnabled(config.manyDecks, ManyDecks.load),
     ]);
     return new Sources(builtInMeta, jsonUrlMeta);
   }

@@ -14,17 +14,21 @@ import * as Card from "../card";
 /**
  * A source that just tries to load an arbitrary URL.
  */
-export interface JsonUrl {
-  source: "JsonUrl";
-  url: string;
+export interface ManyDecks {
+  source: "ManyDecks";
+  deckCode: string;
 }
 
-export class Resolver extends Source.Resolver<JsonUrl> {
-  public readonly source: JsonUrl;
+export interface ClientInfo {
+  baseUrl: string;
+}
+
+export class Resolver extends Source.Resolver<ManyDecks> {
+  public readonly source: ManyDecks;
   private readonly connectionPool: genericPool.Pool<AxiosInstance>;
 
   public constructor(
-    source: JsonUrl,
+    source: ManyDecks,
     connectionPool: genericPool.Pool<AxiosInstance>
   ) {
     super();
@@ -33,21 +37,23 @@ export class Resolver extends Source.Resolver<JsonUrl> {
   }
 
   public id(): string {
-    return "JsonUrl";
+    return "ManyDecks";
   }
 
   public deckId(): string {
-    return this.source.url;
+    return this.source.deckCode;
   }
 
   public loadingDetails(): Source.Details {
     return {
-      name: `From ${this.source.url}`,
+      name: `Many Decks ${this.source.deckCode}`,
     };
   }
 
   public equals(source: Source.External): boolean {
-    return source.source === "JsonUrl" && this.source.url === source.url;
+    return (
+      source.source === "ManyDecks" && this.source.deckCode === source.deckCode
+    );
   }
 
   public async getTag(): Promise<string | undefined> {
@@ -68,7 +74,8 @@ export class Resolver extends Source.Resolver<JsonUrl> {
   }> => {
     const connection = await this.connectionPool.acquire();
     try {
-      const raw = (await connection.get(this.source.url)).data;
+      const raw = (await connection.get(`api/decks/${this.source.deckCode}`))
+        .data;
       const data = typeof raw === "string" ? JSON5.parse(raw) : raw;
       const summary = {
         details: {
@@ -116,16 +123,21 @@ export class Resolver extends Source.Resolver<JsonUrl> {
   });
 }
 
-export class MetaResolver implements Source.MetaResolver<JsonUrl> {
+export class MetaResolver implements Source.MetaResolver<ManyDecks> {
   private readonly connectionPool: genericPool.Pool<AxiosInstance>;
+  private readonly config: Config.ManyDecks;
   public readonly cache = true;
 
-  public constructor(config: Config.JsonUrl) {
+  public constructor(config: Config.ManyDecks) {
+    this.config = config;
+
     const httpConfig: AxiosRequestConfig = {
       method: "GET",
+      baseURL: config.baseUrl,
       timeout: config.timeout,
       responseType: "json",
     };
+    console.log(JSON.stringify(httpConfig));
 
     this.connectionPool = genericPool.createPool(
       {
@@ -138,14 +150,20 @@ export class MetaResolver implements Source.MetaResolver<JsonUrl> {
     );
   }
 
-  limitedResolver(source: JsonUrl): Resolver {
+  public clientInfo(): ClientInfo {
+    return {
+      baseUrl: this.config.baseUrl,
+    };
+  }
+
+  limitedResolver(source: ManyDecks): Resolver {
     return this.resolver(source);
   }
 
-  resolver(source: JsonUrl): Resolver {
+  resolver(source: ManyDecks): Resolver {
     return new Resolver(source, this.connectionPool);
   }
 }
 
-export const load = async (config: Config.JsonUrl): Promise<MetaResolver> =>
+export const load = async (config: Config.ManyDecks): Promise<MetaResolver> =>
   new MetaResolver(config);

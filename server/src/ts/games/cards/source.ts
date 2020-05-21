@@ -2,7 +2,7 @@ import * as Cache from "../../cache";
 import * as Decks from "./decks";
 import { Custom } from "./sources/custom";
 import { BuiltIn } from "./sources/builtIn";
-import { JsonUrl } from "./sources/json-url";
+import { ManyDecks } from "./sources/many-decks";
 
 /**
  * A source for a card or deck.
@@ -12,7 +12,7 @@ export type Source = External | Custom;
 /**
  * An external source for a card or deck.
  */
-export type External = BuiltIn | JsonUrl;
+export type External = BuiltIn | ManyDecks;
 
 /**
  * More information that can be looked up given a source.

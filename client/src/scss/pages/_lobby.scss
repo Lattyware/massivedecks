@@ -254,3 +254,12 @@ $users-width: 18rem;
     margin: 0;
   }
 }
+
+.lobby-errors {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 999;
+}

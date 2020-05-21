@@ -49,15 +49,16 @@ export interface BuiltIn {
   decks: string[];
 }
 
-interface BaseJsonUrl<D extends Duration> {
+interface BaseManyDecks<D extends Duration> {
+  baseUrl: string;
   timeout: D;
   simultaneousConnections: number;
 }
-export type JsonUrl = BaseJsonUrl<ParsedDuration>;
+export type ManyDecks = BaseManyDecks<ParsedDuration>;
 
 interface BaseSources<D extends Duration> {
   builtIn?: BuiltIn;
-  jsonUrl?: BaseJsonUrl<D>;
+  manyDecks?: BaseManyDecks<D>;
 }
 export type Sources = BaseSources<ParsedDuration>;
 
@@ -143,15 +144,17 @@ export const parseTasks = (
   processTickFrequency: parseDuration(tasks.processTickFrequency),
 });
 
-const parseJsonUrl = (jsonUrl: BaseJsonUrl<UnparsedDuration>): JsonUrl => ({
-  ...jsonUrl,
-  timeout: parseDuration(jsonUrl.timeout),
+const parseManyDecks = (
+  manyDecks: BaseManyDecks<UnparsedDuration>
+): ManyDecks => ({
+  ...manyDecks,
+  timeout: parseDuration(manyDecks.timeout),
 });
 
 const parseSources = (sources: BaseSources<UnparsedDuration>): Sources => ({
   ...(sources.builtIn !== undefined ? { builtIn: sources.builtIn } : {}),
-  ...(sources.jsonUrl !== undefined
-    ? { jsonUrl: parseJsonUrl(sources.jsonUrl) }
+  ...(sources.manyDecks !== undefined
+    ? { manyDecks: parseManyDecks(sources.manyDecks) }
     : {}),
 });
 

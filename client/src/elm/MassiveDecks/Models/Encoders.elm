@@ -24,6 +24,7 @@ module MassiveDecks.Models.Encoders exposing
 import Dict
 import Json.Encode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Game.Player as Player
@@ -339,8 +340,13 @@ lobbyToken =
 source : Source.External -> Json.Value
 source s =
     case s of
-        Source.JsonUrl url ->
-            Json.object [ ( "source", "JsonUrl" |> Json.string ), ( "url", url |> Json.string ) ]
+        Source.ManyDecks deckCode ->
+            Json.object
+                [ ( "source", "ManyDecks" |> Json.string )
+                , ( "deckCode"
+                  , deckCode |> ManyDecks.encode
+                  )
+                ]
 
         Source.BuiltIn id ->
             Json.object [ ( "source", "BuiltIn" |> Json.string ), ( "id", id |> BuiltIn.toString |> Json.string ) ]

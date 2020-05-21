@@ -55,6 +55,7 @@ The methods are as follows:
 type alias GeneralMethods msg =
     { name : () -> MdString
     , logo : () -> Maybe (Html msg)
+    , messages : () -> List (Message msg)
     }
 
 

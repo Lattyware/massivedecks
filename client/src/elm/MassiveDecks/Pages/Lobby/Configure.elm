@@ -460,8 +460,21 @@ startGameProblems shared wrap wrapLobby users model remote =
                 Nothing ->
                     summaries .responses
 
+        humanPlayerCount =
+            users
+                |> Dict.values
+                |> List.filter (\u -> u.role == User.Player && u.presence == User.Joined && u.control == User.Human)
+                |> List.length
+
+        computerPlayers =
+            config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
+
+        playerCount =
+            humanPlayerCount + computerPlayers
+
+        -- 5 is arbitrary, but we have to deal with an additional cards for each slot.
         requiredResponses =
-            (users |> Dict.values |> List.filter (\u -> u.role == User.Player) |> List.length) * 3 * 2
+            playerCount * 5 + playerCount * rules.handSize
 
         deckIssues =
             if noDecks then
@@ -511,18 +524,6 @@ startGameProblems shared wrap wrapLobby users model remote =
                     [ Message.Fix (Strings.AddBlankCards { amount = diff }) Icon.plus fixMsg ]
                     |> Maybe.justIf (numberOfResponses < requiredResponses)
                 ]
-
-        humanPlayerCount =
-            users
-                |> Dict.values
-                |> List.filter (\u -> u.role == User.Player && u.presence == User.Joined && u.control == User.Human)
-                |> List.length
-
-        computerPlayers =
-            config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
-
-        playerCount =
-            humanPlayerCount + computerPlayers
 
         rando =
             houseRules.rando |> Maybe.withDefault { number = max (3 - humanPlayerCount) 1 }

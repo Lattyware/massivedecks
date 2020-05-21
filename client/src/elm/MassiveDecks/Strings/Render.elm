@@ -230,14 +230,14 @@ enhanceHtml context mdString unenhanced =
         SettingsTitle ->
             prefixed unenhanced Icon.cog
 
-        CardcastPlayCode ->
-            [ Html.blankA [ HtmlA.href "https://www.cardcastgame.com/browse" ] unenhanced ]
-
         StillPlaying ->
             term context PlayingDescription Icon.clock unenhanced
 
         Played ->
             term context PlayedDescription Icon.check unenhanced
+
+        ManyDecksWhereToGet ->
+            [ Html.blankA [ HtmlA.href "https://decks.md.rereadgames.com/" ] unenhanced ]
 
         _ ->
             unenhanced

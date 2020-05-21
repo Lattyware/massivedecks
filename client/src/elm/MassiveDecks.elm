@@ -88,7 +88,7 @@ init flags url key =
             , speech = speech
             , notifications = Notifications.init
             , remoteMode = remoteMode
-            , sources = { builtIn = Nothing, jsonUrl = False }
+            , sources = { builtIn = Nothing, manyDecks = Nothing }
             }
 
         ( page, pageCmd ) =

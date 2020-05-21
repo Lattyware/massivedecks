@@ -213,11 +213,10 @@ type MdString
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
     | SourceNotFound { source : MdString } -- An explanation that the deck didn't load because it doesn't exist on the source service.
     | SourceServiceFailure { source : MdString } -- An explanation that the deck didn't load because the source service is currently failing.
-    | Cardcast -- The name of the Cardcast service.
-    | CardcastPlayCode -- A term referring to the play code that identifies a deck on Cardcast.
-    | CardcastEmptyPlayCode -- A description of the problem of the entered Cardcast play code being empty.
-    | JsonUrl -- The name of a source that offers simple loading of JSON from a url.
-    | JsonUrlUrl -- A term referring to a URL to some JSON.
+    | ManyDecks -- The name of the Many Decks source.
+    | ManyDecksDeckCodeTitle -- A term referring to a deck code for Many Decks.
+    | ManyDecksDeckCodeShort -- A description of the problem where a deck code must be at least five characters.
+    | ManyDecksWhereToGet -- A description of how to get deck codes from Many Decks.
     | BuiltIn -- A term referring to decks of cards that are provided by this instance of the game.
     | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.

@@ -7,8 +7,10 @@ module MassiveDecks.Card.Source exposing
     , equals
     , externalAndEquals
     , generalEditor
+    , generalMatching
     , loadFailureReasonMessage
     , logo
+    , messages
     , name
     , problems
     , tooltip
@@ -19,7 +21,7 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn as BuiltIn
 import MassiveDecks.Card.Source.Custom as Player
 import MassiveDecks.Card.Source.Fake as Fake
-import MassiveDecks.Card.Source.JsonUrl as JsonUrl
+import MassiveDecks.Card.Source.ManyDecks as ManyDecks
 import MassiveDecks.Card.Source.Methods exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
 import MassiveDecks.Components.Form.Message exposing (Message)
@@ -66,8 +68,8 @@ generalMethods source =
         GBuiltIn ->
             BuiltIn.generalMethods
 
-        GJsonUrl ->
-            JsonUrl.generalMethods
+        GManyDecks ->
+            ManyDecks.generalMethods
 
 
 {-| Get an empty source of the given type.
@@ -103,6 +105,13 @@ name source =
 problems : External -> List (Message msg)
 problems source =
     () |> (externalMethods source |> .problems)
+
+
+{-| Any problems, if they exist, for a source. If none, it is valid.
+-}
+messages : General -> List (Message msg)
+messages source =
+    (generalMethods source |> .messages) ()
 
 
 {-| The default details for a source.
@@ -170,7 +179,7 @@ generalEditor shared existing currentValue update submit noOp =
     let
         enabledSources =
             [ shared.sources.builtIn |> Maybe.map (\_ -> BuiltIn.generalMethods)
-            , JsonUrl.generalMethods |> Maybe.justIf shared.sources.jsonUrl
+            , shared.sources.manyDecks |> Maybe.map (\_ -> ManyDecks.generalMethods)
             ]
 
         toItem source =
@@ -230,6 +239,7 @@ methods source =
             , logo = ms.logo
             , tooltip = ms.tooltip
             , defaultDetails = ms.defaultDetails
+            , messages = ms.messages
             }
 
         Custom ->
@@ -242,8 +252,8 @@ methods source =
 externalMethods : External -> ExternalMethods msg
 externalMethods external =
     case external of
-        JsonUrl url ->
-            JsonUrl.methods url
+        ManyDecks url ->
+            ManyDecks.methods url
 
         BuiltIn id ->
             BuiltIn.methods id

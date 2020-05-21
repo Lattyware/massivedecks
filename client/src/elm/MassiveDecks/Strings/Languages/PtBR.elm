@@ -768,21 +768,20 @@ translate mdString =
         SourceServiceFailure { source } ->
             [ Ref source, Text " falhou ao providenciar o deck. Por favor tente novamente com outra fonte." ]
 
-        Cardcast ->
-            [ Text "Cardcast" ]
-
-        CardcastPlayCode ->
-            [ Text "Código de Jogo ", Ref Cardcast ]
-
-        CardcastEmptyPlayCode ->
-            [ Text "Digite um ", Ref CardcastPlayCode, Text " para o deck que você queira adicionar." ]
-
         -- TODO: Translate
-        JsonUrl ->
+        ManyDecks ->
             [ Missing ]
 
         -- TODO: Translate
-        JsonUrlUrl ->
+        ManyDecksDeckCodeTitle ->
+            [ Missing ]
+
+        -- TODO: Translate
+        ManyDecksDeckCodeShort ->
+            [ Missing ]
+
+        -- TODO: Translate
+        ManyDecksWhereToGet ->
             [ Missing ]
 
         BuiltIn ->
