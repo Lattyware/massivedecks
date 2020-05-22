@@ -86,9 +86,8 @@ translate mdString =
         NewGame ->
             [ Text "Novo" ]
 
-        -- TODO: Translate
         NewGameDescription ->
-            [ Missing ]
+            [ Text "Começar um novo jogo de ", Ref MassiveDecks, Text "." ]
 
         FindPublicGame ->
             [ Text "Procurar" ]
@@ -96,9 +95,8 @@ translate mdString =
         JoinPrivateGame ->
             [ Text "Entrar" ]
 
-        -- TODO: Translate
         JoinPrivateGameDescription ->
-            [ Missing ]
+            [ Text "Entre num jogo que alguém te convidou." ]
 
         PlayGame ->
             [ Text "Jogar" ]
@@ -131,7 +129,7 @@ translate mdString =
             [ Text "Seu Nome" ]
 
         NameInUse ->
-            [ Text "Alguém está usando esse nome no jogo—por favor tente um diferente." ]
+            [ Text "Alguém está usando esse nome no jogo—por favor tente usar um nome diferente." ]
 
         RejoinTitle ->
             [ Text "Entrar novamente" ]
@@ -145,13 +143,11 @@ translate mdString =
         YouWereKicked ->
             [ Text "Você foi chutado do jogo." ]
 
-        -- TODO: Translate
         ScrollToTop ->
-            [ Missing ]
+            [ Text "Rolar para o topo." ]
 
-        -- TODO: Translate
         Copy ->
-            [ Missing ]
+            [ Text "Copiar" ]
 
         -- Rules
         CardsAgainstHumanity ->
@@ -161,7 +157,7 @@ translate mdString =
             [ Text "Como jogar." ]
 
         RulesHand ->
-            [ Text "Cada jogador tem uma mão de ", Ref (Plural { singular = Response, amount = Nothing }), Text "." ]
+            [ Text "Cada jogador terá uma mão de ", Ref (Plural { singular = Response, amount = Nothing }), Text "." ]
 
         RulesCzar ->
             [ Text "O primeiro jogador começa como "
@@ -206,17 +202,17 @@ translate mdString =
 
         ExamplePickDescription ->
             [ Ref (Plural { singular = Call, amount = Nothing })
-            , Text " cartas como essa precisam de mais "
+            , Text " como essa precisam de mais "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text ", mas te dão mais cartas para escolher."
+            , Text " como resposta, mas te dão mais opções para escolher."
             ]
 
         RulesDraw ->
             [ Text "Algumas "
             , Ref (Plural { singular = Call, amount = Nothing })
-            , Text " precisam de ainda mais "
+            , Text " precisam de mais de uma "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text "—elas vão dizer "
+            , Text " como resposta—elas também vão dizer "
             , Ref (Draw { numberOfCards = 2 })
             , Text " ou mais, e você ganhará essa quantidade de cartas extras antes de jogar."
             ]
@@ -254,7 +250,7 @@ translate mdString =
             [ Text "Custo de ", Ref (Plural { singular = Point, amount = Nothing }) ]
 
         HouseRuleRebootCostDescription ->
-            [ Text "Quantos ", Ref (Plural { singular = Point, amount = Nothing }), Text " custa para trocar as cartas." ]
+            [ Text "Quantos ", Ref (Plural { singular = Point, amount = Nothing }), Text " custam para trocar as cartas." ]
 
         HouseRulePackingHeat ->
             [ Text "Calor da Embalagem" ]
@@ -264,9 +260,9 @@ translate mdString =
             , Ref (Plural { singular = Call, amount = Nothing })
             , Text " com "
             , Ref (Pick { numberOfCards = 2 })
-            , Text " também tem "
+            , Text " também vem com "
             , Ref (Draw { numberOfCards = 1 })
-            , Text ", com isso todos tem mais opções de escolha."
+            , Text ", com isso todos terão mais opções de escolha."
             ]
 
         HouseRuleComedyWriter ->
@@ -284,7 +280,7 @@ translate mdString =
         HouseRuleComedyWriterNumberDescription ->
             [ Text "O número de "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text "vazias que estarão no joogo."
+            , Text " vazias que estarão no jogo."
             ]
 
         HouseRuleComedyWriterExclusive ->
@@ -312,13 +308,12 @@ translate mdString =
         HouseRuleRandoCardrissianNumberDescription ->
             [ Text "O número de jogadores IA que estarão no jogo." ]
 
-        -- TODO: Translate
         HouseRuleNeverHaveIEver ->
-            [ Missing ]
+            [ Text "Eu Nunca" ]
 
-        -- TODO: Translate
         HouseRuleNeverHaveIEverDescription ->
-            [ Missing ]
+            [ Text "A qualquer momento, um jogador pode descartar as cartas que ele não entende, porém, ele deve confessar sua "
+            , Text "ignorância: a carta é compartilhada publicamente." ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
@@ -369,7 +364,7 @@ translate mdString =
             [ Text "Ler as cartas usando texto para fala." ]
 
         SpeechNotSupportedExplanation ->
-            [ Text "Seu navegador não suporta texto para fala, ou não tem vozes instaladas." ]
+            [ Text "Seu navegador não suporta texto para fala, ou não possui vozes instaladas." ]
 
         VoiceSetting ->
             [ Text "Voz da Fala" ]
@@ -386,7 +381,7 @@ translate mdString =
         NotificationsBrowserPermissions ->
             [ Text "Você precisa dar permissão ao "
             , Ref MassiveDecks
-            , Text " para te notificar. Isto será usado apenas quando o jogo estiver aberto você estiver com isto ativado."
+            , Text " para te notificar. Isto será usado apenas quando o jogo estiver aberto e você estiver com isto ativado."
             ]
 
         NotificationOnlyWhenHiddenSetting ->
@@ -396,7 +391,7 @@ translate mdString =
             [ Text "Enviar notificações apenas quando você não está olhando para a página (ex.: em outra aba ou minimizado)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Seu navegador não suporta checar a visibilidade da página." ]
+            [ Text "Seu navegador não suporta a checagem de visibilidade da página." ]
 
         -- Terms
         Czar ->
@@ -447,21 +442,17 @@ translate mdString =
         Deck ->
             [ Text "Deck" ]
 
-        -- TODO: Translate
         DeckSource ->
-            [ Missing ]
+            [ Text "Fonte do ", Ref Deck ]
 
-        -- TODO: Translate
         DeckLanguage { language } ->
-            [ Missing ]
+            [ Text "em ", Ref language ]
 
-        -- TODO: Translate
         DeckAuthor { author } ->
-            [ Missing ]
+            [ Text "de ", Text author ]
 
-        -- TODO: Translate
         DeckTranslator { translator } ->
-            [ Missing ]
+            [ Text "traduzido por ", Text translator ]
 
         StillPlaying ->
             [ Text "Jogando" ]
@@ -752,9 +743,12 @@ translate mdString =
             , Text "."
             ]
 
-        -- TODO: Translate
         AddBlankCards { amount } ->
-            [ Missing ]
+            [ Text "Adicionar "
+            , amount |> String.fromInt |> Text
+            , Ref (Plural { singular = Response, amount = Just amount })
+            , Text " vazias."
+            ]
 
         AddDeck ->
             [ Text "Adicionar deck." ]
@@ -768,21 +762,17 @@ translate mdString =
         SourceServiceFailure { source } ->
             [ Ref source, Text " falhou ao providenciar o deck. Por favor tente novamente com outra fonte." ]
 
-        -- TODO: Translate
         ManyDecks ->
-            [ Missing ]
+            [ Text "Many Decks" ]
 
-        -- TODO: Translate
         ManyDecksDeckCodeTitle ->
-            [ Missing ]
+            [ Text "Código do Deck" ]
 
-        -- TODO: Translate
         ManyDecksDeckCodeShort ->
-            [ Missing ]
+            [ Text "Um código de deck deve ser de pelo menos cinco caracteres." ]
 
-        -- TODO: Translate
         ManyDecksWhereToGet ->
-            [ Missing ]
+            [ Text "Você pode criar decks para jogar usando o Many Decks." ]
 
         BuiltIn ->
             [ Text "Embutido" ]
@@ -879,13 +869,13 @@ translate mdString =
         LobbyPasswordDescription ->
             [ Text "Uma senha que os jogadores devem usar para entrar no jogo." ]
 
-        -- TODO: Translate
         AudienceMode ->
-            [ Missing ]
+            [ Text "Modo Audiência" ]
 
-        -- TODO: Translate
         AudienceModeDescription ->
-            [ Missing ]
+            [ Text "Se ativado, novos usuários serão colocados como espectadores por padrão, e apenas você será capaz de "
+            , Text "transformá-los em jogadores."
+            ]
 
         StartGame ->
             [ Text "Iniciar Jogo" ]
@@ -919,38 +909,35 @@ translate mdString =
         PlayingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) os ", Ref Players, Text " terão para fazer suas jogadas." ]
 
-        -- TODO: Translate
         PlayingAfterDescription ->
-            [ Missing ]
+            [ Text "Quanto tempo (em segundos) os ", Ref Players, Text " terão para mudar suas jogadas antes de começar o próximo estágio." ]
 
         RevealingTimeLimitDescription ->
-            [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " tem para revelar as cartas." ]
+            [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " terá para revelar as cartas." ]
 
-        -- TODO: Translate
         RevealingAfterDescription ->
-            [ Missing ]
+            [ Text "Quanto tempo (em segundos) para aguardar após a última carta ser revelada antes de começar o próximo estágio." ]
 
         JudgingTimeLimitDescription ->
-            [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " tem para julgar as cartas." ]
+            [ Text "Quanto tempo (em segundos) o ", Ref Czar, Text " terá para julgar as cartas." ]
 
         CompleteTimeLimitDescription ->
-            [ Text "Quanto tempo (em segundos) para esperar depois que uma partida acaba antes de começar o próximo." ]
+            [ Text "Quanto tempo (em segundos) para esperar depois que uma partida acaba antes de começar a próxima." ]
 
-        -- TODO: Translate
         RevealingEnabledTitle ->
-            [ Missing ]
+            [ Raw Czar, Text " Revela Jogadas" ]
 
-        -- TODO: Translate
         RevealingEnabled ->
-            [ Missing ]
+            [ Text "Se isto estiver ativado, o "
+            , Ref Czar
+            , Text " revela uma jogada por vez antes de escolher o vencedor."
+            ]
 
-        -- TODO: Translate
         DuringTitle ->
-            [ Missing ]
+            [ Text "Tempo Limite" ]
 
-        -- TODO: Translate
         AfterTitle ->
-            [ Missing ]
+            [ Text "Após" ]
 
         Conflict ->
             [ Text "Conflito" ]
@@ -966,17 +953,14 @@ translate mdString =
         TheirChanges ->
             [ Text "Mudanças dele(a)" ]
 
-        -- TODO: Translate
         ConfigurationDisabledWhileInGame ->
-            [ Missing ]
+            [ Text "Enquanto o jogo estiver em andamento, você não pode alterar a configuração." ]
 
-        -- TODO: Translate
         ConfigurationDisabledIfNotPrivileged ->
-            [ Missing ]
+            [ Text "Você não pode mudar a configuração desse jogo." ]
 
-        -- TODO: Translate
         ConfigureNextGame ->
-            [ Missing ]
+            [ Text "Configurar Próximo Jogo" ]
 
         -- Game
         SubmitPlay ->
@@ -1032,13 +1016,13 @@ translate mdString =
         ClientAway ->
             [ Text "Você está atualmente definido como ausente do jogo, e não está jogando." ]
 
-        -- TODO: Translate
         Discard ->
-            [ Missing ]
+            [ Text "Descartar a carta selecionada, revelando para outros usuários do jogo." ]
 
-        -- TODO: Translate
         Discarded { player } ->
-            [ Missing ]
+            [ Text player
+            , Text " descartou a seguinte carta:"
+            ]
 
         -- Instructions
         PlayInstruction { numberOfCards } ->
@@ -1085,9 +1069,8 @@ translate mdString =
         Refresh ->
             [ Text "Atualizar" ]
 
-        -- TODO: Translate
         Accept ->
-            [ Missing ]
+            [ Text "OK" ]
 
         -- Errors
         Error ->
