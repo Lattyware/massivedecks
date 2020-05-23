@@ -34,7 +34,7 @@
 
     // Allows players to load decks from arbitrary URLs.
     manyDecks: {
-      baseUrl: "https://decks.md.rereadgames.com/",
+      baseUrl: "https://decks.rereadgames.com/",
 
       // How long to wait for a response from the url before giving up and telling the user there is a problem.
       timeout: "PT10S",

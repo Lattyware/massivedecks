@@ -24,7 +24,7 @@ Massive Decks is a free, open source comedy party game based on [Cards against H
  - Spectators.
  - Keeps your game private by default, you can also set a game password if needed.
 
-[many-decks]: https://decks.md.rereadgames.com/
+[many-decks]: https://decks.rereadgames.com/
 
 ## About
 
