@@ -176,3 +176,36 @@
     }
   }
 }
+
+#many-decks-ad div {
+  position: fixed;
+  left: -0.8em;
+  top: -3em;
+
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+
+  width: 7em;
+  height: 7em;
+  border-radius: 100%;
+
+  transition: left 0.25s, top 0.25s;
+
+  transform: rotate(-15deg);
+
+  font-size: 1.2em;
+  background-color: colors.$many-decks;
+  color: #ffffff;
+
+  > * {
+    margin-bottom: 0.5em;
+  }
+
+  &:hover {
+    left: -0.7em;
+    top: -2.5em;
+  }
+}

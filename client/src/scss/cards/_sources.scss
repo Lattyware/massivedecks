@@ -1,6 +1,8 @@
+@use "../_colors";
+
 .many-decks-deck-code {
   font-family: monospace;
-  background-color: #00796b;
+  background-color: colors.$many-decks;
   color: #ffffff;
   padding: 0.5em;
   letter-spacing: 0.2em;

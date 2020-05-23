@@ -4,7 +4,9 @@ import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Icon as Icon
+import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings exposing (..)
 import MassiveDecks.Strings.Languages.En as En
 import MassiveDecks.Strings.Languages.Model exposing (Language)
@@ -16,6 +18,7 @@ type alias Context =
     { lang : Language
     , translate : MdString -> List Translation.Result
     , parent : MdString
+    , shared : Shared
     }
 
 
@@ -237,7 +240,12 @@ enhanceHtml context mdString unenhanced =
             term context PlayedDescription Icon.check unenhanced
 
         ManyDecksWhereToGet ->
-            [ Html.blankA [ HtmlA.href "https://decks.md.rereadgames.com/" ] unenhanced ]
+            case context.shared.sources.manyDecks of
+                Just { baseUrl } ->
+                    [ Html.blankA [ HtmlA.href baseUrl ] unenhanced ]
+
+                Nothing ->
+                    unenhanced
 
         _ ->
             unenhanced

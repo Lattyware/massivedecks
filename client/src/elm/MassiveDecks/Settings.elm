@@ -555,12 +555,12 @@ languageOption shared currentLanguage language =
         nameInCurrentLanguage =
             language
                 |> Lang.languageName
-                |> Lang.givenLanguageString currentLanguage
+                |> Lang.givenLanguageString shared currentLanguage
 
         autonym =
             if language /= currentLanguage then
                 language
-                    |> Lang.autonym
+                    |> Lang.autonym shared
                     |> (\n -> Just [ Strings.AutonymFormat { autonym = n } |> Lang.html shared ])
 
             else

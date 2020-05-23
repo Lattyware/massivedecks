@@ -70,9 +70,9 @@ languageName language =
 
 {-| The given language's name for itself.
 -}
-autonym : Language -> String
-autonym language =
-    languageName language |> givenLanguageString language
+autonym : Shared -> Language -> String
+autonym shared language =
+    languageName language |> givenLanguageString shared language
 
 
 {-| A sort that gives the closest matches first.
@@ -119,14 +119,14 @@ findBestMatch codes =
 -}
 string : Shared -> MdString -> String
 string shared mdString =
-    mdString |> givenLanguageString (currentLanguage shared)
+    mdString |> givenLanguageString shared (currentLanguage shared)
 
 
 {-| Build an actual string in the given language.
 -}
-givenLanguageString : Language -> MdString -> String
-givenLanguageString lang mdString =
-    mdString |> Render.asString { lang = lang, translate = translate lang, parent = mdString }
+givenLanguageString : Shared -> Language -> MdString -> String
+givenLanguageString shared lang mdString =
+    mdString |> Render.asString { lang = lang, translate = translate lang, parent = mdString, shared = shared }
 
 
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings
@@ -138,7 +138,7 @@ html shared mdString =
         lang =
             currentLanguage shared
     in
-    mdString |> Render.asHtml { lang = lang, translate = translate lang, parent = mdString }
+    mdString |> Render.asHtml { lang = lang, translate = translate lang, parent = mdString, shared = shared }
 
 
 {-| Convenience for an HTML `title` attribute from the given `MdString`.

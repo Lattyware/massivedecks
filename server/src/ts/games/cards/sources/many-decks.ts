@@ -25,14 +25,17 @@ export interface ClientInfo {
 
 export class Resolver extends Source.Resolver<ManyDecks> {
   public readonly source: ManyDecks;
+  private readonly config: Config.ManyDecks;
   private readonly connectionPool: genericPool.Pool<AxiosInstance>;
 
   public constructor(
     source: ManyDecks,
+    config: Config.ManyDecks,
     connectionPool: genericPool.Pool<AxiosInstance>
   ) {
     super();
     this.source = source;
+    this.config = config;
     this.connectionPool = connectionPool;
   }
 
@@ -80,6 +83,7 @@ export class Resolver extends Source.Resolver<ManyDecks> {
       const summary = {
         details: {
           name: data.name,
+          url: `${this.config.baseUrl}decks/${this.source.deckCode}`,
           author: data.author,
           translator: data.translator,
           language: data.language,
@@ -137,7 +141,6 @@ export class MetaResolver implements Source.MetaResolver<ManyDecks> {
       timeout: config.timeout,
       responseType: "json",
     };
-    console.log(JSON.stringify(httpConfig));
 
     this.connectionPool = genericPool.createPool(
       {
@@ -161,7 +164,7 @@ export class MetaResolver implements Source.MetaResolver<ManyDecks> {
   }
 
   resolver(source: ManyDecks): Resolver {
-    return new Resolver(source, this.connectionPool);
+    return new Resolver(source, this.config, this.connectionPool);
   }
 }
 

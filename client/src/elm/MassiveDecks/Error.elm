@@ -93,7 +93,7 @@ body shared route description details =
                 ++ "\n\tPage: "
                 ++ Route.externalUrl shared.origin route
                 ++ "\n\tEnglish Error: "
-                ++ Lang.givenLanguageString Lang.En description
+                ++ Lang.givenLanguageString shared Lang.En description
                 ++ "\n\tDetails: "
                 ++ details
     in

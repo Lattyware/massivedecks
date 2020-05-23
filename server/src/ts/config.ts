@@ -148,6 +148,9 @@ const parseManyDecks = (
   manyDecks: BaseManyDecks<UnparsedDuration>
 ): ManyDecks => ({
   ...manyDecks,
+  baseUrl: manyDecks.baseUrl.endsWith("/")
+    ? manyDecks.baseUrl
+    : manyDecks.baseUrl + "/",
   timeout: parseDuration(manyDecks.timeout),
 });
 

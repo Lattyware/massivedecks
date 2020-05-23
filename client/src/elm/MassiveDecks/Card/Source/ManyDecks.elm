@@ -9,7 +9,7 @@ import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Json.Decode as Json
-import MassiveDecks.Card.Source.ManyDecks.Model exposing (DeckCode, deckCode, toString)
+import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
@@ -19,6 +19,7 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
 import Material.TextField as TextField
+import Url.Builder as Url
 
 
 methods : DeckCode -> Source.ExternalMethods msg
@@ -125,8 +126,12 @@ editor dc shared existing update submit noOp =
 
 details : DeckCode -> Shared -> Source.Details
 details dc shared =
+    let
+        url baseUrl =
+            Url.crossOrigin baseUrl [ "decks", dc |> toString ] []
+    in
     { name = (() |> name |> Lang.string shared) ++ " " ++ (dc |> toString)
-    , url = Nothing
+    , url = shared.sources.manyDecks |> Maybe.map (.baseUrl >> url)
     , author = Nothing
     , translator = Nothing
     , language = Nothing
