@@ -289,9 +289,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
   } {
-    const playsToBeRevealed = Array.from(
-      wu(game.round.plays).map((play) => play.id)
-    );
+    const playsToBeRevealed = Array.from(wu(this.plays).map((play) => play.id));
     const events = Util.asOptionalIterable(
       Event.additionally(
         StartRevealing.of(playsToBeRevealed),
@@ -299,7 +297,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       )
     );
     const timeouts = Util.asOptionalIterable(
-      RoundStageTimerDone.ifEnabled(game.round, game.rules.stages)
+      RoundStageTimerDone.ifEnabled(this, game.rules.stages)
     );
     return { events, timeouts };
   }
@@ -444,6 +442,7 @@ export class Playing extends Base<"Playing"> implements Timed {
       this.call,
       Util.shuffled(this.plays)
     );
+    game.round = revealing;
     return {
       round: revealing,
       ...(doNotStart ? {} : revealing.start(game)),

@@ -1,14 +1,9 @@
 import wu from "wu";
-import * as Event from "../event";
-import * as StartRevealing from "../events/game-event/start-revealing";
-import * as Card from "../games/cards/card";
 import * as Round from "../games/game/round";
 import * as Timeout from "../timeout";
 import * as Util from "../util";
-import * as RoundStageTimerDone from "./round-stage-timer-done";
 import * as Rules from "../games/rules";
-import * as User from "../user";
-import * as Game from "../games/game";
+
 /**
  * Indicates that the round should start the revealing phase if it is appropriate
  * to do so.

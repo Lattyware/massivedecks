@@ -15,7 +15,7 @@ Massive Decks is a free, open source comedy party game based on [Cards against H
  - Play together in the same room or online.
  - Use any device (Mobile phone, PC, Chromecast, anything with a web browser).
  - You can set up a central screen, but you don't need to (no need to stream anything for other players online).
- - Custom decks.
+ - Custom decks (via [Many Decks][many-decks]).
  - Customise the rules:
    - Custom cards.
    - House rules.
@@ -23,6 +23,8 @@ Massive Decks is a free, open source comedy party game based on [Cards against H
    - Custom time limits if you want them.
  - Spectators.
  - Keeps your game private by default, you can also set a game password if needed.
+
+[many-decks]: https://decks.md.rereadgames.com/
 
 ## About
 
@@ -84,8 +86,8 @@ by [Cards against Humanity][cah].
 [cah-license]: https://creativecommons.org/licenses/by-nc-sa/2.0/
 
 Massive Decks is also inspired by:
-* [CardCast][cardcast] - an app you to play on a Chromecast.
-* [Pretend You're Xyzzy][xyzzy] - a web game where you can jump in with people you don't know.
+* [CardCast][cardcast] - an app that allowed you to play on a Chromecast, now dead.
+* [Pretend You're Xyzzy][xyzzy] - another web implementation.
 
 [cardcast]: https://www.cardcastgame.com/
 [xyzzy]: http://pretendyoure.xyz/zy/

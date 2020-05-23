@@ -55,6 +55,7 @@
         // reboot: { cost: 1 },
         // comedyWriter: { number: 300, exclusive: true },
         // rando: { number: 1 },
+        // neverHaveIEver: {}
       },
       stages: {
         timeLimitMode: "Soft",
