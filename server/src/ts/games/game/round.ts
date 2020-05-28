@@ -195,11 +195,6 @@ export class Judging extends Base<"Judging"> implements Timed {
     const plays = previouslyRevealed
       ? undefined
       : Array.from(this.revealedPlays());
-    if (previouslyRevealed) {
-      for (const [_, v] of newCardsAndPlayedByPlayer) {
-        delete v.played;
-      }
-    }
     const event = Event.additionally(
       StartJudging.of(plays),
       newCardsAndPlayedByPlayer
@@ -317,7 +312,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       const start = judging.start(
         game.rules,
         previouslyRevealed,
-        this.getAfterPlayingDetails(game)
+        previouslyRevealed ? new Map() : this.getAfterPlayingDetails(game)
       );
       return {
         round: judging,

@@ -134,8 +134,8 @@ $users-width: 18rem;
 
       .name {
         text-overflow: ellipsis;
-        white-space: nowrap;
         overflow: hidden;
+        overflow-wrap: break-word;
       }
     }
 

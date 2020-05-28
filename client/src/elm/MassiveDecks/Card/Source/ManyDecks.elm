@@ -18,6 +18,7 @@ import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
+import Material.Select as Select
 import Material.TextField as TextField
 import Url.Builder as Url
 
@@ -91,32 +92,13 @@ problems dc () =
 
 
 editor : DeckCode -> Shared -> List DeckOrError -> (Source.External -> msg) -> Maybe msg -> msg -> Html msg
-editor dc shared existing update submit noOp =
-    let
-        notAlreadyInGame potential =
-            case potential of
-                Source.ManyDecks otherDc ->
-                    let
-                        notSameDeck { source } =
-                            equals otherDc source |> not
-                    in
-                    otherDc |> Maybe.justIf (existing |> List.all notSameDeck)
-
-                _ ->
-                    Nothing
-
-        recentDeck otherDc =
-            Html.option [ otherDc |> toString |> HtmlA.value ] []
-    in
+editor dc shared _ update submit noOp =
     Html.div [ HtmlA.class "primary" ]
-        [ Html.datalist [ HtmlA.id "recent-decks" ]
-            (shared.settings.settings.recentDecks |> List.filterMap notAlreadyInGame |> List.map recentDeck)
-        , TextField.view shared
+        [ TextField.view shared
             Strings.ManyDecksDeckCodeTitle
             TextField.Text
             (dc |> toString)
-            [ HtmlA.list "recent-decks"
-            , HtmlE.onInput (deckCode >> Source.ManyDecks >> update)
+            [ HtmlE.onInput (deckCode >> Source.ManyDecks >> update)
             , HtmlE.keyCode
                 |> Json.map (\k -> submit |> Maybe.andThen (Maybe.justIf (k == 13)) |> Maybe.withDefault noOp)
                 |> HtmlE.on "keydown"

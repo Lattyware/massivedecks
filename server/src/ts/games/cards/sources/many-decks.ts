@@ -84,7 +84,7 @@ export class Resolver extends Source.Resolver<ManyDecks> {
         details: {
           name: data.name,
           url: `${this.config.baseUrl}decks/${this.source.deckCode}`,
-          author: data.author,
+          author: data.author.name,
           translator: data.translator,
           language: data.language,
         },
