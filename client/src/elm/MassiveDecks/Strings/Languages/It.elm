@@ -787,6 +787,14 @@ translate mdString =
             [ Missing ]
 
         -- TODO: Translate
+        JsonAgainstHumanity ->
+            [ Missing ]
+
+        -- TODO: Translate
+        JsonAgainstHumanityAbout ->
+            [ Missing ]
+
+        -- TODO: Translate
         BuiltIn ->
             [ Missing ]
 

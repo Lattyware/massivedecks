@@ -335,6 +335,9 @@ export const Schema = {
           $ref: "#/definitions/ManyDecks",
         },
         {
+          $ref: "#/definitions/JsonAgainstHumanity",
+        },
+        {
           $ref: "#/definitions/BuiltIn",
         },
       ],
@@ -387,6 +390,22 @@ export const Schema = {
     Id_1: {
       description: "A unique id for a user.",
       type: "string",
+    },
+    JsonAgainstHumanity: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "From JSON Against Humanity (https://crhallberg.com/cah/)",
+      properties: {
+        id: {
+          type: "string",
+        },
+        source: {
+          enum: ["JAH"],
+          type: "string",
+        },
+      },
+      required: ["id", "source"],
+      type: "object",
     },
     Judge: {
       additionalProperties: false,

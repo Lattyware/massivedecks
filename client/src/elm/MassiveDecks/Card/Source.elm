@@ -21,6 +21,7 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn as BuiltIn
 import MassiveDecks.Card.Source.Custom as Player
 import MassiveDecks.Card.Source.Fake as Fake
+import MassiveDecks.Card.Source.JsonAgainstHumanity as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks as ManyDecks
 import MassiveDecks.Card.Source.Methods exposing (..)
 import MassiveDecks.Card.Source.Model exposing (..)
@@ -70,6 +71,9 @@ generalMethods source =
 
         GManyDecks ->
             ManyDecks.generalMethods
+
+        GJsonAgainstHumanity ->
+            JsonAgainstHumanity.generalMethods
 
 
 {-| Get an empty source of the given type.
@@ -180,12 +184,13 @@ generalEditor shared existing currentValue update submit noOp =
         enabledSources =
             [ shared.sources.builtIn |> Maybe.map (\_ -> BuiltIn.generalMethods)
             , shared.sources.manyDecks |> Maybe.map (\_ -> ManyDecks.generalMethods)
+            , shared.sources.jsonAgainstHumanity |> Maybe.map (\_ -> JsonAgainstHumanity.generalMethods)
             ]
 
         toItem source =
             { id = source.id ()
             , icon = source.logo ()
-            , primary = [ () |> source.name |> Lang.html shared ]
+            , primary = [ () |> source.name |> Lang.string shared |> Html.text ]
             , secondary = Nothing
             , meta = Nothing
             }
@@ -257,3 +262,6 @@ externalMethods external =
 
         BuiltIn id ->
             BuiltIn.methods id
+
+        JsonAgainstHumanity id ->
+            JsonAgainstHumanity.methods id

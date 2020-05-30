@@ -217,6 +217,8 @@ type MdString
     | ManyDecksDeckCodeTitle -- A term referring to a deck code for Many Decks.
     | ManyDecksDeckCodeShort -- A description of the problem where a deck code must be at least five characters.
     | ManyDecksWhereToGet -- A description of how to get deck codes from Many Decks.
+    | JsonAgainstHumanity -- The name of the JSON Against Humanity source.
+    | JsonAgainstHumanityAbout -- A short description of the JSON Against Humanity source.
     | BuiltIn -- A term referring to decks of cards that are provided by this instance of the game.
     | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.

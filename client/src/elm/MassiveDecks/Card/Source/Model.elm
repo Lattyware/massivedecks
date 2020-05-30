@@ -13,6 +13,7 @@ module MassiveDecks.Card.Source.Model exposing
 
 import Json.Decode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Strings.Languages.Model exposing (Language)
 
@@ -22,6 +23,7 @@ import MassiveDecks.Strings.Languages.Model exposing (Language)
 type General
     = GBuiltIn
     | GManyDecks
+    | GJsonAgainstHumanity
 
 
 {-| Details on where game data came from.
@@ -46,6 +48,7 @@ sources are more limited and specific.
 type External
     = BuiltIn BuiltIn.Id
     | ManyDecks ManyDecks.DeckCode
+    | JsonAgainstHumanity JsonAgainstHumanity.Id
 
 
 {-| A summary of the contents of the source deck.
@@ -80,6 +83,7 @@ type LoadFailureReason
 type alias Info =
     { builtIn : Maybe BuiltIn.Info
     , manyDecks : Maybe ManyDecks.Info
+    , jsonAgainstHumanity : Maybe JsonAgainstHumanity.Info
     }
 
 
@@ -94,6 +98,9 @@ generalToString source =
         GManyDecks ->
             "ManyDecks"
 
+        GJsonAgainstHumanity ->
+            "JAH"
+
 
 {-| Get a general source by a string name.
 -}
@@ -105,6 +112,9 @@ generalFromString sourceName =
 
         "ManyDecks" ->
             Just GManyDecks
+
+        "JAH" ->
+            Just GJsonAgainstHumanity
 
         _ ->
             Nothing

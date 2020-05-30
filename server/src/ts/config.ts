@@ -56,9 +56,15 @@ interface BaseManyDecks<D extends Duration> {
 }
 export type ManyDecks = BaseManyDecks<ParsedDuration>;
 
+export interface JsonAgainstHumanity {
+  aboutUrl: string;
+  url: string;
+}
+
 interface BaseSources<D extends Duration> {
   builtIn?: BuiltIn;
   manyDecks?: BaseManyDecks<D>;
+  jsonAgainstHumanity?: JsonAgainstHumanity;
 }
 export type Sources = BaseSources<ParsedDuration>;
 
@@ -158,6 +164,9 @@ const parseSources = (sources: BaseSources<UnparsedDuration>): Sources => ({
   ...(sources.builtIn !== undefined ? { builtIn: sources.builtIn } : {}),
   ...(sources.manyDecks !== undefined
     ? { manyDecks: parseManyDecks(sources.manyDecks) }
+    : {}),
+  ...(sources.jsonAgainstHumanity !== undefined
+    ? { jsonAgainstHumanity: sources.jsonAgainstHumanity }
     : {}),
 });
 

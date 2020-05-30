@@ -31,6 +31,7 @@ import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgianstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -71,6 +72,7 @@ sourceInfo =
     Json.succeed Source.Info
         |> Json.optional "builtIn" (builtInInfo |> Json.map Just) Nothing
         |> Json.optional "manyDecks" (manyDecksInfo |> Json.map Just) Nothing
+        |> Json.optional "jsonAgainstHumanity" (jsonAgainstHumanityInfo |> Json.map Just) Nothing
         |> Json.andThen atLeastOne
 
 
@@ -84,6 +86,19 @@ manyDecksInfo : Json.Decoder ManyDecks.Info
 manyDecksInfo =
     Json.succeed ManyDecks.Info
         |> Json.required "baseUrl" Json.string
+
+
+jsonAgainstHumanityInfo : Json.Decoder JsonAgianstHumanity.Info
+jsonAgainstHumanityInfo =
+    let
+        jsonAgainstHumanityDeck =
+            Json.succeed JsonAgianstHumanity.Deck
+                |> Json.required "id" JsonAgianstHumanity.idDecoder
+                |> Json.required "name" Json.string
+    in
+    Json.succeed JsonAgianstHumanity.Info
+        |> Json.required "aboutUrl" Json.string
+        |> Json.required "decks" (Json.list jsonAgainstHumanityDeck)
 
 
 builtInDeck : Json.Decoder BuiltIn.Deck
@@ -229,6 +244,9 @@ externalSourceByGeneral general =
 
         Source.GManyDecks ->
             Json.field "deckCode" (Json.string |> Json.map ManyDecks.deckCode) |> Json.map Source.ManyDecks
+
+        Source.GJsonAgainstHumanity ->
+            Json.field "id" (JsonAgianstHumanity.idDecoder |> Json.map Source.JsonAgainstHumanity)
 
 
 tokenValidity : Json.Decoder (List Lobby.Token)

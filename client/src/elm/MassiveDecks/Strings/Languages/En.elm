@@ -757,7 +757,13 @@ translate mdString =
             [ Text "A deck code must be at least five characters long." ]
 
         ManyDecksWhereToGet ->
-            [ Text "You can create decks to play with at Many Decks." ]
+            [ Text "You can create and find decks to play with at ", Ref ManyDecks, Text "." ]
+
+        JsonAgainstHumanity ->
+            [ Text "JSON Against Humanity" ]
+
+        JsonAgainstHumanityAbout ->
+            [ Text "Decks provided by ", Ref JsonAgainstHumanity ]
 
         BuiltIn ->
             [ Text "Built-in" ]

@@ -54,6 +54,7 @@ export type Style = "Em" | "Strong";
 
 /** An empty slot for responses to be played into.*/
 export interface Slot {
+  index?: number;
   /**
    * Defines a transformation over the content the slot is filled with.
    */
@@ -95,7 +96,14 @@ export const isResponse = (card: Card): card is Response =>
 /**
  * The number of slots the given call.
  */
-export const slotCount = (call: Call): number =>
-  wu(call.parts)
+export const slotCount = (call: Call | Part[][]): number => {
+  let next = 0;
+  const indices = wu(
+    call.hasOwnProperty("parts") ? (call as Call).parts : (call as Part[][])
+  )
     .flatten(true)
-    .reduce((count, part) => count + (isSlot(part) ? 1 : 0), 0);
+    .concatMap((part) =>
+      isSlot(part) ? [part.index !== undefined ? part.index : next++] : []
+    );
+  return new Set(indices).size;
+};

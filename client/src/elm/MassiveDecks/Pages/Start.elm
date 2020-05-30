@@ -201,7 +201,11 @@ view shared model =
         manyDecksAd { baseUrl } =
             Html.blankA
                 [ HtmlA.href baseUrl, HtmlA.id "many-decks-ad", Strings.ManyDecksWhereToGet |> Lang.title shared ]
-                [ Html.div [] [ Icon.boxOpen |> Icon.viewIcon, Strings.ManyDecks |> Lang.html shared ] ]
+                [ Html.div []
+                    [ Icon.boxOpen |> Icon.viewIcon
+                    , Html.span [] [ Strings.ManyDecks |> Lang.string shared |> Html.text ]
+                    ]
+                ]
     in
     [ Html.div [ HtmlA.class "page start" ]
         [ overlay shared model.overlay

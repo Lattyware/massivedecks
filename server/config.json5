@@ -32,15 +32,21 @@
       decks: ["cah-base-en", "cah-base-ptbr"],
     },
 
-    // Allows players to load decks from arbitrary URLs.
+    // Allows players to load decks from Many Decks.
     manyDecks: {
       baseUrl: "https://decks.rereadgames.com/",
 
-      // How long to wait for a response from the url before giving up and telling the user there is a problem.
+      // How long to wait for a response from Many Decks before giving up and telling the user there is a problem.
       timeout: "PT10S",
 
-      // The number of connections the server can make to urls at one time.
-      simultaneousConnections: 1,
+      // The number of connections the server can make to Many Decks at one time.
+      simultaneousConnections: 2,
+    },
+
+    // Allows players to use decks from JSON Against Humanity
+    jsonAgainstHumanity: {
+      aboutUrl: "https://github.com/crhallberg/json-against-humanity",
+      url: "https://raw.githubusercontent.com/crhallberg/json-against-humanity/v2/compact.md.json",
     },
   },
 

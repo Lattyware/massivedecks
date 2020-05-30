@@ -243,10 +243,18 @@ enhanceHtml context mdString unenhanced =
         Played ->
             term context PlayedDescription Icon.check unenhanced
 
-        ManyDecksWhereToGet ->
+        ManyDecks ->
             case context.shared.sources.manyDecks of
                 Just { baseUrl } ->
                     [ Html.blankA [ HtmlA.href baseUrl ] unenhanced ]
+
+                Nothing ->
+                    unenhanced
+
+        JsonAgainstHumanity ->
+            case context.shared.sources.jsonAgainstHumanity of
+                Just { aboutUrl } ->
+                    [ Html.blankA [ HtmlA.href aboutUrl ] unenhanced ]
 
                 Nothing ->
                     unenhanced

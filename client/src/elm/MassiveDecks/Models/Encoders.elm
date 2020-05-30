@@ -24,6 +24,7 @@ module MassiveDecks.Models.Encoders exposing
 import Dict
 import Json.Encode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
 import MassiveDecks.Cast.Model as Cast
@@ -343,13 +344,17 @@ source s =
         Source.ManyDecks deckCode ->
             Json.object
                 [ ( "source", "ManyDecks" |> Json.string )
-                , ( "deckCode"
-                  , deckCode |> ManyDecks.encode
-                  )
+                , ( "deckCode", deckCode |> ManyDecks.encode )
                 ]
 
         Source.BuiltIn id ->
             Json.object [ ( "source", "BuiltIn" |> Json.string ), ( "id", id |> BuiltIn.toString |> Json.string ) ]
+
+        Source.JsonAgainstHumanity id ->
+            Json.object
+                [ ( "source", "JAH" |> Json.string )
+                , ( "id", id |> JsonAgainstHumanity.toString |> Json.string )
+                ]
 
 
 language : Language -> Json.Value
