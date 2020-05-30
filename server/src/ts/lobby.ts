@@ -92,7 +92,9 @@ export const fromDefaults = (
       rules: Rules.fromDefaults(defaults.rules),
       public: defaults.public,
       audienceMode: defaults.audienceMode,
-      decks: [],
+      decks: defaults.decks.map((d) => ({
+        source: d,
+      })),
     },
     tasks: tasks,
   };

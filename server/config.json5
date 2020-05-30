@@ -83,8 +83,22 @@
     audienceMode: false,
     decks: [
       // {
+      //   // A built-in deck.
       //   source: "BuiltIn",
+      //   // The id (filename without `.deck.json5`.
       //   id: "cah-base-en",
+      // },
+      // {
+      //   // A deck from JSON Against Humanity
+      //   source: "JAH",
+      //   // The id can be found in the JSON as the key for the deck.
+      //   id: "Base",
+      // },
+      // {
+      //   // A deck from Many Decks
+      //   source: "ManyDecks",
+      //   // The deck code, as given on Many Decks.
+      //   deckCode: "ABCDE",
       // },
     ],
   },
