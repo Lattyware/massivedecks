@@ -35,7 +35,7 @@ $response-background: $call-color;
     margin: 0;
   }
 
-  .capitalize::first-letter {
+  .capitalize:first-child {
     text-transform: capitalize;
   }
 

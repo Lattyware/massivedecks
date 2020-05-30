@@ -82,7 +82,10 @@ instructions shared rules parts =
             Parts.slotCount parts
 
         instructionViews =
-            List.concat [ extraCardsInstruction shared rules slots, pickInstruction shared slots ]
+            List.concat
+                [ extraCardsInstruction shared rules slots
+                , pickInstruction shared slots (Parts.nonObviousSlotIndices parts)
+                ]
     in
     [ Html.ol [ HtmlA.class "instructions" ] instructionViews ]
         |> Maybe.justIf (List.length instructionViews > 0)
@@ -104,8 +107,8 @@ extraCardsInstruction shared rules slots =
         []
 
 
-pickInstruction : Shared -> Int -> List (Html msg)
-pickInstruction shared slots =
+pickInstruction : Shared -> Int -> Bool -> List (Html msg)
+pickInstruction shared slots nonObviousSlotIndices =
     [ Html.li [] [ Pick { numberOfCards = slots } |> Lang.html shared ] ]
-        |> Maybe.justIf (slots > 1)
+        |> Maybe.justIf (slots > 1 || nonObviousSlotIndices)
         |> Maybe.withDefault []
