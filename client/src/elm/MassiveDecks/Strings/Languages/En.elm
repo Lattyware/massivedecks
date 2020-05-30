@@ -1070,6 +1070,12 @@ translate mdString =
         ErrorHelpTitle ->
             [ Text "Sorry, something went wrong." ]
 
+        ErrorCheckOutOfBand ->
+            [ Text "Please check ", Ref TwitterHandle, Text " for updates and service status. The game server will go down for a short time when a new version is released, so if you see a recent update, try again in a few minutes." ]
+
+        TwitterHandle ->
+            [ Text "@Massive_Decks" ]
+
         ReportError ->
             [ Text "Report Bug" ]
 

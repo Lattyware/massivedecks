@@ -42,6 +42,7 @@ view shared route model =
             , Card.view [ HtmlA.class "help" ]
                 [ Html.h3 [] [ Lang.html shared Strings.ErrorHelpTitle ]
                 , Html.p [] [ Lang.html shared Strings.ErrorHelp ]
+                , Html.p [] [ Lang.html shared Strings.ErrorCheckOutOfBand ]
                 ]
             , Html.div [ HtmlA.class "errors" ] (List.map (Error.view shared route) model.errors)
             ]

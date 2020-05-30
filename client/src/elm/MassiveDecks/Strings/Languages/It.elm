@@ -1105,6 +1105,14 @@ translate mdString =
         ErrorHelpTitle ->
             [ Text "Spiacenti, qualcosa è andato storto." ]
 
+        -- TODO: Translate
+        ErrorCheckOutOfBand ->
+            [ Missing ]
+
+        -- TODO: Translate
+        TwitterHandle ->
+            [ Missing ]
+
         ReportError ->
             [ Text "Segnala bug" ]
 

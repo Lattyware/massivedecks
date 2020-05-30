@@ -313,7 +313,8 @@ translate mdString =
 
         HouseRuleNeverHaveIEverDescription ->
             [ Text "A qualquer momento, um jogador pode descartar as cartas que ele não entende, porém, ele deve confessar sua "
-            , Text "ignorância: a carta é compartilhada publicamente." ]
+            , Text "ignorância: a carta é compartilhada publicamente."
+            ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
@@ -1083,6 +1084,14 @@ translate mdString =
 
         ErrorHelpTitle ->
             [ Text "Desculpe, algo de errado não está certo." ]
+
+        -- TODO: Translate
+        ErrorCheckOutOfBand ->
+            [ Missing ]
+
+        -- TODO: Translate
+        TwitterHandle ->
+            [ Missing ]
 
         ReportError ->
             [ Text "Reportar Bug" ]

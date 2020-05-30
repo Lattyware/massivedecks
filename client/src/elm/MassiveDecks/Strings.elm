@@ -309,6 +309,8 @@ type MdString
     | Error -- A title for a generic error (something having gone wrong).
     | ErrorHelp -- A message telling the user that an error has occurred and what to do.
     | ErrorHelpTitle -- A title saying something went wrong.
+    | ErrorCheckOutOfBand -- A message to check the twitter account for more information on the service's status.
+    | TwitterHandle -- A description of the twitter account.
     | ReportError -- The action to report an error with the application to a developer.
     | ReportErrorDescription -- A description of the action of reporting an error to a developer.
     | ReportErrorBody -- An explanation of how to report an error to the developer.

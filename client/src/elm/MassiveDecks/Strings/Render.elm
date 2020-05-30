@@ -1,5 +1,6 @@
 module MassiveDecks.Strings.Render exposing (asHtml, asString)
 
+import FontAwesome.Brands as Icon
 import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
@@ -220,6 +221,9 @@ enhanceHtml context mdString unenhanced =
 
         TranslationBeg ->
             [ Html.blankA [ HtmlA.href "https://github.com/Lattyware/massivedecks/wiki/Translation" ] unenhanced ]
+
+        TwitterHandle ->
+            [ Html.blankA [ HtmlA.href "https://twitter.com/Massive_Decks" ] (suffixed unenhanced Icon.twitter) ]
 
         Error ->
             prefixed unenhanced Icon.exclamationTriangle
