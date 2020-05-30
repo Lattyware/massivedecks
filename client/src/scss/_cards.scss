@@ -25,6 +25,8 @@ $response-background: $call-color;
   margin: size.$card-margin;
   perspective: 100vw;
 
+  position: relative;
+
   text-rendering: optimizeLegibility;
   font-family: fonts.$card;
   font-weight: bold;
@@ -262,15 +264,35 @@ $response-background: $call-color;
   color: var(--bg, $call-color);
 }
 
-.show-slot-indices .game-card .slot[data-slot-index]::after {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  content: attr(data-slot-index);
-  color: var(--bg);
-  background-color: var(--fg);
-  border-radius: 1em;
-  width: 1em;
-  height: 1em;
-  opacity: 0.25;
+.show-slot-indices .game-card {
+  &[data-picked-for-slot-index]::after {
+    position: absolute;
+    left: calc(50% - 0.5em);
+    top: calc(50% - 0.5em);
+
+    content: attr(data-picked-for-slot-index);
+    display: block;
+    color: var(--bg);
+    background-color: var(--fg);
+    font-size: 3em;
+    border-radius: 1em;
+    width: 1em;
+    height: 1em;
+    text-align: center;
+    line-height: 1em;
+    opacity: 0.25;
+  }
+
+  .slot[data-slot-index].empty::after {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    content: attr(data-slot-index);
+    color: var(--bg);
+    background-color: var(--fg);
+    border-radius: 1em;
+    width: 1em;
+    height: 1em;
+    opacity: 0.25;
+  }
 }

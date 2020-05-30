@@ -2,12 +2,13 @@ module MassiveDecks.Card.Parts exposing
     ( Fills
     , Part(..)
     , Parts
+    , SlotAttrs
     , Style(..)
     , Transform(..)
     , fillsFromPlay
     , fromList
-    , isSlot
     , missingSlotIndices
+    , nonObviousSlotIndices
     , slotCount
     , unsafeFromList
     , view
@@ -57,22 +58,16 @@ type alias Fills =
     Dict Int String
 
 
+{-| A function to get attributes for a given slot index.
+-}
+type alias SlotAttrs msg =
+    Int -> List (Html.Attribute msg)
+
+
 {-| A collection of `Line`s. It is guaranteed to have at least one `Slot`.
 -}
 type Parts
     = Parts (List Line)
-
-
-{-| A predicate checking if a part is a slot.
--}
-isSlot : Part -> Bool
-isSlot part =
-    case part of
-        Slot _ _ _ ->
-            True
-
-        _ ->
-            False
 
 
 {-| Construct a `Parts` from a `List` of `Line`s. This will fail if there is not at least one `Slot`.
@@ -130,7 +125,7 @@ slotCount (Parts lines) =
 -}
 view : Parts -> List (Html msg)
 view parts =
-    viewFilled Dict.empty parts
+    viewFilled (always []) Dict.empty parts
 
 
 {-| Render the `Parts` to a string.
@@ -142,9 +137,9 @@ viewFilledString blankString play (Parts lines) =
 
 {-| Render the `Parts` with slots filled with the given values.
 -}
-viewFilled : Fills -> Parts -> List (Html msg)
-viewFilled play (Parts lines) =
-    viewLines play lines
+viewFilled : SlotAttrs msg -> Fills -> Parts -> List (Html msg)
+viewFilled slotAttrs play (Parts lines) =
+    viewLines slotAttrs play lines
 
 
 {-| Render lines to a string without needing a complete parts.
@@ -185,6 +180,17 @@ missingSlotIndices fills (Parts lines) =
             fills |> Dict.keys |> Set.fromList
     in
     Set.diff expect filled
+
+
+{-| Returns true if slot indices aren't obvious (i.e: at least one is repeated).
+-}
+nonObviousSlotIndices : Parts -> Bool
+nonObviousSlotIndices (Parts lines) =
+    let
+        indices =
+            lines |> List.concat |> List.filterMap slotIndex
+    in
+    (indices |> List.length) /= (indices |> Set.fromList |> Set.size)
 
 
 
@@ -283,8 +289,8 @@ cluster parts =
     parts |> List.concatMap explode |> List.groupWhile isCluster |> List.map ((\( h, t ) -> h :: t) >> minimise)
 
 
-viewPart : Fills -> Part -> Html msg
-viewPart fills part =
+viewPart : SlotAttrs msg -> Fills -> Part -> Html msg
+viewPart slotAttrs fills part =
     let
         styleToElement style =
             case style of
@@ -314,28 +320,34 @@ viewPart fills part =
                 ( fillState, fill ) =
                     case fills |> Dict.get index of
                         Just text ->
-                            ( HtmlA.class "filled", [ Text text NoStyle ] |> cluster |> List.concatMap (viewCluster fills) )
+                            ( HtmlA.class "filled"
+                            , [ Text text NoStyle ] |> cluster |> List.concatMap (viewCluster slotAttrs fills)
+                            )
 
                         Nothing ->
                             ( HtmlA.class "empty", [] )
 
                 attrs =
                     List.concat
-                        [ [ HtmlA.class "slot", fillState, HtmlA.attribute "data-slot-index" (index + 1 |> String.fromInt) ]
+                        [ [ HtmlA.class "slot"
+                          , fillState
+                          , HtmlA.attribute "data-slot-index" (index + 1 |> String.fromInt)
+                          ]
+                        , slotAttrs index
                         , transformToAttrs transform
                         ]
             in
             styleToElement style attrs fill
 
 
-viewCluster : Fills -> List Part -> List (Html msg)
-viewCluster fills c =
+viewCluster : SlotAttrs msg -> Fills -> List Part -> List (Html msg)
+viewCluster slotAttrs fills c =
     case c of
         [] ->
             []
 
         first :: [] ->
-            [ viewPart fills first ]
+            [ viewPart slotAttrs fills first ]
 
         many ->
             let
@@ -354,14 +366,14 @@ viewCluster fills c =
                     else
                         []
             in
-            [ Html.span (HtmlA.class "cluster" :: growthAttrs) (many |> List.map (viewPart fills)) ]
+            [ Html.span (HtmlA.class "cluster" :: growthAttrs) (many |> List.map (viewPart slotAttrs fills)) ]
 
 
-viewLine : Fills -> List Part -> Html msg
-viewLine fills line =
-    Html.p [] (line |> cluster |> List.concatMap (viewCluster fills))
+viewLine : SlotAttrs msg -> Fills -> List Part -> Html msg
+viewLine slotAttrs fills line =
+    Html.p [] (line |> cluster |> List.concatMap (viewCluster slotAttrs fills))
 
 
-viewLines : Fills -> List (List Part) -> List (Html msg)
-viewLines fills =
-    List.map (viewLine fills)
+viewLines : SlotAttrs msg -> Fills -> List (List Part) -> List (Html msg)
+viewLines slotAttrs fills =
+    List.map (viewLine slotAttrs fills)

@@ -71,7 +71,9 @@ view wrap auth shared config round =
     { instruction = Just instruction
     , action = action
     , content = plays |> Plays.view [ ( "revealing", True ), ( "is-czar", isCzar ) ] round.pick
+    , slotAttrs = always []
     , fillCallWith = lastRevealed |> Maybe.withDefault Dict.empty
+    , roundAttrs = []
     }
 
 

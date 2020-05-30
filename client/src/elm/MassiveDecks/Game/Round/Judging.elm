@@ -59,7 +59,9 @@ view wrap auth shared config round =
     { instruction = Just instruction
     , action = action
     , content = details |> Plays.view [ ( "judging", True ), ( "is-czar", isCzar ) ] round.pick
+    , slotAttrs = always []
     , fillCallWith = picked
+    , roundAttrs = []
     }
 
 

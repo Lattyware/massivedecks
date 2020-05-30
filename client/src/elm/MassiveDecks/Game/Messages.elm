@@ -1,5 +1,6 @@
 module MassiveDecks.Game.Messages exposing (Msg(..))
 
+import Html5.DragDrop as DragDrop
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Game.Model exposing (..)
@@ -10,6 +11,8 @@ import MassiveDecks.User as User
 
 type Msg
     = Pick (Maybe Int) Card.Id
+    | Unpick Int
+    | Drag (DragDrop.Msg Card.Id Int)
     | EditBlank Card.Id String
     | Fill Card.Id String
     | Submit

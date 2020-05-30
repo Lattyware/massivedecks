@@ -36,9 +36,9 @@ view shared config side attributes call =
 
 {-| Render the call to HTML, with the slots filled with the given values.
 -}
-viewFilled : Shared -> Config -> Side -> List (Html.Attribute msg) -> Dict Int String -> Call -> Html msg
-viewFilled shared config side attributes fillWith call =
-    viewInternal shared config side attributes (Parts.viewFilled fillWith) call
+viewFilled : Shared -> Config -> Side -> List (Html.Attribute msg) -> Parts.SlotAttrs msg -> Dict Int String -> Call -> Html msg
+viewFilled shared config side attributes slotAttrs fillWith call =
+    viewInternal shared config side attributes (Parts.viewFilled slotAttrs fillWith) call
 
 
 {-| Render an unknown response to HTML, face-down.

@@ -8,10 +8,12 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
+import Html5.DragDrop as DragDrop
 import List.Extra as List
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game exposing (Msg)
@@ -23,6 +25,8 @@ import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User exposing (User)
+import MassiveDecks.Util.Html as Html
+import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Random as Random
 import Random
 import Set exposing (Set)
@@ -73,7 +77,15 @@ view wrap auth shared config _ model round =
                 ( Nothing, Strings.NotInRoundInstruction, True )
 
         hand =
-            HtmlK.ul [ HtmlA.classList [ ( "hand", True ), ( "cards", True ), ( "not-playing", notPlaying ) ] ]
+            HtmlK.ul
+                [ HtmlA.classList
+                    [ ( "hand", True )
+                    , ( "cards", True )
+                    , ( "not-playing", notPlaying )
+                    , ( "show-slot-indices", slots > 1 )
+                    , ( "pick-full", missingFromPick < 1 )
+                    ]
+                ]
                 (model.hand |> List.map (round.pick.cards |> viewHandCard wrap shared config model.filledCards))
 
         backgroundPlays =
@@ -87,6 +99,23 @@ view wrap auth shared config _ model round =
 
         picked =
             round.pick.cards |> Dict.map fillCustom
+
+        showNonObviousSlotIndices =
+            if round.call.body |> Parts.nonObviousSlotIndices then
+                [ HtmlA.class "show-slot-indices" ]
+
+            else
+                []
+
+        slotAttrs i =
+            List.concat
+                [ [ Game.Unpick i |> wrap |> HtmlE.onClick ]
+                , DragDrop.droppable (Game.Drag >> wrap) i
+                , round.pick.cards
+                    |> Dict.get i
+                    |> Maybe.map (DragDrop.draggable (Game.Drag >> wrap))
+                    |> Maybe.withDefault []
+                ]
     in
     { instruction = Just instruction
     , action = action
@@ -95,7 +124,9 @@ view wrap auth shared config _ model round =
             [ hand
             , backgroundPlays
             ]
+    , slotAttrs = slotAttrs
     , fillCallWith = picked
+    , roundAttrs = List.concat [ [ HtmlA.class "playing" ], showNonObviousSlotIndices ]
     }
 
 
@@ -108,6 +139,21 @@ viewHandCard wrap shared config filled picked response =
     let
         details =
             response.details
+
+        pick =
+            picked |> Dict.filter (\_ v -> v == details.id) |> Dict.toList |> List.head
+
+        pickedForSlot ( i, _ ) =
+            HtmlA.attribute "data-picked-for-slot-index" (i + 1 |> String.fromInt)
+
+        attrs =
+            List.concat
+                [ [ HtmlA.classList [ ( "picked", pick /= Nothing ) ]
+                  , pick |> Maybe.map pickedForSlot |> Maybe.withDefault HtmlA.nothing
+                  , details.id |> Game.Pick Nothing |> wrap |> HtmlE.onClick
+                  ]
+                , DragDrop.draggable (Game.Drag >> wrap) details.id
+                ]
     in
     ( details.id
     , Response.viewPotentiallyCustom
@@ -116,9 +162,7 @@ viewHandCard wrap shared config filled picked response =
         Card.Front
         (\v -> Game.EditBlank details.id v |> wrap)
         (\v -> Game.Fill details.id v |> wrap)
-        [ HtmlA.classList [ ( "picked", picked |> Dict.values |> List.member details.id ) ]
-        , details.id |> Game.Pick Nothing |> wrap |> HtmlE.onClick
-        ]
+        attrs
         filled
         response
     )

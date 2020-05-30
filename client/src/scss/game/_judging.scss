@@ -21,11 +21,13 @@
 .judging {
   .active .game-card {
     @include cards.shadow(colors.$primary);
+    cursor: pointer;
   }
 
   &.is-czar {
     .active .game-card {
       @include cards.shadow(colors.$secondary);
+      cursor: pointer;
     }
     .picked .game-card .side {
       border-color: colors.$secondary;

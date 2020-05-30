@@ -34,7 +34,9 @@ view shared nextRoundReady config users round =
                 |> List.map (\u -> ( u, Dict.get u round.plays ))
                 |> List.map (viewPlay shared config users round.winner)
             )
+    , slotAttrs = always []
     , fillCallWith = winning |> Maybe.map (.play >> Parts.fillsFromPlay) |> Maybe.withDefault Dict.empty
+    , roundAttrs = []
     }
 
 

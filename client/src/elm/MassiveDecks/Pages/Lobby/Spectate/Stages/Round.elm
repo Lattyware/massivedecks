@@ -100,7 +100,7 @@ viewComplete shared config users round =
 viewCall : Shared -> Config -> Maybe Parts.Fills -> Call -> Html msg
 viewCall shared config fillWith call =
     Html.div [ HtmlA.id "call-wrapper" ]
-        [ Call.viewFilled shared config Card.Front [] (fillWith |> Maybe.withDefault Dict.empty) call
+        [ Call.viewFilled shared config Card.Front [] (always []) (fillWith |> Maybe.withDefault Dict.empty) call
         ]
 
 

@@ -17,6 +17,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import Html5.DragDrop as DragDrop
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
@@ -137,6 +138,53 @@ update wrap shared msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        Unpick slotId ->
+            case game.round of
+                Round.P playingRound ->
+                    let
+                        picks =
+                            playingRound.pick
+
+                        picked =
+                            picks.cards |> Dict.remove slotId
+
+                        newRound =
+                            Round.P { playingRound | pick = { picks | cards = picked } }
+                    in
+                    ( { model | game = { game | round = newRound } }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Drag dragDropMsg ->
+            let
+                ( dragDrop, result ) =
+                    DragDrop.update dragDropMsg model.dragDrop
+
+                newRound =
+                    case game.round of
+                        Round.P playingRound ->
+                            let
+                                picks =
+                                    playingRound.pick
+
+                                picked =
+                                    case result of
+                                        Just ( card, slotIndex, _ ) ->
+                                            picks.cards
+                                                |> Dict.filter (\_ p -> p /= card)
+                                                |> Dict.insert slotIndex card
+
+                                        Nothing ->
+                                            picks.cards
+                            in
+                            Round.P { playingRound | pick = { picks | cards = picked } }
+
+                        _ ->
+                            game.round
+            in
+            ( { model | game = { game | round = newRound }, dragDrop = dragDrop }, Cmd.none )
 
         EditBlank id text ->
             case game.round of
@@ -945,7 +993,7 @@ viewWinnerListItem shared users user =
 viewRound : (Msg -> msg) -> Shared -> Lobby.Auth -> Time.Anchor -> Config -> Dict User.Id User -> Model -> List (Html msg)
 viewRound wrap shared auth timeAnchor config users model =
     let
-        ( call, { instruction, action, content, fillCallWith } ) =
+        ( call, { instruction, action, content, slotAttrs, fillCallWith, roundAttrs } ) =
             case model.completeRound of
                 Just completeRound ->
                     ( completeRound.call, Complete.view shared True config users completeRound )
@@ -968,7 +1016,7 @@ viewRound wrap shared auth timeAnchor config users model =
             model.game
 
         renderedCall =
-            call |> Call.viewFilled shared config Card.Front [] fillCallWith
+            call |> Call.viewFilled shared config Card.Front [] slotAttrs fillCallWith
     in
     [ Html.div [ HtmlA.id "top-content" ]
         [ case instruction |> Maybe.andThen (Maybe.justIf model.helpVisible) of
@@ -980,7 +1028,7 @@ viewRound wrap shared auth timeAnchor config users model =
         , timer timeAnchor model
         , Html.div [ HtmlA.class "top-row" ] [ minorActions wrap shared auth game model.helpVisible ]
         ]
-    , Html.div [ HtmlA.class "round" ] [ renderedCall, viewAction wrap shared action ]
+    , Html.div (HtmlA.class "round" :: roundAttrs) [ renderedCall, viewAction wrap shared action ]
     , content
     , Html.div [ HtmlA.class "scroll-top-spacer" ] []
 

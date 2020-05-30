@@ -2,6 +2,12 @@
 @use "../_colors";
 @use "../_cards";
 
+.playing {
+  .slot.filled {
+    cursor: pointer;
+  }
+}
+
 // A hand of cards.
 .hand {
   margin-top: 0.5em;
@@ -12,6 +18,7 @@
 
   .game-card {
     @include cards.shadow(colors.$primary);
+    cursor: pointer;
   }
 
   &.not-playing {
@@ -44,12 +51,15 @@
   top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
   z-index: 0;
 
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-evenly;
+
+  overflow: hidden;
 
   pointer-events: none;
 

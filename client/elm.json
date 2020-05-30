@@ -24,6 +24,7 @@
             "lattyware/elm-fontawesome": "4.0.0",
             "lattyware/elm-json-diff": "1.0.0",
             "myrho/elm-round": "1.0.4",
+            "norpan/elm-html5-drag-drop": "3.1.4",
             "norpan/elm-json-patch": "1.0.1",
             "pablohirafuji/elm-qrcode": "3.1.1",
             "truqu/elm-base64": "2.0.4"
