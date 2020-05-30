@@ -93,7 +93,7 @@ update wrap shared msg model =
             model.game
     in
     case msg of
-        Pick played ->
+        Pick maybeFor played ->
             case game.round of
                 Round.P playingRound ->
                     let
@@ -101,17 +101,32 @@ update wrap shared msg model =
                             playingRound.pick
 
                         picked =
-                            if picks.cards |> List.member played then
-                                List.filter (\p -> p /= played) picks.cards
+                            case maybeFor of
+                                Just for ->
+                                    picks.cards |> Dict.insert for played
 
-                            else
-                                picks.cards ++ [ played ]
+                                Nothing ->
+                                    if picks.cards |> Dict.values |> List.member played then
+                                        picks.cards |> Dict.filter (\_ p -> p /= played)
 
-                        extra =
-                            max 0 (List.length picked - (playingRound.call |> Call.slotCount))
+                                    else
+                                        let
+                                            missing =
+                                                Parts.missingSlotIndices picks.cards playingRound.call.body |> Set.toList
+                                        in
+                                        case missing of
+                                            next :: _ ->
+                                                picks.cards |> Dict.insert next played
+
+                                            [] ->
+                                                let
+                                                    last =
+                                                        picks.cards |> Dict.keys |> List.maximum |> Maybe.withDefault 0
+                                                in
+                                                picks.cards |> Dict.insert last played
 
                         newRound =
-                            Round.P { playingRound | pick = { picks | cards = picked |> List.drop extra } }
+                            Round.P { playingRound | pick = { picks | cards = picked } }
 
                         focus =
                             Dom.focus played
@@ -193,7 +208,7 @@ update wrap shared msg model =
                                     id =
                                         card.details.id
                                 in
-                                if List.member id picks.cards then
+                                if picks.cards |> Dict.values |> List.member id then
                                     let
                                         value =
                                             Dict.get id model.filledCards |> Maybe.withDefault ""
@@ -217,7 +232,7 @@ update wrap shared msg model =
                             Round.P { playingRound | pick = { picks | state = Round.Submitted } }
                     in
                     ( { model | game = { game | round = newRound } }
-                    , Cmd.batch (fills ++ [ Actions.submit picks.cards ])
+                    , Cmd.batch (fills ++ [ picks.cards |> Dict.values |> Actions.submit ])
                     )
 
                 _ ->
@@ -317,7 +332,7 @@ update wrap shared msg model =
                 Round.P p ->
                     let
                         action =
-                            p.pick.cards |> List.head |> Maybe.map Actions.discard
+                            p.pick.cards |> Dict.values |> List.head |> Maybe.map Actions.discard
                     in
                     ( model, action |> Maybe.withDefault Cmd.none )
 
@@ -518,7 +533,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                         |> Round.R
 
                                 picked =
-                                    r.pick.cards |> Set.fromList
+                                    r.pick.cards |> Dict.values |> Set.fromList
 
                                 newHand =
                                     model.hand
@@ -581,7 +596,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
                                         tts =
                                             Dict.get winner playsDict
-                                                |> Maybe.map (\p -> speak shared r.call (Just p.play))
+                                                |> Maybe.map (\p -> speak shared r.call (p.play |> Parts.fillsFromPlay |> Just))
                                                 |> Maybe.withDefault Cmd.none
 
                                         ps =
@@ -672,7 +687,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                             { r | plays = plays, lastRevealed = Just id } |> Round.R
 
                                         tts =
-                                            speak shared r.call (Just play)
+                                            speak shared r.call (play |> Parts.fillsFromPlay |> Just)
                                     in
                                     ( round, tts )
 
@@ -713,7 +728,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                 Round.P r ->
                                     let
                                         picked =
-                                            r.pick.cards |> Set.fromList
+                                            r.pick.cards |> Dict.values |> Set.fromList
 
                                         nH =
                                             model.hand
@@ -952,11 +967,8 @@ viewRound wrap shared auth timeAnchor config users model =
         game =
             model.game
 
-        parts =
-            fillCallWith |> List.map .body
-
         renderedCall =
-            call |> Call.viewFilled shared config Card.Front [] parts
+            call |> Call.viewFilled shared config Card.Front [] fillCallWith
     in
     [ Html.div [ HtmlA.id "top-content" ]
         [ case instruction |> Maybe.andThen (Maybe.justIf model.helpVisible) of
@@ -1142,7 +1154,7 @@ discardButton wrap shared game =
         action =
             case game.round of
                 Round.P p ->
-                    Discard |> wrap |> Maybe.justIf (p.pick.cards |> List.length |> (==) 1)
+                    Discard |> wrap |> Maybe.justIf (p.pick.cards |> Dict.size |> (==) 1)
 
                 _ ->
                     Nothing
@@ -1205,12 +1217,12 @@ setPresence targetPlayer presence playerId player =
         player
 
 
-speak : Shared -> Card.Call -> Maybe (List Card.Response) -> Cmd msg
+speak : Shared -> Card.Call -> Maybe Parts.Fills -> Cmd msg
 speak shared call play =
     Speech.speak shared.settings.settings.speech
         (Parts.viewFilledString
             (Strings.Blank |> Lang.string shared)
-            (play |> Maybe.map (List.map .body) |> Maybe.withDefault [])
+            (play |> Maybe.withDefault Dict.empty)
             call.body
         )
 

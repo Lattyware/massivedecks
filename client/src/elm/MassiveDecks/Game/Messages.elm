@@ -9,7 +9,7 @@ import MassiveDecks.User as User
 
 
 type Msg
-    = Pick Card.Id
+    = Pick (Maybe Int) Card.Id
     | EditBlank Card.Id String
     | Fill Card.Id String
     | Submit

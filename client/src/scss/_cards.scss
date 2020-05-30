@@ -33,6 +33,14 @@ $response-background: $call-color;
     margin: 0;
   }
 
+  .capitalize::first-letter {
+    text-transform: capitalize;
+  }
+
+  .upper-case {
+    text-transform: uppercase;
+  }
+
   &.response {
     --bg: #{$response-background};
     --fg: #{$response-color};
@@ -49,26 +57,44 @@ $response-background: $call-color;
       align-content: flex-start;
       justify-content: flex-start;
 
-      span {
+      span,
+      em {
         white-space: pre-wrap;
         overflow-wrap: break-word;
+        text-decoration: inherit;
       }
 
-      .text {
+      .cluster {
         display: contents;
+
+        &.grow {
+          display: inline flex;
+          align-items: baseline;
+          align-content: flex-start;
+          justify-content: flex-start;
+          flex-shrink: 0;
+          flex-wrap: wrap;
+
+          flex-grow: 1;
+        }
       }
 
       .slot {
-        display: contents;
-        text-decoration: underline;
+        &.filled {
+          display: contents;
+          text-decoration: underline;
+        }
 
-        &:empty {
-          display: block;
-          height: 1em;
+        &.empty {
+          display: flex;
+          justify-content: center;
           flex-grow: 1;
-          flex-basis: 2em;
-          max-width: 14em;
-          border-bottom: 0.1em solid var(--fg);
+          flex-shrink: 0;
+          flex-basis: 3em;
+          min-width: 3em;
+          min-height: 1.15em;
+          border-bottom: 0.075em solid var(--fg);
+          margin-bottom: 0.2em;
         }
       }
     }
@@ -234,4 +260,17 @@ $response-background: $call-color;
   border-radius: 50%;
   background: var(--fg, $call-background);
   color: var(--bg, $call-color);
+}
+
+.show-slot-indices .game-card .slot[data-slot-index]::after {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  content: attr(data-slot-index);
+  color: var(--bg);
+  background-color: var(--fg);
+  border-radius: 1em;
+  width: 1em;
+  height: 1em;
+  opacity: 0.25;
 }

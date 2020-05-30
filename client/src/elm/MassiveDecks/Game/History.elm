@@ -56,7 +56,10 @@ viewRound shared config users round =
             round.plays |> Dict.get round.winner
 
         winningBody =
-            winning |> Maybe.map .play |> Maybe.withDefault [] |> List.map .body
+            winning
+                |> Maybe.map .play
+                |> Maybe.map (List.indexedMap (\i v -> ( i, v.body )) >> Dict.fromList)
+                |> Maybe.withDefault Dict.empty
     in
     ( Round.idString round.id
     , Html.li [ HtmlA.class "historic-round" ]

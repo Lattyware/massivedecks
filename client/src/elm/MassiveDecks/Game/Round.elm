@@ -134,7 +134,7 @@ playing id czar players call played startedAt timedOut =
     , players = players
     , call = call
     , played = played
-    , pick = { state = Selected, cards = [] }
+    , pick = { state = Selected, cards = Dict.empty }
     , startedAt = startedAt
     , timedOut = timedOut
     }
@@ -247,11 +247,12 @@ type alias Data specific =
 {-| The user's pick for the round.
 -}
 type alias Pick =
-    { state : PickState, cards : List Card.Id }
+    { state : PickState, cards : Dict Int Card.Id }
 
 
+noPick : Pick
 noPick =
-    { state = Selected, cards = [] }
+    { state = Selected, cards = Dict.empty }
 
 
 {-| Whether the pick has been committed to the server yet.

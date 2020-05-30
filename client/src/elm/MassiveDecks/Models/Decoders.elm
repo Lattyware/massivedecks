@@ -968,30 +968,75 @@ call =
 
 parts : Json.Decoder Parts
 parts =
+    let
+        handleResult result =
+            case result of
+                Ok s ->
+                    Json.succeed s
+
+                Err e ->
+                    "Not a valid call: " ++ e |> Json.fail
+    in
     Json.list (Json.list part)
+        |> Json.map enrich
         |> Json.map Parts.fromList
-        |> Json.andThen (Maybe.map Json.succeed >> Maybe.withDefault (Json.fail "Given no slot in call."))
+        |> Json.andThen handleResult
 
 
-part : Json.Decoder Part
+type PartData
+    = Text String Parts.Style
+    | Slot (Maybe Int) Parts.Transform Parts.Style
+
+
+enrich : List (List PartData) -> List (List Parts.Part)
+enrich partData =
+    let
+        foldParts p ( nextIndex, output ) =
+            case p of
+                Text t s ->
+                    ( nextIndex, Parts.Text t s :: output )
+
+                Slot givenIndex t s ->
+                    case givenIndex of
+                        Just i ->
+                            ( nextIndex, Parts.Slot i t s :: output )
+
+                        Nothing ->
+                            ( nextIndex + 1, Parts.Slot nextIndex t s :: output )
+
+        foldLine line ( nextIndex, output ) =
+            let
+                ( lastIndex, outLine ) =
+                    line |> List.foldl foldParts ( nextIndex, [] )
+            in
+            ( lastIndex, (outLine |> List.reverse) :: output )
+
+        ( _, enriched ) =
+            partData |> List.foldl foldLine ( 0, [] )
+    in
+    enriched |> List.reverse
+
+
+part : Json.Decoder PartData
 part =
     Json.oneOf
-        [ Json.string |> Json.map (\t -> Parts.Text t Parts.NoStyle)
+        [ Json.string |> Json.map (\t -> Text t Parts.NoStyle)
         , styled
         , slot
         ]
 
 
-slot : Json.Decoder Parts.Part
+slot : Json.Decoder PartData
 slot =
-    Json.succeed Parts.Slot
+    Json.succeed Slot
+        |> Json.optional "index" (Json.int |> Json.map Just) Nothing
         |> Json.optional "transform" transform Parts.NoTransform
         |> Json.optional "style" style Parts.NoStyle
 
 
-styled : Json.Decoder Parts.Part
+styled : Json.Decoder PartData
 styled =
-    Json.succeed Parts.Text
+    Json.succeed Text
         |> Json.required "text" Json.string
         |> Json.optional "style" style Parts.NoStyle
 

@@ -1,7 +1,9 @@
 module MassiveDecks.Game.Round.Judging exposing (view)
 
+import Dict
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
@@ -48,8 +50,8 @@ view wrap auth shared config round =
             round.plays
                 |> List.filter (\play -> Just play.id == round.pick)
                 |> List.head
-                |> Maybe.map .responses
-                |> Maybe.withDefault []
+                |> Maybe.map (.responses >> Parts.fillsFromPlay)
+                |> Maybe.withDefault Dict.empty
 
         details =
             round.plays |> List.map (playDetails shared config round.likeDetail.liked msg)

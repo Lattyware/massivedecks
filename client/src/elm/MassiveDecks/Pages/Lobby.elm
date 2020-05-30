@@ -758,8 +758,11 @@ applySync :
     -> ( Change, Shared, Cmd msg )
 applySync wrap shared model state hand pick partialTimeAnchor =
     let
+        toPick cards =
+            { state = Round.Submitted, cards = cards |> List.indexedMap (\i id -> ( i, id )) |> Dict.fromList }
+
         play =
-            pick |> Maybe.map (\cards -> { state = Round.Submitted, cards = cards }) |> Maybe.withDefault Round.noPick
+            pick |> Maybe.map toPick |> Maybe.withDefault Round.noPick
 
         -- We keep fills over syncs to try and preserve user input if possible.
         -- If things have changed, it won't matter, we'll just clear them at the end of the next round.

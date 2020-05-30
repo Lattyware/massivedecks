@@ -48,7 +48,7 @@ view wrap auth shared config _ model round =
             Call.slotCount round.call
 
         missingFromPick =
-            slots - (round.pick.cards |> List.length)
+            slots - (round.pick.cards |> Dict.size)
 
         self =
             auth.claims.uid
@@ -80,10 +80,13 @@ view wrap auth shared config _ model round =
             Html.div [ HtmlA.class "background-plays" ]
                 (round.players |> Set.toList |> List.map (viewBackgroundPlay shared model.playStyles slots round.played))
 
+        fillCustom _ p =
+            List.find (\c -> c.details.id == p) model.hand
+                |> Maybe.map (Card.fillFromDict model.filledCards >> .body)
+                |> Maybe.withDefault ""
+
         picked =
-            round.pick.cards
-                |> List.filterMap (\p -> List.find (\c -> c.details.id == p) model.hand)
-                |> List.map (Card.fillFromDict model.filledCards)
+            round.pick.cards |> Dict.map fillCustom
     in
     { instruction = Just instruction
     , action = action
@@ -100,7 +103,7 @@ view wrap auth shared config _ model round =
 {- Private -}
 
 
-viewHandCard : (Msg -> msg) -> Shared -> Config -> Dict Card.Id String -> List Card.Id -> Card.Response -> ( String, Html msg )
+viewHandCard : (Msg -> msg) -> Shared -> Config -> Dict Card.Id String -> Dict Int Card.Id -> Card.Response -> ( String, Html msg )
 viewHandCard wrap shared config filled picked response =
     let
         details =
@@ -113,8 +116,8 @@ viewHandCard wrap shared config filled picked response =
         Card.Front
         (\v -> Game.EditBlank details.id v |> wrap)
         (\v -> Game.Fill details.id v |> wrap)
-        [ HtmlA.classList [ ( "picked", picked |> List.member details.id ) ]
-        , details.id |> Game.Pick |> wrap |> HtmlE.onClick
+        [ HtmlA.classList [ ( "picked", picked |> Dict.values |> List.member details.id ) ]
+        , details.id |> Game.Pick Nothing |> wrap |> HtmlE.onClick
         ]
         filled
         response

@@ -594,12 +594,12 @@ examplePick2 : Card.Call
 examplePick2 =
     Card.call
         (Parts.unsafeFromList
-            [ [ Parts.Slot Parts.NoTransform Parts.NoStyle
+            [ [ Parts.Slot 0 Parts.NoTransform Parts.NoStyle
               , Parts.Text " + " Parts.NoStyle
-              , Parts.Slot Parts.NoTransform Parts.NoStyle
+              , Parts.Slot 1 Parts.NoTransform Parts.NoStyle
               ]
             , [ Parts.Text " = " Parts.NoStyle
-              , Parts.Slot Parts.NoTransform Parts.NoStyle
+              , Parts.Slot 2 Parts.NoTransform Parts.NoStyle
               ]
             ]
         )

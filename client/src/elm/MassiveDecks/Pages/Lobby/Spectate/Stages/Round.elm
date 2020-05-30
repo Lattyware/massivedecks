@@ -7,6 +7,7 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
+import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Model as Game
@@ -58,7 +59,7 @@ viewRevealing shared config users round =
         fillWith =
             case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
                 play :: [] ->
-                    play.responses
+                    play.responses |> Maybe.map Parts.fillsFromPlay
 
                 _ ->
                     Nothing
@@ -89,17 +90,17 @@ viewComplete shared config users round =
             round.playOrder |> List.map (\u -> ( Just u, Dict.get u round.plays ))
 
         winner =
-            Dict.get round.winner round.plays |> Maybe.map .play
+            Dict.get round.winner round.plays |> Maybe.map (.play >> Parts.fillsFromPlay)
     in
     [ viewCall shared config winner round.call
     , viewPlays shared config (round.call |> Call.slotCount) users (Just round.winner) plays
     ]
 
 
-viewCall : Shared -> Config -> Maybe (List Card.Response) -> Call -> Html msg
+viewCall : Shared -> Config -> Maybe Parts.Fills -> Call -> Html msg
 viewCall shared config fillWith call =
     Html.div [ HtmlA.id "call-wrapper" ]
-        [ Call.viewFilled shared config Card.Front [] (fillWith |> Maybe.withDefault [] |> List.map .body) call
+        [ Call.viewFilled shared config Card.Front [] (fillWith |> Maybe.withDefault Dict.empty) call
         ]
 
 

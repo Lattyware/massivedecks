@@ -73,7 +73,7 @@ type alias RoundView msg =
     { instruction : Maybe MdString
     , action : Maybe Action
     , content : Html msg
-    , fillCallWith : List Card.Response
+    , fillCallWith : Dict Int String
     }
 
 

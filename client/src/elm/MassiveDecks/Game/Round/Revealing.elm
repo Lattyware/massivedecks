@@ -1,8 +1,10 @@
 module MassiveDecks.Game.Round.Revealing exposing (view)
 
+import Dict
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
@@ -61,7 +63,7 @@ view wrap auth shared config round =
         lastRevealed =
             case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
                 play :: [] ->
-                    play.responses
+                    play.responses |> Maybe.map Parts.fillsFromPlay
 
                 _ ->
                     Nothing
@@ -69,7 +71,7 @@ view wrap auth shared config round =
     { instruction = Just instruction
     , action = action
     , content = plays |> Plays.view [ ( "revealing", True ), ( "is-czar", isCzar ) ] round.pick
-    , fillCallWith = lastRevealed |> Maybe.withDefault []
+    , fillCallWith = lastRevealed |> Maybe.withDefault Dict.empty
     }
 
 

@@ -1,23 +1,26 @@
 module MassiveDecks.Card.Parts exposing
-    ( Part(..)
+    ( Fills
+    , Part(..)
     , Parts
     , Style(..)
     , Transform(..)
-    , coordinateMap
+    , fillsFromPlay
     , fromList
     , isSlot
+    , missingSlotIndices
     , slotCount
     , unsafeFromList
     , view
     , viewFilled
     , viewFilledString
     , viewLinesString
-    , viewWithAttributes
     )
 
+import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import MassiveDecks.Util.String as String
+import List.Extra as List
+import Set exposing (Set)
 
 
 {-| A transform to apply to the value in a slot.
@@ -39,7 +42,7 @@ type Style
 -}
 type Part
     = Text String Style
-    | Slot Transform Style
+    | Slot Int Transform Style
 
 
 {-| Represents a line as a part of a part. Between each one the text will be forced to line break.
@@ -48,17 +51,16 @@ type alias Line =
     List Part
 
 
+{-| A collection of strings to fill the slots in a card.
+-}
+type alias Fills =
+    Dict Int String
+
+
 {-| A collection of `Line`s. It is guaranteed to have at least one `Slot`.
 -}
 type Parts
     = Parts (List Line)
-
-
-{-| Map through all the parts with coordinates.
--}
-coordinateMap : Parts -> (Int -> Int -> Part -> a) -> List a
-coordinateMap (Parts lines) f =
-    lines |> List.indexedMap (\line -> List.indexedMap (f line)) |> List.concat
 
 
 {-| A predicate checking if a part is a slot.
@@ -66,22 +68,47 @@ coordinateMap (Parts lines) f =
 isSlot : Part -> Bool
 isSlot part =
     case part of
-        Text _ _ ->
-            False
-
-        Slot _ _ ->
+        Slot _ _ _ ->
             True
+
+        _ ->
+            False
 
 
 {-| Construct a `Parts` from a `List` of `Line`s. This will fail if there is not at least one `Slot`.
 -}
-fromList : List Line -> Maybe Parts
+fromList : List Line -> Result String Parts
 fromList lines =
-    if List.any (List.any isSlot) lines then
-        Just (Parts lines)
+    let
+        indicesList =
+            lines |> List.concat |> List.filterMap slotIndex
+
+        indices =
+            indicesList |> Set.fromList
+    in
+    if Set.isEmpty indices then
+        Err "Must contain at least one slot."
 
     else
-        Nothing
+        let
+            max =
+                indicesList |> List.maximum |> Maybe.withDefault 0
+
+            expect =
+                List.range 0 max |> Set.fromList
+        in
+        if expect == indices then
+            Ok (Parts lines)
+
+        else
+            let
+                missing =
+                    Set.diff expect indices
+
+                missingStr =
+                    missing |> Set.toList |> List.map String.fromInt |> String.join ", "
+            in
+            "Gap in given slot indexes, missing: " ++ missingStr |> Err
 
 
 {-| Construct without checking for at least one `Slot`. This is designed for use with fake cards or the editor where
@@ -92,125 +119,174 @@ unsafeFromList lines =
     Parts lines
 
 
-{-| The number of `Slot`s in the `Parts`. This will be one or more.
+{-| The number of `Slot`s with distinct indexes in the `Parts`. This will be one or more.
 -}
 slotCount : Parts -> Int
 slotCount (Parts lines) =
-    lines |> List.concat |> List.filter isSlot |> List.length
+    lines |> List.concat |> List.filterMap slotIndex |> Set.fromList |> Set.size
 
 
 {-| Render the `Parts` to HTML.
 -}
 view : Parts -> List (Html msg)
 view parts =
-    viewFilled [] parts
+    viewFilled Dict.empty parts
 
 
 {-| Render the `Parts` to a string.
 -}
-viewFilledString : String -> List String -> Parts -> String
+viewFilledString : String -> Fills -> Parts -> String
 viewFilledString blankString play (Parts lines) =
-    viewLinesString blankString play lines |> String.join "\n"
+    viewLinesString blankString play lines
 
 
 {-| Render the `Parts` with slots filled with the given values.
 -}
-viewFilled : List String -> Parts -> List (Html msg)
-viewFilled play parts =
-    viewWithAttributes (\_ -> \_ -> \_ -> []) play parts
-
-
-{-| Render the parts with filled slots and attributes applied to each part.
--}
-viewWithAttributes : (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> Parts -> List (Html msg)
-viewWithAttributes attributes play (Parts lines) =
-    viewLinesHtml attributes play lines
+viewFilled : Fills -> Parts -> List (Html msg)
+viewFilled play (Parts lines) =
+    viewLines play lines
 
 
 {-| Render lines to a string without needing a complete parts.
 -}
-viewLinesString : String -> List String -> List Line -> List String
-viewLinesString blankPhrase =
-    viewLines (\_ -> \s -> \p -> viewPartsString blankPhrase s p |> String.concat) 0 (\_ -> \_ -> \_ -> [])
+viewLinesString : String -> Fills -> List (List Part) -> String
+viewLinesString blankPhrase fills lines =
+    let
+        viewPartString part =
+            case part of
+                Slot index _ _ ->
+                    fills |> Dict.get index |> Maybe.withDefault blankPhrase
+
+                Text t _ ->
+                    t
+
+        viewLineString line =
+            line |> List.map viewPartString |> String.concat
+    in
+    lines |> List.map viewLineString |> String.join "\n"
+
+
+{-| Get fills from a given play.
+-}
+fillsFromPlay : List { a | body : String } -> Fills
+fillsFromPlay play =
+    play |> List.indexedMap (\i r -> ( i, r.body )) |> Dict.fromList
+
+
+{-| Get the indices for slots that are not filled by the given fills.
+-}
+missingSlotIndices : Dict Int a -> Parts -> Set Int
+missingSlotIndices fills (Parts lines) =
+    let
+        expect =
+            lines |> List.concat |> List.filterMap slotIndex |> Set.fromList
+
+        filled =
+            fills |> Dict.keys |> Set.fromList
+    in
+    Set.diff expect filled
 
 
 
 {- Private -}
 
 
-viewLines : ((Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> a) -> Int -> (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> List Line -> List a
-viewLines renderParts index attributes play lines =
-    case lines of
-        firstLine :: restLines ->
-            let
-                slots =
-                    firstLine |> List.filter isSlot |> List.length
-            in
-            renderParts (attributes index) (List.take slots play) firstLine :: viewLines renderParts (index + 1) attributes (List.drop slots play) restLines
+slotIndex : Part -> Maybe Int
+slotIndex part =
+    case part of
+        Slot i _ _ ->
+            Just i
 
-        [] ->
-            []
+        _ ->
+            Nothing
 
 
-viewLinesHtml : (Int -> Int -> Part -> List (Html.Attribute msg)) -> List String -> List Line -> List (Html msg)
-viewLinesHtml attributes =
-    viewLines (\a -> \s -> \p -> Html.p [] (viewPartsHtml a s p)) 0 attributes
+{-| Split down to minimal parts, so we can figure out where we should be breaking.
+-}
+explode : Part -> List Part
+explode part =
+    case part of
+        Text string style ->
+            string |> String.toList |> List.map (\c -> Text (String.fromChar c) style)
+
+        Slot index transform style ->
+            [ Slot index transform style ]
 
 
-viewParts : (List (Html.Attribute msg) -> Bool -> String -> Style -> List a) -> (List (Html.Attribute msg) -> a) -> Int -> (Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> List a
-viewParts viewText emptySlot index attributes play parts =
-    case parts of
-        firstPart :: restParts ->
-            let
-                recurse =
-                    viewParts viewText emptySlot (index + 1) attributes
-
-                attributesForThis =
-                    attributes index firstPart
-            in
-            case firstPart of
-                Text string style ->
-                    viewText attributesForThis False string style ++ recurse play restParts
-
-                Slot transform style ->
-                    case play of
-                        firstPlay :: restPlay ->
-                            viewText attributesForThis True (applyTransform transform firstPlay) style ++ recurse restPlay restParts
-
-                        [] ->
-                            emptySlot attributesForThis :: recurse [] restParts
-
-        [] ->
-            []
-
-
-viewPartsHtml : (Int -> Part -> List (Html.Attribute msg)) -> List String -> List Part -> List (Html msg)
-viewPartsHtml =
-    viewParts viewTextHtml (\attributes -> Html.span (HtmlA.class "slot" :: attributes) []) 0
-
-
-viewPartsString : String -> List String -> List Part -> List String
-viewPartsString blankPhrase =
-    viewParts (\_ -> \_ -> \s -> \_ -> [ s ]) (always blankPhrase) 0 (\_ -> \_ -> [])
-
-
-applyTransform : Transform -> String -> String
-applyTransform transform value =
-    case transform of
-        NoTransform ->
-            value
-
-        UpperCase ->
-            String.toUpper value
-
-        Capitalize ->
-            String.capitalise value
-
-
-viewTextHtml : List (Html.Attribute msg) -> Bool -> String -> Style -> List (Html msg)
-viewTextHtml attributes slot string style =
+{-| Concentrate parts back down to the least possible separate parts.
+-}
+minimise : List Part -> List Part
+minimise parts =
     let
-        element =
+        canBeCombined a b =
+            case a of
+                Text _ sa ->
+                    case b of
+                        Text _ sb ->
+                            sa == sb
+
+                        _ ->
+                            False
+
+                _ ->
+                    False
+
+        getText a =
+            case a of
+                Text t _ ->
+                    Just t
+
+                _ ->
+                    Nothing
+
+        combine ( first, rest ) =
+            case first of
+                Text t s ->
+                    Text (t ++ (rest |> List.filterMap getText |> String.concat)) s
+
+                _ ->
+                    first
+    in
+    parts |> List.groupWhile canBeCombined |> List.map combine
+
+
+{-| Group parts by if they should be tied into the same line where possible.
+-}
+cluster : List Part -> List (List Part)
+cluster parts =
+    let
+        ifBroken c =
+            if c == " " then
+                False
+
+            else
+                True
+
+        isCluster a b =
+            case a of
+                Text c _ ->
+                    case b of
+                        Text _ _ ->
+                            ifBroken c
+
+                        Slot _ _ _ ->
+                            ifBroken c
+
+                Slot _ _ _ ->
+                    case b of
+                        Text c _ ->
+                            ifBroken c
+
+                        _ ->
+                            False
+    in
+    parts |> List.concatMap explode |> List.groupWhile isCluster |> List.map ((\( h, t ) -> h :: t) >> minimise)
+
+
+viewPart : Fills -> Part -> Html msg
+viewPart fills part =
+    let
+        styleToElement style =
             case style of
                 NoStyle ->
                     Html.span
@@ -218,33 +294,74 @@ viewTextHtml attributes slot string style =
                 Em ->
                     Html.em
 
-        words =
-            string |> splitWords |> List.map (\word -> Html.span [] [ Html.text word ])
+        transformToAttrs transform =
+            case transform of
+                NoTransform ->
+                    []
+
+                UpperCase ->
+                    [ HtmlA.class "upper-case" ]
+
+                Capitalize ->
+                    [ HtmlA.class "capitalize" ]
     in
-    if slot then
-        [ element (HtmlA.class "slot" :: attributes) words ]
+    case part of
+        Text text style ->
+            styleToElement style [ HtmlA.class "text" ] [ Html.text text ]
 
-    else
-        [ element (HtmlA.class "text" :: attributes) words ]
+        Slot index transform style ->
+            let
+                ( fillState, fill ) =
+                    case fills |> Dict.get index of
+                        Just text ->
+                            ( HtmlA.class "filled", [ Text text NoStyle ] |> cluster |> List.concatMap (viewCluster fills) )
+
+                        Nothing ->
+                            ( HtmlA.class "empty", [] )
+
+                attrs =
+                    List.concat
+                        [ [ HtmlA.class "slot", fillState, HtmlA.attribute "data-slot-index" (index + 1 |> String.fromInt) ]
+                        , transformToAttrs transform
+                        ]
+            in
+            styleToElement style attrs fill
 
 
-{-| Splits words by retains the whitespace.
--}
-splitWords : String -> List String
-splitWords string =
-    case String.uncons string of
-        Nothing ->
+viewCluster : Fills -> List Part -> List (Html msg)
+viewCluster fills c =
+    case c of
+        [] ->
             []
 
-        Just ( first, rest ) ->
-            case first of
-                ' ' ->
-                    String.fromChar first :: splitWords rest
+        first :: [] ->
+            [ viewPart fills first ]
 
-                other ->
-                    case splitWords rest of
-                        [] ->
-                            [ String.fromChar other ]
+        many ->
+            let
+                isEmptySlot part =
+                    case part of
+                        Slot index _ _ ->
+                            fills |> Dict.member index |> not
 
-                        head :: tail ->
-                            String.cons other head :: tail
+                        _ ->
+                            False
+
+                growthAttrs =
+                    if c |> List.any isEmptySlot then
+                        [ HtmlA.class "grow" ]
+
+                    else
+                        []
+            in
+            [ Html.span (HtmlA.class "cluster" :: growthAttrs) (many |> List.map (viewPart fills)) ]
+
+
+viewLine : Fills -> List Part -> Html msg
+viewLine fills line =
+    Html.p [] (line |> cluster |> List.concatMap (viewCluster fills))
+
+
+viewLines : Fills -> List (List Part) -> List (Html msg)
+viewLines fills =
+    List.map (viewLine fills)
