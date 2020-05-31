@@ -34,7 +34,7 @@ type alias Info =
 type alias Deck =
     { name : String
     , id : Id
-    , language : Language
+    , language : String
     , author : String
     , translator : Maybe String
     }

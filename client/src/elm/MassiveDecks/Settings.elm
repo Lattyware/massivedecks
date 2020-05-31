@@ -557,11 +557,17 @@ languageOption shared currentLanguage language =
                 |> Lang.languageName
                 |> Lang.givenLanguageString shared currentLanguage
 
+        viewAutonym n =
+            [ Html.span [ language |> Lang.langAttr ]
+                [ Strings.AutonymFormat { autonym = n } |> Lang.html shared ]
+            ]
+
         autonym =
             if language /= currentLanguage then
                 language
                     |> Lang.autonym shared
-                    |> (\n -> Just [ Strings.AutonymFormat { autonym = n } |> Lang.html shared ])
+                    |> viewAutonym
+                    |> Just
 
             else
                 Nothing

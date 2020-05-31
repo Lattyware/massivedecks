@@ -15,7 +15,7 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
-import MassiveDecks.Strings.Languages as Lang exposing (sortClosestFirst)
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.NeList as NeList
@@ -96,8 +96,8 @@ editor selected shared existing update _ _ =
                 deck { id, name, language, author, translator } =
                     let
                         lang =
-                            if language /= Lang.currentLanguage shared then
-                                language |> Lang.languageName |> Just
+                            if language /= (Lang.currentLanguage shared |> Lang.code) then
+                                language |> Lang.languageNameOrCode shared |> Just
 
                             else
                                 Nothing
@@ -136,13 +136,28 @@ editor selected shared existing update _ _ =
                     [ HtmlA.id "built-in-selector" ]
                     (decks
                         |> NeList.toList
-                        |> List.sortWith (sortClosestFirst (Lang.currentLanguage shared) |> Order.map (.language >> Just))
+                        |> List.sortWith (sortClosestFirst (Lang.currentLanguage shared |> Lang.code) |> Order.map .language)
                         |> List.map deck
                     )
                 ]
 
         Nothing ->
             Html.nothing
+
+
+sortClosestFirst : String -> String -> String -> Order
+sortClosestFirst target a b =
+    if a == b then
+        EQ
+
+    else if a == target then
+        LT
+
+    else if b == target then
+        GT
+
+    else
+        EQ
 
 
 details : Id -> Shared -> Source.Details

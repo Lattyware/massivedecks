@@ -143,7 +143,7 @@ generalTooltip shared position details forId sourceSpecificContent =
     let
         lang l =
             Html.p [ HtmlA.class "language" ]
-                [ Strings.DeckLanguage { language = l |> Lang.languageName } |> Lang.html shared
+                [ Strings.DeckLanguage { language = l |> Lang.languageNameOrCode shared } |> Lang.html shared
                 ]
 
         author a =
@@ -153,7 +153,7 @@ generalTooltip shared position details forId sourceSpecificContent =
             Html.p [ HtmlA.class "translator" ] [ Strings.DeckTranslator { translator = t } |> Lang.html shared ]
 
         generalContent =
-            [ details.language |> Maybe.andThen (\l -> Maybe.justIf (l /= Lang.currentLanguage shared) (lang l))
+            [ details.language |> Maybe.andThen (\l -> Maybe.justIf (l /= (Lang.currentLanguage shared |> Lang.code)) (lang l))
             , details.author |> Maybe.map author
             , details.translator |> Maybe.map translator
             ]

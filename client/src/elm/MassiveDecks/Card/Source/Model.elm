@@ -66,7 +66,7 @@ type alias Details =
     { name : String
     , url : Maybe String
     , author : Maybe String
-    , language : Maybe Language
+    , language : Maybe String
     , translator : Maybe String
     }
 

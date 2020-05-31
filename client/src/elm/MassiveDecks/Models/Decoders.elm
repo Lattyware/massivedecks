@@ -106,7 +106,7 @@ builtInDeck =
     Json.succeed BuiltIn.Deck
         |> Json.required "name" Json.string
         |> Json.required "id" BuiltIn.idDecoder
-        |> Json.required "language" language
+        |> Json.required "language" Json.string
         |> Json.required "author" Json.string
         |> Json.optional "translator" (Json.string |> Json.map Just) Nothing
 
@@ -354,7 +354,7 @@ details =
         |> Json.required "name" Json.string
         |> Json.optional "url" (Json.string |> Json.map Just) Nothing
         |> Json.optional "author" (Json.string |> Json.map Just) Nothing
-        |> Json.optional "language" (language |> Json.map Just) Nothing
+        |> Json.optional "language" (Json.string |> Json.map Just) Nothing
         |> Json.optional "translator" (Json.string |> Json.map Just) Nothing
 
 

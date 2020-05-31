@@ -9,7 +9,9 @@ module MassiveDecks.Strings.Languages exposing
     , givenLanguageString
     , html
     , label
+    , langAttr
     , languageName
+    , languageNameOrCode
     , languages
     , recommended
     , sortClosestFirst
@@ -66,6 +68,13 @@ fromCode c =
 languageName : Language -> MdString
 languageName language =
     language |> pack |> .name
+
+
+{-| If we know this code, display it nicely, otherwise regurgitate it.
+-}
+languageNameOrCode : Shared -> String -> String
+languageNameOrCode shared givenCode =
+    givenCode |> fromCode |> Maybe.map (languageName >> string shared) |> Maybe.withDefault givenCode
 
 
 {-| The given language's name for itself.
@@ -139,6 +148,13 @@ html shared mdString =
             currentLanguage shared
     in
     mdString |> Render.asHtml { lang = lang, translate = translate lang, parent = mdString, shared = shared }
+
+
+{-| The lang attribute for embedding text of a different language into other text.
+-}
+langAttr : Language -> Html.Attribute msg
+langAttr language =
+    language |> code |> HtmlA.lang
 
 
 {-| Convenience for an HTML `title` attribute from the given `MdString`.

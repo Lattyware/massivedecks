@@ -121,7 +121,7 @@ type MdString
     | GameCodeHowToAcquire -- A short description of how to get a game code.
     | Deck -- The name for a deck of cards.
     | DeckSource -- The name for a source of decks of cards.
-    | DeckLanguage { language : MdString } -- A description of what language a deck is in.
+    | DeckLanguage { language : String } -- A description of what language a deck is in.
     | DeckAuthor { author : String } -- A description of who created the deck.
     | DeckTranslator { translator : String } -- A description of who translated the deck.
     | StillPlaying -- A term for a person who is in a round, but has not yet submitted a play.

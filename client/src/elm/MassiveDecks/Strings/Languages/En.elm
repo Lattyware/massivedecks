@@ -431,7 +431,7 @@ translate mdString =
             [ Ref Deck, Text " Source" ]
 
         DeckLanguage { language } ->
-            [ Text "in ", Ref language ]
+            [ Text "in ", Text language ]
 
         DeckAuthor { author } ->
             [ Text "by ", Text author ]
