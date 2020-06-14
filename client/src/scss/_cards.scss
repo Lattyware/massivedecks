@@ -17,7 +17,7 @@ $response-background: $call-color;
 
 #game {
   --card-aspect-ratio: #{size.$card-ratio};
-  @include size.fluid-type(20rem, 64rem, 0.5rem, 0.8rem);
+  font-size: clamp(0.5rem, 2vw, 1rem);
 }
 
 .game-card {
