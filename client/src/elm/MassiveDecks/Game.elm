@@ -510,10 +510,26 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                 newHand =
                     hand |> Maybe.andThen (Maybe.justIf (player == auth.claims.uid)) |> Maybe.withDefault model.hand
 
+                newRound =
+                    if player == auth.claims.uid then
+                        case game.round of
+                            Round.P playing ->
+                                let
+                                    pick =
+                                        playing.pick
+                                in
+                                Round.P { playing | pick = { pick | cards = Dict.empty } }
+
+                            other ->
+                                other
+
+                    else
+                        game.round
+
                 players =
                     game.players |> Dict.map updatePlayer
             in
-            ( { model | game = { game | players = players }, hand = newHand }, Cmd.none )
+            ( { model | game = { game | players = players, round = newRound }, hand = newHand }, Cmd.none )
 
         Events.PlaySubmitted { by } ->
             case model.game.round of
@@ -871,7 +887,10 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
         Events.CardDiscarded { player, card, replacement } ->
             let
-                ( hand, discarded ) =
+                game =
+                    model.game
+
+                ( hand, round, discarded ) =
                     case replacement of
                         Just replacementCard ->
                             let
@@ -881,13 +900,34 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
                                     else
                                         c
+
+                                r =
+                                    game.round
+
+                                newRound =
+                                    case r of
+                                        Round.P playing ->
+                                            let
+                                                pick =
+                                                    playing.pick
+
+                                                notDiscarded _ id =
+                                                    id /= card.details.id
+
+                                                newPick =
+                                                    { pick | cards = pick.cards |> Dict.filter notDiscarded }
+                                            in
+                                            Round.P { playing | pick = newPick }
+
+                                        other ->
+                                            other
                             in
-                            ( model.hand |> List.map replace, model.discarded )
+                            ( model.hand |> List.map replace, newRound, model.discarded )
 
                         Nothing ->
-                            ( model.hand, model.discarded ++ [ ( player, card ) ] )
+                            ( model.hand, game.round, model.discarded ++ [ ( player, card ) ] )
             in
-            ( { model | hand = hand, discarded = discarded }, Cmd.none )
+            ( { model | hand = hand, discarded = discarded, game = { game | round = round } }, Cmd.none )
 
 
 applyGameStarted : (Msg -> msg) -> Lobby -> Round.Playing -> List Card.Response -> ( Model, Cmd msg )
