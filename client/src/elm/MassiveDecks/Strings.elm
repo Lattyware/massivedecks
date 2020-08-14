@@ -350,3 +350,5 @@ type MdString
     | BritishEnglish -- The name of the British dialect of the English language.
     | Italian -- The name of the Italian language.
     | BrazilianPortuguese -- The name of the Brazilian dialect of the Portuguese language.
+    | GermanSie -- The name of the German formal language ("Sie").
+    | GermanDu -- The name of the german informal language ("Du").

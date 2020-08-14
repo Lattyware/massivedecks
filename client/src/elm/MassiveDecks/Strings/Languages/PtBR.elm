@@ -1217,6 +1217,11 @@ translate mdString =
         BrazilianPortuguese ->
             [ Text "Português (Brasileiro)" ]
 
+        GermanSie ->
+            [ Text "Alemão (formal)" ]
+
+        GermanDu ->
+            [ Text "Alemão (informal)" ]
 
 an : Maybe Int -> String
 an amount =

@@ -32,6 +32,8 @@ import MassiveDecks.Strings.Languages.En as EnLang
 import MassiveDecks.Strings.Languages.It as ItLang
 import MassiveDecks.Strings.Languages.Model exposing (..)
 import MassiveDecks.Strings.Languages.PtBR as PtBRLang
+import MassiveDecks.Strings.Languages.DeSIE as DeSIELang
+import MassiveDecks.Strings.Languages.DeDU as DeDULang
 import MassiveDecks.Strings.Render as Render
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Util.Maybe as Maybe
@@ -46,6 +48,8 @@ languages =
     [ En
     , It
     , PtBR
+    , DeSIE
+    , DeDU
     ]
 
 
@@ -210,3 +214,9 @@ pack language =
 
         PtBR ->
             PtBRLang.pack
+
+        DeSIE ->
+            DeSIELang.pack
+
+        DeDU ->
+            DeDULang.pack
