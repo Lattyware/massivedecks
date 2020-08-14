@@ -1,6 +1,7 @@
 module MassiveDecks.Strings.Languages.It exposing (pack)
 
-{- Italian translation -}
+{-| Italian translation
+-}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
@@ -1236,6 +1237,12 @@ translate mdString =
 
         BrazilianPortuguese ->
             [ Text "Portoghese (Brasiliano)" ]
+
+        German ->
+            [ Text "Tedesco (formale)" ]
+
+        GermanInformal ->
+            [ Text "Tedesco (informale)" ]
 
 
 an : Maybe Int -> String
