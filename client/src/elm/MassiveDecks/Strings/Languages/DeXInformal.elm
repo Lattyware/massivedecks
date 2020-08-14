@@ -1,6 +1,6 @@
-module MassiveDecks.Strings.Languages.DeSIE exposing (pack)
+module MassiveDecks.Strings.Languages.DeXInformal exposing (pack)
 
-{-| General German-language translation.
+{-| General German-language (informal) translation.
 This is a secondary language, strings here are the canonical representation, and are suitable to translate from.
 -}
 
@@ -12,8 +12,8 @@ import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
 pack : Translation.Pack
 pack =
-    { code = "deSIE"
-    , name = GermanSie
+    { code = "de-x-informal"
+    , name = GermanDu
     , translate = translate
     , recommended = "cah-base-de" |> BuiltIn.hardcoded |> Source.BuiltIn
     }
@@ -23,7 +23,7 @@ pack =
 {- Private -}
 
 
-{-| The German translation
+{-| The German informal translation
 -}
 translate : MdString -> List Translation.Result
 translate mdString =
@@ -80,7 +80,7 @@ translate mdString =
             , Ref RereadGames
             , Text " und andere Mitwirkende - das Spiel ist Open Source unter "
             , Ref License
-            , Text ", damit Sie helfen können, das Spiel zu verbessern, auf den Quellcode zuzugreifen oder einfach mehr unter "
+            , Text ", damit Du helfen kannst, das Spiel zu verbessern, auf den Quellcode zuzugreifen oder einfach mehr unter "
             , Ref MDProject
             , Text "."
             ]
@@ -89,7 +89,7 @@ translate mdString =
             [ Text "Neu" ]
 
         NewGameDescription ->
-            [ Text "Beginnen Sie eine neues Spiel ", Ref MassiveDecks, Text "." ]
+            [ Text "Beginne ein neues Spiel ", Ref MassiveDecks, Text "." ]
 
         FindPublicGame ->
             [ Text "Suchen" ]
@@ -98,7 +98,7 @@ translate mdString =
             [ Text "Teilnehmen" ]
 
         JoinPrivateGameDescription ->
-            [ Text "Nehmen Sie an einem Spiel teil, zu dem Sie eingeladen wurden." ]
+            [ Text "Nimm an einem Spiel teil, zu dem Du eingeladen wurden." ]
 
         PlayGame ->
             [ Text "Spielen" ]
@@ -107,7 +107,7 @@ translate mdString =
             [ Text "Über" ]
 
         AboutTheGameDescription ->
-            [ Text "Informieren Sie sich über ", Ref MassiveDecks, Text " und wie es entwickelt wurde." ]
+            [ Text "Informiere Dich  über ", Ref MassiveDecks, Text " und wie es entwickelt wurde." ]
 
         MDLogoDescription ->
             [ Text "Ein ", Ref Call, Text " und ein ", Ref Response, Text "mit einem “M” un einem “D” beschriftet." ]
@@ -131,7 +131,7 @@ translate mdString =
             [ Text "Dein Name" ]
 
         NameInUse ->
-            [ Text "Jemand anderes benutzt diesen Namen in dem angegeben Spiel - bitte versuchen Sie einen anderen Namen." ]
+            [ Text "Jemand anderes benutzt diesen Namen in dem angegeben Spiel - bitte versuche einen anderen Namen." ]
 
         RejoinTitle ->
             [ Text "Zurück zum Spiel" ]
@@ -140,13 +140,13 @@ translate mdString =
             [ Text "Zurück zu “", GameCode { code = code } |> Ref, Text "”." ]
 
         LobbyRequiresPassword ->
-            [ Text "Sie benötigen ein Passwort, um an diesem Spiel teilzunehmen. Versuchen Sie die Person danach zu fragen, die Sie eingeladen hat." ]
+            [ Text "Du benötigst ein Passwort, um an diesem Spiel teilzunehmen. Versuche, die Person danach zu fragen, die Dich eingeladen hat." ]
 
         YouWereKicked ->
-            [ Text "Sie wurden aus dem Spiel geworfen." ]
+            [ Text "Du wurdest aus dem Spiel geworfen." ]
 
         ScrollToTop ->
-            [ Text "Blättern Sie zum Anfang." ]
+            [ Text "Blättere zum Anfang." ]
 
         Copy ->
             [ Text "Kopieren" ]
@@ -172,9 +172,9 @@ translate mdString =
             ]
 
         RulesPlaying ->
-            [ Text "Alle anderen beantworten die Frage oder füllen das Formular aus, indem sie eine "
+            [ Text "Alle anderen beantworten die Frage oder füllen das Formular aus, indem Du eine "
             , Ref Response
-            , Text " aus ihrer Hand auswählen."
+            , Text " aus Deiner Hand auswählst."
             ]
 
         RulesJudging ->
@@ -197,7 +197,7 @@ translate mdString =
         RulesPick ->
             [ Text "Einige Karten benötigen mehr als eine "
             , Ref Response
-            , Text " als Antwort. Spielen Sie die Karten in der Reihenfolge, wie der "
+            , Text " als Antwort. Spiele die Karten in der Reihenfolge, wie der "
             , Ref Czar
             , Text " sie vorlesen soll - die Reihgenfolge ist bei deisen Karten entscheidend."
             ]
@@ -206,7 +206,7 @@ translate mdString =
             [ Ref (Plural { singular = Call, amount = Nothing })
             , Text " wie diese erfordern die Auswahl von mehreren "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text ", die Ihnen vorab zur Verfügung gestellt werden."
+            , Text ", die Dir ergänzend zur Verfügung gestellt werden."
             ]
 
         RulesDraw ->
@@ -214,7 +214,7 @@ translate mdString =
             , Ref (Plural { singular = Call, amount = Nothing })
             , Text " benötigen mehrere "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text "— diese sind mit  "
+            , Text "— diese sind mit "
             , Ref (Draw { numberOfCards = 2 })
             , Text " oder mehr beschriftet. Die Spieler erhalten entsprechend viele zusätzliche Karten für Ihre Hand."
             ]
@@ -226,8 +226,8 @@ translate mdString =
             [ Text "Hausregeln" ]
 
         HouseRules ->
-            [ Text "Sie können die Art und Weise, wie das Spiel gespielt wird, auf verschiedene Weise ändern. Wählen Sie beim Einrichten des Spiels "
-            , Text "so viele Hausregeln, wie Sie verwenden möchten."
+            [ Text "Du kannst die Art und Weise, wie das Spiel gespielt wird, auf verschiedene Weise ändern. Wählen Sie beim Einrichten des Spiels "
+            , Text "so viele Hausregeln, wie Du verwenden möchtest."
             ]
 
         HouseRuleReboot ->
@@ -337,13 +337,13 @@ translate mdString =
             [ Text "Sprache" ]
 
         MissingLanguage ->
-            [ Text "Sie sehen Ihre Sprache nicht? ", Ref TranslationBeg ]
+            [ Text "Du siehst Deine Sprache nicht? ", Ref TranslationBeg ]
 
         AutonymFormat { autonym } ->
             [ Text "(", Text autonym, Text ")" ]
 
         TranslationBeg ->
-            [ Text "Helfen Sie  "
+            [ Text "Helfe  "
             , Ref MassiveDecks
             , Text " zu übersetzen!"
             ]
@@ -352,13 +352,13 @@ translate mdString =
             [ Text "Kompakte Karten" ]
 
         CardSizeExplanation ->
-            [ Text "Stellen Sie ein, wie groß die Karten sind - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
+            [ Text "Stelle ein, wie groß die Karten sind - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
 
         AutoAdvanceSetting ->
             [ Text "Runde automatisch vorrücken" ]
 
         AutoAdvanceExplanation ->
-            [ Text "Wenn eine Runde beendet ist, gehen Sie automatisch zur nächsten Runde über, anstatt zu warten." ]
+            [ Text "Wenn eine Runde beendet ist, gehe automatisch zur nächsten über, anstatt zu warten." ]
 
         SpeechSetting ->
             [ Text "Text aussprechen" ]
@@ -376,23 +376,23 @@ translate mdString =
             [ Text "Browser Benachrichtigungen" ]
 
         NotificationsExplanation ->
-            [ Text "Sie werden mittels Browser-Benachrichtigungen benachrichtigt, wenn Sie im Spiel etwas tun müssen."
+            [ Text "Du wirst mittels Browser-Benachrichtigungen benachrichtigt, wenn Du im Spiel etwas tun musst."
             ]
 
         NotificationsUnsupportedExplanation ->
             [ Text "Ihr Browser unterstützt keine Benachrichtigungen." ]
 
         NotificationsBrowserPermissions ->
-            [ Text "Sie müssen eine Genehmigung für "
+            [ Text "Du musst eine Genehmigung für "
             , Ref MassiveDecks
-            , Text " erteilen, um benachrichtigt zu werden. Dies wird nur verwendet, solange das Spiel geöffnet ist und Sie diese Option aktiviert haben."
+            , Text " erteilen, um benachrichtigt zu werden. Dies wird nur verwendet, solange das Spiel geöffnet ist und Du diese Option aktiviert hast."
             ]
 
         NotificationOnlyWhenHiddenSetting ->
             [ Text "Nur wenn versteckt" ]
 
         NotificationsOnlyWhenHiddenExplanation ->
-            [ Text "Sendet Benachrichtigungen nur, wenn Sie sich die Seite nicht ansehen (z.B.: auf einem anderen Tab oder minimiert)." ]
+            [ Text "Sendet Benachrichtigungen nur, wenn Du Dir die Seite nicht ansehst (z.B.: auf einem anderen Tab oder minimiert)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
             [ Text "Ihr Browser unterstützt die Überprüfung der Seitensichtbarkeit nicht." ]
@@ -438,10 +438,10 @@ translate mdString =
             [ Text code ]
 
         GameCodeSpecificDescription ->
-            [ Text "Geben Sie diesen Spiel-Code an Personen weiter und diese können dem Spiel beitreten." ]
+            [ Text "Gebe diesen Spiel-Code an Personen weiter und diese können dem Spiel beitreten." ]
 
         GameCodeHowToAcquire ->
-            [ Text "Fragen Sie die Person, die Sie für das Spiel eingeladen hat, nach dem ", Ref GameCodeTerm, Text "." ]
+            [ Text "Frage die Person, die Dich für das Spiel eingeladen hat, nach dem ", Ref GameCodeTerm, Text "." ]
 
         Deck ->
             [ Text "Kartensatz" ]
@@ -488,7 +488,7 @@ translate mdString =
 
         -- Spectation
         JoinTheGame ->
-            [ Text "Nehmen Sie an dem Spiel teil!" ]
+            [ Text "Nehme an dem Spiel teil!" ]
 
         ToggleAdvertDescription ->
             [ Text "Umschalten, um die Informationen zur Teilnahme von Spielern an dem Spiel anzuzeigen." ]
@@ -501,7 +501,7 @@ translate mdString =
             [ Text "Ablegen", Ref (NumberOfCards numberOfCards) ]
 
         PickDescription { numberOfCards } ->
-            [ Text "Sie müssen "
+            [ Text "Du musst "
             , Text (asWord numberOfCards)
             , Text " "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
@@ -509,7 +509,7 @@ translate mdString =
             ]
 
         DrawDescription { numberOfCards } ->
-            [ Text "Sie bekommen "
+            [ Text "Du bekommst "
             , Text (asWord numberOfCards)
             , Text " "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
@@ -527,10 +527,10 @@ translate mdString =
             [ Text owner, Text "'s Spiel" ]
 
         Invite ->
-            [ Text "Laden Sie Spieler zum Spiel ein." ]
+            [ Text "Lade Spieler zum Spiel ein." ]
 
         InviteLinkHelp ->
-            [ Text "Senden Sie diesen Link an die Spieler, um sie zum Spiel einzuladen, oder lassen Sie sie den untenstehenden QR-Code einscannen." ]
+            [ Text "Sende diesen Link an die Spieler, um sie zum Spiel einzuladen, oder lasse sie den untenstehenden QR-Code einscannen." ]
 
         InviteExplanation { gameCode, password } ->
             let
@@ -637,7 +637,7 @@ translate mdString =
             [ Text "Spieler einladen" ]
 
         InvitePlayersDescription ->
-            [ Text "Holen Sie sich den Spielcode/Link/QR-Code, um andere an diesem Spiel teilnehmen zu lassen." ]
+            [ Text "Hole Dir sich den Spielcode/Link/QR-Code, um andere an diesem Spiel teilnehmen zu lassen." ]
 
         SetAway ->
             [ Text "Als abwesend markieren" ]
@@ -649,31 +649,31 @@ translate mdString =
             [ Text "Spiel verlassen" ]
 
         LeaveGameDescription ->
-            [ Text "Verlassen Sie das Spiel endgültig." ]
+            [ Text "Verlasse das Spiel endgültig." ]
 
         Spectate ->
             [ Text "Zuschauer-Ansicht" ]
 
         SpectateDescription ->
-            [ Text "Öffnen Sie die Sicht eines Zuschauers auf das Spiel in einem neuen Tab/Fenster." ]
+            [ Text "Öffne die Sicht eines Zuschauers auf das Spiel in einem neuen Tab/Fenster." ]
 
         BecomeSpectator ->
             [ Text "Zuschauen" ]
 
         BecomeSpectatorDescription ->
-            [ Text "Schauen Sie sich einfach das Spiel an, ohne zu spielen." ]
+            [ Text "Schaue Dir einfach das Spiel an, ohne zu spielen." ]
 
         BecomePlayer ->
             [ Text "Spielen" ]
 
         BecomePlayerDescription ->
-            [ Text "Spielen Sie in dem Spiel mit." ]
+            [ Text "Spiele in dem Spiel mit." ]
 
         EndGame ->
             [ Text "Spiel beenden" ]
 
         EndGameDescription ->
-            [ Text "Beenden Sie das Spiel jetzt." ]
+            [ Text "Beende das Spiel jetzt." ]
 
         ReturnViewToGame ->
             [ Text "Zurück zum Spiel" ]
@@ -685,7 +685,7 @@ translate mdString =
             [ Text "Konfiguration" ]
 
         ViewConfgiurationDescription ->
-            [ Text "Wechseln Sie zur Anzeige der Konfiguration des Spiels." ]
+            [ Text "Wechsel zur Anzeige der Konfiguration des Spiels." ]
 
         KickUser ->
             [ Text "Rausschmeißen" ]
@@ -713,7 +713,7 @@ translate mdString =
             [ Text username, Text " wurde aus dem Spiel geworfen." ]
 
         Dismiss ->
-            [ Text "Entlassen Sie" ]
+            [ Text "Entlassen" ]
 
         -- Configuration
         ConfigureTitle ->
@@ -722,27 +722,27 @@ translate mdString =
         NoDecks ->
             [ Segment [ Text "Keine Kartensätze. " ]
             , Text " "
-            , Segment [ Text "Sie müssen mindestens ein Kartensatz zum Spiel hinzufügen." ]
+            , Segment [ Text "Du musst  mindestens ein Kartensatz zum Spiel hinzufügen." ]
             ]
 
         NoDecksHint ->
             [ Text "Nicht sicher? Hinzufügen des originalen ", Raw CardsAgainstHumanity, Text " Kartensatzes." ]
 
         WaitForDecks ->
-            [ Text "Die Decks müssen geladen werden, bevor Sie das Spiel beginnen können." ]
+            [ Text "Die Kartensätze müssen geladen werden, bevor Du das Spiel beginnen kannst." ]
 
         MissingCardType { cardType } ->
-            [ Text "Keiner Ihrer Kartensätze enthält irgendwelche "
+            [ Text "Keiner Deiner Kartensätze enthält irgendwelche "
             , Ref (Plural { singular = cardType, amount = Nothing })
-            , Text ". Um das Spiel zu beginnen, benötigen Sie ein entsprechenden Kartensatz."
+            , Text ". Um das Spiel zu beginnen, benötigst Du ein entsprechenden Kartensatz."
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
-            [ Text "Für die Anzahl der Spieler im Spiel benötigen Sie mindestens "
+            [ Text "Für die Anzahl der Spieler im Spiel benötigst Du mindestens "
             , Text (needed |> String.fromInt)
             , Text " "
             , Ref (Plural { singular = cardType, amount = Just needed })
-            , Text " aber Sie haben nur "
+            , Text " aber Du hast nur "
             , Text (have |> String.fromInt)
             , Text "."
             ]
@@ -761,10 +761,10 @@ translate mdString =
             [ Text "Entferne einen Kartensatz." ]
 
         SourceNotFound { source } ->
-            [ Ref source, Text " kennt den Kartensatz nicht, um den Sie gebeten haben. Überprüfen Sie, ob die von Ihnen gemachten Angaben korrekt sind." ]
+            [ Ref source, Text " kennt den Kartensatz nicht, um den Du gebeten hast. Überprüfe, ob die von Dir gemachten Angaben korrekt sind." ]
 
         SourceServiceFailure { source } ->
-            [ Ref source, Text " hat es nicht geschafft, den Kartensatz bereitzustellen. Bitte versuchen Sie es später noch einmal oder versuchen Sie eine andere Quelle." ]
+            [ Ref source, Text " hat es nicht geschafft, den Kartensatz bereitzustellen. Bitte versuche es später noch einmal oder versuche eine andere Quelle." ]
 
         ManyDecks ->
             [ Text "Many Decks" ]
@@ -776,7 +776,7 @@ translate mdString =
             [ Text "Ein Kartensatz-Code muss mindestens fünf Zeichen lang sein." ]
 
         ManyDecksWhereToGet ->
-            [ Text "Sie können Kartensätze zum Spielen erstellen und auf ", Ref ManyDecks, Text " finden." ]
+            [ Text "Du kannst Kartensätze zum Spielen erstellen und auf ", Ref ManyDecks, Text " finden." ]
 
         JsonAgainstHumanity ->
             [ Text "JSON Against Humanity" ]
@@ -825,15 +825,15 @@ translate mdString =
             ]
 
         UnsavedChangesWarning ->
-            [ Text "Sie haben ungespeicherte Änderungen an der Konfiguration vorgenommen; diese müssen zuerst gespeichert werden, wenn Sie diese auf das Spiel "
+            [ Text "Du hast ungespeicherte Änderungen an der Konfiguration vorgenommen; diese müssen zuerst gespeichert werden, wenn Du diese auf das Spiel "
             , Text "anwenden möchten."
             ]
 
         SaveChanges ->
-            [ Text "Sichern Sie Ihre Änderungen." ]
+            [ Text "Sichere Deine Änderungen." ]
 
         RevertChanges ->
-            [ Text "Verwerfen Sie Ihre ungespeicherten Änderungen." ]
+            [ Text "Verwerfe Deine ungespeicherten Änderungen." ]
 
         NeedAtLeastOneDeck ->
             [ Text "Um das Spiel beginnen zu können, muss mindestens ein Kartensatz hinzugefügt werden." ]
@@ -858,32 +858,32 @@ translate mdString =
             [ Text "Deaktiviere ", Ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
-            [ Text "Fügen Sie dem Spiel einen KI-Spieler hinzu." ]
+            [ Text "Füge dem Spiel einen KI-Spieler hinzu." ]
 
         PasswordShared ->
             [ Text "Jeder im Spiel kann das Passwort sehen! "
-            , Text "Das Ausblenden oben betrifft nur Sie (nützlich beim Streaming, etc.)."
+            , Text "Das Ausblenden oben betrifft nur Dich (nützlich beim Streaming, etc.)."
             ]
 
         PasswordNotSecured ->
             [ Text "Spiel-Passwörter werden "
             , Em [ Text "nicht" ]
-            , Text " sicher gespeichert - bitte geben Sie  "
+            , Text " sicher gespeichert - bitte gebe "
             , Em [ Text "kein" ]
-            , Text " Passwort an, dass Sie woanders auch nutzen!"
+            , Text " Passwort an, dass Du woanders auch nutzt!"
             ]
 
         LobbyPassword ->
             [ Text "Spiel-Passwort" ]
 
         LobbyPasswordDescription ->
-            [ Text "Ein Passwort für Benutzer muss eingegeben werden, bevor sie dem Spiel beitreten können." ]
+            [ Text "Ein Passwort für Benutzer muss eingegeben werden, bevor Du dem Spiel beitreten kannst." ]
 
         AudienceMode ->
             [ Text "Publikums-Modus" ]
 
         AudienceModeDescription ->
-            [ Text "Wenn diese Option aktiviert ist, sind neu hinzukommende Benutzer standardmäßig Zuschauer, und nur Sie können sie "
+            [ Text "Wenn diese Option aktiviert ist, sind neu hinzukommende Benutzer standardmäßig Zuschauer, und nur Du kannst sie "
             , Text "zu Spielern machen."
             ]
 
@@ -897,7 +897,7 @@ translate mdString =
             [ Text "Wenn diese Option aktiviert ist, erscheint das Spiel in der öffentlichen Spielliste, so dass jeder es finden kann." ]
 
         ApplyConfiguration ->
-            [ Text "Übernehmen Sie diese Änderung." ]
+            [ Text "Übernehme diese Änderung." ]
 
         AppliedConfiguration ->
             [ Text "Gespeichert." ]
@@ -953,37 +953,37 @@ translate mdString =
             [ Text "Konflikt" ]
 
         ConflictDescription ->
-            [ Text "Jemand anderes hat Änderungen vorgenommen, während Sie ebenfalls Änderungen vorgenommen haben. "
-            , Text "Bitte wählen Sie aus, ob Sie Ihre Änderungen oder deren Änderungen behalten möchten."
+            [ Text "Jemand anderes hat Änderungen vorgenommen, während Du ebenfalls Änderungen vorgenommen hast. "
+            , Text "Bitte wähle aus, ob Du Deine Änderungen oder deren Änderungen behalten möchten."
             ]
 
         YourChanges ->
-            [ Text "Ihre Änderungen" ]
+            [ Text "Deine Änderungen" ]
 
         TheirChanges ->
             [ Text "Deren Änderungen" ]
 
         ConfigurationDisabledWhileInGame ->
-            [ Text "Während das Spiel läuft, können Sie die Konfiguration nicht ändern." ]
+            [ Text "Während das Spiel läuft, kannst Du die Konfiguration nicht ändern." ]
 
         ConfigurationDisabledIfNotPrivileged ->
-            [ Text "Sie können die Konfiguration dieses Spiels nicht ändern." ]
+            [ Text "Du kannst die Konfiguration dieses Spiels nicht ändern." ]
 
         ConfigureNextGame ->
             [ Text "Nächstes Spiel konfigurieren" ]
 
         -- Game
         SubmitPlay ->
-            [ Text "Geben Sie diese Karten an den ", Ref Czar, Text " zum Abschluss dieser Runde." ]
+            [ Text "Gib diese Karten dem ", Ref Czar, Text " zum Abschluss dieser Runde." ]
 
         TakeBackPlay ->
-            [ Text "Nehmen Sie Ihre Karten zurück, um Ihr Spiel für die Runde zu ändern." ]
+            [ Text "Nehme Deine Karten zurück, um Ihr Spiel für die Runde zu ändern." ]
 
         JudgePlay ->
-            [ Text "Wählen Sie dieses Spiel als Rundensieger." ]
+            [ Text "Wähle dieses Spiel als Rundensieger." ]
 
         LikePlay ->
-            [ Text "Fügen Sie diesem Spiel ein Like hinzu." ]
+            [ Text "Füge diesem Spiel ein Like hinzu." ]
 
         AdvanceRound ->
             [ Text "Nächste Runde." ]
@@ -1001,13 +1001,13 @@ translate mdString =
             [ Text "Beendet" ]
 
         ViewGameHistoryAction ->
-            [ Text "Sehen Sie sich frühere Runden aus diesem Spiel an." ]
+            [ Text "Sehe Dir frühere Runden aus diesem Spiel an." ]
 
         ViewHelpAction ->
             [ Text "Hilfe" ]
 
         EnforceTimeLimitAction ->
-            [ Text "Setzen Sie alle Spieler, auf die das Spiel wartet, auf Abwesend und überspringen Sie sie, bis sie zurückkehren." ]
+            [ Text "Setze alle Spieler, auf die das Spiel wartet, auf Abwesend und überspringe sie, bis sie zurückkehren." ]
 
         Blank ->
             [ Text "Leer" ]
@@ -1024,10 +1024,10 @@ translate mdString =
             ]
 
         ClientAway ->
-            [ Text "Sie sind derzeit nicht im Spiel und spielen nicht." ]
+            [ Text "Du bist derzeit nicht im Spiel und spielst nicht." ]
 
         Discard ->
-            [ Text "Werfen Sie die ausgewählte Karte ab und zeigen Sie sie den anderen Spielern im Spiel." ]
+            [ Text "Werfen die ausgewählte Karte ab und zeigen sie den anderen Spielern im Spiel." ]
 
         Discarded { player } ->
             [ Text player
@@ -1036,7 +1036,7 @@ translate mdString =
 
         -- Instructions
         PlayInstruction { numberOfCards } ->
-            [ Text "Sie müssen "
+            [ Text "Du musst "
             , Text (asWord numberOfCards)
             , Text " weitere "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
@@ -1044,30 +1044,30 @@ translate mdString =
             ]
 
         SubmitInstruction ->
-            [ Text "Sie müssen Ihr Spiel für diese Runde einreichen." ]
+            [ Text "Du musst Dein Spiel für diese Runde einreichen." ]
 
         WaitingForPlaysInstruction ->
-            [ Text "Sie warten darauf, dass andere Spieler in die Runde spielen." ]
+            [ Text "Du wartest darauf, dass andere Spieler in die Runde spielen." ]
 
         CzarsDontPlayInstruction ->
-            [ Text "Sie sind der "
+            [ Text "Du bist der "
             , Ref Czar
-            , Text " für diese Runde - Sie reichen keine "
+            , Text " für diese Runde - Du reichst keine "
             , Ref (Plural { singular = Response, amount = Nothing })
-            , Text " ein. Stattdessen wählen Sie den Gewinner, sobald alle anderen ihre Beiträge eingereicht haben."
+            , Text " ein. Stattdessen wählst Du den Gewinner, sobald alle anderen ihre Beiträge eingereicht haben."
             ]
 
         NotInRoundInstruction ->
-            [ Text "Sie sind nicht in dieser Runde. Sie spielen in der nächsten Runde, es sei denn, Sie sind auf Auswärtsspiel eingestellt." ]
+            [ Text "Du bist nicht in dieser Runde. Du spielst in der nächsten Runde, es sei denn, Du bist auf Auswärtsspiel eingestellt." ]
 
         RevealPlaysInstruction ->
-            [ Text "Klicken Sie auf die Karten, um sie umzudrehen, und wählen Sie dann die Antwort aus, die Ihnen am besten gefällt." ]
+            [ Text "Klicke auf die Karten, um sie umzudrehen, und wähle dann die Antwort aus, die Dir am besten gefällt." ]
 
         WaitingForCzarInstruction ->
-            [ Text "Sie können Spiele liken, während Sie auf die Gewinner-Auswahl durch den ", Ref Czar, Text " warten." ]
+            [ Text "Du kannst Spiele liken, während Du auf die Gewinner-Auswahl durch den ", Ref Czar, Text " wartest." ]
 
         AdvanceRoundInstruction ->
-            [ Text "Die nächste Runde hat begonnen, Sie können weitermachen." ]
+            [ Text "Die nächste Runde hat begonnen, Du kannst weitermachen." ]
 
         -- 404 Unknown
         UnknownPageTitle ->
@@ -1088,15 +1088,15 @@ translate mdString =
             [ Text "Fehler" ]
 
         ErrorHelp ->
-            [ Text "Möglicherweise ist der Spielserver ausgefallen, oder es handelt sich um einen Fehler. Das Aktualisieren der Seite sollte Sie wieder in "
-            , Text "Gang bringen. Weitere Einzelheiten finden Sie weiter unten."
+            [ Text "Möglicherweise ist der Spielserver ausgefallen, oder es handelt sich um einen Fehler. Das Aktualisieren der Seite sollte es wieder in "
+            , Text "Gang bringen. Weitere Einzelheiten findest Du weiter unten."
             ]
 
         ErrorHelpTitle ->
             [ Text "Entschuldigung, etwas ist schief gelaufen." ]
 
         ErrorCheckOutOfBand ->
-            [ Text "Bitte prüfen Sie ", Ref TwitterHandle, Text " für Updates und Servicestatus. Der Spieleserver wird für eine kurze Zeit ausfallen, wenn eine neue Version veröffentlicht wird. Wenn Sie also ein aktuelles Update sehen, versuchen Sie es in ein paar Minuten erneut." ]
+            [ Text "Bitte prüfe ", Ref TwitterHandle, Text " für Updates und Servicestatus. Der Spieleserver wird für eine kurze Zeit ausfallen, wenn eine neue Version veröffentlicht wird. Wenn Du also ein aktuelles Update siehst, versuche es in ein paar Minuten erneut." ]
 
         TwitterHandle ->
             [ Text "@Massive_Decks" ]
@@ -1105,22 +1105,22 @@ translate mdString =
             [ Text "Fehler melden" ]
 
         ReportErrorDescription ->
-            [ Text "Informieren Sie die Entwickler über einen Fehler, auf den Sie gestoßen sind, damit sie ihn beheben können." ]
+            [ Text "Informiere die Entwickler über einen Fehler, auf den Du gestoßen bist, damit sie ihn beheben können." ]
 
         ReportErrorBody ->
-            [ Text "Ich war [ersetzen Sie durch eine kurze Erklärung, was Sie getan haben], als ich den folgenden Fehler erhielt:" ]
+            [ Text "Ich war [ersetze durch eine kurze Erklärung, was Du getan habst], als ich den folgenden Fehler erhielt:" ]
 
         BadUrlError ->
             [ Text "Wir haben versucht, einen Aufruf zu einer ungültigen Seite zu machen." ]
 
         TimeoutError ->
-            [ Text "Der Server hat zu lange nicht geantwortet. Er ist möglicherweise ausgefallen, bitte versuchen Sie es nach einer kurzen Verzögerung erneut." ]
+            [ Text "Der Server hat zu lange nicht geantwortet. Er ist möglicherweise ausgefallen, bitte versuche es nach einer kurzen Verzögerung erneut." ]
 
         NetworkError ->
             [ Text "Ihre Internetverbindung wurde unterbrochen." ]
 
         ServerDownError ->
-            [ Text "Der Spielserver ist derzeit offline. Bitte versuchen Sie es später noch einmal." ]
+            [ Text "Der Spielserver ist derzeit offline. Bitte versuche es später noch einmal." ]
 
         BadStatusError ->
             [ Text "Der Server gab eine Antwort, die wir nicht erwartet hatten." ]
@@ -1138,13 +1138,13 @@ translate mdString =
             [ Text "Tut mir leid, beim Versuch, eine Verbindung zum Spiel herzustellen, ist etwas schief gelaufen." ]
 
         ActionExecutionError ->
-            [ Text "Sie können diese Aktion nicht ausführen." ]
+            [ Text "Du kannst diese Aktion nicht ausführen." ]
 
         IncorrectPlayerRoleError { role, expected } ->
-            [ Text "Sie müssen ", Ref expected, Text " sein, um das machen zu können. Sie sind aber ", Ref role, Text "." ]
+            [ Text "Du musst ", Ref expected, Text " sein, um das machen zu können. Du bist aber ", Ref role, Text "." ]
 
         IncorrectUserRoleError { role, expected } ->
-            [ Text "Sie müssen ", Ref expected, Text " sein, um das machen zu können. Sie sind aber ", Ref role, Text "." ]
+            [ Text "Du musst ", Ref expected, Text " sein, um das machen zu können. Du bistaber ", Ref role, Text "." ]
 
         IncorrectRoundStageError { stage, expected } ->
             [ Text "Die Runde muss bei der ", Ref expected, Text " Phase sein, um das machen zu können. Derzeit läuft die Phase ", Ref stage, Text "." ]
@@ -1153,7 +1153,7 @@ translate mdString =
             [ Text "Jemand anderes hat die Konfiguration vor Ihnen geändert, Ihre Änderung wurde nicht gespeichert." ]
 
         UnprivilegedError ->
-            [ Text "Sie haben nicht die Rechte, dies zu tun." ]
+            [ Text "Du hast nicht die Rechte, dies zu tun." ]
 
         GameNotStartedError ->
             [ Text "Dazu muss das Spiel gestartet sein." ]
@@ -1162,7 +1162,7 @@ translate mdString =
             [ Text "Der Server hat eine Anfrage des Clients nicht verstanden. Details: ", Text reason ]
 
         AuthenticationError ->
-            [ Text "Sie können an diesem Spiel nicht teilnehmen." ]
+            [ Text "Du kannst an diesem Spiel nicht teilnehmen." ]
 
         IncorrectIssuerError ->
             [ Text "Ihre Anmeldedaten für die Teilnahme an diesem Spiel sind veraltet, das Spiel existiert nicht mehr." ]
@@ -1171,10 +1171,10 @@ translate mdString =
             [ Text "Ihre Zugangsdaten für die Teilnahme an diesem Spiel sind fehlerhaft." ]
 
         InvalidLobbyPasswordError ->
-            [ Text "Das von Ihnen angegebene Spiel-Kennwort war falsch. Versuchen Sie, es noch einmal einzugeben, und wenn es immer noch nicht funktioniert, fragen Sie die Person, die Sie eingeladen hat, noch einmal." ]
+            [ Text "Das von Ihnen angegebene Spiel-Kennwort war falsch. Versuche es noch einmal einzugeben und wenn es immer noch nicht funktioniert, frage die Person, die Dich eingeladen hat, noch einmal." ]
 
         AlreadyLeftError ->
-            [ Text "Sie haben dieses Spiel bereits verlassen." ]
+            [ Text "Du hast dieses Spiel bereits verlassen." ]
 
         LobbyNotFoundError ->
             [ Text "Dieses Spiel existiert nicht." ]
@@ -1186,7 +1186,7 @@ translate mdString =
             [ Text "Das angegebene Spiel-Kennwort ("
             , Ref (GameCode { code = gameCode })
             , Text ") existiert nicht. "
-            , Text "Versuchen Sie, es noch einmal einzugeben, und wenn es immer noch nicht funktioniert, fragen Sie die Person, die Sie eingeladen hat, noch einmal."
+            , Text "Versuche es noch einmal einzugeben und wenn es immer noch nicht funktioniert, frage die Person, die Dich eingeladen hat, noch einmal."
             ]
 
         RegistrationError ->
@@ -1195,14 +1195,14 @@ translate mdString =
         UsernameAlreadyInUseError { username } ->
             [ Text "Jemand benutzt bereits den Benutzernamen “"
             , Text username
-            , Text "”— versuchen Sie einen anderen Namen."
+            , Text "”— versuche einen anderen Namen."
             ]
 
         GameError ->
             [ Text "Irgendetwas ist im Spiel schief gelaufen." ]
 
         OutOfCardsError ->
-            [ Text "Es waren nicht genug Karten im Stapel, um jedem eine Hand zu geben! Versuchen Sie, in der Spielkonfiguration weitere Kartensätze hinzuzufügen." ]
+            [ Text "Es waren nicht genug Karten im Stapel, um jedem eine Hand zu geben! Versuche, in der Spielkonfiguration weitere Kartensätze hinzuzufügen." ]
 
         -- Language Names
         English ->
