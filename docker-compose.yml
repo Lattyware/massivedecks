@@ -10,14 +10,14 @@ networks:
 services:
   server:
     build: ./server
-    image: "massivedecks/server:dev"
+    image: "rfuehrer/massivedecks-server:dev"
     networks:
       - internal
     restart: unless-stopped
 
   client:
     build: ./client
-    image: "massivedecks/client:dev"
+    image: "rfuehrer/massivedecks-client:dev"
     ports:
       - "8080:8080"
     networks:

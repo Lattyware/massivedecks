@@ -172,7 +172,7 @@ translate mdString =
             ]
 
         RulesPlaying ->
-            [ Text "Alle anderen beantworten die Frage oder füllen das Lückentext aus, indem Du eine "
+            [ Text "Alle anderen beantworten die Frage oder füllen den Lückentext aus, indem Du eine "
             , Ref Response
             , Text " aus Deiner Hand auswählst."
             ]
@@ -301,7 +301,7 @@ translate mdString =
             [ Text "In jeder Runde wird die erste "
             , Ref Response
             , Text " im Stapel als Antwort gespielt. Dieses Spiel gehört einem KI-Spieler namens "
-            , Text "Rando Cardrissian, und wenn er das Spiel gewinnt, gehen alle Spieler in einem Zustand ewiger Schande nach Hause."
+            , Text "Rando Cardrissian und wenn er das Spiel gewinnt, gehen alle Spieler in einem Zustand ewiger Schande nach Hause."
             ]
 
         HouseRuleRandoCardrissianNumber ->
@@ -352,7 +352,7 @@ translate mdString =
             [ Text "Kompakte Karten" ]
 
         CardSizeExplanation ->
-            [ Text "Stelle die Größe der Karten ein - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
+            [ Text "Stelle ein, wie groß die Karten dargestellt werden - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
 
         AutoAdvanceSetting ->
             [ Text "Runde automatisch vorrücken" ]
@@ -419,7 +419,7 @@ translate mdString =
             [ Text "Weiße Karte" ]
 
         ResponseDescription ->
-            [ Text "Eine weiße Karte mit einem Satz, der in Runden gespielt wird." ]
+            [ Text "Eine weiße Karte mit einem Satz, der in Runden ausgespielt wird." ]
 
         Point ->
             [ Text "großartiger Punkt" ]
@@ -512,7 +512,7 @@ translate mdString =
             , Text (asWord numberOfCards)
             , Text " "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
-            , Text " extra vor dem Spiel."
+            , Text " zusätzlich vor dem Spiel."
             ]
 
         NumberOfCards { numberOfCards } ->
@@ -733,7 +733,7 @@ translate mdString =
         MissingCardType { cardType } ->
             [ Text "Keiner Deiner Kartensätze enthält irgendwelche "
             , Ref (Plural { singular = cardType, amount = Nothing })
-            , Text ". Um das Spiel zu beginnen, benötigst Du ein entsprechenden Kartensatz."
+            , Text ". Um das Spiel beginnen zu können, benötigst Du ein entsprechenden Kartensatz."
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
@@ -876,7 +876,7 @@ translate mdString =
             [ Text "Spiel-Passwort" ]
 
         LobbyPasswordDescription ->
-            [ Text "Ein Passwort für Benutzer muss eingegeben werden, bevor Du dem Spiel beitreten kannst." ]
+            [ Text "Ein Passwort für Benutzer muss eingegeben werden, bevor Du diese Spiel beitreten kannst." ]
 
         AudienceMode ->
             [ Text "Publikums-Modus" ]
@@ -934,7 +934,7 @@ translate mdString =
             [ Text "Wie viel Zeit (in Sekunden) muss nach dem Ende einer Runde gewartet werden, bevor die nächste Runde beginnt." ]
 
         RevealingEnabledTitle ->
-            [ Text "Zar deckt Spiele auf" ]
+            [ Text "Zar deckt Blätter auf" ]
 
         RevealingEnabled ->
             [ Text "Wenn aktiviert, wird der "
@@ -1043,7 +1043,7 @@ translate mdString =
             ]
 
         SubmitInstruction ->
-            [ Text "Du musst Dein Spiel für diese Runde einreichen." ]
+            [ Text "Du musst Dein Blatt für diese Runde einreichen." ]
 
         WaitingForPlaysInstruction ->
             [ Text "Du wartest darauf, dass andere Spieler in die Runde spielen." ]
