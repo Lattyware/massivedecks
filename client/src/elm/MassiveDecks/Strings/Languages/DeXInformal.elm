@@ -98,7 +98,7 @@ translate mdString =
             [ Text "Teilnehmen" ]
 
         JoinPrivateGameDescription ->
-            [ Text "Nimm an einem Spiel teil, zu dem Du eingeladen wurden." ]
+            [ Text "Nimm an einem Spiel teil, zu dem Du eingeladen wurdest." ]
 
         PlayGame ->
             [ Text "Spielen" ]
@@ -107,13 +107,13 @@ translate mdString =
             [ Text "Über" ]
 
         AboutTheGameDescription ->
-            [ Text "Informiere Dich  über ", Ref MassiveDecks, Text " und wie es entwickelt wurde." ]
+            [ Text "Informiere Dich über ", Ref MassiveDecks, Text " und wie es entwickelt wurde." ]
 
         MDLogoDescription ->
-            [ Text "Ein ", Ref Call, Text " und ein ", Ref Response, Text "mit einem “M” un einem “D” beschriftet." ]
+            [ Text "Eine ", Ref Call, Text " und eine ", Ref Response, Text " mit einem “M” un einem “D” beschriftet." ]
 
         RereadLogoDescription ->
-            [ Text "Ein Buch, das von einem Recycling-Pfeil umgeben ist." ]
+            [ Text "Ein von einem Recycling-Pfeil umkreistes Buch." ]
 
         MDProject ->
             [ Text "dem GitHub-Projekt" ]
@@ -131,7 +131,7 @@ translate mdString =
             [ Text "Dein Name" ]
 
         NameInUse ->
-            [ Text "Jemand anderes benutzt diesen Namen in dem angegeben Spiel - bitte versuche einen anderen Namen." ]
+            [ Text "Jemand anderes benutzt diesen Namen in dem angegeben Spiel - bitte versuche es mit einem anderen Namen." ]
 
         RejoinTitle ->
             [ Text "Zurück zum Spiel" ]
@@ -172,7 +172,7 @@ translate mdString =
             ]
 
         RulesPlaying ->
-            [ Text "Alle anderen beantworten die Frage oder füllen das Formular aus, indem Du eine "
+            [ Text "Alle anderen beantworten die Frage oder füllen das Lückentext aus, indem Du eine "
             , Ref Response
             , Text " aus Deiner Hand auswählst."
             ]
@@ -199,7 +199,7 @@ translate mdString =
             , Ref Response
             , Text " als Antwort. Spiele die Karten in der Reihenfolge, wie der "
             , Ref Czar
-            , Text " sie vorlesen soll - die Reihgenfolge ist bei deisen Karten entscheidend."
+            , Text " sie vorlesen soll - die Reihenfolge ist bei diesen Karten entscheidend."
             ]
 
         ExamplePickDescription ->
@@ -226,7 +226,7 @@ translate mdString =
             [ Text "Hausregeln" ]
 
         HouseRules ->
-            [ Text "Du kannst die Art und Weise, wie das Spiel gespielt wird, auf verschiedene Weise ändern. Wählen Sie beim Einrichten des Spiels "
+            [ Text "Du kannst die Art und Weise, wie das Spiel gespielt wird, auf verschiedene Weise ändern. Wähle beim Einrichten des Spiels "
             , Text "so viele Hausregeln, wie Du verwenden möchtest."
             ]
 
@@ -280,7 +280,7 @@ translate mdString =
             [ Text "Leere ", Ref (Plural { singular = Response, amount = Nothing }) ]
 
         HouseRuleComedyWriterNumberDescription ->
-            [ Text "die Anzahl der leeren "
+            [ Text "Die Anzahl der leeren "
             , Ref (Plural { singular = Response, amount = Nothing })
             , Text "die im Spiel verfügbar sind."
             ]
@@ -328,7 +328,7 @@ translate mdString =
             [ Text "Setze den Wert auf ", Text (String.fromInt value), Text "." ]
 
         CantBeEmpty ->
-            [ Text "Das kann nicht leer sein." ]
+            [ Text "Das darf nicht leer sein." ]
 
         SettingsTitle ->
             [ Text "Einstellungen" ]
@@ -352,13 +352,13 @@ translate mdString =
             [ Text "Kompakte Karten" ]
 
         CardSizeExplanation ->
-            [ Text "Stelle ein, wie groß die Karten sind - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
+            [ Text "Stelle die Größe der Karten ein - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
 
         AutoAdvanceSetting ->
             [ Text "Runde automatisch vorrücken" ]
 
         AutoAdvanceExplanation ->
-            [ Text "Wenn eine Runde beendet ist, gehe automatisch zur nächsten über, anstatt zu warten." ]
+            [ Text "Wenn eine Runde beendet ist, wirst Du automatisch zur nächsten übergeblendet und musst nicht warten." ]
 
         SpeechSetting ->
             [ Text "Text aussprechen" ]
@@ -367,7 +367,7 @@ translate mdString =
             [ Text "Karten mit Hilfe von Text-to-Speech vorlesen." ]
 
         SpeechNotSupportedExplanation ->
-            [ Text "Ihr Browser unterstützt Text-to-Speech nicht oder hat keine Stimmen installiert." ]
+            [ Text "Dein Browser unterstützt Text-to-Speech nicht oder hat keine Stimmen installiert." ]
 
         VoiceSetting ->
             [ Text "Sprachstimme" ]
@@ -376,8 +376,7 @@ translate mdString =
             [ Text "Browser Benachrichtigungen" ]
 
         NotificationsExplanation ->
-            [ Text "Du wirst mittels Browser-Benachrichtigungen benachrichtigt, wenn Du im Spiel etwas tun musst."
-            ]
+            [ Text "Du wirst mittels Browser-Benachrichtigungen benachrichtigt, wenn Du im Spiel etwas tun musst." ]
 
         NotificationsUnsupportedExplanation ->
             [ Text "Ihr Browser unterstützt keine Benachrichtigungen." ]
@@ -561,7 +560,7 @@ translate mdString =
             [ Text "Zum Fernseher übertragen." ]
 
         CastConnecting ->
-            [ Text "Verbinden…" ]
+            [ Text "Verbinden..." ]
 
         CastConnected { deviceName } ->
             [ Text "Übertragung zu ", Text deviceName, Text "." ]
@@ -821,7 +820,7 @@ translate mdString =
                 , Text ", die ein Spieler zum Gewinnen des Spiels benötigt."
                 ]
             , Text " "
-            , Segment [ Text "Wenn Deaktiviert, wird das Spiel auf unbestimmte Zeit fortgesetzt." ]
+            , Segment [ Text "Wenn ausgeschaltet, wird das Spiel auf unbestimmte Zeit fortgesetzt." ]
             ]
 
         UnsavedChangesWarning ->
@@ -839,13 +838,13 @@ translate mdString =
             [ Text "Um das Spiel beginnen zu können, muss mindestens ein Kartensatz hinzugefügt werden." ]
 
         NeedAtLeastThreePlayers ->
-            [ Text "es müssen sich mindestens drei Spieler anmelden, um das Spiel beginnen zu können." ]
+            [ Text "Es müssen sich mindestens drei Spieler anmelden, um das Spiel beginnen zu können." ]
 
         NeedAtLeastOneHuman ->
             [ Text "Leider können Computerspieler nicht  "
             , Ref Czar
             , Text " sein, das Spiel erfordert also mindestens einen menschlichen Spieler, um beginnen zu können."
-            , Text " (auch wenn nur ein menscjlicher Spieler ein bisschen langweilig sein mag!)"
+            , Text " (auch wenn nur ein einzelner menschlicher Spieler ein bisschen langweilig sein mag!)"
             ]
 
         RandoCantWrite ->
@@ -917,7 +916,7 @@ translate mdString =
             [ Ref stage, Text " Zeitlimit" ]
 
         PlayingTimeLimitDescription ->
-            [ Text "Wie lange (in Sekunden) dürfen die Spieler ", Ref Players, Text " eine Asuwahl treffen." ]
+            [ Text "Wie lange (in Sekunden) dürfen die Spieler ", Ref Players, Text " eine Auswahl treffen." ]
 
         PlayingAfterDescription ->
             [ Text "Wie lange (in Sekunden) die Spieler ihr Spiel ändern dürfen, bevor die nächste Runde beginnt." ]
@@ -929,13 +928,13 @@ translate mdString =
             [ Text "Wie lange (in Sekunden) muss nach dem Aufdecken der letzten Karte gewartet werden, bevor die nächste Phase beginnt." ]
 
         JudgingTimeLimitDescription ->
-            [ Text "Wie lange (in Sekunden) hat der ", Ref Czar, Text " Zeit, die Runde bewerten." ]
+            [ Text "Wie lange (in Sekunden) hat der ", Ref Czar, Text " Zeit, die Runde zu bewerten." ]
 
         CompleteTimeLimitDescription ->
             [ Text "Wie viel Zeit (in Sekunden) muss nach dem Ende einer Runde gewartet werden, bevor die nächste Runde beginnt." ]
 
         RevealingEnabledTitle ->
-            [ Text "Zar enthüllt Spiele" ]
+            [ Text "Zar deckt Spiele auf" ]
 
         RevealingEnabled ->
             [ Text "Wenn aktiviert, wird der "
@@ -954,14 +953,14 @@ translate mdString =
 
         ConflictDescription ->
             [ Text "Jemand anderes hat Änderungen vorgenommen, während Du ebenfalls Änderungen vorgenommen hast. "
-            , Text "Bitte wähle aus, ob Du Deine Änderungen oder deren Änderungen behalten möchten."
+            , Text "Bitte wähle aus, ob Du Deine Änderungen oder die anderen Änderungen behalten möchten."
             ]
 
         YourChanges ->
             [ Text "Deine Änderungen" ]
 
         TheirChanges ->
-            [ Text "Deren Änderungen" ]
+            [ Text "Andere Änderungen" ]
 
         ConfigurationDisabledWhileInGame ->
             [ Text "Während das Spiel läuft, kannst Du die Konfiguration nicht ändern." ]
@@ -977,10 +976,10 @@ translate mdString =
             [ Text "Gib diese Karten dem ", Ref Czar, Text " zum Abschluss dieser Runde." ]
 
         TakeBackPlay ->
-            [ Text "Nehme Deine Karten zurück, um Ihr Spiel für die Runde zu ändern." ]
+            [ Text "Nimm Deine Karten zurück, um Dein Spiel für diese Runde zu ändern." ]
 
         JudgePlay ->
-            [ Text "Wähle dieses Spiel als Rundensieger." ]
+            [ Text "Wähle dieses Blatt als Rundensieger." ]
 
         LikePlay ->
             [ Text "Füge diesem Spiel ein Like hinzu." ]
@@ -992,7 +991,7 @@ translate mdString =
             [ Text "Spielen" ]
 
         Revealing ->
-            [ Text "Revealing" ]
+            [ Text "Aufdecken" ]
 
         Judging ->
             [ Text "Beurteilung" ]
@@ -1027,7 +1026,7 @@ translate mdString =
             [ Text "Du bist derzeit nicht im Spiel und spielst nicht." ]
 
         Discard ->
-            [ Text "Werfen die ausgewählte Karte ab und zeigen sie den anderen Spielern im Spiel." ]
+            [ Text "Lege die ausgewählte Karte ab und zeigen sie den anderen Spielern im Spiel." ]
 
         Discarded { player } ->
             [ Text player
@@ -1108,7 +1107,7 @@ translate mdString =
             [ Text "Informiere die Entwickler über einen Fehler, auf den Du gestoßen bist, damit sie ihn beheben können." ]
 
         ReportErrorBody ->
-            [ Text "Ich war [ersetze durch eine kurze Erklärung, was Du getan habst], als ich den folgenden Fehler erhielt:" ]
+            [ Text "Ich war [ersetze dies durch eine kurze Erklärung, was Du getan hast], als ich den folgenden Fehler erhielt:" ]
 
         BadUrlError ->
             [ Text "Wir haben versucht, einen Aufruf zu einer ungültigen Seite zu machen." ]
@@ -1144,13 +1143,13 @@ translate mdString =
             [ Text "Du musst ", Ref expected, Text " sein, um das machen zu können. Du bist aber ", Ref role, Text "." ]
 
         IncorrectUserRoleError { role, expected } ->
-            [ Text "Du musst ", Ref expected, Text " sein, um das machen zu können. Du bistaber ", Ref role, Text "." ]
+            [ Text "Du musst ", Ref expected, Text " sein, um das machen zu können. Du bist aber ", Ref role, Text "." ]
 
         IncorrectRoundStageError { stage, expected } ->
             [ Text "Die Runde muss bei der ", Ref expected, Text " Phase sein, um das machen zu können. Derzeit läuft die Phase ", Ref stage, Text "." ]
 
         ConfigEditConflictError ->
-            [ Text "Jemand anderes hat die Konfiguration vor Ihnen geändert, Ihre Änderung wurde nicht gespeichert." ]
+            [ Text "Jemand anderes hat die Konfiguration vor Ihnen geändert, Deine Änderung wurde nicht gespeichert." ]
 
         UnprivilegedError ->
             [ Text "Du hast nicht die Rechte, dies zu tun." ]
@@ -1168,10 +1167,10 @@ translate mdString =
             [ Text "Ihre Anmeldedaten für die Teilnahme an diesem Spiel sind veraltet, das Spiel existiert nicht mehr." ]
 
         InvalidAuthenticationError ->
-            [ Text "Ihre Zugangsdaten für die Teilnahme an diesem Spiel sind fehlerhaft." ]
+            [ Text "Deine Zugangsdaten für die Teilnahme an diesem Spiel sind fehlerhaft." ]
 
         InvalidLobbyPasswordError ->
-            [ Text "Das von Ihnen angegebene Spiel-Kennwort war falsch. Versuche es noch einmal einzugeben und wenn es immer noch nicht funktioniert, frage die Person, die Dich eingeladen hat, noch einmal." ]
+            [ Text "Das von Dir angegebene Spiel-Kennwort war falsch. Versuche es noch einmal einzugeben und wenn es immer noch nicht funktioniert, frage die Person, die Dich eingeladen hat, noch einmal." ]
 
         AlreadyLeftError ->
             [ Text "Du hast dieses Spiel bereits verlassen." ]
@@ -1195,14 +1194,14 @@ translate mdString =
         UsernameAlreadyInUseError { username } ->
             [ Text "Jemand benutzt bereits den Benutzernamen “"
             , Text username
-            , Text "”— versuche einen anderen Namen."
+            , Text "”— versuche bitte einen anderen Namen."
             ]
 
         GameError ->
             [ Text "Irgendetwas ist im Spiel schief gelaufen." ]
 
         OutOfCardsError ->
-            [ Text "Es waren nicht genug Karten im Stapel, um jedem eine Hand zu geben! Versuche, in der Spielkonfiguration weitere Kartensätze hinzuzufügen." ]
+            [ Text "Es waren nicht genug Karten im Stapel, um jedem Spieler eine Hand zu geben! Versuche in der Spielkonfiguration weitere Kartensätze hinzuzufügen." ]
 
         -- Language Names
         English ->
