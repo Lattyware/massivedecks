@@ -216,7 +216,7 @@ translate mdString =
             , Ref (Plural { singular = Response, amount = Nothing })
             , Text "— diese sind mit "
             , Ref (Draw { numberOfCards = 2 })
-            , Text " oder mehr beschriftet. Die Spieler erhalten entsprechend viele zusätzliche Karten für Ihre Hand."
+            , Text " oder mehr beschriftet. Die Spieler erhalten entsprechend viele zusätzliche Karten für ihre Hand."
             ]
 
         GameRulesTitle ->
@@ -379,7 +379,7 @@ translate mdString =
             [ Text "Du wirst mittels Browser-Benachrichtigungen benachrichtigt, wenn Du im Spiel etwas tun musst." ]
 
         NotificationsUnsupportedExplanation ->
-            [ Text "Ihr Browser unterstützt keine Benachrichtigungen." ]
+            [ Text "Dein Browser unterstützt keine Benachrichtigungen." ]
 
         NotificationsBrowserPermissions ->
             [ Text "Du musst eine Genehmigung für "
@@ -391,10 +391,10 @@ translate mdString =
             [ Text "Nur wenn versteckt" ]
 
         NotificationsOnlyWhenHiddenExplanation ->
-            [ Text "Sendet Benachrichtigungen nur, wenn Du Dir die Seite nicht ansehst (z.B.: auf einem anderen Tab oder minimiert)." ]
+            [ Text "Sendet Benachrichtigungen nur, wenn Du Dir die Seite nicht ansiehst (z.B.: auf einem anderen Tab oder minimiert)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Ihr Browser unterstützt die Überprüfung der Seitensichtbarkeit nicht." ]
+            [ Text "Dein Browser unterstützt die Überprüfung der Seitensichtbarkeit nicht." ]
 
         -- Terms
         Czar ->
@@ -431,7 +431,7 @@ translate mdString =
             [ Text "Spiel-Code" ]
 
         GameCodeDescription ->
-            [ Text "Ein Code, der es anderen Personen ermöglicht, Ihr Spiel zu finden und daran teilzunehmen." ]
+            [ Text "Ein Code, der es anderen Personen ermöglicht, Dein Spiel zu finden und daran teilzunehmen." ]
 
         GameCode { code } ->
             [ Text code ]
@@ -775,7 +775,7 @@ translate mdString =
             [ Text "Ein Kartensatz-Code muss mindestens fünf Zeichen lang sein." ]
 
         ManyDecksWhereToGet ->
-            [ Text "Du kannst Kartensätze zum Spielen erstellen und auf ", Ref ManyDecks, Text " finden." ]
+            [ Text "Du kannst Kartensätze bei ", Ref ManyDecks, Text " finden oder selbst erstellen." ]
 
         JsonAgainstHumanity ->
             [ Text "JSON Against Humanity" ]
@@ -887,7 +887,7 @@ translate mdString =
             ]
 
         StartGame ->
-            [ Text "Starte Spiel" ]
+            [ Text "Spiel starten" ]
 
         Public ->
             [ Text "Öffentliches Spiel" ]
@@ -916,7 +916,7 @@ translate mdString =
             [ Ref stage, Text " Zeitlimit" ]
 
         PlayingTimeLimitDescription ->
-            [ Text "Wie lange (in Sekunden) dürfen die Spieler ", Ref Players, Text " eine Auswahl treffen." ]
+            [ Text "Wie lange (in Sekunden) haben die ", Ref Players, Text " Zeit eine Auswahl treffen." ]
 
         PlayingAfterDescription ->
             [ Text "Wie lange (in Sekunden) die Spieler ihr Spiel ändern dürfen, bevor die nächste Runde beginnt." ]
@@ -939,7 +939,7 @@ translate mdString =
         RevealingEnabled ->
             [ Text "Wenn aktiviert, wird der "
             , Ref Czar
-            , Text " vor der Siegerauswahl die Antworten einzeln enthüllen."
+            , Text " vor der Siegerauswahl die Antworten einzeln aufdecken."
             ]
 
         DuringTitle ->
@@ -1039,7 +1039,7 @@ translate mdString =
             , Text (asWord numberOfCards)
             , Text " weitere "
             , Ref (Plural { singular = Response, amount = Just numberOfCards })
-            , Text " von Ihrer Hand abwerfen, bevor die Runde übermittelt werden kann."
+            , Text " von ihrer Hand abwerfen, bevor die Runde übermittelt werden kann."
             ]
 
         SubmitInstruction ->
@@ -1116,7 +1116,7 @@ translate mdString =
             [ Text "Der Server hat zu lange nicht geantwortet. Er ist möglicherweise ausgefallen, bitte versuche es nach einer kurzen Verzögerung erneut." ]
 
         NetworkError ->
-            [ Text "Ihre Internetverbindung wurde unterbrochen." ]
+            [ Text "Deine Internetverbindung wurde unterbrochen." ]
 
         ServerDownError ->
             [ Text "Der Spielserver ist derzeit offline. Bitte versuche es später noch einmal." ]
@@ -1164,7 +1164,7 @@ translate mdString =
             [ Text "Du kannst an diesem Spiel nicht teilnehmen." ]
 
         IncorrectIssuerError ->
-            [ Text "Ihre Anmeldedaten für die Teilnahme an diesem Spiel sind veraltet, das Spiel existiert nicht mehr." ]
+            [ Text "Deine Anmeldedaten für die Teilnahme an diesem Spiel sind veraltet, das Spiel existiert nicht mehr." ]
 
         InvalidAuthenticationError ->
             [ Text "Deine Zugangsdaten für die Teilnahme an diesem Spiel sind fehlerhaft." ]

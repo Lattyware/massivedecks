@@ -776,7 +776,7 @@ translate mdString =
             [ Text "Ein Kartensatz-Code muss mindestens fünf Zeichen lang sein." ]
 
         ManyDecksWhereToGet ->
-            [ Text "Sie können Kartensätze zum Spielen erstellen und auf ", Ref ManyDecks, Text " finden." ]
+            [ Text "Sie können Kartensätze bei ", Ref ManyDecks, Text " zum Spielen finden oder selber erstellen." ]
 
         JsonAgainstHumanity ->
             [ Text "JSON Against Humanity" ]
@@ -888,7 +888,7 @@ translate mdString =
             ]
 
         StartGame ->
-            [ Text "Starte Spiel" ]
+            [ Text "Spiel starten" ]
 
         Public ->
             [ Text "Öffentliches Spiel" ]
@@ -917,7 +917,7 @@ translate mdString =
             [ Ref stage, Text " Zeitlimit" ]
 
         PlayingTimeLimitDescription ->
-            [ Text "Wie lange (in Sekunden) dürfen die Spieler ", Ref Players, Text " eine Asuwahl treffen." ]
+            [ Text "Wie lange (in Sekunden) haben die ", Ref Players, Text " Zeit eine Auswahl treffen." ]
 
         PlayingAfterDescription ->
             [ Text "Wie lange (in Sekunden) die Spieler ihr Spiel ändern dürfen, bevor die nächste Runde beginnt." ]
@@ -929,7 +929,7 @@ translate mdString =
             [ Text "Wie lange (in Sekunden) muss nach dem Aufdecken der letzten Karte gewartet werden, bevor die nächste Phase beginnt." ]
 
         JudgingTimeLimitDescription ->
-            [ Text "Wie lange (in Sekunden) hat der ", Ref Czar, Text " Zeit, die Runde bewerten." ]
+            [ Text "Wie lange (in Sekunden) hat der ", Ref Czar, Text " Zeit, die Runde zu bewerten." ]
 
         CompleteTimeLimitDescription ->
             [ Text "Wie viel Zeit (in Sekunden) muss nach dem Ende einer Runde gewartet werden, bevor die nächste Runde beginnt." ]
@@ -940,7 +940,7 @@ translate mdString =
         RevealingEnabled ->
             [ Text "Wenn aktiviert, wird der "
             , Ref Czar
-            , Text " vor der Siegerauswahl die Antworten einzeln enthüllen."
+            , Text " vor der Siegerauswahl die Antworten einzeln aufdecken."
             ]
 
         DuringTitle ->
