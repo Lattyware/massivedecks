@@ -31,7 +31,7 @@ class Speech {
     this.out = out;
     this.get_voices();
 
-    inbound.subscribe(command => {
+    inbound.subscribe((command) => {
       this.say(command.voice, command.phrase);
     });
 
@@ -39,16 +39,17 @@ class Speech {
   }
 
   get_voices(): void {
-    const voices = this.speech.getVoices();
+    // The slice is a sanity check, Firefox can get pathological with voices.
+    const voices = this.speech.getVoices().slice(0, 100);
     this.voices.clear();
     for (const voice of voices) {
       this.voices.set(voice.name, voice);
     }
     this.out.send(
-      voices.map(voice => ({
+      voices.map((voice) => ({
         name: voice.name,
         lang: voice.lang,
-        ...(voice.default ? { default: true } : {})
+        ...(voice.default ? { default: true } : {}),
       }))
     );
   }

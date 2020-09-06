@@ -244,8 +244,19 @@ module.exports = (env, argv) => {
         },
       },
       minimizer: [
+        new ClosurePlugin(
+          {
+            mode: "STANDARD",
+            platform: "java",
+            test: /assets\/scripts\/.*\.js$/,
+          },
+          {
+            compilation_level: "SIMPLE_OPTIMIZATIONS",
+            externs: "src/js/extern.js",
+          }
+        ),
         new TerserPlugin({
-          test: /assets\/scripts\/(runtime|vendors)\..*\.js$/,
+          test: /assets\/scripts\/.*\.js$/,
           sourceMap: dev,
           parallel: true,
           terserOptions: {
@@ -254,17 +265,6 @@ module.exports = (env, argv) => {
             },
           },
         }),
-        new ClosurePlugin(
-          {
-            mode: "STANDARD",
-            platform: "javascript",
-            test: /assets\/scripts\/.*\.js$/,
-          },
-          {
-            compilation_level: "SIMPLE_OPTIMIZATIONS",
-            externs: "src/js/extern.js",
-          }
-        ),
       ],
     },
     devServer: {
