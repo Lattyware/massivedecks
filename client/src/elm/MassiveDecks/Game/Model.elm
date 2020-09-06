@@ -30,7 +30,7 @@ type alias Model =
     , hand : List Card.Response
     , filledCards : Dict Card.Id String
     , playStyles : PlayStyles
-    , completeRound : Maybe Round.Complete
+    , completeRound : Maybe (Round.Specific Round.Complete)
     , viewingHistory : Bool
     , time : Maybe Time
     , helpVisible : Bool
@@ -62,7 +62,7 @@ emptyModel game =
 -}
 type alias Game =
     { round : Round
-    , history : List Round.Complete
+    , history : List (Round.Specific Round.Complete)
     , playerOrder : List User.Id
     , players : Dict User.Id Player
     , rules : Rules

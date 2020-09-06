@@ -227,7 +227,7 @@ roundId =
 
 stage : Round.Stage -> Json.Value
 stage =
-    Round.stageToName >> Json.string
+    Round.stageToString >> Json.string
 
 
 checkAlive : List Lobby.Token -> Json.Value

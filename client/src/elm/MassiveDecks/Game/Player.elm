@@ -72,7 +72,7 @@ type PlayState
     | Played
 
 
-role : Round -> User.Id -> Role
+role : Round.Specific stageDetails -> User.Id -> Role
 role round id =
     if isCzar round id then
         RCzar
@@ -81,15 +81,15 @@ role round id =
         RPlayer
 
 
-isCzar : Round -> User.Id -> Bool
+isCzar : Round.Specific stageDetails -> User.Id -> Bool
 isCzar round id =
-    (round |> Round.data |> .czar) == id
+    (round |> .czar) == id
 
 
-playState : Round.Playing -> User.Id -> PlayState
+playState : Round.Specific Round.Playing -> User.Id -> PlayState
 playState round id =
     if Set.member id round.players then
-        if Set.member id round.played then
+        if Set.member id round.stage.played then
             Played
 
         else

@@ -19,47 +19,52 @@ import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Game.Model exposing (..)
 import MassiveDecks.Game.Player as Player
-import MassiveDecks.Game.Round as Round
+import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User exposing (User)
-import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Random as Random
 import Random
 import Set exposing (Set)
 
 
-init : (Msg -> msg) -> Round.Playing -> Round.Pick -> ( Round.Playing, Cmd msg )
+init : (Msg -> msg) -> Round.Specific Round.Playing -> Round.Pick -> ( Round, Cmd msg )
 init wrap round pick =
     let
         cmd =
             round.players
                 |> playStylesGenerator (Call.slotCount round.call)
                 |> Random.generate (Game.SetPlayStyles >> wrap)
+
+        stage =
+            round.stage
     in
-    ( { round | pick = pick }
+    ( round |> Round.withStage (Round.P { stage | pick = pick })
     , cmd
     )
 
 
-view : (Msg -> msg) -> Lobby.Auth -> Shared -> Config -> Dict User.Id User -> Model -> Round.Playing -> RoundView msg
+view : (Msg -> msg) -> Lobby.Auth -> Shared -> Config -> Dict User.Id User -> Model -> Round.Specific Round.Playing -> RoundView msg
 view wrap auth shared config _ model round =
     let
         slots =
             Call.slotCount round.call
 
+        stage =
+            round.stage
+
         missingFromPick =
-            slots - (round.pick.cards |> Dict.size)
+            slots - (stage.pick.cards |> Dict.size)
 
         self =
             auth.claims.uid
 
         ( action, instruction, notPlaying ) =
             if round.players |> Set.member self then
-                case round.pick.state of
+                case stage.pick.state of
                     Round.Selected ->
                         if missingFromPick > 0 then
                             ( Nothing, Strings.PlayInstruction { numberOfCards = missingFromPick }, False )
@@ -70,7 +75,7 @@ view wrap auth shared config _ model round =
                     Round.Submitted ->
                         ( Just Action.TakeBack, Strings.WaitingForPlaysInstruction, True )
 
-            else if Player.isCzar (Round.P round) self then
+            else if Player.isCzar round self then
                 ( Nothing, Strings.CzarsDontPlayInstruction, True )
 
             else
@@ -86,11 +91,11 @@ view wrap auth shared config _ model round =
                     , ( "pick-full", missingFromPick < 1 )
                     ]
                 ]
-                (model.hand |> List.map (round.pick.cards |> viewHandCard wrap shared config model.filledCards))
+                (model.hand |> List.map (stage.pick.cards |> viewHandCard wrap shared config model.filledCards))
 
         backgroundPlays =
             Html.div [ HtmlA.class "background-plays" ]
-                (round.players |> Set.toList |> List.map (viewBackgroundPlay shared model.playStyles slots round.played))
+                (round.players |> Set.toList |> List.map (viewBackgroundPlay shared model.playStyles slots stage.played))
 
         fillCustom _ p =
             List.find (\c -> c.details.id == p) model.hand
@@ -98,7 +103,7 @@ view wrap auth shared config _ model round =
                 |> Maybe.withDefault ""
 
         picked =
-            round.pick.cards |> Dict.map fillCustom
+            stage.pick.cards |> Dict.map fillCustom
 
         showNonObviousSlotIndices =
             if round.call.body |> Parts.nonObviousSlotIndices then
@@ -111,7 +116,7 @@ view wrap auth shared config _ model round =
             List.concat
                 [ [ Game.Unpick i |> wrap |> HtmlE.onClick ]
                 , DragDrop.droppable (Game.Drag >> wrap) i
-                , round.pick.cards
+                , stage.pick.cards
                     |> Dict.get i
                     |> Maybe.map (DragDrop.draggable (Game.Drag >> wrap))
                     |> Maybe.withDefault []

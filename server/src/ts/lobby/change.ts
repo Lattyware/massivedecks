@@ -34,14 +34,14 @@ export function reduce<T, L extends Lobby>(
   toChange: (lobby: L, item: T) => ConstrainedChange<L>
 ): ConstrainedChange<L> {
   let currentLobby = lobby;
-  let lobbyUnchanged = true;
+  let lobbyChanged = false;
   const events: Event.Distributor[] = [];
   const timeouts: Timeout.After[] = [];
   const tasks: Task[] = [];
   for (const item of items) {
     const result = toChange(currentLobby, item);
     if (result.lobby !== undefined) {
-      lobbyUnchanged = false;
+      lobbyChanged = true;
       currentLobby = result.lobby;
     }
     if (result.events !== undefined) {
@@ -55,7 +55,7 @@ export function reduce<T, L extends Lobby>(
     }
   }
   return {
-    ...(lobbyUnchanged ? { lobby: currentLobby } : {}),
+    ...(lobbyChanged ? { lobby: currentLobby } : {}),
     ...(events.length > 0 ? { events } : {}),
     ...(timeouts.length > 0 ? { timeouts } : {}),
     ...(tasks.length > 0 ? { tasks } : {}),

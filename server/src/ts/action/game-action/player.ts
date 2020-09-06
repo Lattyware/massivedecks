@@ -1,9 +1,12 @@
 import * as Actions from "./../actions";
-import * as Like from "./player/like";
 import * as Submit from "./player/submit";
 import * as TakeBack from "./player/take-back";
 import * as Fill from "./player/fill";
 import * as Discard from "./player/discard";
+import * as Action from "../../action";
+import * as Lobby from "../../lobby";
+import * as Token from "../../user/token";
+import * as GameAction from "../game-action";
 
 /**
  * An action only players can perform.
@@ -11,14 +14,27 @@ import * as Discard from "./player/discard";
 export type Player =
   | Submit.Submit
   | TakeBack.TakeBack
-  | Like.Like
   | Fill.Fill
   | Discard.Discard;
 
-export const actions = new Actions.PassThroughGroup(
-  Submit.actions,
-  TakeBack.actions,
-  Like.actions,
-  Fill.actions,
-  Discard.actions
-);
+class PlayerActions extends Actions.Group<
+  Action.Action,
+  Player,
+  Lobby.WithActiveGame,
+  Lobby.WithActiveGame
+> {
+  constructor() {
+    super(Submit.actions, TakeBack.actions, Fill.actions, Discard.actions);
+  }
+
+  limit(
+    auth: Token.Claims,
+    lobby: Lobby.WithActiveGame,
+    action: Player
+  ): lobby is Lobby.WithActiveGame {
+    GameAction.expectRole(auth, action, lobby.game, "Player");
+    return true;
+  }
+}
+
+export const actions = new PlayerActions();

@@ -12,6 +12,7 @@ import * as EnforceTimeLimit from "./game-action/enforce-time-limit";
 import * as PlayerAction from "./game-action/player";
 import * as Redraw from "./game-action/redraw";
 import * as SetPresence from "./game-action/set-presence";
+import * as Like from "./game-action/like";
 
 /**
  * An action only a player can perform.
@@ -21,7 +22,8 @@ export type GameAction =
   | Czar.Czar
   | Redraw.Redraw
   | EnforceTimeLimit.EnforceTimeLimit
-  | SetPresence.SetPresence;
+  | SetPresence.SetPresence
+  | Like.Like;
 
 class GameActions extends Actions.Group<
   Action.Action,
@@ -35,7 +37,8 @@ class GameActions extends Actions.Group<
       Czar.actions,
       Redraw.actions,
       EnforceTimeLimit.actions,
-      SetPresence.actions
+      SetPresence.actions,
+      Like.actions
     );
   }
 

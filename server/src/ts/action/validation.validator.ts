@@ -40,9 +40,6 @@ export const Schema = {
           $ref: "#/definitions/TakeBack",
         },
         {
-          $ref: "#/definitions/Like",
-        },
-        {
           $ref: "#/definitions/Fill",
         },
         {
@@ -59,6 +56,9 @@ export const Schema = {
         },
         {
           $ref: "#/definitions/EnforceTimeLimit",
+        },
+        {
+          $ref: "#/definitions/Like",
         },
         {
           $ref: "#/definitions/Configure",
@@ -384,7 +384,7 @@ export const Schema = {
       type: "object",
     },
     Id: {
-      description: "A unique id for a play.",
+      description: "A unique id for an instance of a card.",
       type: "string",
     },
     Id_1: {
@@ -455,7 +455,7 @@ export const Schema = {
     Like: {
       additionalProperties: false,
       defaultProperties: [],
-      description: "A player plays a white card into a round.",
+      description: "A player or spectator likes a play.",
       properties: {
         action: {
           enum: ["Like"],

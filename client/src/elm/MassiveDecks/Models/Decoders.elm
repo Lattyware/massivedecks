@@ -18,6 +18,7 @@ module MassiveDecks.Models.Decoders exposing
     , revealingRound
     , settings
     , sourceInfo
+    , specificRound
     , tokenValidity
     , userId
     , userSummary
@@ -286,7 +287,7 @@ game : Maybe LikeDetail -> Json.Decoder Game
 game ld =
     Json.succeed Game
         |> Json.required "round" (round ld)
-        |> Json.required "history" (Json.list completeRound)
+        |> Json.required "history" (Json.list (specificRound (completeRound Nothing)))
         |> Json.required "playerOrder" (Json.list userId)
         |> Json.required "players" (Json.dict player)
         |> Json.required "rules" rules
@@ -862,7 +863,7 @@ privilegeChanged =
 gameStarted : Json.Decoder Events.Event
 gameStarted =
     Json.succeed (\r -> \h -> { round = r, hand = h } |> Events.GameStarted)
-        |> Json.required "round" playingRound
+        |> Json.required "round" (specificRound playingRound)
         |> Json.optional "hand" (Json.list response |> Json.map Just) Nothing
 
 
@@ -1094,26 +1095,39 @@ styleByName name =
 
 round : Maybe LikeDetail -> Json.Decoder Round
 round ld =
-    Json.field "stage" Json.string |> Json.andThen (roundByName ld)
+    let
+        stageDetailsByName name =
+            case name of
+                "Playing" ->
+                    playingRound |> Json.map Round.P
+
+                "Revealing" ->
+                    revealingRound ld |> Json.map Round.R
+
+                "Judging" ->
+                    judgingRound ld |> Json.map Round.J
+
+                "Complete" ->
+                    completeRound ld |> Json.map Round.C
+
+                _ ->
+                    unknownValue "round stage" name
+
+        byName stageName =
+            specificRound (Json.field "stage" (stageDetailsByName stageName))
+    in
+    Json.field "stage" Json.string |> Json.andThen byName
 
 
-roundByName : Maybe LikeDetail -> String -> Json.Decoder Round
-roundByName ld name =
-    case name of
-        "Playing" ->
-            playingRound |> Json.map Round.P
-
-        "Revealing" ->
-            revealingRound ld |> Json.map Round.R
-
-        "Judging" ->
-            judgingRound ld |> Json.map Round.J
-
-        "Complete" ->
-            completeRound |> Json.map Round.C
-
-        _ ->
-            unknownValue "round stage" name
+specificRound : Json.Decoder stageDetails -> Json.Decoder (Round.Specific stageDetails)
+specificRound stageDetails =
+    Json.succeed Round.Specific
+        |> Json.required "id" Round.idDecoder
+        |> Json.required "czar" userId
+        |> Json.required "players" playerSet
+        |> Json.required "call" call
+        |> Json.required "startedAt" Time.timeDecoder
+        |> Json.custom stageDetails
 
 
 playerSet : Json.Decoder (Set User.Id)
@@ -1123,13 +1137,8 @@ playerSet =
 
 playingRound : Json.Decoder Round.Playing
 playingRound =
-    Json.succeed Round.playing
-        |> Json.required "id" Round.idDecoder
-        |> Json.required "czar" userId
-        |> Json.required "players" playerSet
-        |> Json.required "call" call
+    Json.succeed (Round.Playing Round.noPick)
         |> Json.required "played" playerSet
-        |> Json.required "startedAt" Time.timeDecoder
         |> Json.optional "timedOut" Json.bool False
 
 
@@ -1142,39 +1151,25 @@ likeDetail =
 
 revealingRound : Maybe Round.LikeDetail -> Json.Decoder Round.Revealing
 revealingRound ld =
-    Json.succeed (Round.revealing ld)
-        |> Json.required "id" Round.idDecoder
-        |> Json.required "czar" userId
-        |> Json.required "players" playerSet
-        |> Json.required "call" call
+    Json.succeed (Round.Revealing (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing Nothing)
         |> Json.required "plays" (Json.list play)
-        |> Json.required "startedAt" Time.timeDecoder
         |> Json.optional "timedOut" Json.bool False
 
 
 judgingRound : Maybe Round.LikeDetail -> Json.Decoder Round.Judging
 judgingRound ld =
-    Json.succeed (Round.judging Nothing ld)
-        |> Json.required "id" Round.idDecoder
-        |> Json.required "czar" userId
-        |> Json.required "players" playerSet
-        |> Json.required "call" call
+    Json.succeed (Round.Judging (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing)
         |> Json.required "plays" (Json.list knownPlay)
-        |> Json.required "startedAt" Time.timeDecoder
         |> Json.optional "timedOut" Json.bool False
 
 
-completeRound : Json.Decoder Round.Complete
-completeRound =
-    Json.map8 Round.complete
-        (Json.field "id" Round.idDecoder)
-        (Json.field "czar" userId)
-        (Json.field "players" playerSet)
-        (Json.field "call" call)
-        (Json.field "plays" (Json.dict playWithLikes))
-        (Json.field "playOrder" (Json.list userId))
-        (Json.field "winner" userId)
-        (Json.field "startedAt" Time.timeDecoder)
+completeRound : Maybe Round.LikeDetail -> Json.Decoder Round.Complete
+completeRound ld =
+    Json.succeed (Round.Complete (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing)
+        |> Json.required "playedBy" (Json.dict playId)
+        |> Json.required "plays" (Json.dict playWithLikes)
+        |> Json.required "playOrder" (Json.list userId)
+        |> Json.required "winner" userId
 
 
 playWithLikes : Json.Decoder Play.WithLikes

@@ -12,6 +12,7 @@ import { StageTimerDone } from "./game-event/stage-timer-done";
 import { StartRevealing } from "./game-event/start-revealing";
 import { StartJudging } from "./game-event/start-judging";
 import { CardDiscarded } from "./game-event/card-discarded";
+import { PlayLiked } from "./game-event/play-liked";
 
 export type GameEvent =
   | GameStarted
@@ -27,4 +28,5 @@ export type GameEvent =
   | PlayerPresenceChanged
   | PauseStateChanged
   | StageTimerDone
-  | GameEnded;
+  | GameEnded
+  | PlayLiked;

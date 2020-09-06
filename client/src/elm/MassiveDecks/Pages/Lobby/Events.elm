@@ -32,7 +32,7 @@ type Event
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : Json.Patch }
       -- Not a game event because we don't need to be in a game
-    | GameStarted { round : Round.Playing, hand : Maybe (List Card.Response) }
+    | GameStarted { round : Round.Specific Round.Playing, hand : Maybe (List Card.Response) }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
     | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.Response) }
@@ -51,6 +51,7 @@ type GameEvent
     | CardDiscarded { player : User.Id, card : Card.Response, replacement : Maybe Card.Response }
     | PlaySubmitted { by : User.Id }
     | PlayTakenBack { by : User.Id }
+    | PlayLiked { play : Play.Id }
     | PlayerAway { player : User.Id }
     | PlayerBack { player : User.Id }
     | Timed TimedState

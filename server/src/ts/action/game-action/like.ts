@@ -1,12 +1,14 @@
-import * as Play from "../../../games/cards/play";
-import * as Round from "../../../games/game/round";
-import * as Lobby from "../../../lobby";
-import * as Actions from "../../actions";
-import * as Handler from "../../handler";
-import { Player } from "../player";
+import * as Play from "../../games/cards/play";
+import * as Round from "../../games/game/round";
+import * as Lobby from "../../lobby";
+import * as Actions from "../actions";
+import * as Handler from "../handler";
+import { GameAction } from "../game-action";
+import * as PlayLiked from "../../events/game-event/play-liked";
+import * as Event from "../../event";
 
 /**
- * A player plays a white card into a round.
+ * A player or spectator likes a play.
  */
 export interface Like {
   action: "Like";
@@ -14,7 +16,7 @@ export interface Like {
 }
 
 class LikeActions extends Actions.Implementation<
-  Player,
+  GameAction,
   Like,
   "Like",
   Lobby.WithActiveGame
@@ -27,11 +29,9 @@ class LikeActions extends Actions.Implementation<
     action
   ) => {
     if (
-      lobby.game.round.verifyStage<Round.Revealing | Round.Judging>(
-        action,
-        "Revealing",
-        "Judging"
-      )
+      lobby.game.round.verifyStage<
+        Round.Revealing | Round.Judging | Round.Complete
+      >(action, "Revealing", "Judging", "Complete")
     ) {
       const cRound = lobby.game.round;
       const target = cRound.plays.find((p) => p.id === action.play);
@@ -41,8 +41,13 @@ class LikeActions extends Actions.Implementation<
         target.likes.find((id) => id === auth.uid) === undefined
       ) {
         target.likes.push(auth.uid);
+        const events =
+          lobby.game.round.stage === "Complete"
+            ? [Event.targetAll(PlayLiked.of(action.play))]
+            : [];
         return {
           lobby,
+          events,
         };
       } else {
         return {};

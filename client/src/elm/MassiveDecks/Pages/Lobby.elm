@@ -197,7 +197,11 @@ update wrap shared msg model =
                         Events.GameStarted { round, hand } ->
                             let
                                 ( g, gameCmd ) =
-                                    Game.applyGameStarted (GameMsg >> wrap) lobby round (hand |> Maybe.withDefault [])
+                                    Game.applyGameStarted
+                                        (GameMsg >> wrap)
+                                        lobby
+                                        (round |> Round.withStage (Round.P round.stage))
+                                        (hand |> Maybe.withDefault [])
 
                                 r =
                                     model.route
@@ -1157,21 +1161,25 @@ userDetails shared game userId user =
 
 
 playStateDetail : Maybe Round -> User.Id -> Maybe ( String, MdString )
-playStateDetail round userId =
-    case round of
-        Just (Round.P p) ->
-            case Player.playState p userId of
-                Player.Playing ->
-                    Just ( "playing", Strings.StillPlaying )
+playStateDetail maybeRound userId =
+    let
+        givenRound round =
+            case round.stage of
+                Round.P stage ->
+                    case Player.playState (Round.withStage stage round) userId of
+                        Player.Playing ->
+                            Just ( "playing", Strings.StillPlaying )
 
-                Player.Played ->
-                    Just ( "played", Strings.Played )
+                        Player.Played ->
+                            Just ( "played", Strings.Played )
 
-                Player.NotInRound ->
+                        Player.NotInRound ->
+                            Nothing
+
+                _ ->
                     Nothing
-
-        _ ->
-            Nothing
+    in
+    maybeRound |> Maybe.andThen givenRound
 
 
 viewDetails : Shared -> List (Maybe ( String, MdString )) -> List (Html msg)

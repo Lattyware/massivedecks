@@ -24,40 +24,44 @@ import Set exposing (Set)
 
 view : Shared -> Config -> Dict User.Id User -> Game.Model -> List (Html msg)
 view shared config users game =
-    case game.game.round of
+    let
+        round =
+            game.game.round
+    in
+    case round.stage of
         Round.P playing ->
-            viewPlaying shared config game.playStyles playing
+            viewPlaying shared config game.playStyles round playing
 
         Round.R revealing ->
-            viewRevealing shared config users revealing
+            viewRevealing shared config users round revealing
 
         Round.J judging ->
-            viewJudging shared config users judging
+            viewJudging shared config users round judging
 
         Round.C complete ->
-            viewComplete shared config users complete
+            viewComplete shared config users round complete
 
 
 
 {- Private -}
 
 
-viewPlaying : Shared -> Config -> Game.PlayStyles -> Round.Playing -> List (Html msg)
-viewPlaying shared config playStyles round =
+viewPlaying : Shared -> Config -> Game.PlayStyles -> Round -> Round.Playing -> List (Html msg)
+viewPlaying shared config playStyles round stage =
     let
         slots =
             round.call |> Call.slotCount
     in
     [ viewCall shared config Nothing round.call
-    , viewUnknownPlays shared slots playStyles round.players round.played
+    , viewUnknownPlays shared slots playStyles round.players stage.played
     ]
 
 
-viewRevealing : Shared -> Config -> Dict User.Id User -> Round.Revealing -> List (Html msg)
-viewRevealing shared config users round =
+viewRevealing : Shared -> Config -> Dict User.Id User -> Round -> Round.Revealing -> List (Html msg)
+viewRevealing shared config users round stage =
     let
         fillWith =
-            case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
+            case stage.plays |> List.filter (\p -> Just p.id == stage.lastRevealed) of
                 play :: [] ->
                     play.responses |> Maybe.map Parts.fillsFromPlay
 
@@ -65,35 +69,35 @@ viewRevealing shared config users round =
                     Nothing
 
         plays =
-            round.plays |> List.map (\p -> ( Nothing, p.responses |> Maybe.map (\r -> { play = r, likes = Nothing }) ))
+            stage.plays |> List.map (\p -> ( Nothing, p.responses |> Maybe.map (\r -> { play = r, likes = Nothing }) ))
     in
     [ viewCall shared config fillWith round.call
     , viewPlays shared config (round.call |> Call.slotCount) users Nothing plays
     ]
 
 
-viewJudging : Shared -> Config -> Dict User.Id User -> Round.Judging -> List (Html msg)
-viewJudging shared config users round =
+viewJudging : Shared -> Config -> Dict User.Id User -> Round -> Round.Judging -> List (Html msg)
+viewJudging shared config users round stage =
     let
         plays =
-            round.plays |> List.map (\p -> ( Nothing, Just { play = p.responses, likes = Nothing } ))
+            stage.plays |> List.map (\p -> ( Nothing, Just { play = p.responses, likes = Nothing } ))
     in
     [ viewCall shared config Nothing round.call
     , viewPlays shared config (round.call |> Call.slotCount) users Nothing plays
     ]
 
 
-viewComplete : Shared -> Config -> Dict User.Id User -> Round.Complete -> List (Html msg)
-viewComplete shared config users round =
+viewComplete : Shared -> Config -> Dict User.Id User -> Round -> Round.Complete -> List (Html msg)
+viewComplete shared config users round stage =
     let
         plays =
-            round.playOrder |> List.map (\u -> ( Just u, Dict.get u round.plays ))
+            stage.playOrder |> List.map (\u -> ( Just u, Dict.get u stage.plays ))
 
         winner =
-            Dict.get round.winner round.plays |> Maybe.map (.play >> Parts.fillsFromPlay)
+            Dict.get stage.winner stage.plays |> Maybe.map (.play >> Parts.fillsFromPlay)
     in
     [ viewCall shared config winner round.call
-    , viewPlays shared config (round.call |> Call.slotCount) users (Just round.winner) plays
+    , viewPlays shared config (round.call |> Call.slotCount) users (Just stage.winner) plays
     ]
 
 

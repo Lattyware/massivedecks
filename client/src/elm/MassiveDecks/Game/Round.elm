@@ -1,6 +1,5 @@
 module MassiveDecks.Game.Round exposing
     ( Complete
-    , Data
     , Id
     , Judging
     , LikeDetail
@@ -8,19 +7,18 @@ module MassiveDecks.Game.Round exposing
     , PickState(..)
     , Playing
     , Revealing
-    , Round(..)
+    , Round
+    , Specific
     , Stage(..)
-    , complete
-    , data
+    , StageDetails(..)
+    , defaultLikeDetail
     , idDecoder
     , idString
-    , judging
     , noPick
-    , playing
-    , revealing
     , stage
     , stageDescription
-    , stageToName
+    , stageToString
+    , withStage
     )
 
 import Dict exposing (Dict)
@@ -60,9 +58,9 @@ type Stage
 
 {-| Get the stage of the given round.
 -}
-stage : Round -> Stage
-stage round =
-    case round of
+stage : StageDetails -> Stage
+stage specific =
+    case specific of
         P _ ->
             SPlaying
 
@@ -78,8 +76,8 @@ stage round =
 
 {-| Get the serializing name for the stage.
 -}
-stageToName : Stage -> String
-stageToName s =
+stageToString : Stage -> String
+stageToString s =
     case s of
         SPlaying ->
             "Playing"
@@ -114,30 +112,36 @@ stageDescription toDescribe =
 
 {-| A round during a game.
 -}
-type Round
+type alias Round =
+    Specific StageDetails
+
+
+type alias Specific stageDetails =
+    { id : Id
+    , czar : User.Id
+    , players : Set User.Id
+    , call : Card.Call
+    , startedAt : Time
+    , stage : stageDetails
+    }
+
+
+withStage : stageDetails -> Specific oldDetails -> Specific stageDetails
+withStage newStage round =
+    { id = round.id
+    , czar = round.czar
+    , players = round.players
+    , call = round.call
+    , startedAt = round.startedAt
+    , stage = newStage
+    }
+
+
+type StageDetails
     = P Playing
     | R Revealing
     | J Judging
     | C Complete
-
-
-{-| A round while users are playing a round.
--}
-type alias Playing =
-    Data { played : Set User.Id, pick : Pick, timedOut : Bool }
-
-
-playing : Id -> User.Id -> Set User.Id -> Card.Call -> Set User.Id -> Time -> Bool -> Playing
-playing id czar players call played startedAt timedOut =
-    { id = id
-    , czar = czar
-    , players = players
-    , call = call
-    , played = played
-    , pick = { state = Selected, cards = Dict.empty }
-    , startedAt = startedAt
-    , timedOut = timedOut
-    }
 
 
 type alias LikeDetail =
@@ -150,97 +154,6 @@ defaultLikeDetail : LikeDetail
 defaultLikeDetail =
     { played = Nothing
     , liked = Set.empty
-    }
-
-
-type alias Revealing =
-    Data
-        { plays : List Play
-        , lastRevealed : Maybe Play.Id
-        , pick : Maybe Play.Id
-        , likeDetail : LikeDetail
-        , timedOut : Bool
-        }
-
-
-revealing : Maybe LikeDetail -> Id -> User.Id -> Set User.Id -> Card.Call -> List Play -> Time -> Bool -> Revealing
-revealing likeDetail id czar players call plays startedAt timedOut =
-    { id = id
-    , czar = czar
-    , players = players
-    , call = call
-    , plays = plays
-    , lastRevealed = Nothing
-    , startedAt = startedAt
-    , pick = Nothing
-    , likeDetail = likeDetail |> Maybe.withDefault defaultLikeDetail
-    , timedOut = timedOut
-    }
-
-
-{-| A round while the czar is judging a round.
--}
-type alias Judging =
-    Data
-        { plays : List Play.Known
-        , pick : Maybe Play.Id
-        , likeDetail : LikeDetail
-        , timedOut : Bool
-        }
-
-
-judging :
-    Maybe Play.Id
-    -> Maybe LikeDetail
-    -> Id
-    -> User.Id
-    -> Set User.Id
-    -> Card.Call
-    -> List Play.Known
-    -> Time
-    -> Bool
-    -> Judging
-judging pick likeDetail id czar players call plays startedAt timedOut =
-    { id = id
-    , czar = czar
-    , players = players
-    , call = call
-    , plays = plays
-    , pick = pick
-    , likeDetail = likeDetail |> Maybe.withDefault defaultLikeDetail
-    , startedAt = startedAt
-    , timedOut = timedOut
-    }
-
-
-{-| A round that has been finished.
--}
-type alias Complete =
-    Data { plays : Dict User.Id Play.WithLikes, playOrder : List User.Id, winner : User.Id }
-
-
-complete : Id -> User.Id -> Set User.Id -> Card.Call -> Dict User.Id Play.WithLikes -> List User.Id -> User.Id -> Time -> Complete
-complete id czar players call plays playOrder winner startedAt =
-    { id = id
-    , czar = czar
-    , players = players
-    , call = call
-    , plays = plays
-    , playOrder = playOrder
-    , winner = winner
-    , startedAt = startedAt
-    }
-
-
-{-| Data common to all rounds.
--}
-type alias Data specific =
-    { specific
-        | id : Id
-        , czar : User.Id
-        , players : Set User.Id
-        , call : Card.Call
-        , startedAt : Time
     }
 
 
@@ -262,22 +175,41 @@ type PickState
     | Submitted
 
 
-data : Round -> Data {}
-data round =
-    case round of
-        P rd ->
-            extract rd
-
-        J rd ->
-            extract rd
-
-        C rd ->
-            extract rd
-
-        R rd ->
-            extract rd
+{-| A round while users are playing a round.
+-}
+type alias Playing =
+    { pick : Pick
+    , played : Set User.Id
+    , timedOut : Bool
+    }
 
 
-extract : Data a -> Data {}
-extract rd =
-    { id = rd.id, call = rd.call, czar = rd.czar, players = rd.players, startedAt = rd.startedAt }
+type alias Revealing =
+    { likeDetail : LikeDetail
+    , lastRevealed : Maybe Play.Id
+    , pick : Maybe Play.Id
+    , plays : List Play
+    , timedOut : Bool
+    }
+
+
+{-| A round while the czar is judging a round.
+-}
+type alias Judging =
+    { likeDetail : LikeDetail
+    , pick : Maybe Play.Id
+    , plays : List Play.Known
+    , timedOut : Bool
+    }
+
+
+{-| A round that has been finished.
+-}
+type alias Complete =
+    { likeDetail : LikeDetail
+    , pick : Maybe Play.Id
+    , playedBy : Dict User.Id Play.Id
+    , plays : Dict Play.Id Play.WithLikes
+    , playOrder : List User.Id
+    , winner : User.Id
+    }

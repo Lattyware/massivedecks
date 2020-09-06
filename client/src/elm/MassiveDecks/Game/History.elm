@@ -22,7 +22,7 @@ import MassiveDecks.Util.NeList as NeList
 import Material.IconButton as IconButton
 
 
-view : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> String -> List Round.Complete -> List (Html msg)
+view : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> String -> List (Round.Specific Round.Complete) -> List (Html msg)
 view wrap shared config users name history =
     [ Html.div [ HtmlA.id "top-content" ]
         [ Html.div [ HtmlA.id "minor-actions" ]
@@ -49,28 +49,31 @@ view wrap shared config users name history =
 {- Private -}
 
 
-viewRound : Shared -> Config -> Dict User.Id User -> Round.Complete -> ( String, Html msg )
+viewRound : Shared -> Config -> Dict User.Id User -> Round.Specific Round.Complete -> ( String, Html msg )
 viewRound shared config users round =
     let
         winning =
-            round.plays |> Dict.get round.winner
+            round.stage.plays |> Dict.get round.stage.winner
 
         winningBody =
             winning
                 |> Maybe.map .play
                 |> Maybe.map (List.indexedMap (\i v -> ( i, v.body )) >> Dict.fromList)
                 |> Maybe.withDefault Dict.empty
+
+        byLine =
+            { by = round.czar, specialRole = Just Plays.Czar, likes = Nothing }
     in
     ( Round.idString round.id
     , Html.li [ HtmlA.class "historic-round" ]
         [ Html.div [ HtmlA.class "spacer" ]
             [ Html.div [ HtmlA.class "historic-call with-byline" ]
-                [ Plays.byLine shared users round.czar (Just ( "czar", Icon.gavel )) Nothing
+                [ Plays.viewByLine shared users byLine
                 , Call.viewFilled shared config Card.Front [] (always []) winningBody round.call
                 ]
             ]
         , HtmlK.ul [ HtmlA.class "plays cards" ]
-            (round.plays |> Dict.toList |> List.map (viewPlay shared config users round.winner))
+            (round.stage.plays |> Dict.toList |> List.map (viewPlay shared config users round.stage.winner))
         ]
     )
 
@@ -83,7 +86,7 @@ viewPlay shared config users winner ( id, { play, likes } ) =
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.byLine shared users id (( "trophy", Icon.trophy ) |> Maybe.justIf (winner == id)) likes
+        [ Plays.viewByLine shared users (Plays.ByLine id (Plays.Winner |> Maybe.justIf (winner == id)) likes)
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )

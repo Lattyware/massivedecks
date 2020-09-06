@@ -1,6 +1,6 @@
 module MassiveDecks.Game.Round.Revealing exposing (view)
 
-import Dict
+import Dict exposing (Dict)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
@@ -17,15 +17,19 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
+import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
 import Set exposing (Set)
 
 
-view : (Msg -> msg) -> Auth -> Shared -> Config -> Round.Revealing -> RoundView msg
-view wrap auth shared config round =
+view : (Msg -> msg) -> Auth -> Shared -> Dict User.Id User -> Config -> Round.Specific Round.Revealing -> RoundView msg
+view wrap auth shared users config round =
     let
         role =
-            Player.role (Round.R round) auth.claims.uid
+            Player.role round auth.claims.uid
+
+        stage =
+            round.stage
 
         { msg, action, instruction, isCzar } =
             case role of
@@ -43,13 +47,13 @@ view wrap auth shared config round =
                 Player.RPlayer ->
                     let
                         canBeLiked id =
-                            (Just id /= round.likeDetail.played) && not (Set.member id round.likeDetail.liked)
+                            (Just id /= stage.likeDetail.played) && not (Set.member id stage.likeDetail.liked)
 
                         msgPick { id, responses } =
                             id |> PickPlay |> wrap |> Maybe.justIf (canBeLiked id && (responses /= Nothing))
                     in
                     { msg = msgPick
-                    , action = Maybe.andThen (\p -> Action.Like |> Maybe.justIf (canBeLiked p)) round.pick
+                    , action = Maybe.andThen (\p -> Action.Like |> Maybe.justIf (canBeLiked p)) stage.pick
                     , instruction = Strings.WaitingForCzarInstruction
                     , isCzar = False
                     }
@@ -58,10 +62,10 @@ view wrap auth shared config round =
             Call.slotCount round.call
 
         plays =
-            round.plays |> List.map (playDetails shared config round.likeDetail.liked slots msg)
+            stage.plays |> List.map (playDetails shared config slots msg)
 
         lastRevealed =
-            case round.plays |> List.filter (\p -> Just p.id == round.lastRevealed) of
+            case stage.plays |> List.filter (\p -> Just p.id == stage.lastRevealed) of
                 play :: [] ->
                     play.responses |> Maybe.map Parts.fillsFromPlay
 
@@ -70,7 +74,7 @@ view wrap auth shared config round =
     in
     { instruction = Just instruction
     , action = action
-    , content = plays |> Plays.view [ ( "revealing", True ), ( "is-czar", isCzar ) ] round.pick
+    , content = plays |> Plays.view shared users [ ( "revealing", True ), ( "is-czar", isCzar ) ] stage.likeDetail.liked stage.pick
     , slotAttrs = always []
     , fillCallWith = lastRevealed |> Maybe.withDefault Dict.empty
     , roundAttrs = []
@@ -81,8 +85,8 @@ view wrap auth shared config round =
 {- Private -}
 
 
-playDetails : Shared -> Config -> Set Play.Id -> Int -> (Play -> Maybe msg) -> Play -> Plays.Details msg
-playDetails shared config liked slots msg play =
+playDetails : Shared -> Config -> Int -> (Play -> Maybe msg) -> Play -> Plays.Details msg
+playDetails shared config slots msg play =
     let
         { id, responses } =
             play
@@ -90,19 +94,9 @@ playDetails shared config liked slots msg play =
         maybeMsg =
             msg play
 
-        cls =
-            if maybeMsg /= Nothing then
-                [ HtmlA.class "active" ]
-
-            else
-                []
-
         cards =
             responses
                 |> Maybe.map (List.map (\r -> Response.view shared config Card.Front [] r))
                 |> Maybe.withDefault (List.repeat slots (Response.viewUnknown shared []))
-
-        attrs =
-            [ HtmlA.class "liked" ] |> Maybe.justIf (Set.member id liked) |> Maybe.withDefault []
     in
-    Plays.Details id cards maybeMsg (attrs ++ cls)
+    Plays.Details id cards maybeMsg Nothing
