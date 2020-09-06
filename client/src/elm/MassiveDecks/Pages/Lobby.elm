@@ -487,7 +487,7 @@ view wrap wrapSettings changePage shared model =
             viewWithUsers wrap wrapSettings shared s viewContent model
 
         Spectate ->
-            Spectate.view (SpectateMsg >> wrap) changePage shared model
+            Spectate.view (SpectateMsg >> wrap) (GameMsg >> wrap) changePage shared model
 
 
 

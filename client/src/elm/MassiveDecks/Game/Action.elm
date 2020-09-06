@@ -1,4 +1,4 @@
-module MassiveDecks.Game.Action exposing (actions, view)
+module MassiveDecks.Game.Action exposing (view)
 
 import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
@@ -30,8 +30,13 @@ normal =
     [ HtmlA.class "normal" ]
 
 
-view : (Msg -> msg) -> Shared -> Maybe Action -> Action -> Html msg
-view wrap shared visible action =
+view : (Msg -> msg) -> Shared -> Maybe Action -> Html msg
+view wrap shared visible =
+    Html.div [] (actions |> List.map (viewSingle wrap shared visible))
+
+
+viewSingle : (Msg -> msg) -> Shared -> Maybe Action -> Action -> Html msg
+viewSingle wrap shared visible action =
     let
         { icon, attrs, type_, title, onClick } =
             case action of

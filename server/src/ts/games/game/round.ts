@@ -127,11 +127,12 @@ export class Complete extends Base<"Complete"> {
     return obj;
   }
 
-  private playsObj(): { [player: string]: PublicRound.PlayWithLikes } {
-    const obj: { [player: string]: PublicRound.PlayWithLikes } = {};
+  private playsObj(): { [player: string]: PublicRound.PlayWithDetails } {
+    const obj: { [player: string]: PublicRound.PlayWithDetails } = {};
     for (const roundPlay of this.plays) {
       obj[roundPlay.playedBy] = {
         play: roundPlay.play,
+        playedBy: roundPlay.playedBy,
         ...(roundPlay.likes.length > 0
           ? { likes: roundPlay.likes.length }
           : {}),

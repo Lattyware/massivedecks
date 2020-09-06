@@ -10,6 +10,7 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -36,8 +37,8 @@ init =
     { advertise = True }
 
 
-view : (Msg -> msg) -> (Route.Route -> msg) -> Shared -> Lobby.Model -> List (Html msg)
-view wrap changePage shared lobby =
+view : (Msg -> msg) -> (Game.Msg -> msg) -> (Route.Route -> msg) -> Shared -> Lobby.Model -> List (Html msg)
+view wrap wrapGame changePage shared lobby =
     let
         advert =
             if lobby.spectate.advertise then
@@ -50,7 +51,7 @@ view wrap changePage shared lobby =
         (List.concat
             [ viewSettings wrap changePage shared lobby
             , advert
-            , viewStage shared lobby
+            , viewStage wrapGame shared lobby
             ]
         )
     ]
@@ -115,8 +116,8 @@ viewSettings wrap changePage shared lobby =
         []
 
 
-viewStage : Shared -> Lobby.Model -> List (Html msg)
-viewStage shared lobbyModel =
+viewStage : (Game.Msg -> msg) -> Shared -> Lobby.Model -> List (Html msg)
+viewStage wrapGame shared lobbyModel =
     case lobbyModel.lobbyAndConfigure |> Maybe.map .lobby of
         Just lobby ->
             case lobby.game of
@@ -126,7 +127,7 @@ viewStage shared lobbyModel =
                             Postgame.view shared lobby game.game winner
 
                         Nothing ->
-                            Round.view shared lobby.config lobby.users game
+                            Round.view wrapGame shared lobby.config lobby.users game
 
                 Nothing ->
                     Pregame.view shared lobby

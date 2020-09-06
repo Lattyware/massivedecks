@@ -40,6 +40,7 @@ class LikeActions extends Actions.Implementation<
         target.playedBy !== auth.uid &&
         target.likes.find((id) => id === auth.uid) === undefined
       ) {
+        lobby.game.players[target.playedBy].likes += 1;
         target.likes.push(auth.uid);
         const events =
           lobby.game.round.stage === "Complete"

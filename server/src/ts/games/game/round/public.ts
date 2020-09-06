@@ -38,16 +38,17 @@ export interface Judging extends Base, Timed {
   plays: Play.Revealed[];
 }
 
-export interface PlayWithLikes {
+export interface PlayWithDetails {
   play: Play.Play;
-  likes?: number;
+  playedBy: User.Id;
+  likes?: Player.Likes;
 }
 
 export interface Complete extends Base {
   stage: "Complete";
   winner: User.Id;
-  plays: { [player: string]: PlayWithLikes };
-  playOrder: User.Id[];
+  plays: { [id: string]: PlayWithDetails };
+  playOrder: Play.Id[];
 }
 
 export interface PlayDetails {

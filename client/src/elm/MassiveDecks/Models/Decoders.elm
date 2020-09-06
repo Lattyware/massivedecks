@@ -275,12 +275,12 @@ languageFromCode code =
 
 lobby : Maybe LikeDetail -> Json.Decoder Lobby
 lobby ld =
-    Json.map5 Lobby
-        (Json.field "users" users)
-        (Json.field "owner" userId)
-        (Json.field "config" config)
-        (Json.maybe (Json.field "game" (game ld) |> Json.map Game.emptyModel))
-        (Json.maybe (Json.field "errors" (Json.list gameStateError)) |> Json.map (Maybe.withDefault []))
+    Json.succeed Lobby
+        |> Json.required "users" users
+        |> Json.required "owner" userId
+        |> Json.required "config" config
+        |> Json.optional "game" (game ld |> Json.map (Game.emptyModel >> Just)) Nothing
+        |> Json.optional "errors" (Json.list gameStateError) []
 
 
 game : Maybe LikeDetail -> Json.Decoder Game
@@ -673,6 +673,9 @@ eventByName name =
         "PlayTakenBack" ->
             gameEvent playTakenBack
 
+        "PlayLiked" ->
+            gameEvent playLiked
+
         "StartRevealing" ->
             timedGameEvent startRevealing
 
@@ -841,6 +844,12 @@ playTakenBack : Json.Decoder Events.GameEvent
 playTakenBack =
     Json.map (\by -> Events.PlayTakenBack { by = by })
         (Json.field "by" userId)
+
+
+playLiked : Json.Decoder Events.GameEvent
+playLiked =
+    Json.map (\id -> Events.PlayLiked { play = id })
+        (Json.field "id" playId)
 
 
 roundStarted : Json.Decoder Events.TimedGameEvent
@@ -1114,7 +1123,7 @@ round ld =
                     unknownValue "round stage" name
 
         byName stageName =
-            specificRound (Json.field "stage" (stageDetailsByName stageName))
+            specificRound (stageDetailsByName stageName)
     in
     Json.field "stage" Json.string |> Json.andThen byName
 
@@ -1166,17 +1175,17 @@ judgingRound ld =
 completeRound : Maybe Round.LikeDetail -> Json.Decoder Round.Complete
 completeRound ld =
     Json.succeed (Round.Complete (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing)
-        |> Json.required "playedBy" (Json.dict playId)
-        |> Json.required "plays" (Json.dict playWithLikes)
+        |> Json.required "plays" (Json.dict playWithDetails)
         |> Json.required "playOrder" (Json.list userId)
         |> Json.required "winner" userId
 
 
-playWithLikes : Json.Decoder Play.WithLikes
-playWithLikes =
-    Json.map2 Play.WithLikes
-        (Json.field "play" (Json.list response))
-        (Json.maybe (Json.field "likes" Json.int))
+playWithDetails : Json.Decoder Play.WithDetails
+playWithDetails =
+    Json.succeed Play.WithDetails
+        |> Json.required "play" (Json.list response)
+        |> Json.required "playedBy" userId
+        |> Json.optional "likes" (Json.int |> Json.map Just) Nothing
 
 
 playerRole : Json.Decoder Player.Role
@@ -1279,26 +1288,25 @@ gameStateErrorByName name =
 
 stage : Json.Decoder Round.Stage
 stage =
+    let
+        stageByName name =
+            case name of
+                "Playing" ->
+                    Json.succeed Round.SPlaying
+
+                "Revealing" ->
+                    Json.succeed Round.SRevealing
+
+                "Judging" ->
+                    Json.succeed Round.SJudging
+
+                "Complete" ->
+                    Json.succeed Round.SComplete
+
+                _ ->
+                    unknownValue "round stage" name
+    in
     Json.string |> Json.andThen stageByName
-
-
-stageByName : String -> Json.Decoder Round.Stage
-stageByName name =
-    case name of
-        "Playing" ->
-            Json.succeed Round.SPlaying
-
-        "Revealing" ->
-            Json.succeed Round.SRevealing
-
-        "Judging" ->
-            Json.succeed Round.SJudging
-
-        "Complete" ->
-            Json.succeed Round.SComplete
-
-        _ ->
-            unknownValue "round stage" name
 
 
 invalidActionError : Json.Decoder MdError.ActionExecutionError

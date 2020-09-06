@@ -238,11 +238,14 @@ update wrap shared msg model =
 
                 newStage =
                     case round.stage of
-                        Round.J judging ->
-                            makePick judging Round.J
+                        Round.J stage ->
+                            makePick stage Round.J
 
-                        Round.R revealing ->
-                            makePick revealing Round.R
+                        Round.R stage ->
+                            makePick stage Round.R
+
+                        Round.C stage ->
+                            makePick stage Round.C
 
                         stage ->
                             stage
@@ -315,15 +318,17 @@ update wrap shared msg model =
 
         Judge ->
             let
-                cmd =
+                ( newStage, cmd ) =
                     case round.stage of
-                        Round.J judging ->
-                            judging.pick |> Maybe.map Actions.judge |> Maybe.withDefault Cmd.none
+                        Round.J stage ->
+                            ( Round.J { stage | pick = Nothing }
+                            , stage.pick |> Maybe.map Actions.judge |> Maybe.withDefault Cmd.none
+                            )
 
-                        _ ->
-                            Cmd.none
+                        stage ->
+                            ( stage, Cmd.none )
             in
-            ( model, cmd )
+            ( { model | game = { game | round = { round | stage = newStage } } }, cmd )
 
         Like ->
             let
@@ -347,11 +352,14 @@ update wrap shared msg model =
                             )
                     in
                     case round.stage of
-                        Round.J judging ->
-                            like judging Round.J
+                        Round.J stage ->
+                            like stage Round.J
 
-                        Round.R revealing ->
-                            like revealing Round.R
+                        Round.R stage ->
+                            like stage Round.R
+
+                        Round.C stage ->
+                            like stage Round.C
 
                         stage ->
                             ( stage, Cmd.none )
@@ -575,10 +583,22 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                         increment withLikes =
                             { withLikes | likes = withLikes.likes |> Maybe.withDefault 0 |> (+) 1 |> Just }
 
+                        playedBy =
+                            stage.plays |> Dict.get play |> Maybe.map .playedBy
+
+                        incrementPlayer player =
+                            { player | likes = player.likes + 1 }
+
+                        updatePlayer player =
+                            game.players |> Dict.update player (Maybe.map incrementPlayer)
+
+                        players =
+                            playedBy |> Maybe.map updatePlayer |> Maybe.withDefault game.players
+
                         newStage =
                             { stage | plays = Dict.update play (Maybe.map increment) stage.plays }
                     in
-                    ( { model | game = { game | round = { round | stage = Round.C newStage } } }
+                    ( { model | game = { game | players = players, round = { round | stage = Round.C newStage } } }
                     , Cmd.none
                     )
 
@@ -656,14 +676,13 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                             case round.stage of
                                 Round.J r ->
                                     let
-                                        ( by, plays, playOrder ) =
+                                        ( plays, playOrder ) =
                                             resolvePlayedBy r.plays playedBy
 
                                         complete =
                                             Round.Complete
                                                 r.likeDetail
                                                 r.pick
-                                                by
                                                 plays
                                                 playOrder
                                                 winner
@@ -680,7 +699,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                                 |> Maybe.withDefault Cmd.none
 
                                         ps =
-                                            playersWithWinner |> Dict.map (updateLikes plays)
+                                            playersWithWinner |> updateLikes plays
                                     in
                                     { newRound = Round.withStage (Round.C complete) round
                                     , history = Round.withStage complete round :: game.history
@@ -973,33 +992,39 @@ hotJoinPlayer player user model =
 resolvePlayedBy :
     List Play.Known
     -> Dict Play.Id Play.Details
-    -> ( Dict User.Id Play.Id, Dict Play.Id Play.WithLikes, List User.Id )
-resolvePlayedBy plays playedBy =
+    -> ( Dict Play.Id Play.WithDetails, List Play.Id )
+resolvePlayedBy knownPlays details =
     let
-        step known ( pb, ps, po ) =
+        step known ( plays, playOrder ) =
             let
-                ( newPb, newPs ) =
-                    case playedBy |> Dict.get known.id of
-                        Just details ->
-                            ( pb |> Dict.insert details.playedBy known.id
-                            , ps |> Dict.insert known.id (Play.WithLikes known.responses details.likes)
-                            )
+                newPs =
+                    case details |> Dict.get known.id of
+                        Just { playedBy, likes } ->
+                            plays |> Dict.insert known.id (Play.WithDetails known.responses playedBy likes)
 
                         Nothing ->
-                            ( pb, ps )
+                            plays
             in
-            ( newPb, newPs, known.id :: po )
+            ( newPs, known.id :: playOrder )
     in
-    plays |> List.foldr step ( Dict.empty, Dict.empty, [] )
+    knownPlays |> List.foldr step ( Dict.empty, [] )
 
 
-updateLikes : Dict User.Id Play.WithLikes -> User.Id -> Player -> Player
-updateLikes plays uid player =
-    plays
-        |> Dict.get uid
-        |> Maybe.andThen .likes
-        |> Maybe.map (\likes -> { player | likes = likes + player.likes })
-        |> Maybe.withDefault player
+updateLikes : Dict Play.Id Play.WithDetails -> Dict User.Id Player -> Dict User.Id Player
+updateLikes plays initialPlayers =
+    let
+        incrementBy likes player =
+            { player | likes = player.likes + likes }
+
+        step _ play players =
+            case play.likes of
+                Just likes ->
+                    players |> Dict.update play.playedBy (Maybe.map (incrementBy likes))
+
+                Nothing ->
+                    players
+    in
+    plays |> Dict.foldl step initialPlayers
 
 
 confettiId : String
@@ -1053,7 +1078,7 @@ viewRound wrap shared auth timeAnchor config users model =
         ( call, { instruction, action, content, slotAttrs, fillCallWith, roundAttrs } ) =
             case model.completeRound of
                 Just completeRound ->
-                    ( completeRound.call, Complete.view wrap shared auth True config users completeRound )
+                    ( completeRound.call, Complete.view wrap shared True config users completeRound )
 
                 Nothing ->
                     case round.stage of
@@ -1067,7 +1092,7 @@ viewRound wrap shared auth timeAnchor config users model =
                             ( round.call, Judging.view wrap auth shared users config (Round.withStage stage round) )
 
                         Round.C stage ->
-                            ( round.call, Complete.view wrap shared auth False config users (Round.withStage stage round) )
+                            ( round.call, Complete.view wrap shared False config users (Round.withStage stage round) )
 
         game =
             model.game
@@ -1085,7 +1110,7 @@ viewRound wrap shared auth timeAnchor config users model =
         , timer timeAnchor model
         , Html.div [ HtmlA.class "top-row" ] [ minorActions wrap shared auth game model.helpVisible ]
         ]
-    , Html.div (HtmlA.class "round" :: roundAttrs) [ renderedCall, viewAction wrap shared action ]
+    , Html.div (HtmlA.class "round" :: roundAttrs) [ renderedCall, Action.view wrap shared action ]
     , content
     , Html.div [ HtmlA.class "scroll-top-spacer" ] []
 
@@ -1295,11 +1320,6 @@ rebootButton wrap shared score reboot =
         ({ cost = reboot.cost } |> Strings.HouseRuleRebootAction)
         (Icon.random |> Icon.present |> NeList.just)
         action
-
-
-viewAction : (Msg -> msg) -> Shared -> Maybe Action -> Html msg
-viewAction wrap shared visible =
-    Html.div [] (Action.actions |> List.map (Action.view wrap shared visible))
 
 
 gameOverlay : Shared -> MdString -> Maybe ( MdString, msg ) -> List (Html msg)

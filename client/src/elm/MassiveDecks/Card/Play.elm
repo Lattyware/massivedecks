@@ -3,7 +3,8 @@ module MassiveDecks.Card.Play exposing
     , Id
     , Known
     , Play
-    , WithLikes
+    , Potential
+    , WithDetails
     , asKnown
     , asPlay
     )
@@ -34,10 +35,20 @@ type alias Details =
     }
 
 
-{-| A play with the number of likes it received.
+{-| A play with its details.
 -}
-type alias WithLikes =
+type alias WithDetails =
     { play : List Card.Response
+    , playedBy : User.Id
+    , likes : Maybe Int
+    }
+
+
+{-| A known or unknown play that may or may not have details.
+-}
+type alias Potential =
+    { play : Maybe (List Card.Response)
+    , playedBy : Maybe User.Id
     , likes : Maybe Int
     }
 

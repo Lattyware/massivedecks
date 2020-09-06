@@ -208,8 +208,7 @@ type alias Judging =
 type alias Complete =
     { likeDetail : LikeDetail
     , pick : Maybe Play.Id
-    , playedBy : Dict User.Id Play.Id
-    , plays : Dict Play.Id Play.WithLikes
-    , playOrder : List User.Id
+    , plays : Dict Play.Id Play.WithDetails
+    , playOrder : List Play.Id
     , winner : User.Id
     }

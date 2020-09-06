@@ -78,15 +78,15 @@ viewRound shared config users round =
     )
 
 
-viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( User.Id, Play.WithLikes ) -> ( String, Html msg )
-viewPlay shared config users winner ( id, { play, likes } ) =
+viewPlay : Shared -> Config -> Dict User.Id User -> User.Id -> ( Play.Id, Play.WithDetails ) -> ( String, Html msg )
+viewPlay shared config users winner ( id, { play, playedBy, likes } ) =
     let
         cards =
             play |> List.map (\r -> ( r.details.id, Html.li [] [ Response.view shared config Card.Front [] r ] ))
     in
     ( id
     , Html.li [ HtmlA.class "with-byline" ]
-        [ Plays.viewByLine shared users (Plays.ByLine id (Plays.Winner |> Maybe.justIf (winner == id)) likes)
+        [ Plays.viewByLine shared users (Plays.ByLine playedBy (Plays.Winner |> Maybe.justIf (winner == playedBy)) likes)
         , HtmlK.ol [ HtmlA.class "play card-set" ] cards
         ]
     )
