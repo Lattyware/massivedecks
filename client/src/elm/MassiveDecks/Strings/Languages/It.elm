@@ -1244,6 +1244,9 @@ translate mdString =
         GermanInformal ->
             [ Text "Tedesco (informale)" ]
 
+        Polish ->
+            [ Text "Polacco" ]
+
 
 an : Maybe Int -> String
 an amount =

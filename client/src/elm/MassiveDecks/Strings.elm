@@ -352,3 +352,4 @@ type MdString
     | BrazilianPortuguese -- The name of the Brazilian dialect of the Portuguese language.
     | German -- The name of the German formal language ("Sie").
     | GermanInformal -- The name of the german informal language ("Du").
+    | Polish
