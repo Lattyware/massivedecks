@@ -154,15 +154,10 @@
   }
 }
 
-#add-deck .multipart {
-  .primary {
-    flex-shrink: 0;
-  }
-}
-
-#source-selector {
+#add-deck .multipart .primary {
+  flex-grow: 1;
   flex-shrink: 1;
-  flex-basis: 12em;
+  width: 1em;
 }
 
 .house-rules {

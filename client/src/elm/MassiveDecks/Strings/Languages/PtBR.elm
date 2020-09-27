@@ -5,7 +5,7 @@ module MassiveDecks.Strings.Languages.PtBR exposing (pack)
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Strings exposing (MdString(..))
+import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
 
@@ -35,30 +35,41 @@ translate mdString =
             [ Text "Fechar" ]
 
         -- Special
-        Plural { singular, amount } ->
-            if amount == Just 1 then
-                [ Raw singular ]
+        Noun { noun, quantity } ->
+            case quantity of
+                Quantity 1 ->
+                    case noun of
+                        Call ->
+                            [ Text "Carta Preta" ]
 
-            else
-                -- Same case as italian and other languages, portuguese plurarization have some specific cases to handle
-                case singular of
-                    Call ->
-                        [ Text "Cartas Pretas" ]
+                        Response ->
+                            [ Text "Carta Branca" ]
 
-                    Response ->
-                        [ Text "Cartas Brancas" ]
+                        Point ->
+                            [ Text "Ponto Incrível" ]
 
-                    Point ->
-                        [ Text "Pontos Incríveis" ]
+                        Player ->
+                            [ Text "Jogador" ]
 
-                    Player ->
-                        [ Text "Jogadores" ]
+                        Spectator ->
+                            [ Text "Espectador" ]
 
-                    Spectator ->
-                        [ Text "Espectadores" ]
+                _ ->
+                    case noun of
+                        Call ->
+                            [ Text "Cartas Pretas" ]
 
-                    _ ->
-                        [ Raw singular, Text "s" ]
+                        Response ->
+                            [ Text "Cartas Brancas" ]
+
+                        Point ->
+                            [ Text "Pontos Incríveis" ]
+
+                        Player ->
+                            [ Text "Jogadores" ]
+
+                        Spectator ->
+                            [ Text "Espectadores" ]
 
         -- Start screen.
         Version { versionNumber } ->
@@ -108,7 +119,7 @@ translate mdString =
             [ Text "Descubra mais sobre ", Ref MassiveDecks, Text " e como é desenvolvido." ]
 
         MDLogoDescription ->
-            [ Text "Uma ", Ref Call, Text " e uma ", Ref Response, Text " marcados com um “M” e um “D”." ]
+            [ Text "Uma ", Ref (noun Call 1), Text " e uma ", Ref (noun Response 1), Text " marcados com um “M” e um “D”." ]
 
         RereadLogoDescription ->
             [ Text "Um livro rodeado por uma flecha de reciclagem." ]
@@ -157,7 +168,7 @@ translate mdString =
             [ Text "Como jogar." ]
 
         RulesHand ->
-            [ Text "Cada jogador terá uma mão de ", Ref (Plural { singular = Response, amount = Nothing }), Text "." ]
+            [ Text "Cada jogador terá uma mão de ", Ref (nounUnknownQuantity Response), Text "." ]
 
         RulesCzar ->
             [ Text "O primeiro jogador começa como "
@@ -165,13 +176,13 @@ translate mdString =
             , Text ". O "
             , Ref Czar
             , Text " lê a pergunta ou frase para preencher na "
-            , Ref Call
+            , Ref (noun Call 1)
             , Text " em voz alta."
             ]
 
         RulesPlaying ->
             [ Text "Todos os outros respondem a pergunta ou preenchem o espaço em branco escolhendo uma "
-            , Ref Response
+            , Ref (noun Response 1)
             , Text " de suas mãos para jogar a partida."
             ]
 
@@ -181,11 +192,11 @@ translate mdString =
             , Text " as lê para os outros jogadores—para melhor efeito, o "
             , Ref Czar
             , Text " deveria ler novamente a "
-            , Ref Call
+            , Ref (noun Call 1)
             , Text " antes de apresentar cada resposta. O "
             , Ref Czar
             , Text " então escolhe a jogada mais engraçada, e quem a jogou recebe um "
-            , Ref Point
+            , Ref (noun Point 1)
             , Text "."
             ]
 
@@ -194,24 +205,24 @@ translate mdString =
 
         RulesPick ->
             [ Text "Algumas cartas precisam de mais de uma "
-            , Ref Response
+            , Ref (noun Response 1)
             , Text " como resposta. Escolha as cartas na ordem que o "
             , Ref Czar
             , Text " deveria ler—a ordem importa."
             ]
 
         ExamplePickDescription ->
-            [ Ref (Plural { singular = Call, amount = Nothing })
+            [ Ref (nounUnknownQuantity Call)
             , Text " como essa precisam de mais "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text " como resposta, mas te dão mais opções para escolher."
             ]
 
         RulesDraw ->
             [ Text "Algumas "
-            , Ref (Plural { singular = Call, amount = Nothing })
+            , Ref (nounUnknownQuantity Call)
             , Text " precisam de mais de uma "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text " como resposta—elas também vão dizer "
             , Ref (Draw { numberOfCards = 2 })
             , Text " ou mais, e você ganhará essa quantidade de cartas extras antes de jogar."
@@ -234,7 +245,7 @@ translate mdString =
         HouseRuleRebootDescription { cost } ->
             [ Text "Em qualquer momento, jogadores podem trocar "
             , Text (an cost)
-            , Ref (Plural { singular = Point, amount = cost })
+            , Ref (nounMaybe Point cost)
             , Text " para descartar sua mão e pegar uma nova."
             ]
 
@@ -242,22 +253,22 @@ translate mdString =
             [ Text "Gastar "
             , Text (asWord cost Male)
             , Text " "
-            , Ref (Plural { singular = Point, amount = Just cost })
+            , Ref (noun Point cost)
             , Text " para trocar sua mão por uma nova."
             ]
 
         HouseRuleRebootCost ->
-            [ Text "Custo de ", Ref (Plural { singular = Point, amount = Nothing }) ]
+            [ Text "Custo de ", Ref (nounUnknownQuantity Point) ]
 
         HouseRuleRebootCostDescription ->
-            [ Text "Quantos ", Ref (Plural { singular = Point, amount = Nothing }), Text " custam para trocar as cartas." ]
+            [ Text "Quantos ", Ref (nounUnknownQuantity Point), Text " custam para trocar as cartas." ]
 
         HouseRulePackingHeat ->
             [ Text "Calor da Embalagem" ]
 
         HouseRulePackingHeatDescription ->
             [ Text "Quaisquer "
-            , Ref (Plural { singular = Call, amount = Nothing })
+            , Ref (nounUnknownQuantity Call)
             , Text " com "
             , Ref (Pick { numberOfCards = 2 })
             , Text " também vem com "
@@ -270,25 +281,25 @@ translate mdString =
 
         HouseRuleComedyWriterDescription ->
             [ Text "Adiciona "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text " vazias onde os jogadores podem escrever respostas personalizadas."
             ]
 
         HouseRuleComedyWriterNumber ->
-            [ Ref (Plural { singular = Response, amount = Nothing }), Text " vazias" ]
+            [ Ref (nounUnknownQuantity Response), Text " vazias" ]
 
         HouseRuleComedyWriterNumberDescription ->
             [ Text "O número de "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text " vazias que estarão no jogo."
             ]
 
         HouseRuleComedyWriterExclusive ->
-            [ Text "Apenas ", Ref (Plural { singular = Response, amount = Nothing }), Text " vazias" ]
+            [ Text "Apenas ", Ref (nounUnknownQuantity Response), Text " vazias" ]
 
         HouseRuleComedyWriterExclusiveDescription ->
             [ Text "Se ativado, todas as outras "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text " serão ignoradas, apenas as vazias existirão no jogo."
             ]
 
@@ -297,7 +308,7 @@ translate mdString =
 
         HouseRuleRandoCardrissianDescription ->
             [ Text "A cada partida, a primeira "
-            , Ref Response
+            , Ref (noun Response 1)
             , Text " no deck será jogada como uma resposta. Esta jogada pertencerá a um jogador IA chamado "
             , Text "Rando Cardrissian, e se ele vencer o jogo, todos os jogadores vão para casa em um estado de vergonha eterna."
             ]
@@ -401,26 +412,11 @@ translate mdString =
         CzarDescription ->
             [ Text "O jogador julgando a partida." ]
 
-        Player ->
-            [ Text "Jogador" ]
-
-        Spectator ->
-            [ Text "Espectador" ]
-
-        Call ->
-            [ Text "Carta Preta" ]
-
         CallDescription ->
             [ Text "Uma carta preta com uma pergunta ou frase para preencher." ]
 
-        Response ->
-            [ Text "Carta Branca" ]
-
         ResponseDescription ->
             [ Text "Uma carta com uma frase para ser jogada nas partidas." ]
-
-        Point ->
-            [ Text "Ponto Incrível" ]
 
         PointDescription ->
             [ Text "Um ponto—ter mais significa vencer." ]
@@ -501,7 +497,7 @@ translate mdString =
             [ Text "Você precisa escolher "
             , Text (asWord numberOfCards Female)
             , Text " "
-            , Ref (Plural { singular = Response, amount = Just numberOfCards })
+            , Ref (noun Response numberOfCards)
             , Text "."
             ]
 
@@ -509,7 +505,7 @@ translate mdString =
             [ Text "Você ganha mais "
             , Text (asWord numberOfCards Female)
             , Text " "
-            , Ref (Plural { singular = Response, amount = Just numberOfCards })
+            , Ref (noun Response numberOfCards)
             , Text " antes de jogar."
             ]
 
@@ -564,13 +560,13 @@ translate mdString =
             [ Text "Transmitindo para ", Text deviceName, Text "." ]
 
         Players ->
-            [ Ref (Plural { singular = Player, amount = Nothing }) ]
+            [ Ref (nounUnknownQuantity Player) ]
 
         PlayersDescription ->
             [ Text "Usuários jogando o jogo." ]
 
         Spectators ->
-            [ Ref (Plural { singular = Spectator, amount = Nothing }) ]
+            [ Ref (nounUnknownQuantity Spectator) ]
 
         SpectatorsDescription ->
             [ Text "Usuários assistindo o jogo sem jogar." ]
@@ -610,7 +606,7 @@ translate mdString =
 
         ScoreDescription ->
             [ Text "O número de "
-            , Ref (Plural { singular = Point, amount = Nothing })
+            , Ref (nounUnknownQuantity Point)
             , Text " que este jogador possui."
             ]
 
@@ -678,10 +674,10 @@ translate mdString =
         ReturnViewToGameDescription ->
             [ Text "Retornar para a visualização principal do jogo." ]
 
-        ViewConfgiuration ->
+        ViewConfiguration ->
             [ Text "Configurar" ]
 
-        ViewConfgiurationDescription ->
+        ViewConfigurationDescription ->
             [ Text "Trocar para a visualização de configurações do jogo." ]
 
         KickUser ->
@@ -730,7 +726,7 @@ translate mdString =
 
         MissingCardType { cardType } ->
             [ Text "Nenhum de seus decks possui "
-            , Ref (Plural { singular = cardType, amount = Nothing })
+            , Ref (nounUnknownQuantity cardType)
             , Text ". Você precisa de um deck que as possoa para iniciar o jogo."
             ]
 
@@ -738,7 +734,7 @@ translate mdString =
             [ Text "Para o número de jogadores no jogo, você precisa de pelo menos "
             , Text (needed |> String.fromInt)
             , Text " "
-            , Ref (Plural { singular = cardType, amount = Just needed })
+            , Ref (noun cardType needed)
             , Text ", mas você possui somente "
             , Text (have |> String.fromInt)
             , Text "."
@@ -747,7 +743,7 @@ translate mdString =
         AddBlankCards { amount } ->
             [ Text "Adicionar "
             , amount |> String.fromInt |> Text
-            , Ref (Plural { singular = Response, amount = Just amount })
+            , Ref (noun Response amount)
             , Text " vazias."
             ]
 
@@ -811,12 +807,12 @@ translate mdString =
             [ Text "O número base de cartas que cada jogador possui em suas mãos durante o jogo." ]
 
         ScoreLimit ->
-            [ Text "Limite de ", Ref (Plural { singular = Point, amount = Nothing }) ]
+            [ Text "Limite de ", Ref (nounUnknownQuantity Point) ]
 
         ScoreLimitDescription ->
             [ Segment
                 [ Text "O número de "
-                , Ref (Plural { singular = Point, amount = Nothing })
+                , Ref (nounUnknownQuantity Point)
                 , Text " que um jogador precisa para vencer."
                 ]
             , Text " "
@@ -1037,7 +1033,7 @@ translate mdString =
         PlayInstruction { numberOfCards } ->
             [ Text "Você precisa escolher mais "
             , Text (asWord numberOfCards Female)
-            , Ref (Plural { singular = Response, amount = Just numberOfCards })
+            , Ref (noun Response numberOfCards)
             , Text " da sua mão nesta partida antes de enviar sua jogada."
             ]
 
@@ -1051,7 +1047,7 @@ translate mdString =
             [ Text "Você é o "
             , Ref Czar
             , Text " da partida - você não envia nenhuma das "
-            , Ref (Plural { singular = Response, amount = Nothing })
+            , Ref (nounUnknownQuantity Response)
             , Text ". Ao invés disso, você decide o vencedor da partida quando todos enviarem suas jogadas."
             ]
 

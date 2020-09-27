@@ -2,9 +2,9 @@ import {
   CastStatus,
   InboundPort,
   OutboundPort,
-  RemoteControlCommand
+  RemoteControlCommand,
 } from "../../elm/MassiveDecks";
-import { channel } from "./shared";
+import { channel, keepAliveChannel } from "./shared";
 
 export const register = (
   tryCast: InboundPort<RemoteControlCommand>,
@@ -17,11 +17,11 @@ declare const cast: any;
 
 let whenAvailable: (() => void)[] | null = [];
 
-window["__onGCastApiAvailable"] = function(isAvailable: Boolean) {
+window["__onGCastApiAvailable"] = (isAvailable: Boolean) => {
   if (isAvailable) {
     cast.framework.CastContext.getInstance().setOptions({
       receiverApplicationId: "A6799922",
-      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
     if (whenAvailable != null) {
       for (const callback of whenAvailable) {
@@ -63,13 +63,11 @@ class Client {
     const context = cast.framework.CastContext.getInstance();
     context.addEventListener(
       cast.framework.CastContextEventType.CAST_STATE_CHANGED,
-      (event: cast.framework.CastStateEventData) =>
-        this.onCastStateChanged(event)
+      this.onCastStateChanged.bind(this)
     );
     context.addEventListener(
       cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-      (event: cast.framework.SessionStateEventData) =>
-        this.onSessionStateChanged(event)
+      this.onSessionStateChanged.bind(this)
     );
     this.status.send(context.getCastState());
   }
@@ -82,13 +80,13 @@ class Client {
       this.commandQueue.push(command);
       context
         .requestSession()
-        .then(function(e: chrome.cast.ErrorCode) {
-          if (e) {
-            console.error(e);
+        .then(function (e: chrome.cast.ErrorCode) {
+          if (e !== undefined) {
+            console.error(`Error response requesting session: ${e}`);
           }
         })
-        .catch(function(e: Error) {
-          console.error(e);
+        .catch(function (e: Error) {
+          console.error(`Error while requesting session: ${e}`);
         });
     }
   }
@@ -124,6 +122,24 @@ class Client {
           .sendMessage(channel, JSON.stringify(command))
           .catch((e: Error) => console.error(e));
       }
+      event.session.addMessageListener(keepAliveChannel, (namespace, message) =>
+        this.onKeepAliveMessage(event.session, namespace, message)
+      );
+    }
+    if (event.sessionState == cast.framework.SESSION_START_FAILED) {
+      console.error(`Error ${event.errorCode}: Failed to start session.`);
+    }
+  }
+
+  onKeepAliveMessage(
+    session: cast.framework.CastSession,
+    namespace: string,
+    message: string
+  ): void {
+    if (message === "ping") {
+      session
+        .sendMessage(keepAliveChannel, "pong")
+        .catch((error) => console.error(error));
     }
   }
 }

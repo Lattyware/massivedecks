@@ -688,7 +688,7 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
                     Menu.button Icon.play Strings.ReturnViewToGame Strings.ReturnViewToGameDescription (Nothing |> ChangeSection |> wrap |> Maybe.justIf (game /= Nothing))
 
                 _ ->
-                    Menu.button Icon.cog Strings.ViewConfgiuration Strings.ViewConfgiurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
+                    Menu.button Icon.cog Strings.ViewConfiguration Strings.ViewConfigurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
             ]
 
         privilegedLobbyMenuItems =

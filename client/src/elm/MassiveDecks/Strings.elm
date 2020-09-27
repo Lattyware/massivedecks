@@ -1,7 +1,48 @@
-module MassiveDecks.Strings exposing (MdString(..))
+module MassiveDecks.Strings exposing
+    ( MdString(..)
+    , Noun(..)
+    , Quantity(..)
+    , noun
+    , nounMaybe
+    , nounUnknownQuantity
+    )
 
 {-| This module deals with text that is shown to the user in the application - strings.
 -}
+
+
+{-| Nouns need plural translations as we talk about them as singular items but also as plurals.
+-}
+type Noun
+    = Call -- A call card (a black card).
+    | Response -- A response card (a white card).
+    | Point -- A point in the game, your score is how many of these you have, and having the most is how you win.
+    | Player -- A player in the game with no special role.
+    | Spectator -- A user who watches the game, but doesn't play in it.
+
+
+{-| An amount of a noun. Either we know how many we are talking about or we are talking about some unknown number of
+the thing. In English, for example, we use the singular for `Quantity 1` and plural for everything else. Different
+languages have different rules.
+-}
+type Quantity
+    = Quantity Int
+    | Unknown
+
+
+noun : Noun -> Int -> MdString
+noun n quantity =
+    Noun { noun = n, quantity = Quantity quantity }
+
+
+nounUnknownQuantity : Noun -> MdString
+nounUnknownQuantity n =
+    Noun { noun = n, quantity = Unknown }
+
+
+nounMaybe : Noun -> Maybe Int -> MdString
+nounMaybe n quantity =
+    Noun { noun = n, quantity = quantity |> Maybe.map Quantity |> Maybe.withDefault Unknown }
 
 
 {-| Each type represents a message that may be shown to the user. Some have arguments that are variable but should be
@@ -11,10 +52,7 @@ type MdString
     = MassiveDecks -- The name of the game.
     | Close -- Close a dialog window.
       -- Special
-      {- Plural only makes sense for nouns, other results will be nonsense. If the amount is not given, it's an unknown
-         quantity. If the value is `1`, then it should be singular.
-      -}
-    | Plural { singular : MdString, amount : Maybe Int } -- The plural version of the given string.
+    | Noun { noun : Noun, quantity : Quantity } -- Given a noun and an quantity of that noun being talked about.
       -- Start screen.
     | Version { versionNumber : String } -- The version of the game being played.
     | ShortGameDescription -- A one-line description of the game.
@@ -106,13 +144,8 @@ type MdString
       -- Terms
     | Czar -- The name for the "Card Czar" (the player that judges the round).
     | CzarDescription -- A short description of what the czar does.
-    | Player -- A term for a player in the game with no special role.
-    | Spectator -- A term for a user who watches the game, but doesn't play in it.
-    | Call -- The name for a call card (a black card).
     | CallDescription -- A short description of what a call is.
-    | Response -- The name for a response card (a white card).
     | ResponseDescription -- A short description of what a response is.
-    | Point -- The name for a point in the game.
     | PointDescription -- A short description of what a point is.
     | GameCodeTerm -- The term for a unique code for a game that allows a user to find the game easily.
     | GameCodeDescription -- A short description of what a game code is.
@@ -189,8 +222,8 @@ type MdString
     | EndGameDescription -- A description of the action of ending the game early.
     | ReturnViewToGame -- A short term for the action of viewing the in-progress game.
     | ReturnViewToGameDescription -- A description of the action of viewing the in-progress game.
-    | ViewConfgiuration -- A short term for the action of viewing the configuration for the game.
-    | ViewConfgiurationDescription -- A description of the action of viewing the configuration for the game.
+    | ViewConfiguration -- A short term for the action of viewing the configuration for the game.
+    | ViewConfigurationDescription -- A description of the action of viewing the configuration for the game.
     | KickUser -- A short term for the action of forcing a user to leave the game permanently.
     | Promote -- A short term for the action of allowing a user to edit the game configuration.
     | Demote -- A short term for the action of no longer allowing a user to edit the game configuration.
@@ -206,8 +239,8 @@ type MdString
     | NoDecks -- A description of the situation where the user has no decks added to the game configuration.
     | NoDecksHint -- A hint explaining that the user needs to add at least one deck, and offering the CaH deck.
     | WaitForDecks -- A hint that the user has to wait for decks to load before starting the game.
-    | MissingCardType { cardType : MdString } -- An error explaining that the user needs a deck with the given type of card (call/response).
-    | NotEnoughCardsOfType { cardType : MdString, needed : Int, have : Int } -- An error explaining that the user needs to add more cards of the given type for the number of players.
+    | MissingCardType { cardType : Noun } -- An error explaining that the user needs a deck with the given type of card (call/response).
+    | NotEnoughCardsOfType { cardType : Noun, needed : Int, have : Int } -- An error explaining that the user needs to add more cards of the given type for the number of players.
     | AddBlankCards { amount : Int } -- A description of the action of adding the given number of blank cards to the game.
     | AddDeck -- A description of the action of adding a deck to the game configuration.
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
