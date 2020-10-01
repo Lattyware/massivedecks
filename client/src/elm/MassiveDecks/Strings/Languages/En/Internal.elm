@@ -1191,6 +1191,10 @@ translate _ mdString =
         GermanInformal ->
             [ Text "German (Informal)" ]
 
+        Polish ->
+            [ Text "Polish" ]
+
+
 
 
 {- Private -}
