@@ -6,26 +6,40 @@ module MassiveDecks.Strings.Languages.It exposing (pack)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
-import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
+import MassiveDecks.Strings.Languages.Model exposing (Language(..))
+import MassiveDecks.Strings.Translation as Translation
+import MassiveDecks.Strings.Translation.Model as Translation exposing (Result(..))
 
 
 pack : Translation.Pack
 pack =
-    { code = "it"
-    , name = Italian
-    , translate = translate
-    , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
-    }
+    Translation.pack
+        { lang = It
+        , code = "it"
+        , name = Italian
+        , translate = translate
+        , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
+        }
 
 
 
 {- Private -}
 
 
+raw : MdString -> Translation.Result never
+raw =
+    Raw Nothing
+
+
+ref : MdString -> Translation.Result never
+ref =
+    Ref Nothing
+
+
 {-| The Italian translation
 -}
-translate : MdString -> List Translation.Result
-translate mdString =
+translate : Maybe Never -> MdString -> List (Translation.Result Never)
+translate _ mdString =
     case mdString of
         -- General
         MassiveDecks ->
@@ -79,18 +93,18 @@ translate mdString =
             [ Text "Un divertente gioco di società." ]
 
         WhatIsThis ->
-            [ Text "Cos’è ", Ref MassiveDecks, Text "?" ]
+            [ Text "Cos’è ", ref MassiveDecks, Text "?" ]
 
         GameDescription ->
-            [ Ref MassiveDecks
+            [ ref MassiveDecks
             , Text " è un gioco di società basato su "
-            , Ref CardsAgainstHumanity
+            , ref CardsAgainstHumanity
             , Text ", sviluppato da "
-            , Ref RereadGames
+            , ref RereadGames
             , Text " e altri contributori—il gioco è open source sotto "
-            , Ref License
+            , ref License
             , Text ", quindi puoi aiutare a migliorare il gioco, accedere al codice sorgente, o semplicemente scoprire di più sul "
-            , Ref MDProject
+            , ref MDProject
             , Text "."
             ]
 
@@ -118,10 +132,10 @@ translate mdString =
             [ Text "Info" ]
 
         AboutTheGameDescription ->
-            [ Text "Scopri di più su ", Ref MassiveDecks, Text " e come è sviluppato." ]
+            [ Text "Scopri di più su ", ref MassiveDecks, Text " e come è sviluppato." ]
 
         MDLogoDescription ->
-            [ Text "Una ", Ref (noun Call 1), Text " e una ", Ref (noun Response 1), Text " marcate con una “M” e una “D”." ]
+            [ Text "Una ", ref (noun Call 1), Text " e una ", ref (noun Response 1), Text " marcate con una “M” e una “D”." ]
 
         RereadLogoDescription ->
             [ Text "Un libro cerchiato con una freccia di riciclo." ]
@@ -133,7 +147,7 @@ translate mdString =
             [ Text "licenza AGPLv3" ]
 
         DevelopedByReread ->
-            [ Text "Sviluppato da ", Ref RereadGames, Text "." ]
+            [ Text "Sviluppato da ", ref RereadGames, Text "." ]
 
         RereadGames ->
             [ Text "Reread Games" ]
@@ -148,7 +162,7 @@ translate mdString =
             [ Text "Rientra nel gioco" ]
 
         RejoinGame { code } ->
-            [ Text "Rientra in “", GameCode { code = code } |> Ref, Text "”." ]
+            [ Text "Rientra in “", GameCode { code = code } |> ref, Text "”." ]
 
         LobbyRequiresPassword ->
             [ Text "Hai bisogno di una password per partecipare a questo gioco. Prova a chiedere alla persona che ti ha invitato." ]
@@ -172,63 +186,63 @@ translate mdString =
             [ Text "Come giocare." ]
 
         RulesHand ->
-            [ Text "Ogni giocatore ha una mano di ", Ref (nounUnknownQuantity Response), Text "." ]
+            [ Text "Ogni giocatore ha una mano di ", ref (nounUnknownQuantity Response), Text "." ]
 
         RulesCzar ->
             [ Text "Il primo giocatore inizia come  "
-            , Ref Czar
+            , ref Czar
             , Text ". Il "
-            , Ref Czar
+            , ref Czar
             , Text " legge la domanda o frase da completare nella "
-            , Ref (noun Call 1)
+            , ref (noun Call 1)
             , Text " a voce alta."
             ]
 
         RulesPlaying ->
             [ Text "Tutti gli altri rispondono alla domanda o completano gli spazi scegliendo una "
-            , Ref (noun Response 1)
+            , ref (noun Response 1)
             , Text " dalla loro mano per giocare nel turno."
             ]
 
         RulesJudging ->
             [ Text "Le risposte sono poi mescolate e il  "
-            , Ref Czar
+            , ref Czar
             , Text " le legge a voce alta agli altri giocatori—per il pieno effetto, il "
-            , Ref Czar
+            , ref Czar
             , Text " dovrebbe rileggere la "
-            , Ref (noun Call 1)
+            , ref (noun Call 1)
             , Text " prima di presentare ogni risposta. Il "
-            , Ref Czar
+            , ref Czar
             , Text " poi sceglie la giocata più divertente, e la persona che l’ha giocata prende un "
-            , Ref (noun Point 1)
+            , ref (noun Point 1)
             , Text "."
             ]
 
         RulesPickTitle ->
-            [ Ref (Pick { numberOfCards = 2 }) ]
+            [ ref (Pick { numberOfCards = 2 }) ]
 
         RulesPick ->
             [ Text "Alcune carte necessitano più di una "
-            , Ref (noun Response 1)
+            , ref (noun Response 1)
             , Text " come risposta. Gioca le carte nell’ordine in cui il "
-            , Ref Czar
+            , ref Czar
             , Text " le dovrebbe leggere—l’ordine è importante."
             ]
 
         ExamplePickDescription ->
-            [ Ref (nounUnknownQuantity Call)
+            [ ref (nounUnknownQuantity Call)
             , Text " come questa richiederanno di scegliere multiple "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text ", ma te ne danno di più da cui scegliere."
             ]
 
         RulesDraw ->
             [ Text "Alcune "
-            , Ref (nounUnknownQuantity Call)
+            , ref (nounUnknownQuantity Call)
             , Text " richiederenno ancora più "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text "—queste diranno "
-            , Ref (Draw { numberOfCards = 2 })
+            , ref (Draw { numberOfCards = 2 })
             , Text " o più, e riceverai quel numero di carte aggiuntive prima della giocata."
             ]
 
@@ -249,7 +263,7 @@ translate mdString =
         HouseRuleRebootDescription { cost } ->
             [ Text "In qualunque momento, i giocatori possono cedere "
             , Text (an cost)
-            , Ref (nounMaybe Point cost)
+            , ref (nounMaybe Point cost)
             , Text " per scartare la loro mano e pescarne una nuova."
             ]
 
@@ -257,26 +271,26 @@ translate mdString =
             [ Text "Spendi "
             , Text (asWord cost)
             , Text " "
-            , Ref (noun Point cost)
+            , ref (noun Point cost)
             , Text " per scartare la mano e pescarne una nuova."
             ]
 
         HouseRuleRebootCost ->
-            [ Text "Costo ", Ref (noun Point 1) ]
+            [ Text "Costo ", ref (noun Point 1) ]
 
         HouseRuleRebootCostDescription ->
-            [ Text "Quanti ", Ref (nounUnknownQuantity Point), Text " costa ripescare." ]
+            [ Text "Quanti ", ref (nounUnknownQuantity Point), Text " costa ripescare." ]
 
         HouseRulePackingHeat ->
             [ Text "Porto d’armi" ]
 
         HouseRulePackingHeatDescription ->
             [ Text "Qualunque "
-            , Ref (nounUnknownQuantity Call)
+            , ref (nounUnknownQuantity Call)
             , Text " con "
-            , Ref (Pick { numberOfCards = 2 })
+            , ref (Pick { numberOfCards = 2 })
             , Text " riceve anche "
-            , Ref (Draw { numberOfCards = 1 })
+            , ref (Draw { numberOfCards = 1 })
             , Text ", così tutti hanno più opzioni."
             ]
 
@@ -285,25 +299,25 @@ translate mdString =
 
         HouseRuleComedyWriterDescription ->
             [ Text "Aggiungi  "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text " in bianco dove i giocatori possono scrivere una risposta personalizzata."
             ]
 
         HouseRuleComedyWriterNumber ->
-            [ Ref (nounUnknownQuantity Response), Text " in bianco" ]
+            [ ref (nounUnknownQuantity Response), Text " in bianco" ]
 
         HouseRuleComedyWriterNumberDescription ->
             [ Text "Il numero di "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text " in bianco da utilizzare nel gioco."
             ]
 
         HouseRuleComedyWriterExclusive ->
-            [ Text "Solo ", Ref (nounUnknownQuantity Response), Text " in bianco" ]
+            [ Text "Solo ", ref (nounUnknownQuantity Response), Text " in bianco" ]
 
         HouseRuleComedyWriterExclusiveDescription ->
             [ Text "Se abilitato, tutte le altre "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text " saranno ignorate, solo quelle in bianco esisteranno nel gioco."
             ]
 
@@ -312,7 +326,7 @@ translate mdString =
 
         HouseRuleRandoCardrissianDescription ->
             [ Text "Ogni turno, la prima "
-            , Ref (noun Response 1)
+            , ref (noun Response 1)
             , Text " nel mazzo sarà giocata come risposta. Questa mano appartiene al giocatore IA chiamato "
             , Text "Rando Cardrissian e, se vince il gioco, tutti i giocatori vanno a casa in uno stato di vergogna perenne."
             ]
@@ -350,14 +364,14 @@ translate mdString =
             [ Text "Lingua" ]
 
         MissingLanguage ->
-            [ Text "Non vedi la tua lingua? ", Ref TranslationBeg ]
+            [ Text "Non vedi la tua lingua? ", ref TranslationBeg ]
 
         AutonymFormat { autonym } ->
             [ Text "(", Text autonym, Text ")" ]
 
         TranslationBeg ->
             [ Text "Aiuta a tradurre "
-            , Ref MassiveDecks
+            , ref MassiveDecks
             , Text "!"
             ]
 
@@ -397,7 +411,7 @@ translate mdString =
 
         NotificationsBrowserPermissions ->
             [ Text "Dovrai permettere a "
-            , Ref MassiveDecks
+            , ref MassiveDecks
             , Text " di mandare notifiche. Questo sarà utilizzato solo finchè il gioco è aperto e hai questo abilitato."
             ]
 
@@ -439,7 +453,7 @@ translate mdString =
             [ Text "Dai questo codice gioco alle altre persone per farle partecipare." ]
 
         GameCodeHowToAcquire ->
-            [ Text "Chiedi il ", Ref GameCodeTerm, Text " alla persona che ti ha invitato a giocare." ]
+            [ Text "Chiedi il ", ref GameCodeTerm, Text " alla persona che ti ha invitato a giocare." ]
 
         Deck ->
             [ Text "Mazzo" ]
@@ -497,16 +511,16 @@ translate mdString =
 
         -- Cards
         Pick numberOfCards ->
-            [ Text "Scegli", Ref (NumberOfCards numberOfCards) ]
+            [ Text "Scegli", ref (NumberOfCards numberOfCards) ]
 
         Draw numberOfCards ->
-            [ Text "Pesca", Ref (NumberOfCards numberOfCards) ]
+            [ Text "Pesca", ref (NumberOfCards numberOfCards) ]
 
         PickDescription { numberOfCards } ->
             [ Text "Devi giocare "
             , Text (asWord numberOfCards)
             , Text " "
-            , Ref (noun Response numberOfCards)
+            , ref (noun Response numberOfCards)
             , Text "."
             ]
 
@@ -514,7 +528,7 @@ translate mdString =
             [ Text "Ottieni "
             , Text (asWord numberOfCards)
             , Text " "
-            , Ref (noun Response numberOfCards)
+            , ref (noun Response numberOfCards)
             , Text " in più prima di giocare."
             ]
 
@@ -551,9 +565,9 @@ translate mdString =
             in
             List.concat
                 [ [ Text "Il tuo codice gioco è "
-                  , Ref (GameCode { code = gameCode })
+                  , ref (GameCode { code = gameCode })
                   , Text ". I giocatori possono partecipare al gioco caricando "
-                  , Ref MassiveDecks
+                  , ref MassiveDecks
                   , Text " e inserendo questo codice"
                   ]
                 , extra
@@ -571,13 +585,13 @@ translate mdString =
             [ Text "Proiezione su ", Text deviceName, Text "." ]
 
         Players ->
-            [ Ref (nounUnknownQuantity Player) ]
+            [ ref (nounUnknownQuantity Player) ]
 
         PlayersDescription ->
             [ Text "Utenti che partecipano al gioco." ]
 
         Spectators ->
-            [ Ref (nounUnknownQuantity Spectator) ]
+            [ ref (nounUnknownQuantity Spectator) ]
 
         SpectatorsDescription ->
             [ Text "Utenti che guardano il gioco senza parteciparvi." ]
@@ -617,7 +631,7 @@ translate mdString =
 
         ScoreDescription ->
             [ Text "Il numero di "
-            , Ref (nounUnknownQuantity Point)
+            , ref (nounUnknownQuantity Point)
             , Text " che questo giocatore ha."
             ]
 
@@ -730,14 +744,14 @@ translate mdString =
             ]
 
         NoDecksHint ->
-            [ Text "Non sei sicuro? Aggiungi il mazzo ", Raw CardsAgainstHumanity, Text " originale." ]
+            [ Text "Non sei sicuro? Aggiungi il mazzo ", raw CardsAgainstHumanity, Text " originale." ]
 
         WaitForDecks ->
             [ Text "I mazzi si devono caricare prima che tu possa iniziare il gioco." ]
 
         MissingCardType { cardType } ->
             [ Text "Nessuno dei mazzi contiene "
-            , Ref (nounUnknownQuantity cardType)
+            , ref (nounUnknownQuantity cardType)
             , Text ". Sono necessarie per poter iniziare il gioco."
             ]
 
@@ -745,7 +759,7 @@ translate mdString =
             [ Text "Per il numero di giocatori nel gioco, ti servono almeno "
             , Text (needed |> String.fromInt)
             , Text " "
-            , Ref (noun cardType needed)
+            , ref (noun cardType needed)
             , Text " ma ne hai solo "
             , Text (have |> String.fromInt)
             , Text "."
@@ -762,10 +776,10 @@ translate mdString =
             [ Text "Rimuovi mazzo." ]
 
         SourceNotFound { source } ->
-            [ Ref source, Text " non riconosce il mazzo che hai richiesto. Verifica che i dettagli che hai inserito sono corretti." ]
+            [ ref source, Text " non riconosce il mazzo che hai richiesto. Verifica che i dettagli che hai inserito sono corretti." ]
 
         SourceServiceFailure { source } ->
-            [ Ref source, Text " non ha potuto fornire il mazzo. Prova più tardi o prova un’altra sorgente." ]
+            [ ref source, Text " non ha potuto fornire il mazzo. Prova più tardi o prova un’altra sorgente." ]
 
         -- TODO: Translate
         ManyDecks ->
@@ -820,12 +834,12 @@ translate mdString =
             [ Text "Il numero di carte di base che ogni giocatore ha durante il gioco." ]
 
         ScoreLimit ->
-            [ Text "Limite ", Ref (nounUnknownQuantity Point) ]
+            [ Text "Limite ", ref (nounUnknownQuantity Point) ]
 
         ScoreLimitDescription ->
             [ Segment
                 [ Text "Il numero di "
-                , Ref (nounUnknownQuantity Point)
+                , ref (nounUnknownQuantity Point)
                 , Text " che un giocatore deve avere per vincere il gioco."
                 ]
             , Text " "
@@ -851,7 +865,7 @@ translate mdString =
 
         NeedAtLeastOneHuman ->
             [ Text "Purtroppo, i giocatori computer non possono essere il "
-            , Ref Czar
+            , ref Czar
             , Text ", quindi ti serve almeno un giocatore umano per iniziare il gioco."
             , Text " (Anche se un solo giocatore umano potrebbe essere piuttosto noioso!)"
             ]
@@ -860,10 +874,10 @@ translate mdString =
             [ Text "I giocatori computer non possono scrivere le loro carte." ]
 
         DisableComedyWriter ->
-            [ Text "Disabilita ", Ref HouseRuleComedyWriter ]
+            [ Text "Disabilita ", ref HouseRuleComedyWriter ]
 
         DisableRando ->
-            [ Text "Disabilita ", Ref HouseRuleRandoCardrissian ]
+            [ Text "Disabilita ", ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
             [ Text "Aggiungi un giocatore IA al gioco." ]
@@ -922,24 +936,24 @@ translate mdString =
             ]
 
         TimeLimit { stage } ->
-            [ Text "Tempo limite ", Ref stage ]
+            [ Text "Tempo limite ", ref stage ]
 
         PlayingTimeLimitDescription ->
-            [ Text "Quanto tempo (in secondi) i ", Ref Players, Text " hanno per fare la giocata." ]
+            [ Text "Quanto tempo (in secondi) i ", ref Players, Text " hanno per fare la giocata." ]
 
         -- TODO: Translate
         PlayingAfterDescription ->
             [ Missing ]
 
         RevealingTimeLimitDescription ->
-            [ Text "Quanto tempo (in secondi) il ", Ref Czar, Text " ha per rivelare le giocate." ]
+            [ Text "Quanto tempo (in secondi) il ", ref Czar, Text " ha per rivelare le giocate." ]
 
         -- TODO: Translate
         RevealingAfterDescription ->
             [ Missing ]
 
         JudgingTimeLimitDescription ->
-            [ Text "Quanto tempo (in secondi) il ", Ref Czar, Text " ha per giudicare le giocate." ]
+            [ Text "Quanto tempo (in secondi) il ", ref Czar, Text " ha per giudicare le giocate." ]
 
         CompleteTimeLimitDescription ->
             [ Text "Quanto tempo (in secondi) attendere dopo un turno prima di iniziare quello sucessivo." ]
@@ -988,7 +1002,7 @@ translate mdString =
 
         -- Game
         SubmitPlay ->
-            [ Text "Dai queste carte al ", Ref Czar, Text " come giocata per il turno." ]
+            [ Text "Dai queste carte al ", ref Czar, Text " come giocata per il turno." ]
 
         TakeBackPlay ->
             [ Text "Riprenditi le carte per cambiare la giocata del turno." ]
@@ -1053,7 +1067,7 @@ translate mdString =
             [ Text "Devi scegliere altre "
             , Text (asWord numberOfCards)
             , Text " "
-            , Ref (noun Response numberOfCards)
+            , ref (noun Response numberOfCards)
             , Text " in questo turno prima di poter inviare la giocata."
             ]
 
@@ -1065,9 +1079,9 @@ translate mdString =
 
         CzarsDontPlayInstruction ->
             [ Text "Sei il "
-            , Ref Czar
+            , ref Czar
             , Text " per questo turno - non scegli nessuna "
-            , Ref (nounUnknownQuantity Response)
+            , ref (nounUnknownQuantity Response)
             , Text ". Invece, scegli il vincitore quando tutti gli altri hanno fatto le loro giocate."
             ]
 
@@ -1078,7 +1092,7 @@ translate mdString =
             [ Text "Clicca le carte giocate per girarle, poi scegli la giocata che ti piace di più." ]
 
         WaitingForCzarInstruction ->
-            [ Text "Puoi dare un Mi Piace alle giocate mentre attendi che il ", Ref Czar, Text " riveli le carte e scelga il vincitore." ]
+            [ Text "Puoi dare un Mi Piace alle giocate mentre attendi che il ", ref Czar, Text " riveli le carte e scelga il vincitore." ]
 
         AdvanceRoundInstruction ->
             [ Text "Il prossimo round è iniziato, puoi procedere." ]
@@ -1158,13 +1172,13 @@ translate mdString =
             [ Text "Non puoi eseguire quell’azione." ]
 
         IncorrectPlayerRoleError { role, expected } ->
-            [ Text "Devi essere un ", Ref expected, Text " per farlo, ma sei un ", Ref role, Text "." ]
+            [ Text "Devi essere un ", ref expected, Text " per farlo, ma sei un ", ref role, Text "." ]
 
         IncorrectUserRoleError { role, expected } ->
-            [ Text "Devi essere un ", Ref expected, Text " per farlo, ma sei un ", Ref role, Text "." ]
+            [ Text "Devi essere un ", ref expected, Text " per farlo, ma sei un ", ref role, Text "." ]
 
         IncorrectRoundStageError { stage, expected } ->
-            [ Text "Il turno deve essere nello stato ", Ref expected, Text " per farlo, ma sei nello stato ", Ref stage, Text "." ]
+            [ Text "Il turno deve essere nello stato ", ref expected, Text " per farlo, ma sei nello stato ", ref stage, Text "." ]
 
         ConfigEditConflictError ->
             [ Text "Qualcun altro ha cambiato la configurazione prima di te, le tue modifiche non sono state salvate." ]
@@ -1197,11 +1211,11 @@ translate mdString =
             [ Text "Il gioco non esiste." ]
 
         LobbyClosedError { gameCode } ->
-            [ Text "Il gioco a cui vuoi partecipare (", Ref (GameCode { code = gameCode }), Text ") è terminato." ]
+            [ Text "Il gioco a cui vuoi partecipare (", ref (GameCode { code = gameCode }), Text ") è terminato." ]
 
         LobbyDoesNotExistError { gameCode } ->
             [ Text "Il codice di gioco che hai inserito ("
-            , Ref (GameCode { code = gameCode })
+            , ref (GameCode { code = gameCode })
             , Text ") non esiste. "
             , Text "Prova a scriverlo di nuovo e, se non funziona ancora, chiedilo di nuovo a chi ti ha invitato."
             ]

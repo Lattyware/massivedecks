@@ -28,15 +28,14 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings exposing (MdString(..))
+import MassiveDecks.Strings.Languages.De as DeLang
+import MassiveDecks.Strings.Languages.DeXInformal as DeXInformalLang
 import MassiveDecks.Strings.Languages.En as EnLang
 import MassiveDecks.Strings.Languages.It as ItLang
 import MassiveDecks.Strings.Languages.Model exposing (..)
 import MassiveDecks.Strings.Languages.PtBR as PtBRLang
-import MassiveDecks.Strings.Languages.De as DeLang
-import MassiveDecks.Strings.Languages.DeXInformal as DeXInformalLang
-import MassiveDecks.Strings.Languages.Pl as PlLang
 import MassiveDecks.Strings.Render as Render
-import MassiveDecks.Strings.Translation as Translation
+import MassiveDecks.Strings.Translation.Model as Translation
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.String as String
 import Material.Attributes as Material
@@ -141,7 +140,7 @@ string shared mdString =
 -}
 givenLanguageString : Shared -> Language -> MdString -> String
 givenLanguageString shared lang mdString =
-    mdString |> Render.asString { lang = lang, translate = translate lang, parent = mdString, shared = shared }
+    mdString |> (pack lang).string shared
 
 
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings
@@ -153,7 +152,7 @@ html shared mdString =
         lang =
             currentLanguage shared
     in
-    mdString |> Render.asHtml { lang = lang, translate = translate lang, parent = mdString, shared = shared }
+    mdString |> (pack lang).html shared |> Html.map never
 
 
 {-| The lang attribute for embedding text of a different language into other text.
@@ -193,11 +192,6 @@ recommended shared =
 
 
 {- Private -}
-
-
-translate : Language -> MdString -> List Translation.Result
-translate lang mdString =
-    mdString |> (pack lang |> .translate)
 
 
 languagesDict : Dict String Language

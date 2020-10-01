@@ -52,7 +52,7 @@ type MdString
     = MassiveDecks -- The name of the game.
     | Close -- Close a dialog window.
       -- Special
-    | Noun { noun : Noun, quantity : Quantity } -- Given a noun and an quantity of that noun being talked about.
+    | Noun { noun : Noun, quantity : Quantity } -- The given noun, described in the given quantity and context.
       -- Start screen.
     | Version { versionNumber : String } -- The version of the game being played.
     | ShortGameDescription -- A one-line description of the game.
