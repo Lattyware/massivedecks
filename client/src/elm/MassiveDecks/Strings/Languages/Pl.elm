@@ -3,9 +3,10 @@ module MassiveDecks.Strings.Languages.Pl exposing (pack)
 {-| Polish translation of Massive Decks, made by TheChilliPL on GitHub.
 -}
 
+import Array exposing (Array, fromList, get)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Strings exposing (MdString(..))
+import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
 import MassiveDecks.Strings.Translation as Translation exposing (Result(..))
 
 
@@ -34,8 +35,8 @@ translate mdString =
         Close ->
             [ Text "Zamknij" ]
 
-        -- Special
-        Plural { singular, amount } -> [ Raw singular ]
+        -- -- Special
+        Noun { noun, quantity } -> [ Text "a" ]
 
         -- Start screen.
         Version { versionNumber } ->
@@ -82,7 +83,7 @@ translate mdString =
             [ Text "O grze" ]
 
         AboutTheGameDescription ->
-            [ Text "Dowiedz się więcej o ", Ref MassiveDecks, Text " i o jej rozwoju." ]
+            [ Text "Dowiedz się więcej o ", Ref MassiveDecks, Text " i o jego rozwoju." ]
 
         MDLogoDescription ->
             [ Ref Call, Text " i ", Ref Response, Text " podpisane literami „M” oraz „D”." ]
@@ -134,7 +135,7 @@ translate mdString =
             [ Text "Jak grać." ]
 
         RulesHand ->
-            [ Text "Każdy gracz ma w ręce ", Ref (Plural { singular = Response, amount = Nothing }), Text "." ]
+            [ Text "Każdy gracz ma w ręce ", Ref (nounUnknownQuantity Response), Text "." ]
 
         RulesCzar ->
             [ Text "Pierwszy gracz zaczyna jako "
@@ -142,7 +143,7 @@ translate mdString =
             , Text ". "
             , Ref Czar
             , Text " czyta pytanie lub zdanie do uzupełnienia na "
-            , Ref Call
+            , Ref (noun Call 1)
             , Text " na głos."
             ]
 
@@ -385,26 +386,26 @@ translate mdString =
         CzarDescription ->
             [ Text "Gracz oceniający odpowiedzi." ]
 
-        Player ->
-            [ Text "Gracz" ]
-
-        Spectator ->
-            [ Text "Obserwator" ]
-
-        Call ->
-            [ Text "Czarna Karta" ]
+        --Player ->
+        --    [ Text "Gracz" ]
+        --
+        --Spectator ->
+        --    [ Text "Obserwator" ]
+        --
+        --Call ->
+        --    [ Text "Czarna Karta" ]
 
         CallDescription ->
             [ Text "Czarna karta z pytaniem lub luką do uzupełnienia." ]
 
-        Response ->
-            [ Text "Biała karta" ]
+        --Response ->
+        --    [ Text "Biała karta" ]
 
         ResponseDescription ->
             [ Text "Biała karta z wyrażeniem używanym jako odpowiedź." ]
 
-        Point ->
-            [ Text "Superowy Punkt" ]
+        --Point ->
+        --    [ Text "Superowy Punkt" ]
 
         PointDescription ->
             [ Text "Punkcik—kto ma więcej ten wygrywa." ]
@@ -662,10 +663,10 @@ translate mdString =
         ReturnViewToGameDescription ->
             [ Text "Wróć do podstawowego widoku gry." ] --TODO
 
-        ViewConfgiuration ->
+        ViewConfiguration ->
             [ Text "Konfiguruj" ]
 
-        ViewConfgiurationDescription ->
+        ViewConfigurationDescription ->
             [ Text "Pokaż konfigurację gry." ]
 
         KickUser ->
@@ -1228,6 +1229,152 @@ a amount =
             ""
 --}
 
+type DeclensionCase
+    = Nominative   -- Mianownik   kto co
+    | Genitive     -- Dopełniacz  kogo czego
+    | Dative       -- Celownik    komu czemu
+    | Accusative   -- Biernik     kogo co
+    | Instrumental -- Narzędnik   z kim z czym
+    | Locative     -- Miejscownik o kim o czym
+    | Vocative     -- Wołacz
+
+caseIndex declCase =
+    case declCase of
+        Nominative -> 0
+        Genitive -> 1
+        Dative -> 2
+        Accusative -> 3
+        Instrumental -> 4
+        Locative -> 5
+        Vocative -> 6
+
+{-| Gets a new declension case according to the paucal plural rules.
+In some cases, it shifts the declension case to genitive.
+-}
+paucal : DeclensionCase -> Quantity -> DeclensionCase
+paucal declCase quantity =
+    case quantity of
+        Unknown -> declCase
+        1 -> declCase
+        Quantity fullQ ->
+            let
+                q100 = modBy 100 fullQ
+                paucalUseGenitive =
+                    if q100 >= 5 && q100 <= 21 then True
+                    else
+                        let
+                            q10 = modBy 10 q100
+                        in
+                            q10 <= 1 || q10 >= 5
+            in
+                if paucalUseGenitive then Genitive else declCase
+
+declTable : Noun -> Array String
+declTable noun =
+    case noun of
+        Call ->
+            fromList [
+                "czarna karta",
+                "czarnej karty",
+                "czarnej karcie",
+                "czarną kartę",
+                "czarną kartą",
+                "czarnej karcie",
+                "czarna karto",
+                "czarne karty",
+                "czarnych kart",
+                "czarnym kartom",
+                "czarne karty",
+                "czarnymi kartami",
+                "czarnych kartach",
+                "czarne karty"
+            ]
+
+        Response ->
+            fromList [
+                "biała karta",
+                "białej karty",
+                "białej karcie",
+                "białą kartę",
+                "białą kartą",
+                "białej karcie",
+                "biała karto",
+                "białe karty",
+                "białych kart",
+                "białym kartom",
+                "białe karty",
+                "białymi kartami",
+                "białych kartach",
+                "białe karty"
+            ]
+
+        Point ->
+            fromList [
+                "superowy punkt",
+                "superowego punktu",
+                "superowemu punktowi",
+                "superowy punkt",
+                "superowym punktem",
+                "superowym punkcie",
+                "superowy punkcie",
+                "superowe punkty",
+                "superowych punktów",
+                "superowym punktom",
+                "superowe punkty",
+                "superowymi punktami",
+                "superowych punktach",
+                "superowe punkty"
+            ]
+
+        Player ->
+            fromList [
+                "gracz",
+                "gracza",
+                "graczowi",
+                "gracza",
+                "graczem",
+                "graczu",
+                "graczu",
+                "gracze",
+                "graczy",
+                "graczom",
+                "graczy",
+                "graczami",
+                "graczach",
+                "gracze"
+            ]
+
+        Spectator ->
+            fromList [
+                "obserwator",
+                "obserwatora",
+                "obserwatorowi",
+                "obserwatora",
+                "obserwatorem",
+                "obserwatorze",
+                "obserwatorze",
+                "obserwatorzy",
+                "obserwatorów",
+                "obserwatorom",
+                "obserwatorów",
+                "obserwatorami",
+                "obserwatorach",
+                "obserwatorzy"
+            ]
+
+
+{-| Declines the specified noun to the specified case and quantity.
+-}
+decl : Noun -> Quantity -> DeclensionCase -> String
+decl noun quantity declCase =
+    let
+        realCase = paucal declCase quantity
+        realCaseIndex = caseIndex realCase + case quantity of
+            1 -> 0
+            _ -> 7
+    in
+        get realCaseIndex (declTable noun)
+        |> Maybe.withDefault ""
 
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}
