@@ -15,7 +15,7 @@ import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown.Model exposing (..)
 import MassiveDecks.Pages.Unknown.Route exposing (..)
-import MassiveDecks.Strings exposing (MdString(..))
+import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import Material.Card as Card
 
@@ -39,10 +39,10 @@ view : Shared -> Model -> List (Html Msg)
 view shared _ =
     [ Html.div [ HtmlA.class "page unknown-page" ]
         [ Card.view []
-            [ Html.h1 [] [ Icon.viewIcon Icon.exclamationCircle, Lang.html shared UnknownPageTitle ]
+            [ Html.h1 [] [ Icon.viewIcon Icon.exclamationCircle, Lang.html shared Strings.UnknownPageTitle ]
             , Html.p []
                 [ Html.a [ Route.url (Route.Start { section = Start.New }) |> HtmlA.href ]
-                    [ Lang.html shared GoBackHome
+                    [ Lang.html shared Strings.GoBackHome
                     ]
                 ]
             ]

@@ -15,7 +15,7 @@ import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
-import MassiveDecks.Strings exposing (MdString(..))
+import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
 
@@ -99,7 +99,7 @@ extraCardsInstruction shared rules slots =
             extraCards =
                 slots - 1
         in
-        [ Html.li [] [ Draw { numberOfCards = extraCards } |> Lang.html shared ] ]
+        [ Html.li [] [ Strings.Draw { numberOfCards = extraCards } |> Lang.html shared ] ]
             |> Maybe.justIf (extraCards > 0)
             |> Maybe.withDefault []
 
@@ -109,6 +109,6 @@ extraCardsInstruction shared rules slots =
 
 pickInstruction : Shared -> Int -> Bool -> List (Html msg)
 pickInstruction shared slots nonObviousSlotIndices =
-    [ Html.li [] [ Pick { numberOfCards = slots } |> Lang.html shared ] ]
+    [ Html.li [] [ Strings.Pick { numberOfCards = slots } |> Lang.html shared ] ]
         |> Maybe.justIf (slots > 1 || nonObviousSlotIndices)
         |> Maybe.withDefault []

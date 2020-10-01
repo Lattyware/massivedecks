@@ -1,23 +1,22 @@
-module MassiveDecks.Strings.Render exposing (asHtml, asString)
+module MassiveDecks.Strings.Render exposing (Context, asHtml, asString)
 
 import FontAwesome.Brands as Icon
 import FontAwesome.Icon as Icon exposing (Icon)
 import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
-import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings exposing (..)
-import MassiveDecks.Strings.Languages.En as En
+import MassiveDecks.Strings.Languages.En.Internal as EnInternal
 import MassiveDecks.Strings.Languages.Model exposing (Language)
-import MassiveDecks.Strings.Translation as Translation
+import MassiveDecks.Strings.Translation.Model as Translation
 import MassiveDecks.Util.Html as Html
 
 
-type alias Context =
+type alias Context langContext =
     { lang : Language
-    , translate : MdString -> List Translation.Result
+    , translate : Maybe langContext -> MdString -> List (Translation.Result langContext)
     , parent : MdString
     , shared : Shared
     }
@@ -25,36 +24,36 @@ type alias Context =
 
 {-| Build an actual string from an `MdString` in the user's language.
 -}
-asString : Context -> MdString -> String
+asString : Context langContext -> MdString -> String
 asString context mdString =
-    [ Translation.Ref mdString ] |> resultsToString context
+    [ Translation.Ref Nothing mdString ] |> resultsToString context
 
 
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings
 with rich HTML content (e.g: links, icons, etc...) when rendered as HTML.
 -}
-asHtml : Context -> MdString -> Html msg
+asHtml : Context langContext -> MdString -> Html Never
 asHtml context mdString =
-    [ Translation.Ref mdString ] |> resultsToHtml context |> Html.span []
+    [ Translation.Ref Nothing mdString ] |> resultsToHtml context |> Html.span []
 
 
 
 {- Private -}
 
 
-resultsToString : Context -> List Translation.Result -> String
+resultsToString : Context langContext -> List (Translation.Result langContext) -> String
 resultsToString context results =
     results |> List.map (resultToString context) |> String.concat
 
 
-resultToString : Context -> Translation.Result -> String
+resultToString : Context langContext -> Translation.Result langContext -> String
 resultToString context result =
     let
         { translate, parent } =
             context
 
-        mdStringToString =
-            \mdString -> mdString |> translate |> resultsToString { context | parent = mdString }
+        mdStringToString langContext mdString =
+            mdString |> translate langContext |> resultsToString { context | parent = mdString }
 
         partsToString =
             List.map (resultToString context) >> String.join ""
@@ -63,11 +62,11 @@ resultToString context result =
         Translation.Text text ->
             text
 
-        Translation.Ref mdString ->
-            mdStringToString mdString
+        Translation.Ref langContext mdString ->
+            mdStringToString langContext mdString
 
-        Translation.Raw mdString ->
-            mdStringToString mdString
+        Translation.Raw langContext mdString ->
+            mdStringToString langContext mdString
 
         Translation.Em emphasised ->
             partsToString emphasised
@@ -76,36 +75,36 @@ resultToString context result =
             partsToString segment
 
         Translation.Missing ->
-            En.pack.translate parent |> partsToString
+            EnInternal.translate Nothing parent |> partsToString
 
 
-resultsToHtml : Context -> List Translation.Result -> List (Html msg)
+resultsToHtml : Context langContext -> List (Translation.Result langContext) -> List (Html msg)
 resultsToHtml context results =
     results |> List.concatMap (resultToHtml context)
 
 
-resultToHtml : Context -> Translation.Result -> List (Html msg)
+resultToHtml : Context langContext -> Translation.Result langContext -> List (Html msg)
 resultToHtml context result =
     let
         { translate, parent } =
             context
     in
     case result of
-        Translation.Ref mdString ->
+        Translation.Ref langContext mdString ->
             let
                 childContext =
                     { context | parent = mdString }
             in
             mdString
-                |> translate
+                |> translate langContext
                 |> resultsToHtml childContext
                 |> enhanceHtml childContext mdString
 
         Translation.Text text ->
             [ Html.text text ]
 
-        Translation.Raw mdString ->
-            [ mdString |> translate |> resultsToString { context | parent = mdString } |> Html.text ]
+        Translation.Raw langContext mdString ->
+            [ mdString |> translate langContext |> resultsToString { context | parent = mdString } |> Html.text ]
 
         Translation.Em emphasised ->
             [ Html.strong [] (emphasised |> resultsToHtml context) ]
@@ -117,7 +116,7 @@ resultToHtml context result =
             let
                 english =
                     Html.span [ HtmlA.class "string", HtmlA.lang "en" ]
-                        (En.pack.translate parent |> resultsToHtml context)
+                        (EnInternal.translate Nothing parent |> resultsToHtml context)
 
                 translationBeg =
                     Html.blankA
@@ -129,7 +128,7 @@ resultToHtml context result =
             [ Html.span [ HtmlA.class "not-translated" ] [ english, Html.text " ", translationBeg ] ]
 
 
-enhanceHtml : Context -> MdString -> List (Html msg) -> List (Html msg)
+enhanceHtml : Context langContext -> MdString -> List (Html msg) -> List (Html msg)
 enhanceHtml context mdString unenhanced =
     case mdString of
         Noun { noun } ->
@@ -275,7 +274,7 @@ suffixed base suffix =
     base ++ [ Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.viewIcon suffix ] ]
 
 
-term : Context -> MdString -> Icon -> List (Html msg) -> List (Html msg)
+term : Context langContext -> MdString -> Icon -> List (Html msg) -> List (Html msg)
 term context description icon unenhanced =
     [ Html.span
         [ HtmlA.class "term", description |> asString context |> HtmlA.title ]
