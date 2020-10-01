@@ -132,20 +132,22 @@ resultToHtml context result =
 enhanceHtml : Context -> MdString -> List (Html msg) -> List (Html msg)
 enhanceHtml context mdString unenhanced =
     case mdString of
-        Plural { singular } ->
-            enhanceHtml context singular unenhanced
+        Noun { noun } ->
+            case noun of
+                Call ->
+                    term context CallDescription Icon.callCard unenhanced
+
+                Response ->
+                    term context ResponseDescription Icon.responseCard unenhanced
+
+                Point ->
+                    term context PointDescription Icon.star unenhanced
+
+                _ ->
+                    unenhanced
 
         Czar ->
             term context CzarDescription Icon.gavel unenhanced
-
-        Call ->
-            term context CallDescription Icon.callCard unenhanced
-
-        Response ->
-            term context ResponseDescription Icon.responseCard unenhanced
-
-        Point ->
-            term context PointDescription Icon.star unenhanced
 
         GameCodeTerm ->
             term context GameCodeDescription Icon.qrcode unenhanced

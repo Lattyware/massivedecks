@@ -1,4 +1,4 @@
-FROM node:13-alpine
+FROM node:14-alpine AS build
 
 WORKDIR /md
 
@@ -9,8 +9,7 @@ COPY ["./src", "./src"]
 COPY ["./tsconfig.json", "./config.json5", "./"]
 RUN ["npm", "run", "build"]
 
-FROM node:13-alpine
-LABEL maintainer="team@rereadgames.com"
+FROM node:14-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -18,6 +17,7 @@ ARG VERSION=dev
 
 ENV MD_VERSION $VERSION
 
+LABEL maintainer="team@rereadgames.com"
 LABEL org.label-schema.name="massivedecks/server"
 LABEL org.label-schema.description="The web server for Massive Decks, a comedy party game."
 LABEL org.label-schema.url="https://github.com/Lattyware/massivedecks"
@@ -35,7 +35,7 @@ RUN ["npm", "ci", "--only=production"]
 
 COPY ["./config.json5", "./"]
 COPY ["./decks", "./decks"]
-COPY --from=0 ["/md/dist", "./"]
+COPY --from=build ["/md/dist", "./"]
 
 EXPOSE 8081
 USER node

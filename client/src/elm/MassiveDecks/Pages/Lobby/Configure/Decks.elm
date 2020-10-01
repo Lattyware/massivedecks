@@ -128,8 +128,8 @@ view wrap shared model remote canEdit =
             , Html.thead []
                 [ Html.tr []
                     [ Html.th [ HtmlA.class "deck-name", HtmlA.scope "col" ] [ Strings.Deck |> Lang.html shared ]
-                    , Html.th [ HtmlA.scope "col" ] [ Strings.Call |> Lang.html shared ]
-                    , Html.th [ HtmlA.scope "col" ] [ Strings.Response |> Lang.html shared ]
+                    , Html.th [ HtmlA.scope "col" ] [ Strings.nounUnknownQuantity Strings.Call |> Lang.html shared ]
+                    , Html.th [ HtmlA.scope "col" ] [ Strings.nounUnknownQuantity Strings.Response |> Lang.html shared ]
                     ]
                 ]
             , Html.tbody [] tableContent
@@ -191,20 +191,23 @@ addDeckWidget wrap shared existing deckToAdd =
     let
         submit =
             deckToAdd |> submitDeckAction wrap existing
+
+        ( sourcePicker, deckPicker ) =
+            Source.generalEditor shared existing deckToAdd (Update >> wrap) (submit |> Result.toMaybe) (NoOp |> wrap)
     in
     Form.section
         shared
         "add-deck"
-        (Html.div [ HtmlA.class "multipart" ]
-            (List.concat
-                [ Source.generalEditor shared existing deckToAdd (Update >> wrap) (submit |> Result.toMaybe) (NoOp |> wrap)
-                , [ IconButton.view shared
-                        Strings.AddDeck
-                        (NeList (Icon.plus |> Icon.present) [])
-                        (submit |> Result.toMaybe)
-                  ]
+        (Html.div []
+            [ Html.div [ HtmlA.class "multipart" ] [ sourcePicker ]
+            , Html.div [ HtmlA.class "multipart" ]
+                [ deckPicker
+                , IconButton.view shared
+                    Strings.AddDeck
+                    (NeList (Icon.plus |> Icon.present) [])
+                    (submit |> Result.toMaybe)
                 ]
-            )
+            ]
         )
         ((deckToAdd |> Source.generalMatching |> Source.messages) ++ (submit |> Result.error |> Maybe.withDefault []))
 
