@@ -26,6 +26,7 @@ pack =
 
 {- Private -}
 
+
 raw : MdString -> Translation.Result DeclensionCase
 raw =
     Raw Nothing
@@ -34,6 +35,7 @@ raw =
 ref : MdString -> Translation.Result DeclensionCase
 ref =
     Ref Nothing
+
 
 refDecl : DeclensionCase -> MdString -> Translation.Result DeclensionCase
 refDecl declCase =
@@ -77,7 +79,7 @@ translate maybeDeclCase mdString =
             , ref RereadGames
             , Text " i innych kontrybutorów—gra jest open-source z licencją "
             , ref License
-            , Text ", więc możesz wesprzeć rozwój gry, sprawdzić kod źródłowy, lub po prostu dowiedzieć się więcej na "
+            , Text ", więc możesz wesprzeć rozwój gry, sprawdzić kod źródłowy, lub po prostu dowiedzieć się więcej na jej "
             , refDecl Locative MDProject
             , Text "."
             ]
@@ -142,7 +144,7 @@ translate maybeDeclCase mdString =
             [ Text "Dołącz ponownie" ]
 
         RejoinGame { code } ->
-            [ Text "Dołącz do “", GameCode { code = code } |> ref, Text "”." ]
+            [ Text "Dołącz do „", GameCode { code = code } |> ref, Text "”." ]
 
         LobbyRequiresPassword ->
             [ Text "Potrzebujesz hasła by dołączyć. Poproś o nie osobę która cię zaprosiła." ]
@@ -185,7 +187,7 @@ translate maybeDeclCase mdString =
             ]
 
         RulesPlaying ->
-            [ Text "Cała reszta odpowiada na pytanie lub uzupełnia lukę wybierając "
+            [ Text "Cała reszta odpowiada na to pytanie lub uzupełnia lukę wybierając "
             , refDecl Accusative (noun Response 1)
             , Text " ze swojej ręki."
             ]
@@ -209,14 +211,14 @@ translate maybeDeclCase mdString =
 
         RulesPick ->
             [ Text "Niektóre czarne karty potrzebują więcej niż jednej "
-            , refDecl Accusative (noun Response 1)
+            , refDecl Genitive (noun Response 1)
             , Text " do odpowiedzi. Wybierz karty w kolejności w jakiej "
             , ref Czar
             , Text " powinien je przeczytać — to ważne."
             ]
 
         ExamplePickDescription ->
-            [ Text "Takie"
+            [ Text "Takie "
             , ref (nounUnknownQuantity Call)
             , Text " wymagają wybierania większej ilości "
             , refDecl Genitive (nounUnknownQuantity Response)
@@ -237,7 +239,7 @@ translate maybeDeclCase mdString =
             [ Text "Zasady Gry" ]
 
         HouseRulesTitle ->
-            [ Text "Zasady Domowe" ] --TODO Specjalne?
+            [ Text "Zasady specjalne" ]
 
         HouseRules ->
             [ Text "Możesz zmienić różne zasady tej gry na różne sposoby. Podczas ustawiania gry, wybierz tyle "
@@ -249,7 +251,10 @@ translate maybeDeclCase mdString =
 
         HouseRuleRebootDescription { cost } ->
             [ Text "W każdej chwili gracze mogą wymienić "
-            , refDecl Accusative (nounMaybe Point cost)
+            , refDecl Accusative (case cost of
+                Just 1 -> noun Point 1
+                _ -> nounUnknownQuantity Point
+            )
             , Text " aby wyrzucić wszystkie karty i zacząć z nowymi."
             ]
 
@@ -271,7 +276,7 @@ translate maybeDeclCase mdString =
             ]
 
         HouseRulePackingHeat ->
-            [ Text "Napakowany" ] --TODO
+            [ Text "Napakowany" ]
 
         HouseRulePackingHeatDescription ->
             [ Text "Wszystkie "
@@ -284,7 +289,7 @@ translate maybeDeclCase mdString =
             ]
 
         HouseRuleComedyWriter ->
-            [ Text "Memiarz" ] --TODO
+            [ Text "Memiarz" ]
 
         HouseRuleComedyWriterDescription ->
             [ Text "Dodaj puste "
@@ -314,7 +319,7 @@ translate maybeDeclCase mdString =
             [ Text "Rando Cardrissian" ]
 
         HouseRuleRandoCardrissianDescription ->
-            [ Text "Każdego dnia, pierwsza "
+            [ Text "W każdej rundzie, pierwsza "
             , ref (noun Response 1)
             , Text " z talii zostanie wybrana jako odpowiedź. Należy ona do bota nazwanego "
             , Text "Rando Cardrissian, a jeśli on wygra, wszyscy gracze wrócą do domu z niekończącym się wstydem."
@@ -327,7 +332,7 @@ translate maybeDeclCase mdString =
             [ Text "Ilość botów, które znajdą się w grze." ]
 
         HouseRuleNeverHaveIEver ->
-            [ Text "Nigdy w życiu nie" ]
+            [ Text "Nigdy w życiu nie…" ]
 
         HouseRuleNeverHaveIEverDescription ->
             [ Text "W każdej chwili, gracz może pozbyć się kart których nie rozumie, ale musi wyznać swą "
@@ -344,7 +349,7 @@ translate maybeDeclCase mdString =
             [ Text "Ustaw wartość na ", Text (String.fromInt value), Text "." ]
 
         CantBeEmpty ->
-            [ Text "To nie może być puste." ]
+            [ Text "To pole nie może być puste." ]
 
         SettingsTitle ->
             [ Text "Ustawienia" ]
@@ -353,7 +358,7 @@ translate maybeDeclCase mdString =
             [ Text "Język" ]
 
         MissingLanguage ->
-            [ Text "Nie widzisz swojego języka? ", ref TranslationBeg ]
+            [ Text "Nie widzisz swojego języka na liście? ", ref TranslationBeg ]
 
         AutonymFormat { autonym } ->
             [ Text "(", Text autonym, Text ")" ]
@@ -401,7 +406,7 @@ translate maybeDeclCase mdString =
         NotificationsBrowserPermissions ->
             [ Text "Musisz dać uprawnienia grze "
             , ref MassiveDecks
-            , Text " aby mogła używać powiadomień. Będzie to używane tylko podczas gry jeśli ta opcja jest włączona."
+            , Text ", aby mogła używać powiadomień. Będzie to używane tylko podczas gry jeśli ta opcja jest włączona."
             ]
 
         NotificationOnlyWhenHiddenSetting ->
@@ -417,7 +422,15 @@ translate maybeDeclCase mdString =
 
         -- Terms
         Czar ->
-            [ Text "Karciany Car" ]
+            [ Text (case declCase of
+                Nominative -> "Karciany Car"
+                Genitive -> "Karcianego Cara"
+                Dative -> "Karcianemu Carowi"
+                Accusative -> "Karcianego Cara"
+                Instrumental -> "Karcianym Carem"
+                Locative -> "Karcianym Carze"
+                Vocative -> "Karciany Carze"
+            ) ]
 
         CzarDescription ->
             [ Text "Gracz oceniający odpowiedzi." ]
@@ -444,10 +457,10 @@ translate maybeDeclCase mdString =
         --    [ Text "Superowy Punkt" ]
 
         PointDescription ->
-            [ Text "Punkcik—kto ma więcej ten wygrywa." ]
+            [ Text "Punkt—kto ma ich więcej, ten wygrywa." ]
 
         GameCodeTerm ->
-            [ Text if declCase == Nominative then "Kod gry" else "kod gry" ]
+            [ Text (if declCase == Nominative then "Kod gry" else "kod gry") ]
 
         GameCodeDescription ->
             [ Text "Kod dzięki któremu inni mogą dołączyć do tej gry." ]
@@ -456,7 +469,7 @@ translate maybeDeclCase mdString =
             [ Text code ]
 
         GameCodeSpecificDescription ->
-            [ Text "Wyślij ten kod znajomym, aby mógli dołączyć do gry." ]
+            [ Text "Wyślij ten kod znajomym, aby mogli dołączyć do gry." ]
 
         GameCodeHowToAcquire ->
             [ Text "Zapytaj zapraszającego o ", refDecl Accusative GameCodeTerm, Text "." ]
@@ -468,13 +481,13 @@ translate maybeDeclCase mdString =
             [ Text "Źródło talii" ]
 
         DeckLanguage { language } ->
-            [ Text "język: ", Text language ]
+            [ Text "w języku ", Text language ]
 
         DeckAuthor { author } ->
             [ Text "od ", Text author ]
 
         DeckTranslator { translator } ->
-            [ Text "tłumaczone przez ", Text translator ]
+            [ Text "tłumaczona przez ", Text translator ]
 
         StillPlaying ->
             [ Text "Grający" ]
@@ -530,15 +543,16 @@ translate maybeDeclCase mdString =
             [ Text "Dostajesz "
             , Text (asWord numberOfCards Feminine)
             , Text " "
-            , Text case numberOfCards of
+            , Text (case numberOfCards of
                 1 -> "dodatkową"
                 _ ->
                     let
                         realCase = paucal Accusative (Quantity numberOfCards)
                     in if realCase == Genitive then "dodatkowych" else "dodatkowe"
+            )
             , Text " "
             , refDecl Accusative (noun Response numberOfCards)
-            , Text " before playing."
+            , Text " przed zagraniem."
             ]
 
         NumberOfCards { numberOfCards } ->
@@ -552,7 +566,7 @@ translate maybeDeclCase mdString =
             [ Text "Gra ", Text owner ]
 
         Invite ->
-            [ Text "Zaproś graczy." ]
+            [ Text "Zaproś graczy do gry." ]
 
         InviteLinkHelp ->
             [ Text "Wyślij ten link do graczy, których chcesz zaprosić, lub daj im kod QR do zeskanowania." ]
@@ -563,7 +577,7 @@ translate maybeDeclCase mdString =
                     password
                         |> Maybe.map
                             (\p ->
-                                [ Text " oraz hasło gry: “"
+                                [ Text " oraz hasło gry: „"
                                 , Text p
                                 , Text "”"
                                 ]
@@ -589,7 +603,7 @@ translate maybeDeclCase mdString =
             [ Text "Łączenie…" ]
 
         CastConnected { deviceName } ->
-            [ Text "Wysyłanie obrazu do ", Text deviceName, Text "." ]
+            [ Text "Wysyłanie obrazu do urządzenia ", Text deviceName, Text "." ]
 
         Players ->
             [ ref (nounUnknownQuantity Player) ]
@@ -604,16 +618,16 @@ translate maybeDeclCase mdString =
             [ Text "Użytkownicy oglądający grę, ale nie grający." ]
 
         Left ->
-            [ Text "Opuścili grę" ] --TODO
+            [ Text "Opuścili grę" ]
 
         LeftDescription ->
-            [ Text "Użytkownicy którzy opuścili grę." ]
+            [ Text "Użytkownicy którzy wyszli z gry." ]
 
         Away ->
-            [ Text "Poza grą" ] --TODO
+            [ Text "Poza grą" ]
 
         AwayDescription ->
-            [ Text "Ten użytkownik tymczasowo opuścił grę." ]
+            [ Text "Użytkownicy którzy tymczasowo są poza grą." ]
 
         Disconnected ->
             [ Text "Rozłączony" ]
@@ -646,8 +660,7 @@ translate maybeDeclCase mdString =
             [ Text (String.fromInt total) ]
 
         LikesDescription ->
-            [ Text "Liczba otrzymanych polubień."
-            ]
+            [ Text "Liczba otrzymanych polubień." ]
 
         ToggleUserList ->
             [ Text "Ukryj lub pokaż listę graczy." ]
@@ -665,10 +678,10 @@ translate maybeDeclCase mdString =
             [ Text "Pokaż kod gry/link/kod QR, aby inni mogli dołączyć." ]
 
         SetAway ->
-            [ Text "Oznacz jako poza grą" ] --TODO
+            [ Text "Oznacz jako poza grą" ]
 
         SetBack ->
-            [ Text "Oznacz jako aktywny" ] --TODO
+            [ Text "Oznacz jako aktywny" ]
 
         LeaveGame ->
             [ Text "Opuść grę" ]
@@ -686,10 +699,10 @@ translate maybeDeclCase mdString =
             [ Text "Obserwuj" ]
 
         BecomeSpectatorDescription ->
-            [ Text "Zacznij oglądać grę innych graczy." ] --TODO
+            [ Text "Zacznij oglądać grę innych graczy." ]
 
         BecomePlayer ->
-            [ Text "Graj" ]
+            [ Text "Zagraj" ]
 
         BecomePlayerDescription ->
             [ Text "Dołącz do gry." ]
@@ -738,7 +751,7 @@ translate maybeDeclCase mdString =
             [ Text username, Text " został wyrzucony z gry." ]
 
         Dismiss ->
-            [ Text "Zamknij" ] --TODO
+            [ Text "Zamknij" ]
 
         -- Configuration
         ConfigureTitle ->
@@ -765,24 +778,25 @@ translate maybeDeclCase mdString =
 
         NotEnoughCardsOfType { cardType, needed, have } ->
             [ Text "Dla tej liczby graczy, potrzebujesz co najmniej "
-            , Text (needed |> String.fromInt)
+            , Text (asWord needed Feminine)
             , Text " "
             , ref (noun cardType needed)
             , Text ", ale masz tylko "
-            , Text (have |> String.fromInt)
+            , Text (asWord have Feminine)
             , Text "."
             ]
 
         AddBlankCards { amount } ->
             [ Text "Dodaj "
-            , amount |> String.fromInt |> Text
+            , Text (asWord amount Feminine)
             , Text " "
-            , Text case amount of
+            , Text (case amount of
                 1 -> "pustą"
                 _ ->
                     let
                         realCase = paucal Accusative (Quantity amount)
                     in if realCase == Genitive then "pustych" else "puste"
+            )
             , Text " "
             , refDecl Accusative (noun Response amount)
             , Text "."
@@ -816,7 +830,7 @@ translate maybeDeclCase mdString =
             [ Text "JSON Against Humanity" ]
 
         JsonAgainstHumanityAbout ->
-            [ Text "Talie dostarczone przez ", ref JsonAgainstHumanity ]
+            [ Text "Talie dostarczone przez ", ref JsonAgainstHumanity, Text "." ]
 
         BuiltIn ->
             [ Text "Wbudowane" ]
@@ -875,7 +889,7 @@ translate maybeDeclCase mdString =
 
         NeedAtLeastOneHuman ->
             [ Text "Niestety boty nie mogą wybierać kart jako Car"
-            , Text ", więc potrzebujesz minimum jednego luczkiego gracza."
+            , Text ", więc potrzebujesz minimum jednego ludzkiego gracza."
             , Text " (Chociaż z tylko jednym człowiekiem może być nudno!)"
             ]
 
@@ -883,10 +897,10 @@ translate maybeDeclCase mdString =
             [ Text "Boty nie mogą pisać własnych kart." ]
 
         DisableComedyWriter ->
-            [ Text "Wyłącz ", ref HouseRuleComedyWriter ]
+            [ Text "Wyłącz Memiarza" ]
 
         DisableRando ->
-            [ Text "Wyłącz ", ref HouseRuleRandoCardrissian ]
+            [ Text "Wyłącz Rando Cardrissiana" ]
 
         AddAnAiPlayer ->
             [ Text "Dodaj bota do gry." ]
@@ -937,9 +951,9 @@ translate maybeDeclCase mdString =
             [ Text "Ta wartość konfiguracji nie jest poprawna." ]
 
         Automatic ->
-            [ Text "Automatycznie oznaczaj graczy jako poza grą" ] --TODO
+            [ Text "Automatycznie oznaczaj graczy jako poza grą" ]
 
-        AutomaticDescription -> --TODO
+        AutomaticDescription ->
             [ Text "Jeśli włączone, po skończeniu limitu czasowego, gracze zostaną automatycznie oznaczeni jako poza grą. "
             , Text "W przeciwnym wypadku będzie ktoś musiał oznaczać ich ręcznie"
             ]
@@ -966,7 +980,7 @@ translate maybeDeclCase mdString =
             [ Text "Jak długo (w sekundach) czekać po zakończeniu całej rundy przed rozpoczęciem kolejnej." ]
 
         RevealingEnabledTitle ->
-            [ Text "Czar odkrywa odpowiedzi" ]
+            [ Text "Car odkrywa odpowiedzi" ]
 
         RevealingEnabled ->
             [ Text "Jeśli włączone, "
@@ -981,10 +995,7 @@ translate maybeDeclCase mdString =
             [ Text "Po rundzie" ]
 
         Conflict ->
-            [ Text case declCase of
-                 Genitive -> "konfliktu"
-                 _ -> "Konflikt"
-            ]
+            [ Text "Konflikt" ]
 
         ConflictDescription ->
             [ Text "Ktoś inny zmienił te ustawienia w tym samym czasie co ty. "
@@ -1008,7 +1019,7 @@ translate maybeDeclCase mdString =
 
         -- Game
         SubmitPlay ->
-            [ Text "Daj te karty Carowi jako odpowiedzi w tej rundzie." ]
+            [ Text "Daj te karty ", refDecl Dative Czar, Text " jako odpowiedzi w tej rundzie." ]
 
         TakeBackPlay ->
             [ Text "Wycofaj swoje karty w tej rundzie aby je zmienić." ]
@@ -1083,7 +1094,7 @@ translate maybeDeclCase mdString =
             [ Text "Czekaj aż inni gracze wyślą swoje odpowiedzi." ]
 
         CzarsDontPlayInstruction ->
-            [ Text "Jesteś Carem w tej rundzie - nie wybierasz żadnych "
+            [ Text "Jesteś ", refDecl Instrumental Czar, Text" w tej rundzie - nie wybierasz żadnych "
             , refDecl Genitive (nounUnknownQuantity Response)
             , Text ". Zamiast tego gdy reszta wybierze odpowiedzi, ty wybierzesz zwycięzcę."
             ]
@@ -1200,7 +1211,7 @@ translate maybeDeclCase mdString =
         IncorrectIssuerError ->
             [ Text "Twoje dane dostępu do gry są nieaktualne, gra nie istnieje." ]
 
-        InvalidAuthenticationError -> --TODO
+        InvalidAuthenticationError ->
             [ Text "Twoje dane dostępu do gry są uszkodzone." ]
 
         InvalidLobbyPasswordError ->
@@ -1243,19 +1254,19 @@ translate maybeDeclCase mdString =
             [ Text "Angielski" ]
 
         BritishEnglish ->
-            [ Text "Angielski (Brytyjski)" ]
+            [ Text "Angielski (brytyjski)" ]
 
         Italian ->
             [ Text "Włoski" ]
 
         BrazilianPortuguese ->
-            [ Text "Portugalski (Brazylijski)" ]
+            [ Text "Portugalski (brazylijski)" ]
 
         German ->
-            [ Text "Niemiecki (Formalny)" ]
+            [ Text "Niemiecki (formalny)" ]
 
         GermanInformal ->
-            [ Text "Niemiecki (Nieformalny)" ]
+            [ Text "Niemiecki (nieformalny)" ]
 
         Polish ->
             [ Text "Polski" ]
@@ -1286,7 +1297,7 @@ paucal : DeclensionCase -> Quantity -> DeclensionCase
 paucal declCase quantity =
     case quantity of
         Unknown -> declCase
-        1 -> declCase
+        Quantity 1 -> declCase
         Quantity fullQ ->
             let
                 q100 = modBy 100 fullQ
@@ -1401,7 +1412,7 @@ decl noun quantity declCase =
     let
         realCase = paucal declCase quantity
         realCaseIndex = caseIndex realCase + case quantity of
-            1 -> 0
+            Quantity 1 -> 0
             _ -> 7
     in
         get realCaseIndex (declTable noun)
