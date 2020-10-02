@@ -1343,6 +1343,9 @@ translate maybeDeclCase mdString =
         Polish ->
             [ Text "Polski" ]
 
+        Indonesian ->
+            [ Text "Indonezyjsku" ]
+
 
 type DeclensionCase
     = Nominative -- Mianownik   kto co

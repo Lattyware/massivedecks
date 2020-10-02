@@ -31,11 +31,11 @@ import MassiveDecks.Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages.De as DeLang
 import MassiveDecks.Strings.Languages.DeXInformal as DeXInformalLang
 import MassiveDecks.Strings.Languages.En as EnLang
+import MassiveDecks.Strings.Languages.Id as IdLang
 import MassiveDecks.Strings.Languages.It as ItLang
 import MassiveDecks.Strings.Languages.Model exposing (..)
-import MassiveDecks.Strings.Languages.PtBR as PtBRLang
 import MassiveDecks.Strings.Languages.Pl as PlLang
-import MassiveDecks.Strings.Render as Render
+import MassiveDecks.Strings.Languages.PtBR as PtBRLang
 import MassiveDecks.Strings.Translation.Model as Translation
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.String as String
@@ -51,8 +51,8 @@ languages =
     , PtBR
     , De
     , DeXInformal
-    , Id
     , Pl
+    , Id
     ]
 
 
@@ -218,6 +218,7 @@ pack language =
 
         DeXInformal ->
             DeXInformalLang.pack
+
         Pl ->
             PlLang.pack
 

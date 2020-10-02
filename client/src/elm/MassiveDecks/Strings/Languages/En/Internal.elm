@@ -1194,6 +1194,9 @@ translate _ mdString =
         Polish ->
             [ Text "Polish" ]
 
+        Indonesian ->
+            [ Text "Indonesian" ]
+
 
 
 {- Private -}
