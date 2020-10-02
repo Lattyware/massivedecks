@@ -61,7 +61,7 @@ roleDescription toDescribe =
             Strings.Czar
 
         RPlayer ->
-            Strings.Player
+            Strings.noun Strings.Player 1
 
 
 {-| The state of a player in regards to playing into a round.

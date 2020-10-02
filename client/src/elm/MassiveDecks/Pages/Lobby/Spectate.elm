@@ -102,7 +102,7 @@ viewSettings wrap changePage shared lobby =
                 (Icon.arrowLeft |> Icon.present |> NeList.just)
                 (Just backAction)
             , IconButton.view shared
-                Strings.ViewConfgiurationDescription
+                Strings.ViewConfigurationDescription
                 (Icon.cog |> Icon.present |> NeList.just)
                 ({ route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> Just)
             , IconButton.view shared

@@ -178,7 +178,7 @@ logo source =
 
 {-| An editor for any supported external source.
 -}
-generalEditor : Shared -> List DeckOrError -> External -> (External -> msg) -> Maybe msg -> msg -> List (Html msg)
+generalEditor : Shared -> List DeckOrError -> External -> (External -> msg) -> Maybe msg -> msg -> ( Html msg, Html msg )
 generalEditor shared existing currentValue update submit noOp =
     let
         enabledSources =
@@ -195,17 +195,17 @@ generalEditor shared existing currentValue update submit noOp =
             , meta = Nothing
             }
     in
-    [ Select.view shared
+    ( Select.view shared
         { label = Strings.DeckSource
         , idToString = generalToString
         , idFromString = generalFromString
         , selected = currentValue |> generalMatching |> Just
         , wrap = Maybe.map (empty shared) >> Maybe.withDefault (default shared) >> update
         }
-        [ HtmlA.id "source-selector" ]
+        [ HtmlA.id "source-selector", HtmlA.class "primary" ]
         (enabledSources |> List.filterMap (Maybe.map toItem))
     , editor shared existing currentValue update submit noOp
-    ]
+    )
 
 
 {-| An editor for the given source value.

@@ -41,10 +41,10 @@ roleDescription : Role -> MdString
 roleDescription toDescribe =
     case toDescribe of
         Player ->
-            Strings.Player
+            Strings.noun Strings.Player 1
 
         Spectator ->
-            Strings.Spectator
+            Strings.noun Strings.Spectator 1
 
 
 {-| If the user is actively a part of the lobby.

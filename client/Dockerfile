@@ -1,13 +1,13 @@
-FROM node:13-alpine
+FROM node:14-alpine AS build
+
+WORKDIR /md
+
+RUN ["apk", "add", "--no-cache", "python", "make", "g++", "openjdk8-jre"]
 
 ARG VERSION=dev
 ENV MD_VERSION $VERSION
 
-WORKDIR /md
-
 COPY ["./package.json", "./package-lock.json", "./"]
-
-RUN ["apk", "add", "--no-cache", "--virtual", ".gyp", "python", "make", "g++", "openjdk8-jre"]
 RUN ["npm", "ci"]
 
 COPY ["./tsconfig.json", "postcss.config.js", "./webpack.config.js", "./elm.json", "./"]
@@ -34,5 +34,5 @@ LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.vcs-ref=$VCS_REF
 LABEL org.label-schema.version=$VERSION
 
-COPY --from=0 ["/md/dist", "/usr/share/nginx/html/"]
+COPY --from=build ["/md/dist", "/usr/share/nginx/html/"]
 COPY ["./nginx.conf", "/etc/nginx/nginx.conf"]

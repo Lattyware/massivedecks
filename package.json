@@ -1,21 +1,21 @@
 {
-    "name": "massivedecks",
-    "description": "Pulls together both the server and client for Massive Decks, a comedy party game.",
-    "version": "2.0.0",
-    "author": "Reread Games <team@rereadgames.com>",
-    "license": "AGPL-3.0-or-later",
-    "private": true,
-    "repository": "github:Lattyware/massivedecks",
-    "engines": {
-        "node": "13.x.x"
-    },
-    "scripts": {
-        "build": "cp -r server/decks decks && npm run buildServer && npm run buildClient",
-        "buildServer": "npm explore @massivedecks/server -- npm run build",
-        "buildClient": "npm explore @massivedecks/client -- npm run build"
-    },
-    "dependencies": {
-        "@massivedecks/server": "file:./server",
-        "@massivedecks/client": "file:./client"
-    }
+  "name": "massivedecks",
+  "description": "Pulls together both the server and client for Massive Decks, a comedy party game.",
+  "version": "2.0.0",
+  "author": "Reread Games <team@rereadgames.com>",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "repository": "github:Lattyware/massivedecks",
+  "engines": {
+    "node": "14.x.x"
+  },
+  "scripts": {
+    "build": "cp -r server/decks decks && npm run buildServer && npm run buildClient",
+    "buildServer": "npm explore @massivedecks/server -- npm run build",
+    "buildClient": "npm explore @massivedecks/client -- npm run build"
+  },
+  "dependencies": {
+    "@massivedecks/server": "file:./server",
+    "@massivedecks/client": "file:./client"
+  }
 }

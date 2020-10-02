@@ -253,6 +253,7 @@ module.exports = (env, argv) => {
           {
             compilation_level: "SIMPLE_OPTIMIZATIONS",
             externs: "src/js/extern.js",
+            languageOut: "ECMASCRIPT6_STRICT",
           }
         ),
         new TerserPlugin({
