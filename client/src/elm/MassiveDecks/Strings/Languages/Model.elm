@@ -14,6 +14,7 @@ type Language
     | PtBR
     | De
     | DeXInformal
+    | Id
 
 
 {-| It makes sense to apply the language and pass around the function, so we give that a nice name.

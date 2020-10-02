@@ -50,6 +50,7 @@ languages =
     , PtBR
     , De
     , DeXInformal
+    , Id
     ]
 
 
@@ -220,3 +221,6 @@ pack language =
 
         DeXInformal ->
             DeXInformalLang.pack
+
+        Id ->
+            IdLang.pack
