@@ -1,6 +1,11 @@
 module MassiveDecks.Strings.Languages.De exposing (pack)
 
-{-| General German-language translation.
+{-| German (Formal) localization.
+
+Contributors:
+
+  - rfuehrer <https://github.com/rfuehrer>
+
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn

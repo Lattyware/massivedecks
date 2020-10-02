@@ -1,6 +1,11 @@
 module MassiveDecks.Strings.Languages.DeXInformal exposing (pack)
 
-{-| General German-language (informal) translation.
+{-| German (Informal) localization.
+
+Contributors:
+
+  - rfuehrer <https://github.com/rfuehrer>
+
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn

@@ -1,6 +1,11 @@
 module MassiveDecks.Strings.Languages.PtBR exposing (pack)
 
-{-| Brazilian Portuguese translation.
+{-| Brazilian Portuguese localization.
+
+Contributors:
+
+  - Fittl3 <https://github.com/Fittl3>
+
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn

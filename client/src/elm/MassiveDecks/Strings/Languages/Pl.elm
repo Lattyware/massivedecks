@@ -1,12 +1,16 @@
 module MassiveDecks.Strings.Languages.Pl exposing (pack)
 
-{-| Polish translation of Massive Decks, made by TheChilliPL on GitHub.
+{-| Polish localization.
+
+Contributors:
+
+  - TheChilliPL <https://github.com/TheChilliPL>
+
 -}
 
-import Array exposing (Array, fromList, get)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
+import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounUnknownQuantity)
 import MassiveDecks.Strings.Languages.Model exposing (Language(..))
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Strings.Translation.Model as Translation exposing (Result(..))
@@ -47,10 +51,10 @@ refDecl declCase =
 translate : Maybe DeclensionCase -> MdString -> List (Translation.Result DeclensionCase)
 translate maybeDeclCase mdString =
     let
-        declCase = case maybeDeclCase of
-            Nothing -> Nominative
-            Just a -> a
-    in case mdString of
+        declCase =
+            maybeDeclCase |> Maybe.withDefault Nominative
+    in
+    case mdString of
         -- General
         MassiveDecks ->
             [ Text "Massive Decks" ]
@@ -59,7 +63,8 @@ translate maybeDeclCase mdString =
             [ Text "Zamknij" ]
 
         -- -- Special
-        Noun { noun, quantity } -> [ Text (decl noun quantity declCase) ]
+        Noun { noun, quantity } ->
+            [ Text (decl noun quantity declCase) ]
 
         -- Start screen.
         Version { versionNumber } ->
@@ -115,15 +120,30 @@ translate maybeDeclCase mdString =
             [ Text "Książka otoczona strzałką recyklingu." ]
 
         MDProject ->
-            [ Text (case declCase of
-                Nominative -> "projekt GitHubowy"
-                Genitive -> "projektu GitHubowego"
-                Dative -> "projektowi GitHubowemu"
-                Accusative -> "projekt GitHubowy"
-                Instrumental -> "projektem GitHubowym"
-                Locative -> "projekcie GitHubowym"
-                Vocative -> "projekcie GitHubowy"
-            ) ]
+            [ Text
+                (case declCase of
+                    Nominative ->
+                        "projekt GitHubowy"
+
+                    Genitive ->
+                        "projektu GitHubowego"
+
+                    Dative ->
+                        "projektowi GitHubowemu"
+
+                    Accusative ->
+                        "projekt GitHubowy"
+
+                    Instrumental ->
+                        "projektem GitHubowym"
+
+                    Locative ->
+                        "projekcie GitHubowym"
+
+                    Vocative ->
+                        "projekcie GitHubowy"
+                )
+            ]
 
         License ->
             [ Text "AGPLv3" ]
@@ -160,15 +180,30 @@ translate maybeDeclCase mdString =
 
         -- Rules
         CardsAgainstHumanity ->
-            [ Text (case declCase of
-                Nominative -> "karty przeciwko ludzkości"
-                Genitive -> "kart przeciwko ludzkości"
-                Dative -> "kartom przeciwko ludzkości"
-                Accusative -> "karty przeciwko ludzkości"
-                Instrumental -> "kartami przeciwko ludzkości"
-                Locative -> "kartach przeciwko ludzkości"
-                Vocative -> "karty przeciwko ludzkości"
-            ) ]
+            [ Text
+                (case declCase of
+                    Nominative ->
+                        "karty przeciwko ludzkości"
+
+                    Genitive ->
+                        "kart przeciwko ludzkości"
+
+                    Dative ->
+                        "kartom przeciwko ludzkości"
+
+                    Accusative ->
+                        "karty przeciwko ludzkości"
+
+                    Instrumental ->
+                        "kartami przeciwko ludzkości"
+
+                    Locative ->
+                        "kartach przeciwko ludzkości"
+
+                    Vocative ->
+                        "karty przeciwko ludzkości"
+                )
+            ]
 
         Rules ->
             [ Text "Jak grać." ]
@@ -251,10 +286,14 @@ translate maybeDeclCase mdString =
 
         HouseRuleRebootDescription { cost } ->
             [ Text "W każdej chwili gracze mogą wymienić "
-            , refDecl Accusative (case cost of
-                Just 1 -> noun Point 1
-                _ -> nounUnknownQuantity Point
-            )
+            , refDecl Accusative
+                (case cost of
+                    Just 1 ->
+                        noun Point 1
+
+                    _ ->
+                        nounUnknownQuantity Point
+                )
             , Text " aby wyrzucić wszystkie karty i zacząć z nowymi."
             ]
 
@@ -271,7 +310,8 @@ translate maybeDeclCase mdString =
 
         HouseRuleRebootCostDescription ->
             [ Text "Ile "
-            , refDecl Genitive (nounUnknownQuantity Point), Text " kosztuje ponowne dobranie "
+            , refDecl Genitive (nounUnknownQuantity Point)
+            , Text " kosztuje ponowne dobranie "
             , Text "wszystkich kart."
             ]
 
@@ -422,45 +462,52 @@ translate maybeDeclCase mdString =
 
         -- Terms
         Czar ->
-            [ Text (case declCase of
-                Nominative -> "Karciany Car"
-                Genitive -> "Karcianego Cara"
-                Dative -> "Karcianemu Carowi"
-                Accusative -> "Karcianego Cara"
-                Instrumental -> "Karcianym Carem"
-                Locative -> "Karcianym Carze"
-                Vocative -> "Karciany Carze"
-            ) ]
+            [ Text
+                (case declCase of
+                    Nominative ->
+                        "Karciany Car"
+
+                    Genitive ->
+                        "Karcianego Cara"
+
+                    Dative ->
+                        "Karcianemu Carowi"
+
+                    Accusative ->
+                        "Karcianego Cara"
+
+                    Instrumental ->
+                        "Karcianym Carem"
+
+                    Locative ->
+                        "Karcianym Carze"
+
+                    Vocative ->
+                        "Karciany Carze"
+                )
+            ]
 
         CzarDescription ->
             [ Text "Gracz oceniający odpowiedzi." ]
 
-        --Player ->
-        --    [ Text "Gracz" ]
-        --
-        --Spectator ->
-        --    [ Text "Obserwator" ]
-        --
-        --Call ->
-        --    [ Text "Czarna Karta" ]
-
         CallDescription ->
             [ Text "Czarna karta z pytaniem lub luką do uzupełnienia." ]
 
-        --Response ->
-        --    [ Text "Biała karta" ]
-
         ResponseDescription ->
             [ Text "Biała karta z wyrażeniem używanym jako odpowiedź." ]
-
-        --Point ->
-        --    [ Text "Superowy Punkt" ]
 
         PointDescription ->
             [ Text "Punkt—kto ma ich więcej, ten wygrywa." ]
 
         GameCodeTerm ->
-            [ Text (if declCase == Nominative then "Kod gry" else "kod gry") ]
+            [ Text
+                (if declCase == Nominative then
+                    "Kod gry"
+
+                 else
+                    "kod gry"
+                )
+            ]
 
         GameCodeDescription ->
             [ Text "Kod dzięki któremu inni mogą dołączyć do tej gry." ]
@@ -543,13 +590,22 @@ translate maybeDeclCase mdString =
             [ Text "Dostajesz "
             , Text (asWord numberOfCards Feminine)
             , Text " "
-            , Text (case numberOfCards of
-                1 -> "dodatkową"
-                _ ->
-                    let
-                        realCase = paucal Accusative (Quantity numberOfCards)
-                    in if realCase == Genitive then "dodatkowych" else "dodatkowe"
-            )
+            , Text
+                (case numberOfCards of
+                    1 ->
+                        "dodatkową"
+
+                    _ ->
+                        let
+                            realCase =
+                                paucal Accusative (Quantity numberOfCards)
+                        in
+                        if realCase == Genitive then
+                            "dodatkowych"
+
+                        else
+                            "dodatkowe"
+                )
             , Text " "
             , refDecl Accusative (noun Response numberOfCards)
             , Text " przed zagraniem."
@@ -764,8 +820,10 @@ translate maybeDeclCase mdString =
             ]
 
         NoDecksHint ->
-            [ Text "Nie jesteś pewien? Dodaj oryginalną talię z ", refDecl Genitive CardsAgainstHumanity,
-            Text " (po angielsku)." ]
+            [ Text "Nie jesteś pewien? Dodaj oryginalną talię z "
+            , refDecl Genitive CardsAgainstHumanity
+            , Text " (po angielsku)."
+            ]
 
         WaitForDecks ->
             [ Text "Talie muszą się załadować przed rozpoczęciem gry." ]
@@ -790,13 +848,22 @@ translate maybeDeclCase mdString =
             [ Text "Dodaj "
             , Text (asWord amount Feminine)
             , Text " "
-            , Text (case amount of
-                1 -> "pustą"
-                _ ->
-                    let
-                        realCase = paucal Accusative (Quantity amount)
-                    in if realCase == Genitive then "pustych" else "puste"
-            )
+            , Text
+                (case amount of
+                    1 ->
+                        "pustą"
+
+                    _ ->
+                        let
+                            realCase =
+                                paucal Accusative (Quantity amount)
+                        in
+                        if realCase == Genitive then
+                            "pustych"
+
+                        else
+                            "puste"
+                )
             , Text " "
             , refDecl Accusative (noun Response amount)
             , Text "."
@@ -1094,7 +1161,9 @@ translate maybeDeclCase mdString =
             [ Text "Czekaj aż inni gracze wyślą swoje odpowiedzi." ]
 
         CzarsDontPlayInstruction ->
-            [ Text "Jesteś ", refDecl Instrumental Czar, Text" w tej rundzie - nie wybierasz żadnych "
+            [ Text "Jesteś "
+            , refDecl Instrumental Czar
+            , Text " w tej rundzie - nie wybierasz żadnych "
             , refDecl Genitive (nounUnknownQuantity Response)
             , Text ". Zamiast tego gdy reszta wybierze odpowiedzi, ty wybierzesz zwycięzcę."
             ]
@@ -1138,9 +1207,11 @@ translate maybeDeclCase mdString =
             [ Text "Wybacz, coś poszło nie tak." ]
 
         ErrorCheckOutOfBand ->
-            [ Text "Prosimy sprawdzić aktualizacje i status na ", ref TwitterHandle
+            [ Text "Prosimy sprawdzić aktualizacje i status na "
+            , ref TwitterHandle
             , Text ". Serwery gry są wyłączane na krótki czas podczas aktualizacji, więc jeśli taka nastąpiła ostatnio,"
-            , Text "spróbuj ponownie za kilka minut." ]
+            , Text "spróbuj ponownie za kilka minut."
+            ]
 
         TwitterHandle ->
             [ Text "@Massive_Decks" ]
@@ -1216,7 +1287,8 @@ translate maybeDeclCase mdString =
 
         InvalidLobbyPasswordError ->
             [ Text "Podane hasło gry jest nieprawidłowe. Spróbuj wpisać je jeszcze raz, i jeśli to nie zadziała,"
-            , Text "zapytaj znów osobę która cię zaprosiła." ]
+            , Text "zapytaj znów osobę która cię zaprosiła."
+            ]
 
         AlreadyLeftError ->
             [ Text "Już opuściłeś tę grę." ]
@@ -1271,24 +1343,68 @@ translate maybeDeclCase mdString =
         Polish ->
             [ Text "Polski" ]
 
-type DeclensionCase
-    = Nominative   -- Mianownik   kto co
-    | Genitive     -- Dopełniacz  kogo czego
-    | Dative       -- Celownik    komu czemu
-    | Accusative   -- Biernik     kogo co
-    | Instrumental -- Narzędnik   z kim z czym
-    | Locative     -- Miejscownik o kim o czym
-    | Vocative     -- Wołacz
 
-caseIndex declCase =
+type DeclensionCase
+    = Nominative -- Mianownik   kto co
+    | Genitive -- Dopełniacz  kogo czego
+    | Dative -- Celownik    komu czemu
+    | Accusative -- Biernik     kogo co
+    | Instrumental -- Narzędnik   z kim z czym
+    | Locative -- Miejscownik o kim o czym
+    | Vocative -- Wołacz
+
+
+type alias ByDeclensionCase =
+    { nominative : String
+    , genitive : String
+    , dative : String
+    , accusative : String
+    , instrumental : String
+    , locative : String
+    , vocative : String
+    }
+
+
+type alias ByQuantity =
+    { singular : ByDeclensionCase
+    , plural : ByDeclensionCase
+    }
+
+
+getByCase : DeclensionCase -> ByDeclensionCase -> String
+getByCase declCase =
     case declCase of
-        Nominative -> 0
-        Genitive -> 1
-        Dative -> 2
-        Accusative -> 3
-        Instrumental -> 4
-        Locative -> 5
-        Vocative -> 6
+        Nominative ->
+            .nominative
+
+        Genitive ->
+            .genitive
+
+        Dative ->
+            .dative
+
+        Accusative ->
+            .accusative
+
+        Instrumental ->
+            .instrumental
+
+        Locative ->
+            .locative
+
+        Vocative ->
+            .vocative
+
+
+getByQuantity : Quantity -> ByQuantity -> ByDeclensionCase
+getByQuantity quantity =
+    case quantity of
+        Quantity 1 ->
+            .singular
+
+        _ ->
+            .plural
+
 
 {-| Gets a new declension case according to the paucal plural rules.
 In some cases, it shifts the declension case to genitive.
@@ -1296,113 +1412,142 @@ In some cases, it shifts the declension case to genitive.
 paucal : DeclensionCase -> Quantity -> DeclensionCase
 paucal declCase quantity =
     case quantity of
-        Unknown -> declCase
-        Quantity 1 -> declCase
+        Unknown ->
+            declCase
+
+        Quantity 1 ->
+            declCase
+
         Quantity fullQ ->
             let
-                q100 = modBy 100 fullQ
+                q100 =
+                    modBy 100 fullQ
+
                 paucalUseGenitive =
-                    if q100 >= 5 && q100 <= 21 then True
+                    if q100 >= 5 && q100 <= 21 then
+                        True
+
                     else
                         let
-                            q10 = modBy 10 q100
+                            q10 =
+                                modBy 10 q100
                         in
-                            q10 <= 1 || q10 >= 5
+                        q10 <= 1 || q10 >= 5
             in
-                if paucalUseGenitive then Genitive else declCase
+            if paucalUseGenitive then
+                Genitive
 
-declTable : Noun -> Array String
+            else
+                declCase
+
+
+declTable : Noun -> ByQuantity
 declTable noun =
     case noun of
         Call ->
-            fromList [
-                "czarna karta",
-                "czarnej karty",
-                "czarnej karcie",
-                "czarną kartę",
-                "czarną kartą",
-                "czarnej karcie",
-                "czarna karto",
-                "czarne karty",
-                "czarnych kart",
-                "czarnym kartom",
-                "czarne karty",
-                "czarnymi kartami",
-                "czarnych kartach",
-                "czarne karty"
-            ]
+            { singular =
+                ByDeclensionCase
+                    "czarna karta"
+                    "czarnej karty"
+                    "czarnej karcie"
+                    "czarną kartę"
+                    "czarną kartą"
+                    "czarnej karcie"
+                    "czarna karto"
+            , plural =
+                ByDeclensionCase
+                    "czarne karty"
+                    "czarnych kart"
+                    "czarnym kartom"
+                    "czarne karty"
+                    "czarnymi kartami"
+                    "czarnych kartach"
+                    "czarne karty"
+            }
 
         Response ->
-            fromList [
-                "biała karta",
-                "białej karty",
-                "białej karcie",
-                "białą kartę",
-                "białą kartą",
-                "białej karcie",
-                "biała karto",
-                "białe karty",
-                "białych kart",
-                "białym kartom",
-                "białe karty",
-                "białymi kartami",
-                "białych kartach",
-                "białe karty"
-            ]
+            { singular =
+                ByDeclensionCase
+                    "biała karta"
+                    "białej karty"
+                    "białej karcie"
+                    "białą kartę"
+                    "białą kartą"
+                    "białej karcie"
+                    "biała karto"
+            , plural =
+                ByDeclensionCase
+                    "białe karty"
+                    "białych kart"
+                    "białym kartom"
+                    "białe karty"
+                    "białymi kartami"
+                    "białych kartach"
+                    "białe karty"
+            }
 
         Point ->
-            fromList [
-                "superowy punkt",
-                "superowego punktu",
-                "superowemu punktowi",
-                "superowy punkt",
-                "superowym punktem",
-                "superowym punkcie",
-                "superowy punkcie",
-                "superowe punkty",
-                "superowych punktów",
-                "superowym punktom",
-                "superowe punkty",
-                "superowymi punktami",
-                "superowych punktach",
-                "superowe punkty"
-            ]
+            { singular =
+                ByDeclensionCase
+                    "superowy punkt"
+                    "superowego punktu"
+                    "superowemu punktowi"
+                    "superowy punkt"
+                    "superowym punktem"
+                    "superowym punkcie"
+                    "superowy punkcie"
+            , plural =
+                ByDeclensionCase
+                    "superowe punkty"
+                    "superowych punktów"
+                    "superowym punktom"
+                    "superowe punkty"
+                    "superowymi punktami"
+                    "superowych punktach"
+                    "superowe punkty"
+            }
 
         Player ->
-            fromList [
-                "gracz",
-                "gracza",
-                "graczowi",
-                "gracza",
-                "graczem",
-                "graczu",
-                "graczu",
-                "gracze",
-                "graczy",
-                "graczom",
-                "graczy",
-                "graczami",
-                "graczach",
-                "gracze"
-            ]
+            { singular =
+                ByDeclensionCase
+                    "gracz"
+                    "gracza"
+                    "graczowi"
+                    "gracza"
+                    "graczem"
+                    "graczu"
+                    "graczu"
+            , plural =
+                ByDeclensionCase
+                    "gracze"
+                    "graczy"
+                    "graczom"
+                    "graczy"
+                    "graczami"
+                    "graczach"
+                    "gracze"
+            }
 
         Spectator ->
-            fromList [
-                "obserwator",
-                "obserwatora",
-                "obserwatorowi",
-                "obserwatora",
-                "obserwatorem",
-                "obserwatorze",
-                "obserwatorze",
-                "obserwatorzy",
-                "obserwatorów",
-                "obserwatorom",
-                "obserwatorów",
-                "obserwatorami",
-                "obserwatorach",
-                "obserwatorzy"
-            ]
+            { singular =
+                ByDeclensionCase
+                    "obserwator"
+                    "obserwatora"
+                    "obserwatorowi"
+                    "obserwatora"
+                    "obserwatorem"
+                    "obserwatorze"
+                    "obserwatorze"
+            , plural =
+                ByDeclensionCase
+                    "obserwatorzy"
+                    "obserwatorów"
+                    "obserwatorom"
+                    "obserwatorów"
+                    "obserwatorami"
+                    "obserwatorach"
+                    "obserwatorzy"
+            }
 
 
 {-| Declines the specified noun to the specified case and quantity.
@@ -1410,25 +1555,30 @@ declTable noun =
 decl : Noun -> Quantity -> DeclensionCase -> String
 decl noun quantity declCase =
     let
-        realCase = paucal declCase quantity
-        realCaseIndex = caseIndex realCase + case quantity of
-            Quantity 1 -> 0
-            _ -> 7
+        realCase =
+            paucal declCase quantity
     in
-        get realCaseIndex (declTable noun)
-        |> Maybe.withDefault ""
+    noun |> declTable |> getByQuantity quantity |> getByCase realCase
+
 
 type Gender
     = Masculine
     | Feminine
     | Neuter
 
+
 dependingOnGender : String -> String -> String -> Gender -> String
 dependingOnGender masculine feminine neuter gender =
     case gender of
-        Masculine -> masculine
-        Feminine -> feminine
-        Neuter -> neuter
+        Masculine ->
+            masculine
+
+        Feminine ->
+            feminine
+
+        Neuter ->
+            neuter
+
 
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}

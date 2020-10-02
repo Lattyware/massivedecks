@@ -1,7 +1,9 @@
 module MassiveDecks.Strings.Languages.En exposing (pack)
 
-{-| General English-language translation.
+{-| English localization.
+
 This is the primary language, strings here are the canonical representation, and are suitable to translate from.
+
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
@@ -27,5 +29,5 @@ pack =
 
 {-
    Because it is used as a default, the english translation is in `En.Internal`, rather than residing in this file
-   as with most languages.
+   as with most languages. Please look there for the strings.
 -}

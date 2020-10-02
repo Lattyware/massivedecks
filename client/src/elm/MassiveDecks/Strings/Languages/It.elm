@@ -1,6 +1,11 @@
 module MassiveDecks.Strings.Languages.It exposing (pack)
 
-{-| Italian translation
+{-| Italian localization.
+
+Contributors:
+
+  - marcoburato <https://github.com/marcoburato>
+
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn

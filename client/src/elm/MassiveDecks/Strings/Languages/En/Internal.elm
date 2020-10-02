@@ -265,7 +265,7 @@ translate _ mdString =
         HouseRuleComedyWriterNumberDescription ->
             [ Text "The number of Blank "
             , ref (nounUnknownQuantity Response)
-            , Text "that will be in the game."
+            , Text " that will be in the game."
             ]
 
         HouseRuleComedyWriterExclusive ->
@@ -305,7 +305,7 @@ translate _ mdString =
             [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
 
         MustBeLessThanOrEqualValidationError { max } ->
-            [ Text "The value must be at most  ", Text (String.fromInt max), Text "." ]
+            [ Text "The value must be at most ", Text (String.fromInt max), Text "." ]
 
         SetValue { value } ->
             [ Text "Set the value to ", Text (String.fromInt value), Text "." ]
@@ -845,7 +845,7 @@ translate _ mdString =
             [ Text "Game Password" ]
 
         LobbyPasswordDescription ->
-            [ Text "A password to users must enter before they can join the game." ]
+            [ Text "A password the users must enter before they can join the game." ]
 
         AudienceMode ->
             [ Text "Audience Mode" ]
@@ -1193,7 +1193,6 @@ translate _ mdString =
 
         Polish ->
             [ Text "Polish" ]
-
 
 
 
