@@ -28,6 +28,7 @@ export interface Public {
   rules: Rules.Public;
   winner?: string[];
   paused?: boolean;
+  happyEnding?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ export class Game {
   public readonly rules: Rules.Rules;
   public winner?: User.Id[];
   public paused: boolean;
+  public happyEnding: boolean;
 
   private constructor(
     round: Round.Round,
@@ -50,6 +52,7 @@ export class Game {
     decks: Decks.Decks,
     rules: Rules.Rules,
     paused = false,
+    happyEnding = false,
     history: PublicRound.Complete[] | undefined = undefined,
     winner: User.Id[] | undefined = undefined
   ) {
@@ -60,6 +63,7 @@ export class Game {
     this.decks = decks;
     this.rules = rules;
     this.paused = paused;
+    this.happyEnding = happyEnding;
     this.winner = winner;
   }
 
@@ -71,6 +75,7 @@ export class Game {
       decks: this.decks,
       rules: this.rules,
       paused: this.paused,
+      happyEnding: this.happyEnding,
       history: this.history,
       winner: this.winner,
     };
@@ -87,6 +92,7 @@ export class Game {
       },
       game.rules,
       game.paused,
+      game.happyEnding,
       game.history,
       game.winner
     );
@@ -220,6 +226,7 @@ export class Game {
       rules: Rules.censor(this.rules),
       ...(this.winner === undefined ? {} : { winner: this.winner }),
       ...(this.paused ? { paused: true } : {}),
+      ...(this.happyEnding ? { happyEnding: true } : {}),
     };
   }
 
@@ -249,6 +256,10 @@ export class Game {
       events.push(Event.targetAll(PauseStateChanged.continued));
     }
     const [call] = this.decks.calls.replace(this.round.call);
+    if (lobby.game?.happyEnding) {
+      // const [call] =
+      // TODO: Work out how to send Haiku card here.
+    }
     const roundId = this.round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter((id) =>
