@@ -383,6 +383,18 @@ export const Schema = {
       required: ["action", "card", "text"],
       type: "object",
     },
+    HappyEnding: {
+      $ref: "#/definitions/HappyEnding_1",
+      description:
+        "Configuration for the \"Happy Ending\" house rule.\nWhen the game ends, the final round is a 'Make a Haiku' black card.",
+    },
+    HappyEnding_1: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        "Configuration for the \"Happy Ending\" house rule.\nWhen the game ends, the final round is a 'Make a Haiku' black card.",
+      type: "object",
+    },
     Id: {
       description: "A unique id for an instance of a card.",
       type: "string",
@@ -524,18 +536,6 @@ export const Schema = {
         'Configuration for the "Never Have I Ever" house rule.\nThis rule allows players to discard cards, but everyone else in the game can see the discarded card.',
       type: "object",
     },
-    HappyEnding: {
-      $ref: "#/definitions/HappyEnding_1",
-      description:
-        'Configuration for the "Happy Ending" house rule.\nWhen the game ends, the final round is a "Make a Haiku" black card.',
-    },
-    HappyEnding_1: {
-      additionalProperties: false,
-      defaultProperties: [],
-      description:
-        'Configuration for the "Happy Ending" house rule.\nWhen the game ends, the final round is a "Make a Haiku" black card.',
-      type: "object",
-    },
     PackingHeat: {
       $ref: "#/definitions/PackingHeat_1",
       description: 'Configuration for the "Packing Heat" house rule.',
@@ -638,6 +638,9 @@ export const Schema = {
       properties: {
         comedyWriter: {
           $ref: "#/definitions/ComedyWriter",
+        },
+        happyEnding: {
+          $ref: "#/definitions/HappyEnding",
         },
         neverHaveIEver: {
           $ref: "#/definitions/NeverHaveIEver",
@@ -1067,12 +1070,12 @@ export function validate(typeName: string): (value: unknown) => any {
     if (!valid) {
       throw new Error(
         "Invalid " +
-        typeName +
-        ": " +
-        ajv.errorsText(
-          validator.errors!.filter((e: any) => e.keyword !== "if"),
-          { dataVar: typeName }
-        )
+          typeName +
+          ": " +
+          ajv.errorsText(
+            validator.errors!.filter((e: any) => e.keyword !== "if"),
+            { dataVar: typeName }
+          )
       );
     }
 
