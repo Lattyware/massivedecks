@@ -410,6 +410,7 @@ houseRules =
         |> Json.optional "reboot" (reboot |> Json.map Just) Nothing
         |> Json.optional "comedyWriter" (comedyWriter |> Json.map Just) Nothing
         |> Json.optional "neverHaveIEver" (neverHaveIEver |> Json.map Just) Nothing
+        |> Json.optional "happyEnding" (happyEnding |> Json.map Just) Nothing
 
 
 comedyWriter : Json.Decoder Rules.ComedyWriter
@@ -426,6 +427,11 @@ packingHeat =
 
 neverHaveIEver : Json.Decoder Rules.NeverHaveIEver
 neverHaveIEver =
+    {} |> Json.succeed
+
+
+happyEnding : Json.Decoder Rules.HappyEnding
+happyEnding =
     {} |> Json.succeed
 
 

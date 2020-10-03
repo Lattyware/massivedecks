@@ -5,6 +5,7 @@ import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.ComedyWriter as ComedyWriter
+import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.HappyEnding as HappyEnding
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.NeverHaveIEver as NeverHaveIEver
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.PackingHeat as PackingHeat
@@ -24,5 +25,6 @@ all =
             , Reboot.all |> Configurable.wrap RebootId (.reboot >> Just) (\v p -> { p | reboot = v })
             , ComedyWriter.all |> Configurable.wrap ComedyWriterId (.comedyWriter >> Just) (\v p -> { p | comedyWriter = v })
             , NeverHaveIEver.all |> Configurable.wrap NeverHaveIEverId (.neverHaveIEver >> Just) (\v p -> { p | neverHaveIEver = v })
+            , HappyEnding.all |> Configurable.wrap HappyEndingId (.happyEnding >> Just) (\v p -> { p | happyEnding = v })
             ]
         }

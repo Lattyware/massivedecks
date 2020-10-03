@@ -116,6 +116,8 @@ type MdString
     | HouseRuleRandoCardrissianNumberDescription -- A description of the setting for the number of bots added to the game.
     | HouseRuleNeverHaveIEver -- The name of the house rule where players can discard cards, sharing the discarded card.
     | HouseRuleNeverHaveIEverDescription -- A description of the house rule where players can discard cards, sharing the discarded card.
+    | HouseRuleHappyEnding -- The name of the house rule where the game ends with the haiku card.
+    | HouseRuleHappyEndingDescription -- A description of the house rule where the game ends with the haiku card.
     | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
     | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
     | SetValue { value : Int } -- A description of the action of resolving a problem by setting the value to the given one.

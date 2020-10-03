@@ -39,13 +39,17 @@ export const handle: Timeout.Handler<RoundStart> = (
         }
       }
       if (winners.length > 0) {
-        lobbyGame.winner = winners;
-        events.push(Event.targetAll(GameEnded.of(...winners)));
+        if (lobbyGame.rules.houseRules.happyEnding) {
+          // TODO: Check if happy ending has already happened.
+        } else {
+          lobbyGame.winner = winners;
+          events.push(Event.targetAll(GameEnded.of(...winners)));
 
-        return {
-          inLobby,
-          events,
-        };
+          return {
+            inLobby,
+            events,
+          };
+        }
       }
     }
 

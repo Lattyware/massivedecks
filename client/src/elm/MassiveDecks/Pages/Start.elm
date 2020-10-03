@@ -583,6 +583,7 @@ houseRules =
     , ( Strings.HouseRuleRandoCardrissian, Strings.HouseRuleRandoCardrissianDescription )
     , ( Strings.HouseRuleComedyWriter, Strings.HouseRuleComedyWriterDescription )
     , ( Strings.HouseRuleNeverHaveIEver, Strings.HouseRuleNeverHaveIEverDescription )
+    , ( Strings.HouseRuleHappyEnding, Strings.HouseRuleHappyEnding )
     ]
 
 

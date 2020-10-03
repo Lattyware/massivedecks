@@ -336,6 +336,14 @@ translate _ mdString =
             , Text "ketidaktahuan: kartu dibagikan secara publik."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Nilai minimal harus ", Text (String.fromInt min), Text "." ]
 

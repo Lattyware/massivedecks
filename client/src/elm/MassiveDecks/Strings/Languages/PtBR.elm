@@ -346,6 +346,14 @@ translate _ mdString =
             , Text "ignorância: a carta é compartilhada publicamente."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
 

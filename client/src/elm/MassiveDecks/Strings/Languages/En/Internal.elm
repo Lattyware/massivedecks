@@ -301,6 +301,12 @@ translate _ mdString =
             , Text "ignorance: the card is shared publicly."
             ]
 
+        HouseRuleHappyEnding ->
+            [ Text "Happy Ending" ]
+
+        HouseRuleHappyEndingDescription ->
+            [ Text "When the game ends, the final round is a 'Make a Haiku' black card." ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
 

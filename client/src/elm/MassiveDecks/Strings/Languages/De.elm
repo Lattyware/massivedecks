@@ -346,6 +346,14 @@ translate _ mdString =
             , Text "eingestehen: die Karte wird öffentlich geteilt."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Der Wert muss mindestens ", Text (String.fromInt min), Text " betragen." ]
 

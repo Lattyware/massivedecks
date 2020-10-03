@@ -117,6 +117,7 @@ houseRules h =
             , h.reboot |> Maybe.map (\r -> ( "reboot", reboot r ))
             , h.comedyWriter |> Maybe.map (\c -> ( "comedyWriter", comedyWriter c ))
             , h.neverHaveIEver |> Maybe.map (\n -> ( "neverHaveIEver", neverHaveIEver n ))
+            , h.happyEnding |> Maybe.map (\e -> ( "happyEnding", happyEnding e )) -- TODO: Workout what to do since "h" is taken.
             ]
         )
 
@@ -138,6 +139,11 @@ packingHeat _ =
 
 neverHaveIEver : Rules.NeverHaveIEver -> Json.Value
 neverHaveIEver _ =
+    Json.object []
+
+
+happyEnding : Rules.HappyEnding -> Json.Value
+happyEnding _ =
     Json.object []
 
 
