@@ -1,5 +1,6 @@
 import * as HouseRules from "./rules/houseRules";
 import * as Rando from "./rules/rando";
+import * as HappyEnding from "./rules/happyEnding";
 
 /** The rules for a standard game.
  */

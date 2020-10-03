@@ -383,6 +383,18 @@ export const Schema = {
       required: ["action", "card", "text"],
       type: "object",
     },
+    HappyEnding: {
+      $ref: "#/definitions/HappyEnding_1",
+      description:
+        "Configuration for the \"Happy Ending\" house rule.\nWhen the game ends, the final round is a 'Make a Haiku' black card.",
+    },
+    HappyEnding_1: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        "Configuration for the \"Happy Ending\" house rule.\nWhen the game ends, the final round is a 'Make a Haiku' black card.",
+      type: "object",
+    },
     Id: {
       description: "A unique id for an instance of a card.",
       type: "string",
@@ -626,6 +638,9 @@ export const Schema = {
       properties: {
         comedyWriter: {
           $ref: "#/definitions/ComedyWriter",
+        },
+        happyEnding: {
+          $ref: "#/definitions/HappyEnding",
         },
         neverHaveIEver: {
           $ref: "#/definitions/NeverHaveIEver",

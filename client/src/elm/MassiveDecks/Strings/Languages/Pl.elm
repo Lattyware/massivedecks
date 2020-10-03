@@ -379,6 +379,14 @@ translate maybeDeclCase mdString =
             , Text "ignorancję: wyrzucona karta będzie publicznie widoczna."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Wartość musi być większa lub równa ", Text (String.fromInt min), Text "." ]
 
@@ -904,6 +912,10 @@ translate maybeDeclCase mdString =
 
         APlayer ->
             [ Text "Gracz" ]
+
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
 
         DeckAlreadyAdded ->
             [ Text "Ta talia jest już w grze." ]

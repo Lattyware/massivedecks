@@ -350,6 +350,14 @@ translate _ mdString =
         HouseRuleNeverHaveIEverDescription ->
             [ Missing ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Il valore deve essere almeno ", Text (String.fromInt min), Text "." ]
 
@@ -816,6 +824,10 @@ translate _ mdString =
 
         APlayer ->
             [ Text "Un giocatore" ]
+
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
 
         DeckAlreadyAdded ->
             [ Text "Questo mazzo è già nel gioco." ]

@@ -116,6 +116,8 @@ type MdString
     | HouseRuleRandoCardrissianNumberDescription -- A description of the setting for the number of bots added to the game.
     | HouseRuleNeverHaveIEver -- The name of the house rule where players can discard cards, sharing the discarded card.
     | HouseRuleNeverHaveIEverDescription -- A description of the house rule where players can discard cards, sharing the discarded card.
+    | HouseRuleHappyEnding -- The name of the house rule where the game ends with the haiku card.
+    | HouseRuleHappyEndingDescription -- A description of the house rule where the game ends with the haiku card.
     | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
     | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
     | SetValue { value : Int } -- A description of the action of resolving a problem by setting the value to the given one.
@@ -254,6 +256,7 @@ type MdString
     | JsonAgainstHumanityAbout -- A short description of the JSON Against Humanity source.
     | BuiltIn -- A term referring to decks of cards that are provided by this instance of the game.
     | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
+    | Generated -- A short description of a card generated during the game.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.
     | ConfigureDecks -- A name for the section of the configuration screen for changing the decks for the game.
     | ConfigureRules -- A name for the section of the configuration screen for changing the rules for the game.

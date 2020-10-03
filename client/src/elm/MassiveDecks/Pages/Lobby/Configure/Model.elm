@@ -71,6 +71,7 @@ fake =
             , reboot = Nothing
             , comedyWriter = Nothing
             , neverHaveIEver = Nothing
+            , happyEnding = Nothing
             }
         , stages =
             { mode = Rules.Soft

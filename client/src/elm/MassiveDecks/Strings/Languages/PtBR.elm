@@ -346,6 +346,14 @@ translate _ mdString =
             , Text "ignorância: a carta é compartilhada publicamente."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
 
@@ -803,6 +811,10 @@ translate _ mdString =
 
         APlayer ->
             [ Text "Um jogador" ]
+
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
 
         DeckAlreadyAdded ->
             [ Text "Este deck já está no jogo." ]

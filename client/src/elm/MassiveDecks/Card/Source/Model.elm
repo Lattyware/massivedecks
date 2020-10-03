@@ -29,13 +29,15 @@ type General
 {-| Details on where game data came from.
 
     - `Ex`: External sources are the main sources of cards users can add.
-    - `Player`: These are cards written by the given player.
+    - `Custom`: These are cards written by the given player.
+    - `Generated`: These are cards generated during a game for reasons such as house rules.
     - `Fake`: These are cards used for presentation outside of a game environment.
 
 -}
 type Source
     = Ex External
     | Custom
+    | Generated
     | Fake (Maybe String)
 
 

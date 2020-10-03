@@ -7,6 +7,7 @@ import * as BuiltIn from "./sources/builtIn";
 import { SourceNotFoundError } from "../../errors/action-execution-error";
 import * as ManyDecks from "./sources/many-decks";
 import * as JsonAgainstHumanity from "./sources/json-against-humanity";
+import * as Generated from "./sources/generated";
 
 async function loadIfEnabled<Config, MetaResolver>(
   config: Config | undefined,
@@ -121,6 +122,9 @@ export class Sources {
     switch (source.source) {
       case "Custom":
         return Player.details(source);
+
+      case "Generated":
+        return Generated.details(source);
 
       default:
         return await this.resolver(cache, source).details();

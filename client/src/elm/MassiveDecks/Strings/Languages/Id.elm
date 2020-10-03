@@ -336,6 +336,14 @@ translate _ mdString =
             , Text "ketidaktahuan: kartu dibagikan secara publik."
             ]
 
+        -- TODO: Translate
+        HouseRuleHappyEnding ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleHappyEndingDescription ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Nilai minimal harus ", Text (String.fromInt min), Text "." ]
 
@@ -792,6 +800,10 @@ translate _ mdString =
 
         APlayer ->
             [ Text "Seorang Player" ]
+
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
 
         DeckAlreadyAdded ->
             [ Text "Dek ini sudah ada dalam game." ]

@@ -20,6 +20,7 @@ import * as PublicRound from "./game/round/public";
 import { StoredPlay } from "./game/round/storedPlay";
 import * as Player from "./player";
 import * as Rules from "./rules";
+import { happyEndingCall } from "./rules/happyEnding";
 
 export interface Public {
   round: PublicRound.Public;
@@ -259,6 +260,14 @@ export class Game {
     const plays: StoredPlay[] = this.round.plays;
     this.decks.responses.discard(plays.flatMap((play) => play.play));
     this.round = new Round.Playing(roundId, czar, playersInRound, call);
+    if (this.rules.houseRules.happyEnding?.inFinalRound) {
+      this.round = new Round.Playing(
+        roundId,
+        czar,
+        playersInRound,
+        happyEndingCall
+      );
+    }
     const updatedGame = this as Game & { round: Round.Playing };
     const atStart = Game.atStartOfRound(server, false, updatedGame);
     return {
