@@ -4,7 +4,9 @@ import * as Card from "../cards/card";
  * Configuration for the "Happy Ending" house rule.
  * When the game ends, the final round is a 'Make a Haiku' black card.
  */
-export interface HappyEnding {}
+export interface HappyEnding {
+  inFinalRound?: boolean;
+}
 
 export const happyEndingCall: Card.Call = {
   id: Card.id(),

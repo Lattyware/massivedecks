@@ -39,10 +39,13 @@ export const handle: Timeout.Handler<RoundStart> = (
         }
       }
       if (winners.length > 0) {
-        if (lobbyGame.rules.houseRules.happyEnding && !lobbyGame.happyEnding) {
+        if (
+          lobbyGame.rules.houseRules.happyEnding &&
+          !lobbyGame.rules.houseRules.happyEnding.inFinalRound
+        ) {
           // If someone has won and the happy ending house rule is enabled but hasn't happened yet,
-          // set the happy ending flag to true. One more round will happen now.
-          lobbyGame.happyEnding = true;
+          // set the final round boolean to true. One more round will happen now.
+          lobbyGame.rules.houseRules.happyEnding.inFinalRound = true;
         } else {
           lobbyGame.winner = winners;
           events.push(Event.targetAll(GameEnded.of(...winners)));
