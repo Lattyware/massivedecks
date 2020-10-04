@@ -228,6 +228,9 @@ sourceByName name =
         "Custom" ->
             Json.succeed Source.Custom
 
+        "Generated" ->
+            Json.succeed Source.Generated
+
         _ ->
             Json.field "source" Source.generalDecoder |> Json.andThen externalSourceByGeneral |> Json.map Source.Ex
 

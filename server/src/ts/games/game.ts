@@ -19,6 +19,7 @@ import * as Round from "./game/round";
 import * as PublicRound from "./game/round/public";
 import * as Player from "./player";
 import * as Rules from "./rules";
+import { happyEndingCall } from "./rules/happyEnding";
 
 export interface Public {
   round: PublicRound.Public;
@@ -256,10 +257,6 @@ export class Game {
       events.push(Event.targetAll(PauseStateChanged.continued));
     }
     const [call] = this.decks.calls.replace(this.round.call);
-    if (lobby.game?.happyEnding) {
-      // const [call] =
-      // TODO: Work out how to send Haiku card here.
-    }
     const roundId = this.round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter((id) =>
@@ -270,6 +267,14 @@ export class Game {
       (this.round as Round.Base<Round.Stage>).plays.flatMap((play) => play.play)
     );
     this.round = new Round.Playing(roundId, czar, playersInRound, call);
+    if (lobby.game?.happyEnding) {
+      this.round = new Round.Playing(
+        roundId,
+        czar,
+        playersInRound,
+        happyEndingCall
+      );
+    }
     const updatedGame = this as Game & { round: Round.Playing };
     const atStart = Game.atStartOfRound(server, false, updatedGame);
     return {

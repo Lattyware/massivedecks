@@ -913,6 +913,10 @@ translate maybeDeclCase mdString =
         APlayer ->
             [ Text "Gracz" ]
 
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
+
         DeckAlreadyAdded ->
             [ Text "Ta talia jest już w grze." ]
 

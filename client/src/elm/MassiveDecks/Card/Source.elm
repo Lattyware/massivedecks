@@ -21,6 +21,7 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn as BuiltIn
 import MassiveDecks.Card.Source.Custom as Player
 import MassiveDecks.Card.Source.Fake as Fake
+import MassiveDecks.Card.Source.Generated as Generated
 import MassiveDecks.Card.Source.JsonAgainstHumanity as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks as ManyDecks
 import MassiveDecks.Card.Source.Methods exposing (..)
@@ -249,6 +250,9 @@ methods source =
 
         Custom ->
             Player.methods
+
+        Generated ->
+            Generated.methods
 
         Fake fakeName ->
             Fake.methods fakeName

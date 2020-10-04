@@ -810,6 +810,10 @@ translate _ mdString =
         APlayer ->
             [ Text "Ein Spieler" ]
 
+        -- TODO: Translate
+        Generated ->
+            [ Missing ]
+
         DeckAlreadyAdded ->
             [ Text "Dieser Kartensatz ist bereits im Spiel." ]
 

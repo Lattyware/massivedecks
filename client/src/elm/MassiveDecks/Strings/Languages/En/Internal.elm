@@ -764,6 +764,9 @@ translate _ mdString =
         APlayer ->
             [ Text "A Player" ]
 
+        Generated ->
+            [ Text "Generated" ]
+
         DeckAlreadyAdded ->
             [ Text "This deck is already in the game." ]
 

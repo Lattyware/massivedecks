@@ -1,6 +1,7 @@
 import * as Cache from "../../cache";
 import * as Decks from "./decks";
 import { Custom } from "./sources/custom";
+import { Generated } from "./sources/generated";
 import { BuiltIn } from "./sources/builtIn";
 import { ManyDecks } from "./sources/many-decks";
 import { JsonAgainstHumanity } from "./sources/json-against-humanity";
@@ -8,7 +9,7 @@ import { JsonAgainstHumanity } from "./sources/json-against-humanity";
 /**
  * A source for a card or deck.
  */
-export type Source = External | Custom;
+export type Source = External | Custom | Generated;
 
 /**
  * An external source for a card or deck.

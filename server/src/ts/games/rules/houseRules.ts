@@ -1,5 +1,6 @@
-import { PackingHeat, Reboot, ComedyWriter, NeverHaveIEver, HappyEnding } from "../rules";
+import { PackingHeat, Reboot, ComedyWriter, NeverHaveIEver } from "../rules";
 import * as Rando from "./rando";
+import * as HappyEnding from "./happyEnding";
 
 /**
  * Non-standard rules that can be applied to a game.
@@ -10,7 +11,7 @@ export interface HouseRules {
   comedyWriter?: ComedyWriter;
   rando: Rando.Rando;
   neverHaveIEver?: NeverHaveIEver;
-  happyEnding?: HappyEnding;
+  happyEnding?: HappyEnding.HappyEnding;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface Public {
   comedyWriter?: ComedyWriter;
   rando?: Rando.Public;
   neverHaveIEver?: NeverHaveIEver;
-  happyEnding?: HappyEnding;
+  happyEnding?: HappyEnding.HappyEnding;
 }
 
 export const censor = (houseRules: HouseRules): Public => ({

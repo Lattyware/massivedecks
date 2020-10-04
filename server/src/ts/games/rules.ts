@@ -1,5 +1,6 @@
 import * as HouseRules from "./rules/houseRules";
 import * as Rando from "./rules/rando";
+import * as HappyEnding from "./rules/happyEnding";
 
 /** The rules for a standard game.
  */
@@ -86,7 +87,7 @@ export interface Stages {
 /**
  * Configuration for the "Packing Heat" house rule.
  */
-export interface PackingHeat { }
+export interface PackingHeat {}
 
 /**
  * Configuration for the "Reboot the Universe" house rule.
@@ -125,18 +126,12 @@ export interface ComedyWriter {
  * Configuration for the "Never Have I Ever" house rule.
  * This rule allows players to discard cards, but everyone else in the game can see the discarded card.
  */
-export interface NeverHaveIEver { }
+export interface NeverHaveIEver {}
 
 export const censor = (rules: Rules): Public => ({
   ...rules,
   houseRules: HouseRules.censor(rules.houseRules),
 });
-
-/**
- * Configuration for the "Happy Ending" house rule.
- * When the game ends, the final round is a 'Make a Haiku' black card.
- */
-export interface HappyEnding { }
 
 /**
  * Create rules from some defaults.

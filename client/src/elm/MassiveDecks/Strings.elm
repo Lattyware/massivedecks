@@ -256,6 +256,7 @@ type MdString
     | JsonAgainstHumanityAbout -- A short description of the JSON Against Humanity source.
     | BuiltIn -- A term referring to decks of cards that are provided by this instance of the game.
     | APlayer -- A short description of a generic player in the game in the context of being the author of a card.
+    | Generated -- A short description of a card generated during the game.
     | DeckAlreadyAdded -- A description of the problem of the deck already being added to the game configuration.
     | ConfigureDecks -- A name for the section of the configuration screen for changing the decks for the game.
     | ConfigureRules -- A name for the section of the configuration screen for changing the rules for the game.
