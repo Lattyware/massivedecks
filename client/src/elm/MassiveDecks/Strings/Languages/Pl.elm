@@ -1209,7 +1209,7 @@ translate maybeDeclCase mdString =
         ErrorCheckOutOfBand ->
             [ Text "Prosimy sprawdzić aktualizacje i status na "
             , ref TwitterHandle
-            , Text ". Serwery gry są wyłączane na krótki czas podczas aktualizacji, więc jeśli taka nastąpiła ostatnio,"
+            , Text ". Serwery gry są wyłączane na krótki czas podczas aktualizacji, więc jeśli taka nastąpiła ostatnio, "
             , Text "spróbuj ponownie za kilka minut."
             ]
 
@@ -1286,7 +1286,7 @@ translate maybeDeclCase mdString =
             [ Text "Twoje dane dostępu do gry są uszkodzone." ]
 
         InvalidLobbyPasswordError ->
-            [ Text "Podane hasło gry jest nieprawidłowe. Spróbuj wpisać je jeszcze raz, i jeśli to nie zadziała,"
+            [ Text "Podane hasło gry jest nieprawidłowe. Spróbuj wpisać je jeszcze raz, i jeśli to nie zadziała, "
             , Text "zapytaj znów osobę która cię zaprosiła."
             ]
 
@@ -1344,7 +1344,7 @@ translate maybeDeclCase mdString =
             [ Text "Polski" ]
 
         Indonesian ->
-            [ Text "Indonezyjsku" ]
+            [ Text "Indonezyski" ]
 
 
 type DeclensionCase
