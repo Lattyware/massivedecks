@@ -17,6 +17,7 @@ import * as Decks from "./cards/decks";
 import * as Play from "./cards/play";
 import * as Round from "./game/round";
 import * as PublicRound from "./game/round/public";
+import { StoredPlay } from "./game/round/storedPlay";
 import * as Player from "./player";
 import * as Rules from "./rules";
 
@@ -255,9 +256,8 @@ export class Game {
         Game.isPlayerInRound(czar, this.players, id, lobby.users[id])
       )
     );
-    this.decks.responses.discard(
-      (this.round as Round.Base<Round.Stage>).plays.flatMap((play) => play.play)
-    );
+    const plays: StoredPlay[] = this.round.plays;
+    this.decks.responses.discard(plays.flatMap((play) => play.play));
     this.round = new Round.Playing(roundId, czar, playersInRound, call);
     const updatedGame = this as Game & { round: Round.Playing };
     const atStart = Game.atStartOfRound(server, false, updatedGame);

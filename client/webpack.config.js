@@ -136,10 +136,7 @@ module.exports = (env, argv) => {
     output: {
       path: dist,
       publicPath: "/",
-      filename:
-        mode === "production"
-          ? "assets/scripts/[name].[chunkhash].js"
-          : "assets/scripts/[name].[hash].js",
+      filename: "assets/scripts/[name].[contenthash].js",
     },
     module: {
       rules: [
@@ -234,15 +231,6 @@ module.exports = (env, argv) => {
     plugins: plugins,
     optimization: {
       runtimeChunk: "single",
-      splitChunks: {
-        cacheGroups: {
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
-          },
-        },
-      },
       minimizer: [
         new ClosurePlugin(
           {

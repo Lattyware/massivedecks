@@ -21,19 +21,15 @@ export interface ClientInfo {
   }[];
 }
 
-interface RawDecks {
-  cards: {
-    white: { text: string }[];
-    black: { text: string; pick: number }[];
-  };
-  decks: { [id: string]: RawDeck };
+interface Packs {
+  white: string[];
+  black: { text: string; pick: number }[];
+  packs: Pack[];
 }
 
-interface RawDeck {
+interface Pack {
   name: string;
-  description: string;
   official: boolean;
-  icon: string | number;
   white: number[];
   black: number[];
 }
@@ -58,21 +54,20 @@ function* introduceSlots(line: string): Iterable<Card.Part> {
 }
 
 function rawDeckToSummaryAndTemplates(
-  raw: RawDecks,
+  raw: Packs,
+  pack: Pack,
   id: string
 ): {
   summary: Source.Summary;
   templates: Decks.Templates;
 } {
-  const pack = raw.decks[id];
-
   const source: JsonAgainstHumanity = {
     source: "JAH",
     id,
   };
 
   function call(index: number): Card.Call {
-    const from = raw.cards.black[index];
+    const from = raw.black[index];
     const parts = from.text.split("\n").map((t) => [...introduceSlots(t)]);
     const slots = Card.slotCount(parts);
     const extraSlots = Math.max(0, from.pick - slots);
@@ -84,8 +79,8 @@ function rawDeckToSummaryAndTemplates(
   }
 
   function response(index: number): Card.Response {
-    const from = raw.cards.white[index];
-    const stripped = from.text.replace("\n", "");
+    const from = raw.white[index];
+    const stripped = from.replace("\n", "");
     return {
       id: Card.id(),
       source,
@@ -178,42 +173,25 @@ export class MetaResolver implements Source.MetaResolver<JsonAgainstHumanity> {
   private readonly order: string[];
   public readonly cache = false;
 
-  public constructor(config: Config.JsonAgainstHumanity, decks: RawDecks) {
+  public constructor(config: Config.JsonAgainstHumanity, decks: Packs) {
     this.config = config;
     this.decks = new Map();
-    const protoOrder: [string, RawDeck][] = [];
-    for (const id in decks.decks) {
-      this.decks.set(id, rawDeckToSummaryAndTemplates(decks, id));
-      protoOrder.push([id, decks.decks[id]]);
+    const protoOrder: [string, Pack][] = [];
+    for (let index = 0; index < decks.packs.length; index++) {
+      const id = index.toString();
+      const pack = decks.packs[index];
+      this.decks.set(id, rawDeckToSummaryAndTemplates(decks, pack, id));
+      protoOrder.push([id, pack]);
     }
     protoOrder.sort(MetaResolver.compare);
     this.order = protoOrder.map(([id, _]) => id);
   }
 
   private static compare(
-    [_idA, a]: [string, RawDeck],
-    [_idB, b]: [string, RawDeck]
+    [_idA, a]: [string, Pack],
+    [_idB, b]: [string, Pack]
   ): number {
-    const official = MetaResolver.boolCompare(a, b, (v) => v.official);
-    if (official !== 0) {
-      return official;
-    } else {
-      const isThirdParty = MetaResolver.boolCompare(a, b, (v) =>
-        v.name.startsWith("[$]")
-      );
-      if (isThirdParty !== 0) {
-        return isThirdParty;
-      } else {
-        const isCommunity = MetaResolver.boolCompare(a, b, (v) =>
-          v.name.startsWith("[C]")
-        );
-        if (isCommunity !== 0) {
-          return isCommunity;
-        } else {
-          return 0;
-        }
-      }
-    }
+    return MetaResolver.boolCompare(a, b, (v) => v.official);
   }
 
   private static boolCompare<T>(a: T, b: T, f: (t: T) => boolean): number {
