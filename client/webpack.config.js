@@ -120,6 +120,7 @@ module.exports = (env, argv) => {
       //   compressionOptions: { level: 11 }
       // })
     );
+    plugins.push(new webpack.HashedModuleIdsPlugin());
   }
 
   return {
@@ -135,7 +136,10 @@ module.exports = (env, argv) => {
     output: {
       path: dist,
       publicPath: "/",
-      filename: "assets/scripts/[name].[contenthash].js",
+      filename:
+        mode === "production"
+          ? "assets/scripts/[name].[chunkhash].js"
+          : "assets/scripts/[name].[hash].js",
     },
     module: {
       rules: [
@@ -229,8 +233,16 @@ module.exports = (env, argv) => {
     },
     plugins: plugins,
     optimization: {
-      moduleIds: "deterministic",
       runtimeChunk: "single",
+      splitChunks: {
+        cacheGroups: {
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            name: "vendors",
+            chunks: "all",
+          },
+        },
+      },
       minimizer: [
         new ClosurePlugin(
           {
