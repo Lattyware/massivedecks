@@ -106,7 +106,7 @@ viewSource shared getSummary s =
                 |> Maybe.withDefault (Source.defaultDetails shared s)
     in
     Html.div
-        [ HtmlA.class "source" ]
+        [ HtmlA.class "source", HtmlA.title sourceDetails.name ]
         [ Maybe.transformWith (Html.text sourceDetails.name) makeLink sourceDetails.url ]
 
 

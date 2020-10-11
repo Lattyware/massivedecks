@@ -32,6 +32,7 @@ import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.Generated.Model as Generated
 import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgianstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
 import MassiveDecks.Card.Source.Model as Source exposing (Source)
@@ -230,9 +231,24 @@ sourceByName name =
 
         "Generated" ->
             Json.succeed Source.Generated
+                |> Json.required "by" generator
 
         _ ->
             Json.field "source" Source.generalDecoder |> Json.andThen externalSourceByGeneral |> Json.map Source.Ex
+
+
+generator : Json.Decoder Generated.Generator
+generator =
+    let
+        fromName name =
+            case name of
+                "HappyEndingRule" ->
+                    Json.succeed Generated.HappyEndingRule
+
+                _ ->
+                    unknownValue "generator" name
+    in
+    Json.string |> Json.andThen fromName
 
 
 externalSource : Json.Decoder Source.External

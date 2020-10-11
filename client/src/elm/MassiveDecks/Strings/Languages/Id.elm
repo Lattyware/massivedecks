@@ -802,7 +802,7 @@ translate _ mdString =
             [ Text "Seorang Player" ]
 
         -- TODO: Translate
-        Generated ->
+        Generated { by } ->
             [ Missing ]
 
         DeckAlreadyAdded ->

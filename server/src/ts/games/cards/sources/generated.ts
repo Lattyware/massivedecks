@@ -5,11 +5,12 @@ import * as Source from "../source";
  */
 export interface Generated {
   source: "Generated";
+  by: "HappyEndingRule";
 }
 
 /**
  * Get the details for a given source.
  */
-export const details = (_: Generated): Source.Details => ({
-  name: "Generated",
+export const details = (generated: Generated): Source.Details => ({
+  name: generated.by,
 });

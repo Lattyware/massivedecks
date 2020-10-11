@@ -811,7 +811,7 @@ translate _ mdString =
             [ Text "Ein Spieler" ]
 
         -- TODO: Translate
-        Generated ->
+        Generated { by } ->
             [ Missing ]
 
         DeckAlreadyAdded ->

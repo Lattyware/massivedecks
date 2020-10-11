@@ -914,7 +914,7 @@ translate maybeDeclCase mdString =
             [ Text "Gracz" ]
 
         -- TODO: Translate
-        Generated ->
+        Generated { by } ->
             [ Missing ]
 
         DeckAlreadyAdded ->

@@ -31,5 +31,5 @@ export const happyEndingCall: Card.Call = {
       ".",
     ],
   ],
-  source: { source: "Generated" },
+  source: { source: "Generated", by: "HappyEndingRule" },
 };

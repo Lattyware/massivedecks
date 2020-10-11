@@ -251,8 +251,8 @@ methods source =
         Custom ->
             Player.methods
 
-        Generated ->
-            Generated.methods
+        Generated generator ->
+            Generated.methods generator
 
         Fake fakeName ->
             Fake.methods fakeName

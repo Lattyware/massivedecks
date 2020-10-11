@@ -13,9 +13,9 @@ module MassiveDecks.Card.Source.Model exposing
 
 import Json.Decode as Json
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
+import MassiveDecks.Card.Source.Generated.Model as Generated
 import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
-import MassiveDecks.Strings.Languages.Model exposing (Language)
 
 
 {-| A representation of a source in general terms, not a specific deck.
@@ -37,7 +37,7 @@ type General
 type Source
     = Ex External
     | Custom
-    | Generated
+    | Generated Generated.Generator
     | Fake (Maybe String)
 
 

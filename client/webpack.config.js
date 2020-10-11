@@ -120,7 +120,6 @@ module.exports = (env, argv) => {
       //   compressionOptions: { level: 11 }
       // })
     );
-    plugins.push(new webpack.HashedModuleIdsPlugin());
   }
 
   return {
@@ -230,6 +229,7 @@ module.exports = (env, argv) => {
     },
     plugins: plugins,
     optimization: {
+      moduleIds: "deterministic",
       runtimeChunk: "single",
       minimizer: [
         new ClosurePlugin(
