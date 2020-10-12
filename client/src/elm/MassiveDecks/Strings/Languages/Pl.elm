@@ -379,13 +379,11 @@ translate maybeDeclCase mdString =
             , Text "ignorancję: wyrzucona karta będzie publicznie widoczna."
             ]
 
-        -- TODO: Translate
         HouseRuleHappyEnding ->
-            [ Missing ]
+            [ Text "Szczęśliwe zakończenie" ]
 
-        -- TODO: Translate
         HouseRuleHappyEndingDescription ->
-            [ Missing ]
+            [ Text "Gdy gra się kończy, ostatnią czarną kartą jest „Stwórz haiku”." ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Wartość musi być większa lub równa ", Text (String.fromInt min), Text "." ]
