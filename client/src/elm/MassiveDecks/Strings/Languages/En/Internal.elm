@@ -305,7 +305,7 @@ translate _ mdString =
             [ Text "Happy Ending" ]
 
         HouseRuleHappyEndingDescription ->
-            [ Text "When the game ends, the final round is a 'Make a Haiku' black card." ]
+            [ Text "When the game ends, the final round is a 'Make a Haiku' ", ref (noun Call 1), Text "." ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
