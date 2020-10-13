@@ -346,13 +346,11 @@ translate _ mdString =
             , Text "ignorância: a carta é compartilhada publicamente."
             ]
 
-        -- TODO: Translate
         HouseRuleHappyEnding ->
-            [ Missing ]
+            [ Text "Final Feliz" ]
 
-        -- TODO: Translate
         HouseRuleHappyEndingDescription ->
-            [ Missing ]
+            [ Text "Quando o jogo termina, a rodada final é uma ", ref (noun Call 1), Text " dizendo “Faça um Haiku”." ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
@@ -798,13 +796,11 @@ translate _ mdString =
         ManyDecksWhereToGet ->
             [ Text "Você pode criar decks para jogar usando o ", ref ManyDecks, Text "." ]
 
-        -- TODO: Translate
         JsonAgainstHumanity ->
-            [ Missing ]
+            [ Text "JSON Against Humanity" ]
 
-        -- TODO: Translate
         JsonAgainstHumanityAbout ->
-            [ Missing ]
+            [ Text "Decks fornecidos por ", ref JsonAgainstHumanity ]
 
         BuiltIn ->
             [ Text "Embutido" ]
@@ -812,9 +808,8 @@ translate _ mdString =
         APlayer ->
             [ Text "Um jogador" ]
 
-        -- TODO: Translate
         Generated { by } ->
-            [ Missing ]
+            [ Text "Gerado por ", ref by ]
 
         DeckAlreadyAdded ->
             [ Text "Este deck já está no jogo." ]
@@ -1120,13 +1115,11 @@ translate _ mdString =
         ErrorHelpTitle ->
             [ Text "Desculpe, algo de errado não está certo." ]
 
-        -- TODO: Translate
         ErrorCheckOutOfBand ->
-            [ Missing ]
+            [ Text "Por favor verifique ", ref TwitterHandle, Text " para atualizações e status de serviço. O servidor do jogo irá cair por um breve tempo quando uma nova versão for lançada, então se você ver uma atualização recente, tente novamente em alguns minutos." ]
 
-        -- TODO: Translate
         TwitterHandle ->
-            [ Missing ]
+            [ Text "@Massive_Decks" ]
 
         ReportError ->
             [ Text "Reportar Bug" ]
