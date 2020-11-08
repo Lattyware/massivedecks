@@ -1,0 +1,87 @@
+name: Build
+
+on:
+    push:
+      branches:
+        - main
+      tags:
+        - v*.*.*
+
+env:
+  COMMIT_VERSION: "${{ github.sha }}-dev"
+
+jobs:
+
+  build:
+    name: Build docker images.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: ["server", "client"]
+    env:
+      COMPONENT: ${{ matrix.component }}
+    steps:
+      - name: Checkout repository.
+        uses: actions/checkout@v2
+      - name: Get version from tag.
+        uses: olegtarasov/get-tag@v2
+        continue-on-error: true
+      - name: Build image.
+        run:
+          cd "${COMPONENT}" &&
+          docker build -t "${COMPONENT}:${COMMIT_VERSION}"
+            --build-arg VCS_REF="${GITHUB_SHA}"
+            --build-arg BUILD_DATE="$(date --rfc-3339=seconds)"
+            --build-arg VERSION="${GITHUB_TAG_NAME:-${COMMIT_VERSION}}"
+            .
+      - name: Save image.
+        run: docker save "${COMPONENT}:${COMMIT_VERSION}" | gzip > "image.tar.gz"
+      - name: Store image for publish job.
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.component }}
+          path: image.tar.gz
+
+  publish:
+    name: Publish docker images.
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: ["server", "client"]
+        registry: [
+          {
+            server: "registry.hub.docker.com",
+            user: "latty",
+            token-secret: "DOCKER_HUB_TOKEN",
+            path: "massivedecks",
+            image-prefix: ""
+          },
+          {
+            server: "ghcr.io",
+            user: "lattyware",
+            token-secret: "GHCR_TOKEN",
+            path: "lattyware/massivedecks",
+            image-prefix: ""
+          }
+        ]
+    steps:
+      - name: Retrieve image from build job.
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.component }}
+      - name: Load image.
+        run: docker load < "image.tar.gz"
+      - name: Get version from tag.
+        uses: olegtarasov/get-tag@v2
+      - name: Publish image.
+        uses: lattyware/push-docker-image-to-version-tags@v2
+        with:
+          source: "${{ matrix.component }}:${{ env.COMMIT_VERSION }}"
+          image: "${{ matrix.registry.image-prefix }}${{ matrix.component }}"
+          hash: "${{ env.COMMIT_VERSION }}"
+          version: "${{ env.GIT_TAG_NAME }}"
+          server: "${{ matrix.registry.server }}"
+          server_path: "${{ matrix.registry.path }}"
+          user: "${{ matrix.registry.user }}"
+          token: "${{ secrets[matrix.registry.token-secret] }}"

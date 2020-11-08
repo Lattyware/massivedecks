@@ -1,6 +1,7 @@
 # [Massive Decks ![Massive Decks](https://raw.githubusercontent.com/Lattyware/massivedecks/master/client/assets/images/icon.png)][hosted]
 
-[![Build Status](https://img.shields.io/github/workflow/status/Lattyware/massivedecks/Build%20and%20publish%20docker%20images.)](https://github.com/Lattyware/massivedecks/actions)
+[![Current Release Version](https://img.shields.io/github/v/tag/Lattyware/massivedecks?label=release&sort=semver)](https://github.com/Lattyware/massivedecks/releases)
+[![Build Status](https://img.shields.io/github/workflow/status/Lattyware/massivedecks/Build)](https://github.com/Lattyware/massivedecks/actions)
 [![License](https://img.shields.io/github/license/Lattyware/massivedecks)](LICENSE)
 [![Follow on Twitter for Status & Updates](https://img.shields.io/twitter/follow/Massive_Decks?label=Status%20%26%20Updates&style=social)][twitter]
 
@@ -48,7 +49,9 @@ It is suggested you read the [deployment guide on the wiki][deployment-guide].
 
 ### Docker
 
-The Docker images can be found on Docker Hub: [Server](https://hub.docker.com/r/massivedecks/server) / [Client](https://hub.docker.com/r/massivedecks/client).
+The Docker images can be found on the GitHub Container Registry: 
+[Server](https://github.com/users/Lattyware/packages/container/package/massivedecks%2Fserver) / 
+[Client](https://github.com/users/Lattyware/packages/container/package/massivedecks%2Fclient).
 
 There are example docker deployments in [the deployment folder](deployment).
 
@@ -75,9 +78,16 @@ The game has a system for translation, and if you would like to provide translat
 
 ## Credits
 
+### Contributors
+
+Massive Decks is open source, and would not be possible without the time and work of 
+[the community members][github-contributors] who have contributed code and localizations.
+
+[github-contributors]: https://github.com/Lattyware/massivedecks/graphs/contributors 
+
 ### Maintainers
 
-Massive Decks is maintained by [Reread Games][reread].
+[Reread Games][reread] maintains Massive Decks. If you enjoy Massive Decks, please take a look at their other games. 
 
 [reread]: https://www.rereadgames.com/
 
