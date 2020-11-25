@@ -1,4 +1,4 @@
-# [Massive Decks ![Massive Decks](https://raw.githubusercontent.com/Lattyware/massivedecks/master/client/assets/images/icon.png)][hosted]
+# [Massive Decks ![Massive Decks](https://raw.githubusercontent.com/Lattyware/massivedecks/main/client/assets/images/icon.png)][hosted]
 
 [![Current Release Version](https://img.shields.io/github/v/tag/Lattyware/massivedecks?label=release&sort=semver)](https://github.com/Lattyware/massivedecks/releases)
 [![Build Status](https://img.shields.io/github/workflow/status/Lattyware/massivedecks/Build)](https://github.com/Lattyware/massivedecks/actions)
