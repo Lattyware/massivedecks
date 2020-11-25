@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repository.
         uses: actions/checkout@v2
       - name: Get version from tag.
-        uses: olegtarasov/get-tag@v2
+        uses: little-core-labs/get-git-tag@v3.0.2
         continue-on-error: true
       - name: Build image.
         run:
@@ -73,7 +73,7 @@ jobs:
       - name: Load image.
         run: docker load < "image.tar.gz"
       - name: Get version from tag.
-        uses: olegtarasov/get-tag@v2
+        uses: little-core-labs/get-git-tag@v3.0.2
       - name: Publish image.
         uses: lattyware/push-docker-image-to-version-tags@v2
         with:
