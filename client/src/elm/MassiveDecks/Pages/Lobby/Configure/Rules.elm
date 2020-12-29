@@ -6,19 +6,20 @@ import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
+import MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules as HouseRules
 import MassiveDecks.Pages.Lobby.Configure.Rules.Model exposing (..)
 import MassiveDecks.Strings as Strings
 
 
-all : Configurable Id Rules model msg
-all =
+all : (Msg -> msg) -> Configurable Id Rules model msg
+all wrap =
     Configurable.group
         { id = All
         , editor = Editor.group "rules" Nothing False False
         , children =
             [ gameRules
-            , HouseRules.all |> Configurable.wrap HouseRulesId (.houseRules >> Just) (\v p -> { p | houseRules = v })
+            , HouseRules.all wrap |> Configurable.wrap HouseRulesId (.houseRules >> Just) (\v p -> { p | houseRules = v })
             ]
         }
 

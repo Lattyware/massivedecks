@@ -1,22 +1,25 @@
 module MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.CzarChoices exposing (all)
 
+import FontAwesome.Solid as Icon
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
+import MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..))
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Tab(..))
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.CzarChoices.Model exposing (..)
 import MassiveDecks.Strings as Strings
 
 
-all : Configurable Id (Maybe Rules.CzarChoices) model msg
-all =
+all : (Msg -> msg) -> Configurable Id (Maybe Rules.CzarChoices) model msg
+all wrap =
     Configurable.group
         { id = All
         , editor = Editor.group "czar-choices" Nothing False False
         , children =
-            [ enabled |> Configurable.wrapAsToggle default
+            [ enabled wrap |> Configurable.wrapAsToggle default
             , children |> Configurable.wrapMaybe
             ]
         }
@@ -29,8 +32,8 @@ default =
     }
 
 
-enabled : Configurable Id Bool model msg
-enabled =
+enabled : (Msg -> msg) -> Configurable Id Bool model msg
+enabled wrap =
     Configurable.value
         { id = Enabled
         , editor = Editor.bool Strings.HouseRuleCzarChoices
@@ -38,7 +41,8 @@ enabled =
         , messages =
             always
                 [ Message.info Strings.HouseRuleCzarChoicesDescription
-                , Message.info (Strings.SeeAlso { rule = Strings.DuringTitle })
+                , Message.infoWithFix (Strings.SeeAlso { rule = Strings.DuringTitle })
+                    [ { description = Strings.ConfigureTimeLimits, icon = Icon.eye, action = ChangeTab Stages |> wrap } ]
                 ]
         }
 
