@@ -8,6 +8,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , kick
     , leave
     , like
+    , pickCall
     , redraw
     , reveal
     , setPlayerAway
@@ -53,6 +54,11 @@ fill card text =
 submit : List Card.Id -> Cmd msg
 submit play =
     action "Submit" [ ( "play", play |> Json.list Json.string ) ]
+
+
+pickCall : Card.Id -> Cmd msg
+pickCall call =
+    action "PickCall" [ ( "call", call |> Json.string ) ]
 
 
 takeBack : Cmd msg

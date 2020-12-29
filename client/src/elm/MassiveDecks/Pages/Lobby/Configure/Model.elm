@@ -72,9 +72,11 @@ fake =
             , comedyWriter = Nothing
             , neverHaveIEver = Nothing
             , happyEnding = Nothing
+            , czarChoices = Nothing
             }
         , stages =
             { mode = Rules.Soft
+            , starting = Nothing
             , playing = { duration = Nothing, after = 0 }
             , revealing = Nothing
             , judging = { duration = Nothing, after = 0 }

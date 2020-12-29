@@ -200,7 +200,7 @@ update wrap shared msg model =
                                     Game.applyGameStarted
                                         (GameMsg >> wrap)
                                         lobby
-                                        (round |> Round.withStage (Round.P round.stage))
+                                        round
                                         (hand |> Maybe.withDefault [])
 
                                 r =

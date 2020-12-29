@@ -10,8 +10,8 @@ import MassiveDecks.Pages.Lobby.Configure.Stages.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
 
 
-defaultRevealingStage : Rules.Stage
-defaultRevealingStage =
+defaultStage : Rules.Stage
+defaultStage =
     { duration = Nothing, after = 5 }
 
 
@@ -19,24 +19,25 @@ all : Configurable Id Rules.Stages model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group (Just Strings.ConfigureTimeLimits) False False
+        , editor = Editor.group "time-limits" (Just Strings.ConfigureTimeLimits) False False
         , children =
             [ mode |> Configurable.wrap identity (.mode >> Just) (\v p -> { p | mode = v })
-            , alwaysStage Strings.Playing Strings.PlayingTimeLimitDescription Strings.PlayingAfterDescription Playing
+            , starting |> Configurable.wrap identity (.starting >> Just) (\v p -> { p | starting = v })
+            , alwaysStage "playing" Strings.Playing Strings.PlayingTimeLimitDescription Strings.PlayingAfterDescription Playing
                 |> Configurable.wrap identity (.playing >> Just) (\v p -> { p | playing = v })
-            , toggledStage Strings.Revealing Strings.RevealingTimeLimitDescription Strings.RevealingAfterDescription Revealing
+            , toggledStage "revealing" Strings.Revealing Strings.RevealingTimeLimitDescription Strings.RevealingAfterDescription Revealing
                 |> Configurable.wrap identity (.revealing >> Just) (\v p -> { p | revealing = v })
-            , alwaysStage Strings.Judging Strings.JudgingTimeLimitDescription Strings.CompleteTimeLimitDescription Judging
+            , alwaysStage "judging" Strings.Judging Strings.JudgingTimeLimitDescription Strings.CompleteTimeLimitDescription Judging
                 |> Configurable.wrap identity (.judging >> Just) (\v p -> { p | judging = v })
             ]
         }
 
 
-stage : MdString -> MdString -> (StagePartId -> Id) -> Configurable Id Rules.Stage model msg
-stage duringDescription afterDescription s =
+stage : String -> MdString -> MdString -> (StagePartId -> Id) -> Configurable Id Rules.Stage model msg
+stage id duringDescription afterDescription s =
     Configurable.group
         { id = s Parts
-        , editor = Editor.group Nothing True True
+        , editor = Editor.group (id ++ "-time-limits-children") Nothing True True
         , children =
             [ duration duringDescription |> Configurable.wrap s (.duration >> Just) (\v p -> { p | duration = v })
             , after afterDescription |> Configurable.wrap s (.after >> Just) (\v p -> { p | after = v })
@@ -44,25 +45,45 @@ stage duringDescription afterDescription s =
         }
 
 
-alwaysStage : MdString -> MdString -> MdString -> (StagePartId -> Id) -> Configurable Id Rules.Stage model msg
-alwaysStage stageName duringDescription afterDescription s =
+alwaysStage : String -> MdString -> MdString -> MdString -> (StagePartId -> Id) -> Configurable Id Rules.Stage model msg
+alwaysStage id stageName duringDescription afterDescription s =
     Configurable.group
         { id = s Container
-        , editor = Editor.group (Just stageName) False False
+        , editor = Editor.group (id ++ "-time-limits") (Just stageName) False False
         , children =
-            [ stage duringDescription afterDescription s
+            [ stage id duringDescription afterDescription s
             ]
         }
 
 
-toggledStage : MdString -> MdString -> MdString -> (StagePartId -> Id) -> Configurable Id (Maybe Rules.Stage) model msg
-toggledStage stageName duringDescription afterDescription s =
+toggledStage : String -> MdString -> MdString -> MdString -> (StagePartId -> Id) -> Configurable Id (Maybe Rules.Stage) model msg
+toggledStage id stageName duringDescription afterDescription s =
     Configurable.group
         { id = s Container
-        , editor = Editor.group (Just stageName) False False
+        , editor = Editor.group (id ++ "-time-limits") (Just stageName) False False
         , children =
-            [ enabled |> Configurable.wrapAsToggle defaultRevealingStage
-            , stage duringDescription afterDescription s |> Configurable.wrapMaybe
+            [ enabled |> Configurable.wrapAsToggle defaultStage
+            , stage id duringDescription afterDescription s |> Configurable.wrapMaybe
+            ]
+        }
+
+
+starting : Configurable Id (Maybe Int) model msg
+starting =
+    Configurable.group
+        { id = StartingContainer
+        , editor = Editor.group "starting-time-limits" (Just Strings.Starting) False False
+        , children =
+            [ Configurable.value
+                { id = Starting
+                , editor = Editor.int Strings.DuringTitle |> Editor.maybe 30
+                , validator = Validator.between 0 900 |> Validator.whenJust
+                , messages =
+                    always
+                        [ Message.info Strings.StartingTimeLimitDescription
+                        , Message.info (Strings.SeeAlso { rule = Strings.HouseRuleCzarChoices })
+                        ]
+                }
             ]
         }
 

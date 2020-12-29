@@ -5,6 +5,7 @@ import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.ComedyWriter as ComedyWriter
+import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.CzarChoices as CzarChoices
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.HappyEnding as HappyEnding
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.NeverHaveIEver as NeverHaveIEver
@@ -18,7 +19,7 @@ all : Configurable Id Rules.HouseRules model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group (Just Strings.HouseRulesTitle) False False
+        , editor = Editor.group "house-rules" (Just Strings.HouseRulesTitle) False False
         , children =
             [ Rando.all |> Configurable.wrap RandoId (.rando >> Just) (\v p -> { p | rando = v })
             , PackingHeat.all |> Configurable.wrap PackingHeatId (.packingHeat >> Just) (\v p -> { p | packingHeat = v })
@@ -26,5 +27,6 @@ all =
             , ComedyWriter.all |> Configurable.wrap ComedyWriterId (.comedyWriter >> Just) (\v p -> { p | comedyWriter = v })
             , NeverHaveIEver.all |> Configurable.wrap NeverHaveIEverId (.neverHaveIEver >> Just) (\v p -> { p | neverHaveIEver = v })
             , HappyEnding.all |> Configurable.wrap HappyEndingId (.happyEnding >> Just) (\v p -> { p | happyEnding = v })
+            , CzarChoices.all |> Configurable.wrap CzarChoicesId (.czarChoices >> Just) (\v p -> { p | czarChoices = v })
             ]
         }

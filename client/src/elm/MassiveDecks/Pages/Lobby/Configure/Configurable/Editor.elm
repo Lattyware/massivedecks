@@ -144,8 +144,8 @@ int label noOp update _ value { shared, readOnly } =
     ]
 
 
-group : Maybe MdString -> Bool -> Bool -> List (Html msg) -> Def config model msg
-group title indent shouldFold children _ _ _ value { shared, readOnly } =
+group : String -> Maybe MdString -> Bool -> Bool -> List (Html msg) -> Def config model msg
+group id title indent shouldFold children _ _ _ value { shared, readOnly } =
     let
         node =
             case title of
@@ -159,7 +159,7 @@ group title indent shouldFold children _ _ _ value { shared, readOnly } =
             shouldFold && value == Nothing
     in
     [ node
-        [ HtmlA.classList [ ( "indent", indent ), ( "primary", True ), ( "folded", folded ) ] ]
+        [ HtmlA.id id, HtmlA.classList [ ( "indent", indent ), ( "primary", True ), ( "folded", folded ) ] ]
         (List.filterMap identity
             [ title |> Maybe.map (\t -> Html.h3 [] [ t |> Lang.html shared ])
             , Html.div [ HtmlA.class "form-group" ] children |> Just

@@ -74,7 +74,8 @@ type alias Game =
 {-| A view of a round in the game.
 -}
 type alias RoundView msg =
-    { instruction : Maybe MdString
+    { call : Maybe Card.Call
+    , instruction : Maybe MdString
     , action : Maybe Action
     , content : Html msg
     , slotAttrs : Parts.SlotAttrs msg

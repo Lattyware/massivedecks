@@ -7,7 +7,7 @@ import * as Lobby from "../../../lobby";
 import * as Handler from "../../handler";
 import { Czar } from "../czar";
 import * as Actions from "./../../actions";
-import * as StoredPlay from "../../../games/game/round/storedPlay";
+import * as StoredPlay from "../../../games/game/round/stored-play";
 import * as Util from "../../../util";
 import * as FinishedRevealing from "../../../timeout/finished-revealing";
 

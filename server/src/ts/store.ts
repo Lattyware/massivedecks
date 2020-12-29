@@ -45,17 +45,17 @@ export abstract class Store {
    * invalid, but if there is any security concern, change the application
    * secret, not this. That will have the same effect securely.
    */
-  public abstract async id(): Promise<string>;
+  public abstract  id(): Promise<string>;
 
   /**
    * Returns if the given lobby exists.
    */
-  public abstract async exists(gameCode: GameCode): Promise<boolean>;
+  public abstract  exists(gameCode: GameCode): Promise<boolean>;
 
   /** Create a new lobby.
    * @return The game code for the new lobby and the user id for the owner.
    */
-  public abstract async newLobby(
+  public abstract  newLobby(
     creation: CreateLobby,
     secret: string,
     defaults: LobbyConfig.Defaults
@@ -91,7 +91,7 @@ export abstract class Store {
     }));
   }
 
-  public abstract async writeAndReturn<T>(
+  public abstract  writeAndReturn<T>(
     gameCode: GameCode,
     write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T }
   ): Promise<T>;
@@ -107,12 +107,12 @@ export abstract class Store {
   /**
    * Delete the given lobby and all associated timeouts.
    */
-  public abstract async delete(gameCode: GameCode): Promise<void>;
+  public abstract  delete(gameCode: GameCode): Promise<void>;
 
   /**
    * Remove lobbies where the game is finished or everyone has been
    * disconnected for some time.
    * This should also clean up the cache as appropriate.
    */
-  public abstract async garbageCollect(): Promise<number>;
+  public abstract  garbageCollect(): Promise<number>;
 }

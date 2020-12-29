@@ -332,7 +332,7 @@ all : (Msg -> msg) -> Config -> Configurable.Component Id Config Model msg
 all wrap config =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "configure-all" Nothing False False
         , children =
             [ name |> Configurable.wrap identity (.name >> Just) (\v p -> { p | name = v })
             , Rules.all |> Configurable.wrap RulesId (.rules >> Just) (\v p -> { p | rules = v })

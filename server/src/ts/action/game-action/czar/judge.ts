@@ -32,8 +32,8 @@ class JudgeAction extends Actions.Implementation<
   ) => {
     const game = lobby.game;
     const round = game.round;
-    const plays = round.plays;
     if (round.verifyStage<Round.Judging>(action, "Judging")) {
+      const plays = round.plays;
       let winningPlay = undefined;
       for (const play of plays) {
         if (play.likes.length > 0) {

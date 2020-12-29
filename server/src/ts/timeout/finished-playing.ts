@@ -44,12 +44,6 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
     return {};
   }
 
-  // We discard the plays first so if the deck runs out, all the cards get
-  // rotated in.
-  for (const play of game.round.plays) {
-    game.decks.responses.discard(play.play);
-  }
-
   const { round, events, timeouts } =
     game.rules.stages.revealing === undefined
       ? game.round.skipToJudging(game)

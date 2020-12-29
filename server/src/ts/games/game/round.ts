@@ -6,7 +6,7 @@ import * as Util from "../../util";
 import * as Card from "../cards/card";
 import * as Play from "../cards/play";
 import * as PublicRound from "./round/public";
-import * as StoredPlay from "./round/storedPlay";
+import * as StoredPlay from "./round/stored-play";
 import * as RoundStageTimerDone from "../../timeout/round-stage-timer-done";
 import * as Timeout from "../../timeout";
 import * as Event from "../../event";
@@ -14,10 +14,17 @@ import * as StartJudging from "../../events/game-event/start-judging";
 import * as StartRevealing from "../../events/game-event/start-revealing";
 import * as Rules from "../rules";
 import * as Game from "../game";
+import { InvalidActionError } from "../../errors/validation";
+import { ServerState } from "../../server-state";
 
-export type Round = Playing | Revealing | Judging | Complete;
+export type Round = Starting | Playing | Revealing | Judging | Complete;
 
-export type Stage = "Playing" | "Revealing" | "Judging" | "Complete";
+export type Stage =
+  | "Starting"
+  | "Playing"
+  | "Revealing"
+  | "Judging"
+  | "Complete";
 
 export type Id = number;
 
@@ -26,8 +33,6 @@ export abstract class Base<TStage extends Stage> {
   public abstract readonly id: Id;
   public abstract readonly czar: User.Id;
   public abstract readonly players: Set<User.Id>;
-  public abstract readonly call: Card.Call;
-  public abstract readonly plays: StoredPlay.StoredPlay[];
   public readonly startedAt: number = Date.now();
 
   /**
@@ -49,11 +54,18 @@ export abstract class Base<TStage extends Stage> {
     action: Action,
     ...expected: TRound["stage"][]
   ): this is TRound {
-    if (expected.some((n) => n == this.stage)) {
+    if (this.isInStage(action, ...expected)) {
       return true;
     } else {
       throw new IncorrectRoundStageError(action, this.stage, ...expected);
     }
+  }
+
+  public isInStage<TRound extends Round>(
+    action: Action,
+    ...expected: TRound["stage"][]
+  ): this is TRound {
+    return expected.some((n) => n == this.stage);
   }
 }
 
@@ -71,7 +83,7 @@ export class Complete extends Base<"Complete"> {
   }
 
   public readonly id: Id;
-  public readonly czar: Card.Id;
+  public readonly czar: User.Id;
 
   public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map((play) => play.playedBy));
@@ -83,7 +95,7 @@ export class Complete extends Base<"Complete"> {
 
   public constructor(
     id: Id,
-    czar: Card.Id,
+    czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.Revealed[],
     winner: User.Id
@@ -159,7 +171,7 @@ export class Judging extends Base<"Judging"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: Card.Id;
+  public readonly czar: User.Id;
 
   public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map((play) => play.playedBy));
@@ -171,7 +183,7 @@ export class Judging extends Base<"Judging"> implements Timed {
 
   public constructor(
     id: Id,
-    czar: Card.Id,
+    czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.Revealed[],
     timedOut = false
@@ -254,7 +266,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: Card.Id;
+  public readonly czar: User.Id;
 
   public get players(): Set<User.Id> {
     return new Set(wu(this.plays).map((play) => play.playedBy));
@@ -266,7 +278,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
 
   public constructor(
     id: Id,
-    czar: Card.Id,
+    czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.StoredPlay[],
     timedOut = false
@@ -327,7 +339,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   private getAfterPlayingDetails(
     game: Game.Game
   ): Map<User.Id, StartRevealing.AfterPlaying> {
-    const slotCount = Card.slotCount(game.round.call);
+    const slotCount = Card.slotCount(this.call);
     const extraCards =
       slotCount > 2 ||
       (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
@@ -337,7 +349,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       User.Id,
       StartRevealing.AfterPlaying
     >();
-    for (const play of game.round.plays) {
+    for (const play of this.plays) {
       const idSet = new Set(play.play.map((c) => c.id));
       const player = game.players[play.playedBy];
       if (player !== undefined) {
@@ -401,7 +413,7 @@ export class Playing extends Base<"Playing"> implements Timed {
   }
 
   public readonly id: Id;
-  public readonly czar: Card.Id;
+  public readonly czar: User.Id;
   public readonly players: Set<User.Id>;
   public readonly call: Card.Call;
   public readonly plays: StoredPlay.Unrevealed[];
@@ -409,7 +421,7 @@ export class Playing extends Base<"Playing"> implements Timed {
 
   public constructor(
     id: Id,
-    czar: Card.Id,
+    czar: User.Id,
     players: Set<User.Id>,
     call: Card.Call,
     plays: StoredPlay.Unrevealed[] | undefined = undefined,
@@ -500,8 +512,89 @@ export class Playing extends Base<"Playing"> implements Timed {
   }
 }
 
+export class Starting extends Base<"Starting"> implements Timed {
+  public get stage(): "Starting" {
+    return "Starting";
+  }
+
+  public readonly id: Id;
+  public readonly czar: User.Id;
+  public readonly players: Set<User.Id>;
+  public readonly calls: Card.Call[];
+  public timedOut: boolean;
+
+  public constructor(
+    id: Id,
+    czar: User.Id,
+    players: Set<User.Id>,
+    calls: Card.Call[],
+    timedOut = false
+  ) {
+    super();
+    this.id = id;
+    this.czar = czar;
+    this.players = players;
+    this.calls = calls;
+    this.timedOut = timedOut;
+  }
+
+  public waitingFor(): Set<User.Id> | null {
+    return new Set(this.czar);
+  }
+
+  public advance(
+    server: ServerState,
+    game: Game.Game,
+    chosen: Card.Id
+  ): {
+    round: Playing;
+    timeouts?: Iterable<Timeout.After>;
+    events?: Iterable<Event.Distributor>;
+  } {
+    const call = this.calls.find((call) => call.id === chosen);
+    if (call === undefined) {
+      throw new InvalidActionError(
+        "The given call doesn't exist or wasn't in the given options."
+      );
+    }
+    const round = new Playing(this.id, this.czar, this.players, call);
+    const eventsAndTimeouts = game.startPlaying(server, false, round, true);
+    return { round, ...eventsAndTimeouts };
+  }
+
+  public public(): PublicRound.Starting {
+    return {
+      stage: this.stage,
+      id: this.id.toString(),
+      czar: this.czar,
+      players: Array.from(this.players),
+      ...(this.timedOut ? { timedOut: true } : {}),
+      startedAt: this.startedAt,
+    };
+  }
+
+  toJSON(): object {
+    return {
+      stage: this.stage,
+      id: this.id,
+      czar: this.czar,
+      players: Array.from(this.players),
+      calls: this.calls,
+      timedOut: this.timedOut,
+    };
+  }
+}
+
 export const fromJSON = (r: Round): Round => {
   switch (r.stage) {
+    case "Starting":
+      return new Starting(
+        r.id,
+        r.czar,
+        new Set(r.players),
+        r.calls,
+        r.timedOut
+      );
     case "Playing":
       return new Playing(
         r.id,

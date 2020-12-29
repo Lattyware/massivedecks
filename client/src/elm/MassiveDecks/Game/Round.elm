@@ -11,6 +11,9 @@ module MassiveDecks.Game.Round exposing
     , Specific
     , Stage(..)
     , StageDetails(..)
+    , Starting
+    , Timed
+    , WithCall
     , defaultLikeDetail
     , idDecoder
     , idString
@@ -50,7 +53,8 @@ idString (Id id) =
 {-| The stage of the round.
 -}
 type Stage
-    = SPlaying
+    = SStarting
+    | SPlaying
     | SRevealing
     | SJudging
     | SComplete
@@ -61,6 +65,9 @@ type Stage
 stage : StageDetails -> Stage
 stage specific =
     case specific of
+        S _ ->
+            SStarting
+
         P _ ->
             SPlaying
 
@@ -79,6 +86,9 @@ stage specific =
 stageToString : Stage -> String
 stageToString s =
     case s of
+        SStarting ->
+            "Starting"
+
         SPlaying ->
             "Playing"
 
@@ -97,6 +107,9 @@ stageToString s =
 stageDescription : Stage -> MdString
 stageDescription toDescribe =
     case toDescribe of
+        SStarting ->
+            Strings.Starting
+
         SPlaying ->
             Strings.Playing
 
@@ -120,10 +133,17 @@ type alias Specific stageDetails =
     { id : Id
     , czar : User.Id
     , players : Set User.Id
-    , call : Card.Call
     , startedAt : Time
     , stage : stageDetails
     }
+
+
+type alias WithCall stageDetails =
+    Specific { stageDetails | call : Card.Call }
+
+
+type alias Timed stageDetails =
+    Specific { stageDetails | timedOut : Bool }
 
 
 withStage : stageDetails -> Specific oldDetails -> Specific stageDetails
@@ -131,14 +151,14 @@ withStage newStage round =
     { id = round.id
     , czar = round.czar
     , players = round.players
-    , call = round.call
     , startedAt = round.startedAt
     , stage = newStage
     }
 
 
 type StageDetails
-    = P Playing
+    = S Starting
+    | P Playing
     | R Revealing
     | J Judging
     | C Complete
@@ -175,10 +195,20 @@ type PickState
     | Submitted
 
 
+{-| A round while the czar is picking a call.
+-}
+type alias Starting =
+    { pick : Maybe Card.Id
+    , calls : Maybe (List Card.Call)
+    , timedOut : Bool
+    }
+
+
 {-| A round while users are playing a round.
 -}
 type alias Playing =
     { pick : Pick
+    , call : Card.Call
     , played : Set User.Id
     , timedOut : Bool
     }
@@ -188,6 +218,7 @@ type alias Revealing =
     { likeDetail : LikeDetail
     , lastRevealed : Maybe Play.Id
     , pick : Maybe Play.Id
+    , call : Card.Call
     , plays : List Play
     , timedOut : Bool
     }
@@ -198,6 +229,7 @@ type alias Revealing =
 type alias Judging =
     { likeDetail : LikeDetail
     , pick : Maybe Play.Id
+    , call : Card.Call
     , plays : List Play.Known
     , timedOut : Bool
     }
@@ -208,6 +240,7 @@ type alias Judging =
 type alias Complete =
     { likeDetail : LikeDetail
     , pick : Maybe Play.Id
+    , call : Card.Call
     , plays : Dict Play.Id Play.WithDetails
     , playOrder : List Play.Id
     , winner : User.Id

@@ -214,6 +214,9 @@ enhanceHtml context mdString unenhanced =
         HouseRuleHappyEnding ->
             prefixed unenhanced Icon.smile
 
+        HouseRuleCzarChoices ->
+            prefixed unenhanced Icon.clipboardList
+
         RereadGames ->
             [ Html.blankA [ HtmlA.class "no-wrap", HtmlA.href "https://www.rereadgames.com/" ] unenhanced ]
 

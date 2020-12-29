@@ -4,12 +4,13 @@ import * as Token from "../../user/token";
 import * as GameAction from "../game-action";
 import * as Actions from "../actions";
 import * as Judge from "./czar/judge";
+import * as PickCall from "./czar/pick-call";
 import * as Reveal from "./czar/reveal";
 
 /**
  * An action only the czar can perform.
  */
-export type Czar = Judge.Judge | Reveal.Reveal;
+export type Czar = Judge.Judge | PickCall.PickCall | Reveal.Reveal;
 
 class CzarActions extends Actions.Group<
   Action.Action,
@@ -18,7 +19,7 @@ class CzarActions extends Actions.Group<
   Lobby.WithActiveGame
 > {
   constructor() {
-    super(Judge.actions, Reveal.actions);
+    super(Judge.actions, PickCall.actions, Reveal.actions);
   }
 
   limit(

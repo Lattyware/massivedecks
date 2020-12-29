@@ -115,13 +115,13 @@ export abstract class Resolver<S extends External>
    * Note that if you have a fresh summary, you should check if that has a
    * tag first.
    */
-  public abstract async getTag(): Promise<Cache.Tag | undefined>;
+  public abstract  getTag(): Promise<Cache.Tag | undefined>;
 
   /**
    * The summary for the source, and potentially the templates if efficient to
    * return both.
    */
-  public abstract async atLeastSummary(): Promise<AtLeastSummary>;
+  public abstract  atLeastSummary(): Promise<AtLeastSummary>;
 
   /**
    * The summary for the source.
@@ -141,7 +141,7 @@ export abstract class Resolver<S extends External>
    * The deck templates for the source, and potentially the summary if
    * efficient to return both.
    */
-  public abstract async atLeastTemplates(): Promise<AtLeastTemplates>;
+  public abstract  atLeastTemplates(): Promise<AtLeastTemplates>;
 
   /**
    * The deck templates for the source.

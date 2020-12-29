@@ -344,6 +344,34 @@ translate _ mdString =
         HouseRuleHappyEndingDescription ->
             [ Missing ]
 
+        -- TODO: Translate
+        HouseRuleCzarChoices ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumber ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumberDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustom ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustomDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        SeeAlso { rule } ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Nilai minimal harus ", Text (String.fromInt min), Text "." ]
 
@@ -931,6 +959,10 @@ translate _ mdString =
         TimeLimit { stage } ->
             [ ref stage, Text " Batas waktu" ]
 
+        -- TODO: Translate
+        StartingTimeLimitDescription ->
+            [ Missing ]
+
         PlayingTimeLimitDescription ->
             [ Text "Berapa lama (dalam detik) ", ref Players, Text " harus membuat permainan mereka." ]
 
@@ -988,6 +1020,10 @@ translate _ mdString =
             [ Text "Konfigurasi Game Berikutnya" ]
 
         -- Game
+        -- TODO: Translate
+        PickCall ->
+            [ Missing ]
+
         SubmitPlay ->
             [ Text "Berikan kartu ini ke ", ref Czar, Text " sebagai permainan Anda untuk putaran tersebut." ]
 
@@ -1002,6 +1038,10 @@ translate _ mdString =
 
         AdvanceRound ->
             [ Text "Putaran Selanjutnya." ]
+
+        -- TODO: Translate
+        Starting ->
+            [ Missing ]
 
         Playing ->
             [ Text "Bermain" ]
@@ -1050,6 +1090,14 @@ translate _ mdString =
             ]
 
         -- Instructions
+        -- TODO: Translate
+        PickCallInstruction ->
+            [ Missing ]
+
+        -- TODO: Translate
+        WaitForCallInstruction ->
+            [ Missing ]
+
         PlayInstruction { numberOfCards } ->
             [ Text "Anda harus memilih "
             , Text (asWord numberOfCards)

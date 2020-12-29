@@ -1,5 +1,6 @@
 module MassiveDecks.Game.Rules exposing
     ( ComedyWriter
+    , CzarChoices
     , HappyEnding
     , HouseRules
     , NeverHaveIEver
@@ -33,6 +34,7 @@ type alias HouseRules =
     , comedyWriter : Maybe ComedyWriter
     , neverHaveIEver : Maybe NeverHaveIEver
     , happyEnding : Maybe HappyEnding
+    , czarChoices : Maybe CzarChoices
     }
 
 
@@ -49,6 +51,7 @@ type alias Stage =
 
 type alias Stages =
     { mode : TimeLimitMode
+    , starting : Maybe Int
     , playing : Stage
     , revealing : Maybe Stage
     , judging : Stage
@@ -79,3 +82,9 @@ type alias NeverHaveIEver =
 
 type alias HappyEnding =
     {}
+
+
+type alias CzarChoices =
+    { numberOfChoices : Int
+    , custom : Bool
+    }

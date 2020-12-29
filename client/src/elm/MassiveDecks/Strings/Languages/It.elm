@@ -358,6 +358,34 @@ translate _ mdString =
         HouseRuleHappyEndingDescription ->
             [ Missing ]
 
+        -- TODO: Translate
+        HouseRuleCzarChoices ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumber ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumberDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustom ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustomDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        SeeAlso { rule } ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Il valore deve essere almeno ", Text (String.fromInt min), Text "." ]
 
@@ -955,6 +983,10 @@ translate _ mdString =
         TimeLimit { stage } ->
             [ Text "Tempo limite ", ref stage ]
 
+        -- TODO: Translate
+        StartingTimeLimitDescription ->
+            [ Missing ]
+
         PlayingTimeLimitDescription ->
             [ Text "Quanto tempo (in secondi) i ", ref Players, Text " hanno per fare la giocata." ]
 
@@ -1018,6 +1050,10 @@ translate _ mdString =
             [ Missing ]
 
         -- Game
+        -- TODO: Translate
+        PickCall ->
+            [ Missing ]
+
         SubmitPlay ->
             [ Text "Dai queste carte al ", ref Czar, Text " come giocata per il turno." ]
 
@@ -1032,6 +1068,10 @@ translate _ mdString =
 
         AdvanceRound ->
             [ Text "Prossimo turno." ]
+
+        -- TODO: Translate
+        Starting ->
+            [ Missing ]
 
         Playing ->
             [ Text "Giocata" ]
@@ -1080,6 +1120,14 @@ translate _ mdString =
             [ Missing ]
 
         -- Instructions
+        -- TODO: Translate
+        PickCallInstruction ->
+            [ Missing ]
+
+        -- TODO: Translate
+        WaitForCallInstruction ->
+            [ Missing ]
+
         PlayInstruction { numberOfCards } ->
             [ Text "Devi scegliere altre "
             , Text (asWord numberOfCards)

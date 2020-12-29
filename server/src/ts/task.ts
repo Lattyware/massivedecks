@@ -13,7 +13,7 @@ export abstract class TaskBase<T> implements Task {
     this.gameCode = gameCode;
   }
 
-  protected abstract async begin(server: ServerState): Promise<T>;
+  protected abstract  begin(server: ServerState): Promise<T>;
 
   protected abstract resolve(
     lobby: Lobby,

@@ -34,6 +34,9 @@ view wrapGame shared config users game =
             game.game.round
     in
     case round.stage of
+        Round.S starting ->
+            viewStarting shared config round starting
+
         Round.P playing ->
             viewPlaying shared config game.playStyles round playing
 
@@ -51,13 +54,18 @@ view wrapGame shared config users game =
 {- Private -}
 
 
+viewStarting : Shared -> Config -> Round -> Round.Starting -> List (Html msg)
+viewStarting shared _ _ _ =
+    [ viewUnknownCall shared ]
+
+
 viewPlaying : Shared -> Config -> Game.PlayStyles -> Round -> Round.Playing -> List (Html msg)
 viewPlaying shared config playStyles round stage =
     let
         slots =
-            round.call |> Call.slotCount
+            stage.call |> Call.slotCount
     in
-    [ viewCall shared config Nothing round.call
+    [ viewCall shared config Nothing stage.call
     , viewUnknownPlays shared slots playStyles round.players stage.played
     ]
 
@@ -84,8 +92,8 @@ viewRevealing wrapGame shared config users round stage =
         plays =
             stage.plays |> List.map potential
     in
-    [ viewCall shared config fillWith round.call
-    , viewPlays wrapGame shared config (round.call |> Call.slotCount) users Nothing stage.pick stage.likeDetail plays
+    [ viewCall shared config fillWith stage.call
+    , viewPlays wrapGame shared config (stage.call |> Call.slotCount) users Nothing stage.pick stage.likeDetail plays
     , Action.view wrapGame shared (Action.Like |> Maybe.justIf (stage.pick /= Nothing))
     ]
 
@@ -104,8 +112,8 @@ viewJudging wrapGame shared config users round stage =
         plays =
             stage.plays |> List.map potential
     in
-    [ viewCall shared config Nothing round.call
-    , viewPlays wrapGame shared config (round.call |> Call.slotCount) users Nothing stage.pick stage.likeDetail plays
+    [ viewCall shared config Nothing stage.call
+    , viewPlays wrapGame shared config (stage.call |> Call.slotCount) users Nothing stage.pick stage.likeDetail plays
     , Action.view wrapGame shared (Action.Like |> Maybe.justIf (stage.pick /= Nothing))
     ]
 
@@ -127,8 +135,8 @@ viewComplete wrapGame shared config users round stage =
         winner =
             Dict.get stage.winner stage.plays |> Maybe.map (.play >> Parts.fillsFromPlay)
     in
-    [ viewCall shared config winner round.call
-    , viewPlays wrapGame shared config (round.call |> Call.slotCount) users (Just stage.winner) stage.pick stage.likeDetail plays
+    [ viewCall shared config winner stage.call
+    , viewPlays wrapGame shared config (stage.call |> Call.slotCount) users (Just stage.winner) stage.pick stage.likeDetail plays
     , Action.view wrapGame shared (Action.Like |> Maybe.justIf (stage.pick /= Nothing))
     ]
 
@@ -137,6 +145,13 @@ viewCall : Shared -> Config -> Maybe Parts.Fills -> Call -> Html msg
 viewCall shared config fillWith call =
     Html.div [ HtmlA.id "call-wrapper" ]
         [ Call.viewFilled shared config Card.Front [] (always []) (fillWith |> Maybe.withDefault Dict.empty) call
+        ]
+
+
+viewUnknownCall : Shared -> Html msg
+viewUnknownCall shared =
+    Html.div [ HtmlA.id "call-wrapper" ]
+        [ Call.viewUnknown shared []
         ]
 
 

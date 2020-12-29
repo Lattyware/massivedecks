@@ -352,6 +352,34 @@ translate _ mdString =
         HouseRuleHappyEndingDescription ->
             [ Text "Quando o jogo termina, a rodada final é uma ", ref (noun Call 1), Text " dizendo “Faça um Haiku”." ]
 
+        -- TODO: Translate
+        HouseRuleCzarChoices ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumber ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesNumberDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustom ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleCzarChoicesCustomDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        SeeAlso { rule } ->
+            [ Missing ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "O valor deve ser ao menos ", Text (String.fromInt min), Text "." ]
 
@@ -937,6 +965,10 @@ translate _ mdString =
         TimeLimit { stage } ->
             [ Text " Tempo Limite quando estiver ", ref stage ]
 
+        -- TODO: Translate
+        StartingTimeLimitDescription ->
+            [ Missing ]
+
         PlayingTimeLimitDescription ->
             [ Text "Quanto tempo (em segundos) os ", ref Players, Text " terão para fazer suas jogadas." ]
 
@@ -994,6 +1026,10 @@ translate _ mdString =
             [ Text "Configurar Próximo Jogo" ]
 
         -- Game
+        -- TODO: Translate
+        PickCall ->
+            [ Missing ]
+
         SubmitPlay ->
             [ Text "Dar essas cartas ao ", ref Czar, Text " como sua jogada da partida." ]
 
@@ -1008,6 +1044,10 @@ translate _ mdString =
 
         AdvanceRound ->
             [ Text "Próxima partida." ]
+
+        -- TODO: Translate
+        Starting ->
+            [ Missing ]
 
         Playing ->
             [ Text "Jogando" ]
@@ -1056,6 +1096,14 @@ translate _ mdString =
             ]
 
         -- Instructions
+        -- TODO: Translate
+        PickCallInstruction ->
+            [ Missing ]
+
+        -- TODO: Translate
+        WaitForCallInstruction ->
+            [ Missing ]
+
         PlayInstruction { numberOfCards } ->
             [ Text "Você precisa escolher mais "
             , Text (asWord numberOfCards Female)

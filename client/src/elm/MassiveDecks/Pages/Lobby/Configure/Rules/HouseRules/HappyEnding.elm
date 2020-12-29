@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.HappyEnding) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "happy-ending" Nothing False False
         , children =
             [ enabled |> Configurable.wrapAsToggle {}
             ]

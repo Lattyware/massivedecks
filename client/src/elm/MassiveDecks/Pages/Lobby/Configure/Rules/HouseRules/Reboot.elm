@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.Reboot) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "reboot" Nothing False False
         , children =
             [ enabled
             , children |> Configurable.wrapMaybe
@@ -47,7 +47,7 @@ children : Configurable Id Rules.Reboot model msg
 children =
     Configurable.group
         { id = Child Children
-        , editor = Editor.group Nothing True True
+        , editor = Editor.group "reboot-children" Nothing True True
         , children =
             [ cost |> Configurable.wrap Child (.cost >> Just) (\v p -> { p | cost = v })
             ]

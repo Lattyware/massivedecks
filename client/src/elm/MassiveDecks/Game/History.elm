@@ -69,7 +69,7 @@ viewRound shared config users round =
         [ Html.div [ HtmlA.class "spacer" ]
             [ Html.div [ HtmlA.class "historic-call with-byline" ]
                 [ Plays.viewByLine shared users byLine
-                , Call.viewFilled shared config Card.Front [] (always []) winningBody round.call
+                , Call.viewFilled shared config Card.Front [] (always []) winningBody round.stage.call
                 ]
             ]
         , HtmlK.ul [ HtmlA.class "plays cards" ]

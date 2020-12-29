@@ -13,7 +13,7 @@ import { Player } from "../player";
 import * as Util from "../../../util";
 
 /**
- * A player plays a white card into a round.
+ * A player plays a response into a round.
  */
 export interface Submit {
   action: "Submit";
@@ -35,6 +35,7 @@ class SubmitActions extends Actions.Implementation<
     server
   ) => {
     const lobbyRound = lobby.game.round;
+
     if (lobbyRound.verifyStage<Round.Playing>(action, "Playing")) {
       const playId = Play.id();
       const plays = lobbyRound.plays;

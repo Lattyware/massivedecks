@@ -49,6 +49,9 @@ export const Schema = {
           $ref: "#/definitions/Judge",
         },
         {
+          $ref: "#/definitions/PickCall",
+        },
+        {
           $ref: "#/definitions/Reveal",
         },
         {
@@ -252,6 +255,33 @@ export const Schema = {
       required: ["name", "owner"],
       type: "object",
     },
+    CzarChoices: {
+      $ref: "#/definitions/CzarChoices_1",
+      description:
+        'Configuration for the "Czar Choices" house rule.\nAt the beginning of the round, the Czar draws multiple calls and chooses one of them.',
+    },
+    CzarChoices_1: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description:
+        'Configuration for the "Czar Choices" house rule.\nAt the beginning of the round, the Czar draws multiple calls and chooses one of them.',
+      properties: {
+        custom: {
+          description:
+            "If set, allows the czar to write a custom call rather than picking one of the choices.\nNote that this takes up one choice, so if `numberOfChoices` is `1`, then the czar *must* write the call.",
+          type: "boolean",
+        },
+        numberOfChoices: {
+          description:
+            "The number of choices to give the czar to pick between.",
+          maximum: 10,
+          minimum: 1,
+          type: "number",
+        },
+      },
+      required: ["numberOfChoices"],
+      type: "object",
+    },
     Details: {
       additionalProperties: false,
       defaultProperties: [],
@@ -393,6 +423,11 @@ export const Schema = {
       defaultProperties: [],
       description:
         "Configuration for the \"Happy Ending\" house rule.\nWhen the game ends, the final round is a 'Make a Haiku' black card.",
+      properties: {
+        inFinalRound: {
+          type: "boolean",
+        },
+      },
       type: "object",
     },
     Id: {
@@ -549,6 +584,22 @@ export const Schema = {
     Patch: {
       $ref: "#/definitions/Array",
     },
+    PickCall: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "A czar picks a call for a round.",
+      properties: {
+        action: {
+          enum: ["PickCall"],
+          type: "string",
+        },
+        call: {
+          $ref: "#/definitions/Id",
+        },
+      },
+      required: ["action", "call"],
+      type: "object",
+    },
     Presence: {
       description:
         "If the player is active in the game or has been marked as away.",
@@ -638,6 +689,9 @@ export const Schema = {
       properties: {
         comedyWriter: {
           $ref: "#/definitions/ComedyWriter",
+        },
+        czarChoices: {
+          $ref: "#/definitions/CzarChoices",
         },
         happyEnding: {
           $ref: "#/definitions/HappyEnding",
@@ -856,7 +910,7 @@ export const Schema = {
       type: "object",
     },
     Stage: {
-      enum: ["Complete", "Judging", "Playing", "Revealing"],
+      enum: ["Complete", "Judging", "Playing", "Revealing", "Starting"],
       type: "string",
     },
     Stage_1: {
@@ -902,6 +956,11 @@ export const Schema = {
           description:
             "The phase during which the plays are revealed to everyone.\nIf undefined, then this phase will be skipped.",
         },
+        starting: {
+          $ref: "#/definitions/TimeLimit",
+          description:
+            "The phase during which the czar chooses a call (only relevant when the czar choices house rule is active).",
+        },
         timeLimitMode: {
           $ref: "#/definitions/TimeLimitMode",
         },
@@ -925,7 +984,7 @@ export const Schema = {
     Submit: {
       additionalProperties: false,
       defaultProperties: [],
-      description: "A player plays a white card into a round.",
+      description: "A player plays a response into a round.",
       properties: {
         action: {
           enum: ["Submit"],

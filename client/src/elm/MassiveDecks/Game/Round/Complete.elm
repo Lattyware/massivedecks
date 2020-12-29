@@ -43,7 +43,8 @@ view wrap shared nextRoundReady config users round =
         playById playId =
             Dict.get playId stage.plays |> Maybe.map (Tuple.pair playId)
     in
-    { instruction = Strings.AdvanceRoundInstruction |> Maybe.justIf nextRoundReady
+    { call = Just stage.call
+    , instruction = Strings.AdvanceRoundInstruction |> Maybe.justIf nextRoundReady
     , action =
         Maybe.first
             [ Action.Advance |> Maybe.justIf nextRoundReady

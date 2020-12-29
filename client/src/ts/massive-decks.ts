@@ -1,5 +1,7 @@
+import "@webcomponents/webcomponentsjs/webcomponents-loader";
 import "./material";
 import "./paper";
+import "../scss/massive-decks.scss";
 import * as serverConnection from "./server-connection";
 import * as speech from "./speech";
 import * as notificationManager from "./notification-manager";

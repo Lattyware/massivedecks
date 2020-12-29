@@ -307,6 +307,32 @@ translate _ mdString =
         HouseRuleHappyEndingDescription ->
             [ Text "When the game ends, the final round is a 'Make a Haiku' ", ref (noun Call 1), Text "." ]
 
+        HouseRuleCzarChoices ->
+            [ ref Czar, Text " Choices" ]
+
+        HouseRuleCzarChoicesDescription ->
+            [ Text "At the beginning of the round, the "
+            , ref Czar
+            , Text " draws multiple "
+            , ref (nounUnknownQuantity Call)
+            , Text " and chooses one of them, and/or has the choice to write their own."
+            ]
+
+        HouseRuleCzarChoicesNumber ->
+            [ Text "Number" ]
+
+        HouseRuleCzarChoicesNumberDescription ->
+            [ Text "The number of choices to give the ", ref Czar, Text " to pick between." ]
+
+        HouseRuleCzarChoicesCustom ->
+            [ Text "Custom" ]
+
+        HouseRuleCzarChoicesCustomDescription ->
+            [ Text "If the ", ref Czar, Text " can write custom calls. This takes up one of the choices." ]
+
+        SeeAlso { rule } ->
+            [ Text "See also: ", ref rule ]
+
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
 
@@ -893,6 +919,16 @@ translate _ mdString =
         TimeLimit { stage } ->
             [ ref stage, Text " Time Limit" ]
 
+        StartingTimeLimitDescription ->
+            [ Text "How long (in seconds) the "
+            , ref Czar
+            , Text " has to choose/write a "
+            , ref (noun Call 1)
+            , Text ", when the "
+            , raw HouseRuleCzarChoices
+            , Text " house rule is enabled."
+            ]
+
         PlayingTimeLimitDescription ->
             [ Text "How long (in seconds) the ", ref Players, Text " have to make their plays." ]
 
@@ -950,6 +986,9 @@ translate _ mdString =
             [ Text "Configure Next Game" ]
 
         -- Game
+        PickCall ->
+            [ Text "Pick this ", ref (noun Call 1), Text " for the others to play into for the round." ]
+
         SubmitPlay ->
             [ Text "Give these cards to the ", ref Czar, Text " as your play for the round." ]
 
@@ -964,6 +1003,9 @@ translate _ mdString =
 
         AdvanceRound ->
             [ Text "Next round." ]
+
+        Starting ->
+            [ raw HouseRuleCzarChoices ]
 
         Playing ->
             [ Text "Playing" ]
@@ -1012,6 +1054,17 @@ translate _ mdString =
             ]
 
         -- Instructions
+        PickCallInstruction ->
+            [ Text "Pick a ", ref (noun Call 1), Text " for the others to play into." ]
+
+        WaitForCallInstruction ->
+            [ Text "You are waiting for the "
+            , ref Czar
+            , Text " to pick a "
+            , ref (noun Call 1)
+            , Text " for you to play into."
+            ]
+
         PlayInstruction { numberOfCards } ->
             [ Text "You need to choose "
             , Text (asWord numberOfCards)

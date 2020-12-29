@@ -59,7 +59,7 @@ view wrap auth shared users config round =
                     }
 
         slots =
-            Call.slotCount round.call
+            Call.slotCount round.stage.call
 
         plays =
             stage.plays |> List.map (playDetails shared config slots msg)
@@ -72,7 +72,8 @@ view wrap auth shared users config round =
                 _ ->
                     Nothing
     in
-    { instruction = Just instruction
+    { call = Just stage.call
+    , instruction = Just instruction
     , action = action
     , content = plays |> Plays.view shared users [ ( "revealing", True ), ( "is-czar", isCzar ) ] stage.likeDetail.liked stage.pick
     , slotAttrs = always []

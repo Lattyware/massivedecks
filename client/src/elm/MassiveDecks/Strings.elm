@@ -118,6 +118,13 @@ type MdString
     | HouseRuleNeverHaveIEverDescription -- A description of the house rule where players can discard cards, sharing the discarded card.
     | HouseRuleHappyEnding -- The name of the house rule where the game ends with the haiku card.
     | HouseRuleHappyEndingDescription -- A description of the house rule where the game ends with the haiku card.
+    | HouseRuleCzarChoices -- The name of the house rule where the czar gets to choose a call.
+    | HouseRuleCzarChoicesDescription -- A description of the house rule where the czar gets to choose a call.
+    | HouseRuleCzarChoicesNumber -- A name of the setting for the number of choices the czar is given.
+    | HouseRuleCzarChoicesNumberDescription -- A description of the setting for the number of choices the czar is given.
+    | HouseRuleCzarChoicesCustom -- A name of the setting for allowing the czar to write a custom call.
+    | HouseRuleCzarChoicesCustomDescription -- A description of the setting for allowing the czar to write a custom call.
+    | SeeAlso { rule : MdString } -- A message telling the user to see another rule.
     | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
     | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
     | SetValue { value : Int } -- A description of the action of resolving a problem by setting the value to the given one.
@@ -291,6 +298,7 @@ type MdString
     | Automatic -- A name of the setting for setting players as away automatically if they don't act in the time limit.
     | AutomaticDescription -- A description of what the automatic setting does (sets players as away automatically if they don't act in the time limit).
     | TimeLimit { stage : MdString } -- A name of the setting for the time limit on a given stage.
+    | StartingTimeLimitDescription -- A description of the setting for the time limit on the starting stage.
     | PlayingTimeLimitDescription -- A description of the setting for the time limit on the playing stage.
     | PlayingAfterDescription -- A description of the setting for the time after the playing stage.
     | RevealingTimeLimitDescription -- A description of the setting for the time limit on the revealing stage.
@@ -309,11 +317,13 @@ type MdString
     | ConfigurationDisabledIfNotPrivileged -- A message explaining that the configuration can't be changed if the user isn't privileged.
     | ConfigureNextGame -- A description of the action of configuring the next game for the lobby after the current one finished.
       -- Game
+    | PickCall -- A description of the action of picking a call for the players to play into.
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
     | JudgePlay -- A description of the action of choosing a play to win the round.
     | LikePlay -- A description of the action of liking a play.
     | AdvanceRound -- A description of the action of finishing looking at the winner and advancing to the next round.
+    | Starting -- A description of the stage of the round where the czar is making choices.
     | Playing -- A description of the stage of the round where players are playing responses into the round.
     | Revealing -- A description of the stage of the round where the czar is revealing the plays.
     | Judging -- A description of the stage of the round where the czar is picking a winner.
@@ -329,6 +339,8 @@ type MdString
     | Discard -- A short description of the act of discarding a card.
     | Discarded { player : String } -- A message explaining that the given player discarded the card being shown.
       -- Instructions
+    | PickCallInstruction -- Instruction to the czar to pick a call for the round.
+    | WaitForCallInstruction -- Instruction to players that they need to wait for the czar to pick a call.
     | PlayInstruction { numberOfCards : Int } -- Instruction to the player on how to play cards.
     | SubmitInstruction -- Instruction to the player on how to submit their play.
     | WaitingForPlaysInstruction -- Instruction to the player that they need to wait for other players to play.

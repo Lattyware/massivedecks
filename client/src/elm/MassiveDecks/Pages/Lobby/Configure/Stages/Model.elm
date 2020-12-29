@@ -7,6 +7,8 @@ module MassiveDecks.Pages.Lobby.Configure.Stages.Model exposing
 type Id
     = All
     | Mode
+    | StartingContainer
+    | Starting
     | Playing StagePartId
     | RevealingEnabled
     | Revealing StagePartId

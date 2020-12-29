@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.NeverHaveIEver) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "never-have-i-ever" Nothing False False
         , children =
             [ enabled |> Configurable.wrapAsToggle {}
             ]

@@ -22,5 +22,7 @@ const isRevealed = (play: StoredPlay): play is Revealed => play.revealed;
  * Checks if every stored play in a round is revealed or not.
  */
 export const allRevealed = <TRound extends Round>(
-  round: TRound
-): round is TRound & { plays: Revealed[] } => round.plays.every(isRevealed);
+  round: TRound & { plays: StoredPlay[] }
+): round is TRound & {
+  plays: Revealed[];
+} => round.plays.every(isRevealed);

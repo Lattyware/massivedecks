@@ -5,17 +5,33 @@ import * as PublicRound from "../../games/game/round/public";
 /**
  * Indicated a game has started in the lobby.
  */
-export interface GameStarted {
+export interface Base {
   event: "GameStarted";
-  round: PublicRound.Playing;
+  round: PublicRound.Starting | PublicRound.Playing;
   hand?: Card.Response[];
 }
 
-export const of = (
-  startedRound: Round.Playing,
-  hand?: Card.Response[]
-): GameStarted => ({
+export interface Starting {
+  round: PublicRound.Starting;
+  calls?: Card.Call[];
+}
+
+export interface Playing {
+  round: PublicRound.Playing;
+}
+
+export type GameStarted = Base & (Starting | Playing);
+
+export const ofPlaying = (
+  startedRound: Round.Playing
+): GameStarted & Playing => ({
   event: "GameStarted",
   round: startedRound.public(),
-  ...(hand !== undefined ? { hand } : {}),
+});
+
+export const ofStarting = (
+  startedRound: Round.Starting
+): GameStarted & Starting => ({
+  event: "GameStarted",
+  round: startedRound.public(),
 });

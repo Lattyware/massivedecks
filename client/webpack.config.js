@@ -6,46 +6,71 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const sass = require("sass");
 const ClosurePlugin = require("closure-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = (env, argv) => {
-  // WebStorm doesn't give any arguments, causing this to blow up without the check.
-  const mode = typeof argv === "undefined" ? "production" : argv.mode;
+  const mode =
+    argv !== undefined && argv.mode !== undefined
+      ? argv.mode
+      : process.env["WEBPACK_MODE"] !== undefined
+      ? process.env["WEBPACK_MODE"]
+      : "production";
 
   const prod = mode === "production";
-  const dev = mode === "development";
 
   const dist = path.resolve(__dirname, "dist");
   const src = path.resolve(__dirname, "src");
 
+  const version = process.env["MD_VERSION"];
+  const metadataFilename = `${src}/elm/MassiveDecks/Version.elm`;
+  class InjectMetadataPlugin {
+    apply(compiler) {
+      if (version !== undefined) {
+        const logger = compiler.getInfrastructureLogger("InjectMetadataPlugin");
+        compiler.hooks.beforeRun.tap("InjectMetadataPlugin", () => {
+          const original = this.before(logger);
+          const hook = () => {
+            this.after(logger, original);
+          };
+          compiler.hooks.done.tap("InjectMetadataPlugin", hook);
+          compiler.hooks.failed.tap("InjectMetadataPlugin", hook);
+        });
+      }
+    }
+
+    before(logger) {
+      logger.info("Metadata Injected");
+      const original = fs.readFileSync(metadataFilename, "utf8");
+      const updated = original
+        .toString()
+        .replace(/^(version\s*=\s*")(.*?)(")/m, `$1${version}$3`);
+      fs.writeFileSync(metadataFilename, updated);
+      return original;
+    }
+
+    after(logger, original) {
+      logger.info("Metadata Reverted");
+      fs.writeFileSync(metadataFilename, original);
+    }
+  }
+
   const cssLoaders = [
-    // Extract to separate file.
-    {
-      loader: "file-loader",
-      options: {
-        name: "[name].[hash].css",
-        outputPath: "assets/styles",
-        esModule: false,
-      },
-    },
-    {
-      loader: "extract-loader",
-    },
     // Load CSS to inline styles.
     {
       loader: "css-loader",
-      options: { sourceMap: dev },
+      options: { sourceMap: !prod },
     },
     // Transform CSS for compatibility.
     {
       loader: "postcss-loader",
       options: {
-        sourceMap: dev,
+        sourceMap: !prod,
       },
     },
     // Allow relative URLs.
     {
       loader: "resolve-url-loader",
-      options: { sourceMap: dev },
+      options: { sourceMap: !prod },
     },
     // Load SASS to CSS.
     {
@@ -61,20 +86,18 @@ module.exports = (env, argv) => {
   ];
 
   const elmLoaders = [
-    // Load elm to JS.
     {
       loader: "elm-webpack-loader",
       options: {
-        files: [path.resolve(src, "elm/MassiveDecks.elm")],
         optimize: prod,
-        debug: dev,
-        forceWatch: dev,
-        cwd: __dirname,
+        debug: !prod,
       },
     },
   ];
 
   const plugins = [
+    new InjectMetadataPlugin(),
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: "src/html/index.html",
       filename: "index.html",
@@ -91,7 +114,24 @@ module.exports = (env, argv) => {
     }),
   ];
 
-  if (dev) {
+  if (prod) {
+    cssLoaders.unshift({
+      loader: MiniCssExtractPlugin.loader,
+    });
+    plugins.push(
+      new CompressionPlugin({
+        test: /\.(js|css|html|webmanifest|svg)$/,
+      }),
+      new CompressionPlugin({
+        test: /\.(js|css|html|webmanifest|svg)$/,
+        filename: "[path].br[query]",
+        algorithm: "brotliCompress",
+        compressionOptions: { level: 11 }
+      })
+    );
+    plugins.push(new webpack.HashedModuleIdsPlugin());
+  } else {
+    cssLoaders.unshift({ loader: "style-loader" });
     // Load CSS without refreshing in a dev env.
     cssLoaders.unshift({
       loader: "css-hot-loader",
@@ -106,23 +146,6 @@ module.exports = (env, argv) => {
     plugins.push(new webpack.HotModuleReplacementPlugin());
   }
 
-  if (prod) {
-    // If we are in production, ensure we don't have old files lying around.
-    plugins.push(new CleanWebpackPlugin());
-    plugins.push(
-      new CompressionPlugin({
-        test: /\.(js|css|html|webmanifest|svg)$/,
-      }) //,
-      // new CompressionPlugin({
-      //   test: /\.(js|css|html|webmanifest|svg)$/,
-      //   filename: "[path].br[query]",
-      //   algorithm: "brotliCompress",
-      //   compressionOptions: { level: 11 }
-      // })
-    );
-    plugins.push(new webpack.HashedModuleIdsPlugin());
-  }
-
   return {
     context: path.resolve(__dirname),
     entry: {
@@ -131,44 +154,13 @@ module.exports = (env, argv) => {
       // Chromecast entry point.
       cast: "./src/ts/cast.ts",
     },
-    // Source maps only in development.
-    devtool: prod ? undefined : "eval-source-map",
     output: {
       path: dist,
       publicPath: "/",
-      filename:
-        mode === "production"
-          ? "assets/scripts/[name].[chunkhash].js"
-          : "assets/scripts/[name].[hash].js",
+      filename: "assets/scripts/[name].[contenthash].js",
     },
     module: {
       rules: [
-        // HTML
-        {
-          test: /\.html$/,
-          exclude: [/elm-stuff/, /node_modules/],
-          use: [
-            {
-              loader: "html-loader",
-              options: {
-                attributes: {
-                  list: [
-                    {
-                      tag: "img",
-                      attribute: "src",
-                      type: "src",
-                    },
-                    {
-                      tag: "link",
-                      attribute: "href",
-                      type: "src",
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
         // Elm scripts.
         {
           test: /\.elm$/,
@@ -233,16 +225,6 @@ module.exports = (env, argv) => {
     },
     plugins: plugins,
     optimization: {
-      runtimeChunk: "single",
-      splitChunks: {
-        cacheGroups: {
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
-          },
-        },
-      },
       minimizer: [
         new ClosurePlugin(
           {
@@ -258,7 +240,6 @@ module.exports = (env, argv) => {
         ),
         new TerserPlugin({
           test: /assets\/scripts\/.*\.js$/,
-          sourceMap: dev,
           parallel: true,
           terserOptions: {
             output: {
@@ -268,6 +249,7 @@ module.exports = (env, argv) => {
         }),
       ],
     },
+    devtool: !prod ? "eval-source-map" : undefined,
     devServer: {
       hot: true,
       allowedHosts: ["localhost"],
