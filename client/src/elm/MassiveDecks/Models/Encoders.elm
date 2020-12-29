@@ -91,6 +91,7 @@ stages t =
     Json.object
         (List.filterMap identity
             [ Just ( "timeLimitMode", timeLimitMode t.mode )
+            , t.starting |> Maybe.map (\s -> ( "starting", s |> Json.int ))
             , Just ( "playing", t.playing |> stageRules )
             , t.revealing |> Maybe.map (\r -> ( "revealing", r |> stageRules ))
             , Just ( "judging", t.judging |> stageRules )
@@ -118,6 +119,7 @@ houseRules h =
             , h.comedyWriter |> Maybe.map (\c -> ( "comedyWriter", comedyWriter c ))
             , h.neverHaveIEver |> Maybe.map (\n -> ( "neverHaveIEver", neverHaveIEver n ))
             , h.happyEnding |> Maybe.map (\e -> ( "happyEnding", happyEnding e ))
+            , h.czarChoices |> Maybe.map (\c -> ( "czarChoices", czarChoices c ))
             ]
         )
 
@@ -150,6 +152,19 @@ happyEnding _ =
 comedyWriter : Rules.ComedyWriter -> Json.Value
 comedyWriter { number, exclusive } =
     Json.object [ ( "number", number |> Json.int ), ( "exclusive", exclusive |> Json.bool ) ]
+
+
+czarChoices : Rules.CzarChoices -> Json.Value
+czarChoices { numberOfChoices, custom } =
+    let
+        rest =
+            if custom then
+                [ ( "custom", custom |> Json.bool ) ]
+
+            else
+                []
+    in
+    (( "numberOfChoices", numberOfChoices |> Json.int ) :: rest) |> Json.object
 
 
 decks : Decks.Config -> Json.Value

@@ -7,7 +7,7 @@ import { InvalidActionError } from "../../errors/validation";
 import * as Event from "../../event";
 import * as Configured from "../../events/lobby-event/configured";
 import * as Rules from "../../games/rules";
-import * as HouseRules from "../../games/rules/houseRules";
+import * as HouseRules from "../../games/rules/house-rules";
 import * as Rando from "../../games/rules/rando";
 import * as Lobby from "../../lobby";
 import * as Config from "../../lobby/config";

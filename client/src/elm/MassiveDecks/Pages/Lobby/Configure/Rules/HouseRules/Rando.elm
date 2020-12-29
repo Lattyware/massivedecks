@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.Rando) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "rando" Nothing False False
         , children =
             [ enabled |> Configurable.wrapAsToggle default
             , children |> Configurable.wrapMaybe
@@ -41,7 +41,7 @@ children : Configurable Id Rules.Rando model msg
 children =
     Configurable.group
         { id = Child Children
-        , editor = Editor.group Nothing True True
+        , editor = Editor.group "rando-children" Nothing True True
         , children =
             [ number |> Configurable.wrap Child (.number >> Just) (\v p -> { p | number = v })
             ]

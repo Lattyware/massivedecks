@@ -25,14 +25,16 @@ export interface RoundStageTimerDone {
  */
 function stageDuration(stage: Round.Stage, stages: Stages): number | undefined {
   switch (stage) {
+    case "Starting":
+      return stages.starting;
     case "Playing":
-      return stages.playing.after;
+      return stages.playing.duration;
     case "Revealing":
       return stages.revealing === undefined
         ? undefined
         : stages.revealing.duration;
     case "Judging":
-      return stages.judging.after;
+      return stages.judging.duration;
     case "Complete":
       return undefined;
     default:

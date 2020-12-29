@@ -1,6 +1,5 @@
-import * as HouseRules from "./rules/houseRules";
+import * as HouseRules from "./rules/house-rules";
 import * as Rando from "./rules/rando";
-import * as HappyEnding from "./rules/happyEnding";
 
 /** The rules for a standard game.
  */
@@ -66,6 +65,11 @@ export interface Stage {
  */
 export interface Stages {
   timeLimitMode: TimeLimitMode;
+
+  /**
+   * The phase during which the czar chooses a call (only relevant when the czar choices house rule is active).
+   */
+  starting?: TimeLimit;
 
   /**
    * The phase during which players choose responses to fill slots in the given call.

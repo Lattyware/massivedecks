@@ -1,5 +1,3 @@
-import "@webcomponents/webcomponentsjs/webcomponents-loader";
-
 import "@material/mwc-button";
 import "@material/mwc-fab";
 import "@material/mwc-switch";

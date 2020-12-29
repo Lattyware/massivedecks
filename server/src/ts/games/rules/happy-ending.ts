@@ -8,7 +8,7 @@ export interface HappyEnding {
   inFinalRound?: boolean;
 }
 
-export const happyEndingCall: Card.Call = {
+export const call: Card.Call = {
   id: Card.id(),
   parts: [
     ["Make a haiku."],

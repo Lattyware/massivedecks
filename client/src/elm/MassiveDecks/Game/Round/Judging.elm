@@ -59,7 +59,8 @@ view wrap auth shared users config round =
         details =
             stage.plays |> List.map (playDetails shared config msg)
     in
-    { instruction = Just instruction
+    { call = Just stage.call
+    , instruction = Just instruction
     , action = action
     , content = details |> Plays.view shared users [ ( "judging", True ), ( "is-czar", isCzar ) ] stage.likeDetail.liked stage.pick
     , slotAttrs = always []

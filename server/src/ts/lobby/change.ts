@@ -134,7 +134,12 @@ export async function applyAndReturn<T>(
         const { change, returnValue } = handler(lobby);
         const result = internalApply(server, gameCode, lobby, change);
         if (result.events !== undefined) {
-          Event.send(server.socketManager, gameCode, lobby, result.events);
+          Event.send(
+            server.socketManager,
+            gameCode,
+            result.lobby ?? lobby,
+            result.events
+          );
         }
         return {
           transaction: {

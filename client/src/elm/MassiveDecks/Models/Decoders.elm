@@ -292,20 +292,20 @@ languageFromCode code =
         |> Maybe.withDefault (unknownValue "language code" code)
 
 
-lobby : Maybe LikeDetail -> Json.Decoder Lobby
-lobby ld =
+lobby : Maybe LikeDetail -> Maybe (List Card.Call) -> Json.Decoder Lobby
+lobby ld calls =
     Json.succeed Lobby
         |> Json.required "users" users
         |> Json.required "owner" userId
         |> Json.required "config" config
-        |> Json.optional "game" (game ld |> Json.map (Game.emptyModel >> Just)) Nothing
+        |> Json.optional "game" (game ld calls |> Json.map (Game.emptyModel >> Just)) Nothing
         |> Json.optional "errors" (Json.list gameStateError) []
 
 
-game : Maybe LikeDetail -> Json.Decoder Game
-game ld =
+game : Maybe LikeDetail -> Maybe (List Card.Call) -> Json.Decoder Game
+game ld calls =
     Json.succeed Game
-        |> Json.required "round" (round ld)
+        |> Json.required "round" (round ld calls)
         |> Json.required "history" (Json.list (specificRound (completeRound Nothing)))
         |> Json.required "playerOrder" (Json.list userId)
         |> Json.required "players" (Json.dict player)
@@ -391,6 +391,7 @@ stages : Json.Decoder Rules.Stages
 stages =
     Json.succeed Rules.Stages
         |> Json.required "timeLimitMode" timeLimitMode
+        |> Json.optional "starting" (Json.int |> Json.map Just) Nothing
         |> Json.required "playing" stageRules
         |> Json.optional "revealing" (stageRules |> Json.map Just) Nothing
         |> Json.required "judging" stageRules
@@ -430,6 +431,7 @@ houseRules =
         |> Json.optional "comedyWriter" (comedyWriter |> Json.map Just) Nothing
         |> Json.optional "neverHaveIEver" (neverHaveIEver |> Json.map Just) Nothing
         |> Json.optional "happyEnding" (happyEnding |> Json.map Just) Nothing
+        |> Json.optional "czarChoices" (czarChoices |> Json.map Just) Nothing
 
 
 comedyWriter : Json.Decoder Rules.ComedyWriter
@@ -452,6 +454,13 @@ neverHaveIEver =
 happyEnding : Json.Decoder Rules.HappyEnding
 happyEnding =
     {} |> Json.succeed
+
+
+czarChoices : Json.Decoder Rules.CzarChoices
+czarChoices =
+    Json.succeed Rules.CzarChoices
+        |> Json.required "numberOfChoices" Json.int
+        |> Json.optional "custom" Json.bool False
 
 
 reboot : Json.Decoder Rules.Reboot
@@ -692,6 +701,9 @@ eventByName name =
         "RoundStarted" ->
             timedGameEvent roundStarted
 
+        "PlayingStarted" ->
+            timedGameEvent playingStarted
+
         "PlaySubmitted" ->
             gameEvent playSubmitted
 
@@ -879,12 +891,42 @@ playLiked =
 
 roundStarted : Json.Decoder Events.TimedGameEvent
 roundStarted =
-    Json.map5 (\id -> \ca -> \cz -> \pl -> \d -> { id = id, call = ca, czar = cz, players = pl, drawn = d } |> Events.RoundStarted)
-        (Json.field "id" Round.idDecoder)
-        (Json.field "call" call)
-        (Json.field "czar" userId)
-        (Json.field "players" playerSet)
-        (Json.maybe (Json.field "drawn" (Json.list response)))
+    Json.succeed (\id -> \ca -> \cz -> \pl -> \d -> { id = id, call = ca, czar = cz, players = pl, drawn = d } |> Events.RoundStarted)
+        |> Json.required "id" Round.idDecoder
+        |> Json.custom roundCall
+        |> Json.required "czar" userId
+        |> Json.required "players" playerSet
+        |> Json.optional "drawn" (Json.list response |> Json.map Just) Nothing
+
+
+playingStarted : Json.Decoder Events.TimedGameEvent
+playingStarted =
+    Json.succeed (\c -> \d -> { call = c, drawn = d } |> Events.PlayingStarted)
+        |> Json.required "call" call
+        |> Json.optional "drawn" (Json.list response |> Json.map Just) Nothing
+
+
+roundCall : Json.Decoder Events.RoundCall
+roundCall =
+    let
+        fromBoth single many =
+            case ( single, many ) of
+                ( Just _, Just _ ) ->
+                    Json.fail "Only one of calls and call may be specified, not both."
+
+                ( Just c, Nothing ) ->
+                    Events.Call c |> Json.succeed
+
+                ( Nothing, Just cs ) ->
+                    Events.Calls cs |> Json.succeed
+
+                ( Nothing, Nothing ) ->
+                    Events.NoCall |> Json.succeed
+    in
+    Json.succeed fromBoth
+        |> Json.optional "call" (call |> Json.map Just) Nothing
+        |> Json.optional "calls" (Json.list call |> Json.map Just) Nothing
+        |> Json.andThen identity
 
 
 privilegeChanged : Json.Decoder Events.Event
@@ -896,9 +938,15 @@ privilegeChanged =
 
 gameStarted : Json.Decoder Events.Event
 gameStarted =
-    Json.succeed (\r -> \h -> { round = r, hand = h } |> Events.GameStarted)
-        |> Json.required "round" (specificRound playingRound)
-        |> Json.optional "hand" (Json.list response |> Json.map Just) Nothing
+    let
+        rest calls =
+            Json.succeed (\r -> \h -> { round = r, hand = h } |> Events.GameStarted)
+                |> Json.required "round" (initialRound calls)
+                |> Json.optional "hand" (Json.list response |> Json.map Just) Nothing
+    in
+    Json.succeed identity
+        |> Json.optional "calls" (Json.list call |> Json.map Just) Nothing
+        |> Json.andThen rest
 
 
 sync : Json.Decoder Event
@@ -907,14 +955,17 @@ sync =
         construct ls h p pa =
             Events.Sync { state = ls, hand = h, play = p, partialTimeAnchor = pa }
 
-        decodeSync ld =
+        decodeSync ( ld, calls ) =
             Json.succeed construct
-                |> Json.required "state" (lobby ld)
+                |> Json.required "state" (lobby ld calls)
                 |> Json.optional "hand" (Json.list response |> Json.map Just) Nothing
                 |> Json.optional "play" (Json.list Json.string |> Json.map Just) Nothing
                 |> Json.required "gameTime" Time.partialAnchorDecoder
     in
-    Json.maybe (Json.field "likeDetail" likeDetail) |> Json.andThen decodeSync
+    Json.succeed Tuple.pair
+        |> Json.optional "likeDetail" (likeDetail |> Json.map Just) Nothing
+        |> Json.optional "calls" (Json.list call |> Json.map Just) Nothing
+        |> Json.andThen decodeSync
 
 
 connection : User.Connection -> Json.Decoder Event
@@ -1127,11 +1178,14 @@ styleByName name =
             unknownValue "style" name
 
 
-round : Maybe LikeDetail -> Json.Decoder Round
-round ld =
+round : Maybe LikeDetail -> Maybe (List Card.Call) -> Json.Decoder Round
+round ld calls =
     let
         stageDetailsByName name =
             case name of
+                "Starting" ->
+                    startingRound calls |> Json.map Round.S
+
                 "Playing" ->
                     playingRound |> Json.map Round.P
 
@@ -1153,13 +1207,29 @@ round ld =
     Json.field "stage" Json.string |> Json.andThen byName
 
 
+initialRound : Maybe (List Card.Call) -> Json.Decoder Round
+initialRound calls =
+    let
+        initialOnly r =
+            case r.stage of
+                Round.S _ ->
+                    r |> Json.succeed
+
+                Round.P _ ->
+                    r |> Json.succeed
+
+                _ ->
+                    Json.fail "A round can't start in this stage."
+    in
+    round Nothing calls |> Json.andThen initialOnly
+
+
 specificRound : Json.Decoder stageDetails -> Json.Decoder (Round.Specific stageDetails)
 specificRound stageDetails =
     Json.succeed Round.Specific
         |> Json.required "id" Round.idDecoder
         |> Json.required "czar" userId
         |> Json.required "players" playerSet
-        |> Json.required "call" call
         |> Json.required "startedAt" Time.timeDecoder
         |> Json.custom stageDetails
 
@@ -1169,9 +1239,18 @@ playerSet =
     Json.list userId |> Json.map Set.fromList
 
 
+startingRound : Maybe (List Card.Call) -> Json.Decoder Round.Starting
+startingRound calls =
+    Json.succeed Round.Starting
+        |> Json.hardcoded Nothing
+        |> Json.hardcoded calls
+        |> Json.optional "timedOut" Json.bool False
+
+
 playingRound : Json.Decoder Round.Playing
 playingRound =
     Json.succeed (Round.Playing Round.noPick)
+        |> Json.required "call" call
         |> Json.required "played" playerSet
         |> Json.optional "timedOut" Json.bool False
 
@@ -1186,6 +1265,7 @@ likeDetail =
 revealingRound : Maybe Round.LikeDetail -> Json.Decoder Round.Revealing
 revealingRound ld =
     Json.succeed (Round.Revealing (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing Nothing)
+        |> Json.required "call" call
         |> Json.required "plays" (Json.list play)
         |> Json.optional "timedOut" Json.bool False
 
@@ -1193,6 +1273,7 @@ revealingRound ld =
 judgingRound : Maybe Round.LikeDetail -> Json.Decoder Round.Judging
 judgingRound ld =
     Json.succeed (Round.Judging (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing)
+        |> Json.required "call" call
         |> Json.required "plays" (Json.list knownPlay)
         |> Json.optional "timedOut" Json.bool False
 
@@ -1200,6 +1281,7 @@ judgingRound ld =
 completeRound : Maybe Round.LikeDetail -> Json.Decoder Round.Complete
 completeRound ld =
     Json.succeed (Round.Complete (ld |> Maybe.withDefault Round.defaultLikeDetail) Nothing)
+        |> Json.required "call" call
         |> Json.required "plays" (Json.dict playWithDetails)
         |> Json.required "playOrder" (Json.list userId)
         |> Json.required "winner" userId
@@ -1316,6 +1398,9 @@ stage =
     let
         stageByName name =
             case name of
+                "Starting" ->
+                    Json.succeed Round.SStarting
+
                 "Playing" ->
                     Json.succeed Round.SPlaying
 

@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.ComedyWriter) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "comedy-writer" Nothing False False
         , children =
             [ enabled |> Configurable.wrapAsToggle default
             , children |> Configurable.wrapMaybe
@@ -43,7 +43,7 @@ children : Configurable Id Rules.ComedyWriter model msg
 children =
     Configurable.group
         { id = Child Children
-        , editor = Editor.group Nothing True True
+        , editor = Editor.group "comedy-writer-children" Nothing True True
         , children =
             [ exclusive |> Configurable.wrap Child (.exclusive >> Just) (\v p -> { p | exclusive = v })
             , number |> Configurable.wrap Child (.number >> Just) (\v p -> { p | number = v })

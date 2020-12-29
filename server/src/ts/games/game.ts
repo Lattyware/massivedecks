@@ -5,6 +5,7 @@ import * as GameStarted from "../events/game-event/game-started";
 import * as PauseStateChanged from "../events/game-event/pause-state-changed";
 import * as PlaySubmitted from "../events/game-event/play-submitted";
 import * as RoundStarted from "../events/game-event/round-started";
+import * as PlayingStarted from "../events/game-event/playing-started";
 import { Lobby } from "../lobby";
 import { ServerState } from "../server-state";
 import * as Timeout from "../timeout";
@@ -17,10 +18,10 @@ import * as Decks from "./cards/decks";
 import * as Play from "./cards/play";
 import * as Round from "./game/round";
 import * as PublicRound from "./game/round/public";
-import { StoredPlay } from "./game/round/storedPlay";
+import { StoredPlay } from "./game/round/stored-play";
 import * as Player from "./player";
 import * as Rules from "./rules";
-import { happyEndingCall } from "./rules/happyEnding";
+import * as HappyEnding from "./rules/happy-ending";
 
 export interface Public {
   round: PublicRound.Public;
@@ -152,7 +153,7 @@ export class Game {
     templates: Iterable<Decks.Templates>,
     users: { [id: string]: User.User },
     rules: Rules.Rules
-  ): Game & { round: Round.Playing } {
+  ): Game & { round: Round.Starting | Round.Playing } {
     let allTemplates: Iterable<Decks.Templates>;
     const cw = rules.houseRules.comedyWriter;
     if (cw !== undefined) {
@@ -196,19 +197,24 @@ export class Game {
         "Game was allowed to start with too few players to have a czar."
       );
     }
-    const [call] = gameDecks.calls.draw(1);
     const playersInRound = new Set(
       wu(playerOrder).filter((id) =>
         Game.isPlayerInRound(czar, playerMap, id, users[id])
       )
     );
-    return new Game(
-      new Round.Playing(0, czar, playersInRound, call),
-      playerOrder,
-      playerMap,
-      gameDecks,
-      rules
-    ) as Game & { round: Round.Playing };
+    let round: Round.Starting | Round.Playing;
+    if (rules.houseRules.czarChoices === undefined) {
+      const [call] = gameDecks.calls.draw(1);
+      round = new Round.Playing(0, czar, playersInRound, call);
+    } else {
+      const calls = gameDecks.calls.draw(
+        rules.houseRules.czarChoices.numberOfChoices
+      );
+      round = new Round.Starting(0, czar, playersInRound, calls);
+    }
+    return new Game(round, playerOrder, playerMap, gameDecks, rules) as Game & {
+      round: Round.Playing;
+    };
   }
 
   public public(): Public {
@@ -237,8 +243,11 @@ export class Game {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
   } {
-    const czar = this.nextCzar(lobby.users);
+    // General
     const events = [];
+
+    // Try Advance Czar
+    const czar = this.nextCzar(lobby.users);
     if (czar === undefined) {
       if (!this.paused) {
         this.paused = true;
@@ -250,26 +259,46 @@ export class Game {
       this.paused = false;
       events.push(Event.targetAll(PauseStateChanged.continued));
     }
-    const [call] = this.decks.calls.replace(this.round.call);
-    const roundId = this.round.id + 1;
+
+    // Discard what is left over from the last round.
+    const round = this.round;
+    if (round.stage === "Starting") {
+      this.decks.calls.discard(round.calls);
+    } else {
+      this.decks.calls.discard([round.call]);
+      const plays: StoredPlay[] = round.plays;
+      this.decks.responses.discard(plays.flatMap((play) => play.play));
+    }
+
+    // Set up the new round.
+    const roundId = round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter((id) =>
         Game.isPlayerInRound(czar, this.players, id, lobby.users[id])
       )
     );
-    const plays: StoredPlay[] = this.round.plays;
-    this.decks.responses.discard(plays.flatMap((play) => play.play));
-    this.round = new Round.Playing(roundId, czar, playersInRound, call);
     if (this.rules.houseRules.happyEnding?.inFinalRound) {
       this.round = new Round.Playing(
         roundId,
         czar,
         playersInRound,
-        happyEndingCall
+        HappyEnding.call
       );
+    } else {
+      const czarChoices = this.rules.houseRules.czarChoices;
+      if (czarChoices === undefined) {
+        const [call] = this.decks.calls.draw(1);
+        this.round = new Round.Playing(roundId, czar, playersInRound, call);
+      } else {
+        this.round = new Round.Starting(
+          roundId,
+          czar,
+          playersInRound,
+          this.decks.calls.draw(czarChoices.numberOfChoices)
+        );
+      }
     }
-    const updatedGame = this as Game & { round: Round.Playing };
-    const atStart = Game.atStartOfRound(server, false, updatedGame);
+    let atStart = this.startRound(server, false, this.round);
     return {
       events: [
         ...events,
@@ -289,7 +318,7 @@ export class Game {
     server: ServerState
   ): { timeouts?: Iterable<Timeout.After> } {
     const player = this.players[toRemove];
-    if (player !== undefined) {
+    if (player !== undefined && this.round.stage !== "Starting") {
       const play = this.round.plays.find((p) => p.playedBy === toRemove);
       if (play === undefined) {
         this.round.players.delete(toRemove);
@@ -320,57 +349,103 @@ export class Game {
     return Game.activePlayer(user, player);
   }
 
-  static atStartOfRound(
+  public startRound(
     server: ServerState,
     first: boolean,
-    game: Game & { round: Round.Playing }
+    round: Round.Starting | Round.Playing
   ): {
-    game: Game & { round: Round.Playing };
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
   } {
-    const slotCount = Card.slotCount(game.round.call);
-
-    const events = [];
-    if (
-      slotCount > 2 ||
-      (slotCount === 2 && game.rules.houseRules.packingHeat !== undefined)
-    ) {
-      const responseDeck = game.decks.responses;
-      const drawnByPlayer = new Map();
-      for (const [id, playerState] of Object.entries(game.players)) {
-        if (Player.role(id, game) === "Player") {
-          const drawn = responseDeck.draw(slotCount - 1);
-          drawnByPlayer.set(id, { drawn });
-          playerState.hand.push(...drawn);
-        }
-      }
-      if (!first) {
-        events.push(
-          Event.additionally(RoundStarted.of(game.round), drawnByPlayer)
-        );
-      }
-    } else {
-      if (!first) {
-        events.push(Event.targetAll(RoundStarted.of(game.round)));
-      }
+    switch (round.stage) {
+      case "Starting":
+        return this.startStarting(round, first);
+      case "Playing":
+        return this.startPlaying(server, first, round, false);
+      default:
+        throw new Error("Unexpected type of round here.");
     }
+  }
 
-    if (first) {
-      events.push(
-        Event.playerSpecificAddition(
-          GameStarted.of(game.round),
-          (id, user, player) => ({
-            hand: player.hand,
-          })
-        )
+  public startStarting(
+    round: Round.Starting,
+    first: boolean
+  ): {
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
+  } {
+    const timer = RoundStageTimerDone.ifEnabled(round, this.rules.stages);
+
+    return {
+      events: [
+        first
+          ? Event.playerSpecificAddition(
+              GameStarted.ofStarting(round),
+              (id, user, player) => ({
+                hand: player.hand,
+                calls: id === round.czar ? round.calls : undefined,
+              })
+            )
+          : Event.playerSpecificAddition(RoundStarted.of(round), (id) =>
+              id === round.czar ? { calls: round.calls } : {}
+            ),
+      ],
+      timeouts: Util.asOptionalIterable(timer),
+    };
+  }
+
+  public startPlaying(
+    server: ServerState,
+    first: boolean,
+    round: Round.Playing,
+    previouslyStarted: boolean
+  ): {
+    events?: Iterable<Event.Distributor>;
+    timeouts?: Iterable<Timeout.After>;
+  } {
+    if (first && previouslyStarted) {
+      throw new Error(
+        "Can't be both the game start, and have had a starting phase already."
       );
     }
 
-    const ais = game.rules.houseRules.rando.current;
+    const additionallyByPlayer = new Map();
+    const slotCount = Card.slotCount(round.call);
+    if (
+      slotCount > 2 ||
+      (slotCount === 2 && this.rules.houseRules.packingHeat !== undefined)
+    ) {
+      const responseDeck = this.decks.responses;
+      for (const [id, playerState] of Object.entries(this.players)) {
+        if (Player.role(id, this) === "Player") {
+          const drawn = responseDeck.draw(slotCount - 1);
+          if (!first) {
+            additionallyByPlayer.set(id, { drawn });
+          }
+          playerState.hand.push(...drawn);
+        }
+      }
+    }
+
+    const events = [
+      first
+        ? Event.playerSpecificAddition(
+            GameStarted.ofPlaying(round),
+            (id, user, player) => ({
+              hand: player.hand,
+            })
+          )
+        : Event.additionally(
+            previouslyStarted
+              ? PlayingStarted.of(round)
+              : RoundStarted.of(round),
+            additionallyByPlayer
+          ),
+    ];
+    const ais = this.rules.houseRules.rando.current;
     for (const ai of ais) {
-      const player = game.players[ai] as Player.Player;
-      const plays = game.round.plays;
+      const player = this.players[ai] as Player.Player;
+      const plays = round.plays;
       const playId = Play.id();
       plays.push({
         id: playId,
@@ -383,16 +458,16 @@ export class Game {
     }
 
     const timeouts = [];
-    const finishedTimeout = FinishedPlaying.ifNeeded(game.rules, game.round);
+    const finishedTimeout = FinishedPlaying.ifNeeded(this.rules, round);
     if (finishedTimeout !== undefined) {
       timeouts.push(finishedTimeout);
     }
 
-    const timer = RoundStageTimerDone.ifEnabled(game.round, game.rules.stages);
+    const timer = RoundStageTimerDone.ifEnabled(round, this.rules.stages);
     if (timer !== undefined) {
       timeouts.push(timer);
     }
 
-    return { game, events, timeouts };
+    return { events, timeouts };
   }
 }

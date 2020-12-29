@@ -66,6 +66,7 @@
       },
       stages: {
         timeLimitMode: "Soft",
+        starting: 30,
         playing: {
           duration: 60,
           after: 2,

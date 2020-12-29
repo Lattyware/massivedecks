@@ -140,20 +140,14 @@ export class SocketManager {
               let hand = undefined;
               let play = undefined;
               let likeDetail = undefined;
+              let calls = undefined;
               if (lobby.game !== undefined) {
                 const player = lobby.game.players[uid];
                 if (player !== undefined) {
                   hand = player.hand;
                 }
-                const potentialPlay = lobby.game.round.plays.find(
-                  (play) => play.playedBy === uid
-                );
-                if (potentialPlay !== undefined) {
-                  play = potentialPlay.play.map((card) => card.id);
-                }
                 const round = lobby.game.round;
-                const stage = round.stage;
-                if (stage === "Revealing" || stage === "Judging") {
+                if (round.stage === "Revealing" || round.stage === "Judging") {
                   const liked = round.plays
                     .filter((p) => p.likes.some((l) => l === uid))
                     .map((p) => p.id);
@@ -164,6 +158,16 @@ export class SocketManager {
                     playedCard === undefined ? undefined : playedCard.id;
                   likeDetail = { played, liked };
                 }
+                if (round.stage === "Starting") {
+                  calls = round.czar === uid ? round.calls : undefined;
+                } else {
+                  const potentialPlay = round.plays.find(
+                    (play) => play.playedBy === uid
+                  );
+                  if (potentialPlay !== undefined) {
+                    play = potentialPlay.play.map((card) => card.id);
+                  }
+                }
               }
 
               const user = lobby.users[uid];
@@ -172,7 +176,7 @@ export class SocketManager {
                 lobby,
                 events: [
                   Event.targetOnly(
-                    Sync.of(Lobby.censor(lobby), hand, play, likeDetail),
+                    Sync.of(Lobby.censor(lobby), hand, play, likeDetail, calls),
                     uid
                   ),
                 ],

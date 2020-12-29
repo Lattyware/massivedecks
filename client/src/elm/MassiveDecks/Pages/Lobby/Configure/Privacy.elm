@@ -13,7 +13,7 @@ all : (Bool -> msg) -> Configurable Id Config { model | passwordVisible : Bool }
 all setPasswordVisibility =
     Configurable.group
         { id = All
-        , editor = Editor.group (Just Strings.ConfigurePrivacy) False False
+        , editor = Editor.group "privacy" (Just Strings.ConfigurePrivacy) False False
         , children =
             [ public |> Configurable.wrap identity (.public >> Just) (\v p -> { p | public = v })
             , password setPasswordVisibility |> Configurable.wrap identity (.password >> Just) (\v p -> { p | password = v })

@@ -34,14 +34,21 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
       // start a new one.
       return {};
     }
+
     const lobbyGame = Game.start(work, lobby.users, lobby.config.rules);
 
-    const atStartOfRound = Game.atStartOfRound(server, true, lobbyGame);
-    lobby.game = atStartOfRound.game;
+    const { events, timeouts } = lobbyGame.startRound(
+      server,
+      true,
+      lobbyGame.round
+    );
+
+    lobby.game = lobbyGame;
+
     return {
       lobby,
-      events: atStartOfRound.events,
-      timeouts: atStartOfRound.timeouts,
+      events,
+      timeouts,
     };
   }
 

@@ -15,7 +15,7 @@ all : Configurable Id Rules model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "rules" Nothing False False
         , children =
             [ gameRules
             , HouseRules.all |> Configurable.wrap HouseRulesId (.houseRules >> Just) (\v p -> { p | houseRules = v })
@@ -27,7 +27,7 @@ gameRules : Configurable Id Rules model msg
 gameRules =
     Configurable.group
         { id = GameRules
-        , editor = Editor.group (Just Strings.ConfigureRules) False False
+        , editor = Editor.group "game-rules" (Just Strings.ConfigureRules) False False
         , children =
             [ handSize |> Configurable.wrap identity (.handSize >> Just) (\v p -> { p | handSize = v })
             , scoreLimit |> Configurable.wrap identity (.scoreLimit >> Just) (\v p -> { p | scoreLimit = v })

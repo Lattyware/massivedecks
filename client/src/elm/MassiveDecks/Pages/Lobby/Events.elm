@@ -3,6 +3,7 @@ module MassiveDecks.Pages.Lobby.Events exposing
     , Event(..)
     , GameEvent(..)
     , PresenceState(..)
+    , RoundCall(..)
     , TimedGameEvent(..)
     , TimedState(..)
     )
@@ -11,7 +12,7 @@ import Dict exposing (Dict)
 import Json.Patch as Json
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
-import MassiveDecks.Game.Round as Round
+import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
@@ -32,7 +33,7 @@ type Event
     | Presence { user : User.Id, state : PresenceState }
     | Configured { change : Json.Patch }
       -- Not a game event because we don't need to be in a game
-    | GameStarted { round : Round.Specific Round.Playing, hand : Maybe (List Card.Response) }
+    | GameStarted { round : Round, hand : Maybe (List Card.Response) }
     | Game GameEvent
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
     | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.Response) }
@@ -72,12 +73,22 @@ type alias AfterPlaying =
     }
 
 
+type RoundCall
+    = Call Card.Call
+    | Calls (List Card.Call)
+    | NoCall
+
+
 type TimedGameEvent
     = RoundStarted
         { id : Round.Id
         , czar : User.Id
         , players : Set User.Id
-        , call : Card.Call
+        , call : RoundCall
+        , drawn : Maybe (List Card.Response)
+        }
+    | PlayingStarted
+        { call : Card.Call
         , drawn : Maybe (List Card.Response)
         }
     | StartRevealing { plays : List Play.Id, afterPlaying : AfterPlaying }

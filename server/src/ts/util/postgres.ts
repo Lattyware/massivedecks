@@ -134,5 +134,5 @@ export abstract class Upgrade<From extends Version, To extends Version> {
   /**
    * Upgrades the database and then returns the new version.
    */
-  public abstract async apply(client: Pg.PoolClient): Promise<To>;
+  public abstract apply(client: Pg.PoolClient): Promise<To>;
 }

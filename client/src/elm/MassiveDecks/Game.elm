@@ -36,6 +36,7 @@ import MassiveDecks.Game.Round.Complete as Complete
 import MassiveDecks.Game.Round.Judging as Judging
 import MassiveDecks.Game.Round.Playing as Playing
 import MassiveDecks.Game.Round.Revealing as Revealing
+import MassiveDecks.Game.Round.Starting as Starting
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Model exposing (..)
@@ -102,6 +103,13 @@ update wrap shared msg model =
     case msg of
         Pick maybeFor played ->
             case round.stage of
+                Round.S stage ->
+                    let
+                        newStage =
+                            Round.S { stage | pick = Just played }
+                    in
+                    ( { model | game = { game | round = { round | stage = newStage } } }, Cmd.none )
+
                 Round.P stage ->
                     let
                         picks =
@@ -119,7 +127,7 @@ update wrap shared msg model =
                                     else
                                         let
                                             missing =
-                                                Parts.missingSlotIndices picks.cards round.call.body |> Set.toList
+                                                Parts.missingSlotIndices picks.cards stage.call.body |> Set.toList
                                         in
                                         case missing of
                                             next :: _ ->
@@ -202,7 +210,7 @@ update wrap shared msg model =
                         ( model, Cmd.none )
 
                 _ ->
-                    ( model, Cmd.none )
+                    ( { model | filledCards = model.filledCards |> Dict.insert id text }, Cmd.none )
 
         Fill id text ->
             let
@@ -254,6 +262,9 @@ update wrap shared msg model =
 
         Submit ->
             case round.stage of
+                Round.S stage ->
+                    ( model, stage.pick |> Maybe.map Actions.pickCall |> Maybe.withDefault Cmd.none )
+
                 Round.P stage ->
                     let
                         picks =
@@ -371,10 +382,10 @@ update wrap shared msg model =
 
         AdvanceRound ->
             case model.completeRound of
-                Just _ ->
+                Just completeRound ->
                     let
                         tts =
-                            speak shared round.call Nothing
+                            speak shared completeRound.stage.call Nothing
                     in
                     ( { model | completeRound = Nothing }
                     , tts
@@ -634,6 +645,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                         { played = played, liked = Set.empty }
                                         Nothing
                                         Nothing
+                                        r.call
                                         (plays |> List.map (\id -> Play id Nothing))
                                         False
                                         |> Round.R
@@ -683,6 +695,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                             Round.Complete
                                                 r.likeDetail
                                                 r.pick
+                                                r.call
                                                 plays
                                                 playOrder
                                                 winner
@@ -695,7 +708,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
 
                                         tts =
                                             Dict.get winner plays
-                                                |> Maybe.map (\p -> speak shared round.call (p.play |> Parts.fillsFromPlay |> Just))
+                                                |> Maybe.map (\p -> speak shared r.call (p.play |> Parts.fillsFromPlay |> Just))
                                                 |> Maybe.withDefault Cmd.none
 
                                         ps =
@@ -735,27 +748,58 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                             drawn |> Maybe.withDefault []
 
                         ( newRound, cmd ) =
-                            let
-                                r =
-                                    { id = id
-                                    , czar = czar
-                                    , players = players
-                                    , call = call
-                                    , startedAt = time
-                                    , stage = Round.Playing Round.noPick Set.empty False
-                                    }
-                            in
-                            Playing.init wrap r Round.noPick
+                            case call of
+                                Events.Call singleCall ->
+                                    let
+                                        r =
+                                            { id = id
+                                            , czar = czar
+                                            , players = players
+                                            , startedAt = time
+                                            , stage = Round.Playing Round.noPick singleCall Set.empty False
+                                            }
 
-                        notification =
-                            if Set.member auth.claims.uid players then
-                                Notifications.notify shared
-                                    { title = Strings.RoundStarted
-                                    , body = Strings.PlayInstruction { numberOfCards = Call.slotCount call }
-                                    }
+                                        ( nr, c ) =
+                                            Playing.init wrap r Round.noPick
 
-                            else
-                                Cmd.none
+                                        n =
+                                            if Set.member auth.claims.uid players then
+                                                Notifications.notify shared
+                                                    { title = Strings.RoundStarted
+                                                    , body = Strings.PlayInstruction { numberOfCards = Call.slotCount singleCall }
+                                                    }
+
+                                            else
+                                                Cmd.none
+                                    in
+                                    ( nr, Cmd.batch [ c, n ] )
+
+                                Events.Calls calls ->
+                                    ( { id = id
+                                      , czar = czar
+                                      , players = players
+                                      , startedAt = time
+                                      , stage = Round.S (Round.Starting Nothing (Just calls) False)
+                                      }
+                                    , if auth.claims.uid == czar then
+                                        Notifications.notify shared
+                                            { title = Strings.RoundStarted
+                                            , body = Strings.PickCallInstruction
+                                            }
+
+                                      else
+                                        Cmd.none
+                                    )
+
+                                Events.NoCall ->
+                                    ( { id = id
+                                      , czar = czar
+                                      , players = players
+                                      , startedAt = time
+                                      , stage = Round.S (Round.Starting Nothing Nothing False)
+                                      }
+                                    , Cmd.none
+                                    )
 
                         completeRound =
                             if shared.settings.settings.autoAdvance |> Maybe.withDefault False then
@@ -774,6 +818,39 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                         , completeRound = completeRound
                         , hand = model.hand ++ drawnAsList
                       }
+                    , cmd
+                    )
+
+                Events.PlayingStarted { call, drawn } ->
+                    let
+                        drawnAsList =
+                            drawn |> Maybe.withDefault []
+
+                        initialRound =
+                            { id = round.id
+                            , czar = round.czar
+                            , players = round.players
+                            , startedAt = time
+                            , stage = Round.Playing Round.noPick call Set.empty False
+                            }
+
+                        ( newRound, cmd ) =
+                            Playing.init wrap initialRound Round.noPick
+
+                        notification =
+                            if Set.member auth.claims.uid round.players then
+                                Notifications.notify shared
+                                    { title = Strings.RoundStarted
+                                    , body = Strings.PlayInstruction { numberOfCards = Call.slotCount call }
+                                    }
+
+                            else
+                                Cmd.none
+                    in
+                    ( { model
+                        | game = { game | round = newRound }
+                        , hand = model.hand ++ drawnAsList
+                      }
                     , Cmd.batch [ cmd, notification ]
                     )
 
@@ -790,7 +867,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                             { stage | plays = plays, lastRevealed = Just id } |> Round.R
 
                                         tts =
-                                            speak shared round.call (play |> Parts.fillsFromPlay |> Just)
+                                            speak shared stage.call (play |> Parts.fillsFromPlay |> Just)
                                     in
                                     ( { round | stage = newStage }, tts )
 
@@ -805,12 +882,13 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                         { played, drawn } =
                             afterPlaying
 
-                        makeNewRound stage pick ld known =
+                        makeNewRound stage pick ld call known =
                             case known of
                                 Just k ->
                                     Round.Judging
                                         ld
                                         pick
+                                        call
                                         k
                                         False
                                         |> Round.J
@@ -831,7 +909,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                                 |> List.filter (\c -> not (Set.member c.details.id picked))
                                                 |> (\h -> h ++ (drawn |> Maybe.withDefault []))
                                     in
-                                    ( makeNewRound round.stage Nothing { played = played, liked = Set.empty } plays
+                                    ( makeNewRound round.stage Nothing { played = played, liked = Set.empty } stage.call plays
                                     , nH
                                     )
 
@@ -842,7 +920,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                                 |> Maybe.withDefault (stage.plays |> List.filterMap Play.asKnown)
                                                 |> Just
                                     in
-                                    ( makeNewRound round.stage stage.pick stage.likeDetail p, model.hand )
+                                    ( makeNewRound round.stage stage.pick stage.likeDetail stage.call p, model.hand )
 
                                 stage ->
                                     -- TODO: Error.
@@ -879,6 +957,9 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                 let
                     newStage =
                         case oldRound.stage of
+                            Round.S starting ->
+                                Round.S { starting | timedOut = True }
+
                             Round.P playing ->
                                 Round.P { playing | timedOut = True }
 
@@ -1075,30 +1156,35 @@ viewRound wrap shared auth timeAnchor config users model =
         round =
             model.game.round
 
-        ( call, { instruction, action, content, slotAttrs, fillCallWith, roundAttrs } ) =
+        { call, instruction, action, content, slotAttrs, fillCallWith, roundAttrs } =
             case model.completeRound of
                 Just completeRound ->
-                    ( completeRound.call, Complete.view wrap shared True config users completeRound )
+                    Complete.view wrap shared True config users completeRound
 
                 Nothing ->
                     case round.stage of
+                        Round.S stage ->
+                            Starting.view wrap auth shared config users model (Round.withStage stage round)
+
                         Round.P stage ->
-                            ( round.call, Playing.view wrap auth shared config users model (Round.withStage stage round) )
+                            Playing.view wrap auth shared config users model (Round.withStage stage round)
 
                         Round.R stage ->
-                            ( round.call, Revealing.view wrap auth shared users config (Round.withStage stage round) )
+                            Revealing.view wrap auth shared users config (Round.withStage stage round)
 
                         Round.J stage ->
-                            ( round.call, Judging.view wrap auth shared users config (Round.withStage stage round) )
+                            Judging.view wrap auth shared users config (Round.withStage stage round)
 
                         Round.C stage ->
-                            ( round.call, Complete.view wrap shared False config users (Round.withStage stage round) )
+                            Complete.view wrap shared False config users (Round.withStage stage round)
 
         game =
             model.game
 
         renderedCall =
-            call |> Call.viewFilled shared config Card.Front [] slotAttrs fillCallWith
+            call
+                |> Maybe.map (Call.viewFilled shared config Card.Front [] slotAttrs fillCallWith)
+                |> Maybe.withDefault (Call.viewUnknown shared [])
     in
     [ Html.div [ HtmlA.id "top-content" ]
         [ case instruction |> Maybe.andThen (Maybe.justIf model.helpVisible) of
@@ -1233,19 +1319,25 @@ roundTimeDetails game =
 
         round =
             game.round
+
+        ( endsAt, timedOut ) =
+            case round.stage of
+                Round.S starting ->
+                    ( stages.starting, starting.timedOut )
+
+                Round.P playing ->
+                    ( stages.playing.duration, playing.timedOut )
+
+                Round.R revealing ->
+                    ( stages.revealing |> Maybe.andThen .duration, revealing.timedOut )
+
+                Round.J judging ->
+                    ( stages.judging.duration, judging.timedOut )
+
+                Round.C _ ->
+                    ( Nothing, False )
     in
-    case round.stage of
-        Round.P playing ->
-            ( round.startedAt, stages.playing.duration, playing.timedOut )
-
-        Round.R revealing ->
-            ( round.startedAt, stages.revealing |> Maybe.andThen .duration, revealing.timedOut )
-
-        Round.J judging ->
-            ( round.startedAt, stages.judging.duration, judging.timedOut )
-
-        Round.C _ ->
-            ( round.startedAt, Nothing, False )
+    ( round.startedAt, endsAt, timedOut )
 
 
 minorActions : (Msg -> msg) -> Shared -> Lobby.Auth -> Game -> Bool -> Html msg

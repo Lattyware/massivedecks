@@ -14,7 +14,7 @@ all : Configurable Id (Maybe Rules.PackingHeat) model msg
 all =
     Configurable.group
         { id = All
-        , editor = Editor.group Nothing False False
+        , editor = Editor.group "packing-heat" Nothing False False
         , children =
             [ enabled |> Configurable.wrapAsToggle {}
             ]

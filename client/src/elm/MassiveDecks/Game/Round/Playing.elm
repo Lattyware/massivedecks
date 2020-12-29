@@ -36,7 +36,7 @@ init wrap round pick =
     let
         cmd =
             round.players
-                |> playStylesGenerator (Call.slotCount round.call)
+                |> playStylesGenerator (Call.slotCount round.stage.call)
                 |> Random.generate (Game.SetPlayStyles >> wrap)
 
         stage =
@@ -51,7 +51,7 @@ view : (Msg -> msg) -> Lobby.Auth -> Shared -> Config -> Dict User.Id User -> Mo
 view wrap auth shared config _ model round =
     let
         slots =
-            Call.slotCount round.call
+            Call.slotCount round.stage.call
 
         stage =
             round.stage
@@ -106,7 +106,7 @@ view wrap auth shared config _ model round =
             stage.pick.cards |> Dict.map fillCustom
 
         showNonObviousSlotIndices =
-            if round.call.body |> Parts.nonObviousSlotIndices then
+            if round.stage.call.body |> Parts.nonObviousSlotIndices then
                 [ HtmlA.class "show-slot-indices" ]
 
             else
@@ -122,7 +122,8 @@ view wrap auth shared config _ model round =
                     |> Maybe.withDefault []
                 ]
     in
-    { instruction = Just instruction
+    { call = Just stage.call
+    , instruction = Just instruction
     , action = action
     , content =
         Html.div []

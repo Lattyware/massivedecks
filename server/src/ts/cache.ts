@@ -126,14 +126,14 @@ export abstract class Cache {
   /**
    * Get the given summary from the cache.
    */
-  public abstract async getCachedSummary(
+  public abstract getCachedSummary(
     source: Source.Resolver<Source.External>
   ): Promise<Aged<Source.Summary> | undefined>;
 
   /**
    * Store the given summary in the cache.
    */
-  public abstract async cacheSummary(
+  public abstract cacheSummary(
     source: Source.Resolver<Source.External>,
     summary: Source.Summary
   ): Promise<void>;
@@ -148,14 +148,14 @@ export abstract class Cache {
   /**
    * Get the given deck templates from the cache.
    */
-  public abstract async getCachedTemplates(
+  public abstract getCachedTemplates(
     source: Source.Resolver<Source.External>
   ): Promise<Aged<Decks.Templates> | undefined>;
 
   /**
    * Store the given deck templates in the cache.
    */
-  public abstract async cacheTemplates(
+  public abstract cacheTemplates(
     source: Source.Resolver<Source.External>,
     templates: Decks.Templates
   ): Promise<void>;
