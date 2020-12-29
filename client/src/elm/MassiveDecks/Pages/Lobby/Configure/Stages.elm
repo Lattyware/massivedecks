@@ -1,11 +1,14 @@
 module MassiveDecks.Pages.Lobby.Configure.Stages exposing (all)
 
+import FontAwesome.Solid as Icon
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
+import MassiveDecks.Pages.Lobby.Configure.Messages exposing (Msg(..))
+import MassiveDecks.Pages.Lobby.Configure.Model exposing (Tab(..))
 import MassiveDecks.Pages.Lobby.Configure.Stages.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
 
@@ -15,14 +18,14 @@ defaultStage =
     { duration = Nothing, after = 5 }
 
 
-all : Configurable Id Rules.Stages model msg
-all =
+all : (Msg -> msg) -> Configurable Id Rules.Stages model msg
+all wrap =
     Configurable.group
         { id = All
         , editor = Editor.group "time-limits" (Just Strings.ConfigureTimeLimits) False False
         , children =
             [ mode |> Configurable.wrap identity (.mode >> Just) (\v p -> { p | mode = v })
-            , starting |> Configurable.wrap identity (.starting >> Just) (\v p -> { p | starting = v })
+            , starting wrap |> Configurable.wrap identity (.starting >> Just) (\v p -> { p | starting = v })
             , alwaysStage "playing" Strings.Playing Strings.PlayingTimeLimitDescription Strings.PlayingAfterDescription Playing
                 |> Configurable.wrap identity (.playing >> Just) (\v p -> { p | playing = v })
             , toggledStage "revealing" Strings.Revealing Strings.RevealingTimeLimitDescription Strings.RevealingAfterDescription Revealing
@@ -68,8 +71,8 @@ toggledStage id stageName duringDescription afterDescription s =
         }
 
 
-starting : Configurable Id (Maybe Int) model msg
-starting =
+starting : (Msg -> msg) -> Configurable Id (Maybe Int) model msg
+starting wrap =
     Configurable.group
         { id = StartingContainer
         , editor = Editor.group "starting-time-limits" (Just Strings.Starting) False False
@@ -81,7 +84,8 @@ starting =
                 , messages =
                     always
                         [ Message.info Strings.StartingTimeLimitDescription
-                        , Message.info (Strings.SeeAlso { rule = Strings.HouseRuleCzarChoices })
+                        , Message.infoWithFix (Strings.SeeAlso { rule = Strings.HouseRuleCzarChoices })
+                            [ { description = Strings.ConfigureRules, icon = Icon.eye, action = Rules |> ChangeTab |> wrap } ]
                         ]
                 }
             ]

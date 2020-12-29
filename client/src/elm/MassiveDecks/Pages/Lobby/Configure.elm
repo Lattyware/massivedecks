@@ -335,8 +335,8 @@ all wrap config =
         , editor = Editor.group "configure-all" Nothing False False
         , children =
             [ name |> Configurable.wrap identity (.name >> Just) (\v p -> { p | name = v })
-            , Rules.all |> Configurable.wrap RulesId (.rules >> Just) (\v p -> { p | rules = v })
-            , Stages.all
+            , Rules.all wrap |> Configurable.wrap RulesId (.rules >> Just) (\v p -> { p | rules = v })
+            , Stages.all wrap
                 |> Configurable.wrap StagesId (.stages >> Just) (\v p -> { p | stages = v })
                 |> Configurable.wrap identity (.rules >> Just) (\v p -> { p | rules = v })
             , Privacy.all (SetPasswordVisibility >> wrap)
