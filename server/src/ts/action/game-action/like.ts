@@ -29,7 +29,7 @@ class LikeActions extends Actions.Implementation<
     action
   ) => {
     if (
-      lobby.game.round.verifyStage<
+      lobby.game.round.isInStage<
         Round.Revealing | Round.Judging | Round.Complete
       >(action, "Revealing", "Judging", "Complete")
     ) {
