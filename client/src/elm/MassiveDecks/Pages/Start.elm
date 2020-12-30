@@ -19,6 +19,7 @@ import Http
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
+import MassiveDecks.Card.Parts.Part as Part
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form as Form
@@ -599,12 +600,12 @@ examplePick2 : Card.Call
 examplePick2 =
     Card.call
         (Parts.unsafeFromList
-            [ [ Parts.Slot 0 Parts.NoTransform Parts.NoStyle
-              , Parts.Text " + " Parts.NoStyle
-              , Parts.Slot 1 Parts.NoTransform Parts.NoStyle
+            [ [ Parts.Slot 0 Part.NoTransform Part.NoStyle
+              , Parts.Text " + " Part.NoStyle
+              , Parts.Slot 1 Part.NoTransform Part.NoStyle
               ]
-            , [ Parts.Text " = " Parts.NoStyle
-              , Parts.Slot 2 Parts.NoTransform Parts.NoStyle
+            , [ Parts.Text " = " Part.NoStyle
+              , Parts.Slot 2 Part.NoTransform Part.NoStyle
               ]
             ]
         )

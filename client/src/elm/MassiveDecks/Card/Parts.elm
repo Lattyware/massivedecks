@@ -3,13 +3,13 @@ module MassiveDecks.Card.Parts exposing
     , Part(..)
     , Parts
     , SlotAttrs
-    , Style(..)
-    , Transform(..)
     , fillsFromPlay
     , fromList
     , missingSlotIndices
+    , nextSlotIndex
     , nonObviousSlotIndices
     , slotCount
+    , toList
     , unsafeFromList
     , view
     , viewFilled
@@ -21,22 +21,9 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import List.Extra as List
+import MassiveDecks.Card.Parts.Part as Part exposing (Style(..), Transform(..))
+import MassiveDecks.Strings as Strings exposing (MdString)
 import Set exposing (Set)
-
-
-{-| A transform to apply to the value in a slot.
--}
-type Transform
-    = NoTransform
-    | UpperCase
-    | Capitalize
-
-
-{-| A style to be applied to some text.
--}
-type Style
-    = NoStyle
-    | Em
 
 
 {-| A part of a call's text. This is either just text or a position for a call to be inserted in-game.
@@ -72,38 +59,29 @@ type Parts
 
 {-| Construct a `Parts` from a `List` of `Line`s. This will fail if there is not at least one `Slot`.
 -}
-fromList : List Line -> Result String Parts
+fromList : List Line -> Result MdString Parts
 fromList lines =
     let
-        indicesList =
-            lines |> List.concat |> List.filterMap slotIndex
-
         indices =
-            indicesList |> Set.fromList
+            lines |> List.concat |> List.filterMap slotIndex |> Set.fromList
     in
     if Set.isEmpty indices then
-        Err "Must contain at least one slot."
+        Err Strings.MustContainAtLeastOneSlot
 
     else
         let
-            max =
-                indicesList |> List.maximum |> Maybe.withDefault 0
+            remapping =
+                indices |> Set.toList |> List.sort |> List.indexedMap (\new old -> ( old, new )) |> Dict.fromList
 
-            expect =
-                List.range 0 max |> Set.fromList
+            rewrite part =
+                case part of
+                    Slot index transform style ->
+                        Slot (Dict.get index remapping |> Maybe.withDefault 0) transform style
+
+                    _ ->
+                        part
         in
-        if expect == indices then
-            Ok (Parts lines)
-
-        else
-            let
-                missing =
-                    Set.diff expect indices
-
-                missingStr =
-                    missing |> Set.toList |> List.map String.fromInt |> String.join ", "
-            in
-            "Gap in given slot indexes, missing: " ++ missingStr |> Err
+        lines |> List.map (List.map rewrite) |> Parts |> Ok
 
 
 {-| Construct without checking for at least one `Slot`. This is designed for use with fake cards or the editor where
@@ -112,6 +90,13 @@ that guarantee isn't important.
 unsafeFromList : List Line -> Parts
 unsafeFromList lines =
     Parts lines
+
+
+{-| Get a list of lines.
+-}
+toList : Parts -> List (List Part)
+toList (Parts lines) =
+    lines
 
 
 {-| The number of `Slot`s with distinct indexes in the `Parts`. This will be one or more.
@@ -191,6 +176,13 @@ nonObviousSlotIndices (Parts lines) =
             lines |> List.concat |> List.filterMap slotIndex
     in
     (indices |> List.length) /= (indices |> Set.fromList |> Set.size)
+
+
+{-| Get the next slot index not in use.
+-}
+nextSlotIndex : List Part -> Int
+nextSlotIndex parts =
+    parts |> List.filterMap slotIndex |> List.maximum |> Maybe.map ((+) 1) |> Maybe.withDefault 0
 
 
 
@@ -291,29 +283,9 @@ cluster parts =
 
 viewPart : SlotAttrs msg -> Fills -> Part -> Html msg
 viewPart slotAttrs fills part =
-    let
-        styleToElement style =
-            case style of
-                NoStyle ->
-                    Html.span
-
-                Em ->
-                    Html.em
-
-        transformToAttrs transform =
-            case transform of
-                NoTransform ->
-                    []
-
-                UpperCase ->
-                    [ HtmlA.class "upper-case" ]
-
-                Capitalize ->
-                    [ HtmlA.class "capitalize" ]
-    in
     case part of
         Text text style ->
-            styleToElement style [ HtmlA.class "text" ] [ Html.text text ]
+            Part.styledElement style [ HtmlA.class "text" ] [ Html.text text ]
 
         Slot index transform style ->
             let
@@ -334,10 +306,10 @@ viewPart slotAttrs fills part =
                           , HtmlA.attribute "data-slot-index" (index + 1 |> String.fromInt)
                           ]
                         , slotAttrs index
-                        , transformToAttrs transform
+                        , Part.transformAttrs transform
                         ]
             in
-            styleToElement style attrs fill
+            Part.styledElement style attrs fill
 
 
 viewCluster : SlotAttrs msg -> Fills -> List Part -> List (Html msg)

@@ -30,6 +30,7 @@ import Json.Decode.Pipeline as Json
 import Json.Patch
 import MassiveDecks.Card.Model as Card exposing (Call, Response)
 import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
+import MassiveDecks.Card.Parts.Part as Part
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Generated.Model as Generated
@@ -1079,7 +1080,7 @@ parts =
                     Json.succeed s
 
                 Err e ->
-                    "Not a valid call: " ++ e |> Json.fail
+                    "Not a valid call: " ++ (e |> Lang.givenLanguageString Lang.En) |> Json.fail
     in
     Json.list (Json.list part)
         |> Json.map enrich
@@ -1088,8 +1089,8 @@ parts =
 
 
 type PartData
-    = Text String Parts.Style
-    | Slot (Maybe Int) Parts.Transform Parts.Style
+    = Text String Part.Style
+    | Slot (Maybe Int) Part.Transform Part.Style
 
 
 enrich : List (List PartData) -> List (List Parts.Part)
@@ -1124,7 +1125,7 @@ enrich partData =
 part : Json.Decoder PartData
 part =
     Json.oneOf
-        [ Json.string |> Json.map (\t -> Text t Parts.NoStyle)
+        [ Json.string |> Json.map (\t -> Text t Part.NoStyle)
         , styled
         , slot
         ]
@@ -1134,45 +1135,45 @@ slot : Json.Decoder PartData
 slot =
     Json.succeed Slot
         |> Json.optional "index" (Json.int |> Json.map Just) Nothing
-        |> Json.optional "transform" transform Parts.NoTransform
-        |> Json.optional "style" style Parts.NoStyle
+        |> Json.optional "transform" transform Part.NoTransform
+        |> Json.optional "style" style Part.NoStyle
 
 
 styled : Json.Decoder PartData
 styled =
     Json.succeed Text
         |> Json.required "text" Json.string
-        |> Json.optional "style" style Parts.NoStyle
+        |> Json.optional "style" style Part.NoStyle
 
 
-transform : Json.Decoder Parts.Transform
+transform : Json.Decoder Part.Transform
 transform =
     Json.string |> Json.andThen transformByName
 
 
-transformByName : String -> Json.Decoder Parts.Transform
+transformByName : String -> Json.Decoder Part.Transform
 transformByName name =
     case name of
         "UpperCase" ->
-            Json.succeed Parts.UpperCase
+            Json.succeed Part.UpperCase
 
         "Capitalize" ->
-            Json.succeed Parts.Capitalize
+            Json.succeed Part.Capitalize
 
         _ ->
             unknownValue "transform" name
 
 
-style : Json.Decoder Parts.Style
+style : Json.Decoder Part.Style
 style =
     Json.string |> Json.andThen styleByName
 
 
-styleByName : String -> Json.Decoder Parts.Style
+styleByName : String -> Json.Decoder Part.Style
 styleByName name =
     case name of
         "Em" ->
-            Json.succeed Parts.Em
+            Json.succeed Part.Em
 
         _ ->
             unknownValue "style" name
@@ -1242,6 +1243,7 @@ playerSet =
 startingRound : Maybe (List Card.Call) -> Json.Decoder Round.Starting
 startingRound calls =
     Json.succeed Round.Starting
+        |> Json.hardcoded Nothing
         |> Json.hardcoded Nothing
         |> Json.hardcoded calls
         |> Json.optional "timedOut" Json.bool False

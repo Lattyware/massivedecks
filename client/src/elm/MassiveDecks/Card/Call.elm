@@ -11,6 +11,7 @@ import Html.Attributes as HtmlA
 import MassiveDecks.Card as Card
 import MassiveDecks.Card.Model exposing (..)
 import MassiveDecks.Card.Parts as Parts exposing (Parts)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Rules exposing (Rules)
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
@@ -41,11 +42,30 @@ viewFilled shared config side attributes slotAttrs fillWith call =
     viewInternal shared config side attributes (Parts.viewFilled slotAttrs fillWith) call
 
 
+{-| Render a potentially blank card to HTML.
+-}
+viewPotentiallyCustom : Shared -> Config -> Side -> (String -> msg) -> (String -> msg) -> List (Html.Attribute msg) -> Call -> Html msg
+viewPotentiallyCustom shared config side update canonicalize attributes call =
+    case call.details.source of
+        Source.Custom ->
+            viewCustom shared config side update canonicalize attributes call
+
+        _ ->
+            view shared config side attributes call
+
+
 {-| Render an unknown response to HTML, face-down.
 -}
 viewUnknown : Shared -> List (Html.Attribute msg) -> Html msg
 viewUnknown shared attributes =
     Card.viewUnknown shared "call" attributes
+
+
+{-| Render a blank card to HTML.
+-}
+viewCustom : Shared -> Config -> Side -> (String -> msg) -> (String -> msg) -> List (Html.Attribute msg) -> Call -> Html msg
+viewCustom shared config side update canonicalize attributes call =
+    Html.div [] []
 
 
 

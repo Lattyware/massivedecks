@@ -21,7 +21,7 @@ import MassiveDecks.Requests.HttpData.Model exposing (..)
 import MassiveDecks.Requests.Request as Request exposing (Request)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList exposing (NeList(..))
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import Material.IconButton as IconButton
 import Time
 
@@ -121,5 +121,5 @@ refreshButton shared { loading, data } =
     in
     IconButton.view shared
         Strings.Refresh
-        (NeList (Icon.sync |> Icon.present |> applyStyle) [])
+        (Icon.sync |> Icon.present |> applyStyle |> NeList.just)
         (Pull |> Maybe.justIf (not loading))

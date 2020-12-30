@@ -318,6 +318,7 @@ type MdString
     | ConfigureNextGame -- A description of the action of configuring the next game for the lobby after the current one finished.
       -- Game
     | PickCall -- A description of the action of picking a call for the players to play into.
+    | WriteCall -- A description of the action of writing a custom call for the players to play into.
     | SubmitPlay -- A description of the action of submitting the play for the czar to judge.
     | TakeBackPlay -- A description of the action of taking back a previously submitted play.
     | JudgePlay -- A description of the action of choosing a play to win the round.
@@ -355,6 +356,20 @@ type MdString
       -- Actions
     | Refresh -- The action to refresh the page with newer information.
     | Accept -- A term for accepting something.
+      -- Editor
+    | AddSlot -- Add a slot to the card.
+    | AddText -- Add text to the card.
+    | EditText -- Edit text on the card.
+    | EditSlotIndex -- Edit the slot index for a card, allowing multiple slots to be filled with the same response.
+    | MoveLeft -- The action of moving an item to the left.
+    | MoveRight -- The action of moving an item to the right.
+    | Remove -- Remove something from a card.
+    | Normal -- A term for the absence of any style or transform.
+    | Capitalise -- Make the selected slot capitalise any response played into it (teSt -> TeSt).
+    | UpperCase -- Make the selected slot upper case any response played into it (teSt -> TEST).
+    | Emphasise -- Make the selected text emphasised on the card (i.e: shown in italics, but don't specify that).
+    | MustContainAtLeastOneSlot -- An error message telling the user a call needs at least one slot.
+    | SlotIndexExplanation -- An explanation of what a slot index is.
       -- Errors
     | Error -- A title for a generic error (something having gone wrong).
     | ErrorHelp -- A message telling the user that an error has occurred and what to do.

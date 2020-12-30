@@ -100,7 +100,7 @@ export class Responses extends Deck<Card.Response> {
     this.discarded.add({
       ...card,
       id: Card.id(),
-      ...(Card.isCustomResponse(card) ? { text: "" } : {}),
+      ...(Card.isCustom(card) ? { text: "" } : {}),
     });
   }
 

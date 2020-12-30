@@ -596,6 +596,25 @@ export const Schema = {
         call: {
           $ref: "#/definitions/Id",
         },
+        fill: {
+          items: {
+            items: {
+              anyOf: [
+                {
+                  $ref: "#/definitions/Slot",
+                },
+                {
+                  $ref: "#/definitions/Styled",
+                },
+                {
+                  type: "string",
+                },
+              ],
+            },
+            type: "array",
+          },
+          type: "array",
+        },
       },
       required: ["action", "call"],
       type: "object",
@@ -909,6 +928,26 @@ export const Schema = {
       required: ["action", "role"],
       type: "object",
     },
+    Slot: {
+      additionalProperties: false,
+      defaultProperties: [],
+      description: "An empty slot for responses to be played into.",
+      properties: {
+        index: {
+          type: "number",
+        },
+        style: {
+          $ref: "#/definitions/Style",
+        },
+        transform: {
+          description:
+            "Defines a transformation over the content the slot is filled with.",
+          enum: ["Capitalize", "UpperCase"],
+          type: "string",
+        },
+      },
+      type: "object",
+    },
     Stage: {
       enum: ["Complete", "Judging", "Playing", "Revealing", "Starting"],
       type: "string",
@@ -979,6 +1018,24 @@ export const Schema = {
         },
       },
       required: ["action"],
+      type: "object",
+    },
+    Style: {
+      enum: ["Em", "Strong"],
+      type: "string",
+    },
+    Styled: {
+      additionalProperties: false,
+      defaultProperties: [],
+      properties: {
+        style: {
+          $ref: "#/definitions/Style",
+        },
+        text: {
+          type: "string",
+        },
+      },
+      required: ["text"],
       type: "object",
     },
     Submit: {

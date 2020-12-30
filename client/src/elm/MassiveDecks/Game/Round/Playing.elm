@@ -15,6 +15,7 @@ import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Response as Response
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Game.Model exposing (..)
@@ -154,7 +155,10 @@ viewHandCard wrap shared config filled picked response =
 
         attrs =
             List.concat
-                [ [ HtmlA.classList [ ( "picked", pick /= Nothing ) ]
+                [ [ HtmlA.classList
+                        [ ( "picked", pick /= Nothing )
+                        , ( "custom", response.details.source == Source.Custom )
+                        ]
                   , pick |> Maybe.map pickedForSlot |> Maybe.withDefault HtmlA.nothing
                   , details.id |> Game.Pick Nothing |> wrap |> HtmlE.onClick
                   ]

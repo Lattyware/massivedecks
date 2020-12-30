@@ -3,6 +3,7 @@
 @use "../_game";
 @use "lobby/_configure";
 @use "lobby/_invite";
+@use "../cards/_colors" as card-colors;
 
 $top-bar-height: 4rem;
 $users-width: 18rem;
@@ -33,8 +34,8 @@ $users-width: 18rem;
   justify-content: space-between;
   align-items: center;
 
-  color: cards.$call-color;
-  background-color: cards.$call-background;
+  color: card-colors.$call-color;
+  background-color: card-colors.$call-background;
 
   .left {
     display: flex;
@@ -217,8 +218,8 @@ $users-width: 18rem;
   padding: 0.5em;
   transform: translateY(100%);
 
-  background-color: #{cards.$call-background};
-  color: #{cards.$call-color};
+  background-color: #{card-colors.$call-background};
+  color: #{card-colors.$call-color};
 
   &.error {
     background-color: #{colors.$error};
