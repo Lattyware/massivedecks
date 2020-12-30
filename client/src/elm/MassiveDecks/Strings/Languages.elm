@@ -86,9 +86,9 @@ languageNameOrCode shared givenCode =
 
 {-| The given language's name for itself.
 -}
-autonym : Shared -> Language -> String
-autonym shared language =
-    languageName language |> givenLanguageString shared language
+autonym : Language -> String
+autonym language =
+    languageName language |> givenLanguageString language
 
 
 {-| A sort that gives the closest matches first.
@@ -135,14 +135,14 @@ findBestMatch codes =
 -}
 string : Shared -> MdString -> String
 string shared mdString =
-    mdString |> givenLanguageString shared (currentLanguage shared)
+    mdString |> givenLanguageString (currentLanguage shared)
 
 
 {-| Build an actual string in the given language.
 -}
-givenLanguageString : Shared -> Language -> MdString -> String
-givenLanguageString shared lang mdString =
-    mdString |> (pack lang).string shared
+givenLanguageString : Language -> MdString -> String
+givenLanguageString lang mdString =
+    mdString |> (pack lang).string
 
 
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings

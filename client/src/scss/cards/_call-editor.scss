@@ -1,0 +1,80 @@
+@use "_colors";
+@use "../_fonts";
+
+.call-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1em;
+  padding: 1em;
+
+  --bg: #{colors.$call-background};
+  --fg: #{colors.$call-color};
+
+  text-rendering: optimizeLegibility;
+  font-family: fonts.$card;
+  font-weight: bold;
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+
+    .sep {
+      width: 2em;
+    }
+  }
+
+  .parts {
+    color: var(--fg);
+    background-color: var(--bg);
+    font-size: 1.5em;
+    width: 100%;
+    padding: 1em;
+
+    line-height: 1.6em;
+
+    user-select: none;
+
+    .text {
+      white-space: pre-wrap;
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .slot {
+      text-decoration: underline;
+    }
+  }
+
+  #part-editor {
+    width: 100%;
+  }
+
+  .selected {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .index {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    content: attr(data-slot-index);
+    color: var(--bg);
+    background-color: var(--fg);
+    border-radius: 1em;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.25em;
+  }
+
+  .capitalize > :first-child {
+    text-transform: capitalize;
+  }
+
+  .upper-case {
+    text-transform: uppercase;
+  }
+
+  .custom {
+  }
+}

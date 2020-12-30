@@ -1,12 +1,8 @@
 @use "_fonts";
 @use "cards/_size";
 @use "cards/_sources";
-
-$call-color: #ffffff;
-$call-background: #000000;
-
-$response-color: $call-background;
-$response-background: $call-color;
+@use "cards/_call-editor";
+@use "cards/_colors";
 
 @mixin shadow($color: #000000) {
   .side {
@@ -44,13 +40,13 @@ $response-background: $call-color;
   }
 
   &.response {
-    --bg: #{$response-background};
-    --fg: #{$response-color};
+    --bg: #{colors.$response-background};
+    --fg: #{colors.$response-color};
   }
 
   &.call {
-    --bg: #{$call-background};
-    --fg: #{$call-color};
+    --bg: #{colors.$call-background};
+    --fg: #{colors.$call-color};
 
     p {
       display: flex;
@@ -260,8 +256,8 @@ $response-background: $call-color;
   height: 1.2em;
   margin-left: 0.3em;
   border-radius: 50%;
-  background: var(--fg, $call-background);
-  color: var(--bg, $call-color);
+  background: var(--fg, colors.$call-background);
+  color: var(--bg, colors.$call-color);
 }
 
 .show-slot-indices .game-card {

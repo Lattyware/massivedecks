@@ -54,5 +54,5 @@ type alias Pack =
     , html : Shared -> MdString -> Html Never
 
     -- Translate the given string to a raw string.
-    , string : Shared -> MdString -> String
+    , string : MdString -> String
     }

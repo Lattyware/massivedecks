@@ -22,6 +22,7 @@ import { StoredPlay } from "./game/round/stored-play";
 import * as Player from "./player";
 import * as Rules from "./rules";
 import * as HappyEnding from "./rules/happy-ending";
+import * as CzarChoices from "./rules/czar-choices";
 
 export interface Public {
   round: PublicRound.Public;
@@ -207,10 +208,13 @@ export class Game {
       const [call] = gameDecks.calls.draw(1);
       round = new Round.Playing(0, czar, playersInRound, call);
     } else {
-      const calls = gameDecks.calls.draw(
-        rules.houseRules.czarChoices.numberOfChoices
+      round = Round.Starting.forGivenChoices(
+        0,
+        czar,
+        playersInRound,
+        rules.houseRules.czarChoices,
+        gameDecks
       );
-      round = new Round.Starting(0, czar, playersInRound, calls);
     }
     return new Game(round, playerOrder, playerMap, gameDecks, rules) as Game & {
       round: Round.Playing;
@@ -263,9 +267,15 @@ export class Game {
     // Discard what is left over from the last round.
     const round = this.round;
     if (round.stage === "Starting") {
-      this.decks.calls.discard(round.calls);
+      this.decks.calls.discard(
+        // We destroy custom calls by not discarding them because we don't want them back in rotation.
+        round.calls.filter((card) => !Card.isCustom(card))
+      );
     } else {
-      this.decks.calls.discard([round.call]);
+      // We destroy custom calls by not discarding them because we don't want them back in rotation.
+      if (!Card.isCustom(round.call)) {
+        this.decks.calls.discard([round.call]);
+      }
       const plays: StoredPlay[] = round.plays;
       this.decks.responses.discard(plays.flatMap((play) => play.play));
     }
@@ -290,11 +300,12 @@ export class Game {
         const [call] = this.decks.calls.draw(1);
         this.round = new Round.Playing(roundId, czar, playersInRound, call);
       } else {
-        this.round = new Round.Starting(
+        this.round = Round.Starting.forGivenChoices(
           roundId,
           czar,
           playersInRound,
-          this.decks.calls.draw(czarChoices.numberOfChoices)
+          czarChoices,
+          this.decks
         );
       }
     }

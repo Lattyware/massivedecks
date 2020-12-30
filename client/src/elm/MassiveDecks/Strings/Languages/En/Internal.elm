@@ -989,6 +989,9 @@ translate _ mdString =
         PickCall ->
             [ Text "Pick this ", ref (noun Call 1), Text " for the others to play into for the round." ]
 
+        WriteCall ->
+            [ Text "Write a custom ", ref (noun Call 1), Text " for the others to play into for the round." ]
+
         SubmitPlay ->
             [ Text "Give these cards to the ", ref Czar, Text " as your play for the round." ]
 
@@ -1112,6 +1115,53 @@ translate _ mdString =
 
         Accept ->
             [ Text "OK" ]
+
+        -- Editor
+        AddSlot ->
+            [ Text "Add ", ref Blank ]
+
+        AddText ->
+            [ Text "Add Text" ]
+
+        EditText ->
+            [ Text "Edit" ]
+
+        EditSlotIndex ->
+            [ Text "Edit" ]
+
+        MoveLeft ->
+            [ Text "Move Earlier" ]
+
+        Remove ->
+            [ Text "Remove" ]
+
+        MoveRight ->
+            [ Text "Move Later" ]
+
+        Normal ->
+            [ Text "Normal" ]
+
+        Capitalise ->
+            [ Text "Capitalise" ]
+
+        UpperCase ->
+            [ Text "Upper Case" ]
+
+        Emphasise ->
+            [ Text "Emphasise" ]
+
+        MustContainAtLeastOneSlot ->
+            [ Text "You must have at least one ", ref Blank, Text " for people to play into." ]
+
+        SlotIndexExplanation ->
+            [ Text "What number "
+            , ref (noun Response 1)
+            , Text " played will be used for this "
+            , ref Blank
+            , Text ". This lets you repeat a "
+            , ref (noun Response 1)
+            , Text "."
+            ]
 
         -- Errors
         Error ->

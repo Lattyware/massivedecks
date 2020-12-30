@@ -26,6 +26,7 @@ module MassiveDecks.Game.Round exposing
 
 import Dict exposing (Dict)
 import Json.Decode as Json
+import MassiveDecks.Card.Call.Editor.Model as CallEditor
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Game.Time exposing (Time)
@@ -199,6 +200,7 @@ type PickState
 -}
 type alias Starting =
     { pick : Maybe Card.Id
+    , editor : Maybe CallEditor.Model
     , calls : Maybe (List Card.Call)
     , timedOut : Bool
     }

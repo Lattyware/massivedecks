@@ -23,12 +23,14 @@ module MassiveDecks.Pages.Lobby.Actions exposing
 import Json.Encode as Json
 import Json.Patch exposing (Patch)
 import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Parts exposing (Parts)
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.User as User
+import MassiveDecks.Util.Maybe as Maybe
 
 
 configure : Json.Patch.Patch -> Cmd msg
@@ -56,9 +58,16 @@ submit play =
     action "Submit" [ ( "play", play |> Json.list Json.string ) ]
 
 
-pickCall : Card.Id -> Cmd msg
-pickCall call =
-    action "PickCall" [ ( "call", call |> Json.string ) ]
+pickCall : Card.Id -> Maybe Parts -> Cmd msg
+pickCall call parts =
+    let
+        fillWith ps =
+            ( "fill", ps |> Encoders.parts )
+
+        fillIfGiven =
+            parts |> Maybe.map fillWith |> Maybe.toList
+    in
+    action "PickCall" (( "call", call |> Json.string ) :: fillIfGiven)
 
 
 takeBack : Cmd msg

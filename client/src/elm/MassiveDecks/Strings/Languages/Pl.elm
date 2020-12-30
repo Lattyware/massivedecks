@@ -1131,6 +1131,10 @@ translate maybeDeclCase mdString =
         PickCall ->
             [ Missing ]
 
+        -- TODO: Translate
+        WriteCall ->
+            [ Missing ]
+
         SubmitPlay ->
             [ Text "Daj te karty ", refDecl Dative Czar, Text " jako odpowiedzi w tej rundzie." ]
 
@@ -1251,6 +1255,59 @@ translate maybeDeclCase mdString =
 
         Accept ->
             [ Text "OK" ]
+
+        -- Editor
+        -- TODO: Translate
+        AddSlot ->
+            [ Missing ]
+
+        -- TODO: Translate
+        AddText ->
+            [ Missing ]
+
+        -- TODO: Translate
+        EditText ->
+            [ Missing ]
+
+        -- TODO: Translate
+        EditSlotIndex ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MoveLeft ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Remove ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MoveRight ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Normal ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Capitalise ->
+            [ Missing ]
+
+        -- TODO: Translate
+        UpperCase ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Emphasise ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MustContainAtLeastOneSlot ->
+            [ Missing ]
+
+        -- TODO: Translate
+        SlotIndexExplanation ->
+            [ Missing ]
 
         -- Errors
         Error ->

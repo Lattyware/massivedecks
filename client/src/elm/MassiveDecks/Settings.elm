@@ -40,7 +40,8 @@ import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
-import MassiveDecks.Util.NeList exposing (NeList(..))
+import MassiveDecks.Util.Maybe as Maybe
+import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import MassiveDecks.Util.Order as Order
 import Material.IconButton as IconButton
 import Material.Select as Select
@@ -167,7 +168,10 @@ view wrap shared =
                 Icon.cog
 
         button =
-            IconButton.view shared Strings.SettingsTitle (NeList (icon |> Icon.present |> Icon.styled [ Icon.lg ]) []) (ToggleOpen |> wrap |> Just)
+            IconButton.view shared
+                Strings.SettingsTitle
+                (icon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                (ToggleOpen |> wrap |> Just)
 
         panel =
             Html.div [ HtmlA.classList [ ( "settings-panel", True ), ( "mdc-card", True ), ( "open", model.open ) ] ]
@@ -555,7 +559,7 @@ languageOption shared currentLanguage language =
         nameInCurrentLanguage =
             language
                 |> Lang.languageName
-                |> Lang.givenLanguageString shared currentLanguage
+                |> Lang.givenLanguageString currentLanguage
 
         viewAutonym n =
             [ Html.span [ language |> Lang.langAttr ]
@@ -563,14 +567,7 @@ languageOption shared currentLanguage language =
             ]
 
         autonym =
-            if language /= currentLanguage then
-                language
-                    |> Lang.autonym shared
-                    |> viewAutonym
-                    |> Just
-
-            else
-                Nothing
+            language |> Lang.autonym |> viewAutonym |> Maybe.justIf (language /= currentLanguage)
     in
     { id = language
     , icon = Nothing

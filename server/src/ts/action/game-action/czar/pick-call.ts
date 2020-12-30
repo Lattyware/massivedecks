@@ -11,6 +11,7 @@ import { Czar } from "../czar";
 export interface PickCall {
   action: "PickCall";
   call: Card.Id;
+  fill?: Card.Part[][];
 }
 
 class PickCallActions extends Actions.Implementation<
@@ -33,7 +34,8 @@ class PickCallActions extends Actions.Implementation<
       const { round, events, timeouts } = lobbyRound.advance(
         server,
         lobby.game,
-        action.call
+        action.call,
+        action.fill
       );
       lobby.game.round = round;
       return { lobby, events, timeouts };

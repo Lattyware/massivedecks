@@ -1,6 +1,7 @@
 module MassiveDecks.Game.Messages exposing (Msg(..))
 
 import Html5.DragDrop as DragDrop
+import MassiveDecks.Card.Call.Editor.Model as CallEditor
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Play as Play
 import MassiveDecks.Game.Model exposing (..)
@@ -16,6 +17,8 @@ type Msg
     | EditBlank Card.Id String
     | Fill Card.Id String
     | Submit
+    | WriteCall
+    | CallEditorMsg CallEditor.Msg
     | TakeBack
     | PickPlay Play.Id
     | Reveal Play.Id

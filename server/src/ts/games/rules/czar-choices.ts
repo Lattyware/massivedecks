@@ -1,3 +1,5 @@
+import * as Card from "../cards/card";
+
 /**
  * Configuration for the "Czar Choices" house rule.
  * At the beginning of the round, the Czar draws multiple calls and chooses one of them.
@@ -17,3 +19,12 @@ export interface CzarChoices {
    */
   custom?: boolean;
 }
+
+/**
+ * Generate a blank custom call to use.
+ */
+export const customCall = (): Card.CustomCard<Card.Call> => ({
+  id: Card.id(),
+  source: { source: "Custom" },
+  parts: [[{}]],
+});

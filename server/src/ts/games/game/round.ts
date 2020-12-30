@@ -16,6 +16,9 @@ import * as Rules from "../rules";
 import * as Game from "../game";
 import { InvalidActionError } from "../../errors/validation";
 import { ServerState } from "../../server-state";
+import { Part } from "../cards/card";
+import * as CzarChoices from "../rules/czar-choices";
+import { Decks } from "../cards/decks";
 
 export type Round = Starting | Playing | Revealing | Judging | Complete;
 
@@ -538,6 +541,21 @@ export class Starting extends Base<"Starting"> implements Timed {
     this.timedOut = timedOut;
   }
 
+  public static forGivenChoices(
+    id: Id,
+    czar: User.Id,
+    players: Set<User.Id>,
+    czarChoices: CzarChoices.CzarChoices,
+    decks: Decks
+  ) {
+    const first = czarChoices.custom ? [CzarChoices.customCall()] : [];
+    const cards = [
+      ...first,
+      ...decks.calls.draw(czarChoices.numberOfChoices - first.length),
+    ];
+    return new this(id, czar, players, cards);
+  }
+
   public waitingFor(): Set<User.Id> | null {
     return new Set(this.czar);
   }
@@ -545,7 +563,8 @@ export class Starting extends Base<"Starting"> implements Timed {
   public advance(
     server: ServerState,
     game: Game.Game,
-    chosen: Card.Id
+    chosen: Card.Id,
+    fill: Part[][] | undefined
   ): {
     round: Playing;
     timeouts?: Iterable<Timeout.After>;
@@ -557,6 +576,23 @@ export class Starting extends Base<"Starting"> implements Timed {
         "The given call doesn't exist or wasn't in the given options."
       );
     }
+    if (Card.isCustom(call)) {
+      if (fill === undefined) {
+        throw new InvalidActionError("Custom calls must be filled to be used.");
+      }
+      if (Card.slotCount(fill) < 1) {
+        throw new InvalidActionError("Must have at least one slot.");
+      }
+      call.parts = fill;
+    } else {
+      if (fill !== undefined) {
+        throw new InvalidActionError("Only custom calls can be filled.");
+      }
+    }
+    game.decks.calls.discard(
+      // We destroy custom calls by not discarding them because we don't want them back in rotation.
+      this.calls.filter((card) => !Card.isCustom(card) && card.id !== chosen)
+    );
     const round = new Playing(this.id, this.czar, this.players, call);
     const eventsAndTimeouts = game.startPlaying(server, false, round, true);
     return { round, ...eventsAndTimeouts };

@@ -8,6 +8,14 @@ import { Custom } from "./sources/custom";
  */
 export type Card = Call | Response;
 
+/** Values shared by all cards.*/
+export interface BaseCard {
+  /** A unique id for a card.*/
+  id: Id;
+  /** Where the card came from.*/
+  source: Source;
+}
+
 /**
  * A call for plays. Some text with blank slots to be filled with responses.
  */
@@ -20,35 +28,24 @@ export interface Call extends BaseCard {
  * A response (some text) played into slots.
  */
 export interface Response extends BaseCard {
-  /** The text on the response. If this is undefined, the card is a blank
-   * card. */
+  /** The text on the response. */
   text: string;
 }
 
 /**
- * A custom response is special in that it is mutable by the player holding it.
+ * A custom card is special in that it is mutable by the player holding it.
  */
-export interface CustomResponse extends Response {
-  source: Custom;
-}
+export type CustomCard<TCard extends Card> = TCard & { source: Custom };
 
 /**
  * If the response is a custom one, and therefore mutable.
  */
-export const isCustomResponse = (
-  response: Response
-): response is CustomResponse => response.source.source == "Custom";
+export const isCustom = <TCard extends Card>(
+  card: TCard
+): card is CustomCard<TCard> => card.source.source == "Custom";
 
 /** A unique id for an instance of a card.*/
 export type Id = string;
-
-/** Values shared by all cards.*/
-export interface BaseCard {
-  /** A unique id for a card.*/
-  id: Id;
-  /** Where the card came from.*/
-  source: Source;
-}
 
 export type Style = "Em" | "Strong";
 

@@ -179,7 +179,7 @@ export class PostgresCache extends Cache.Cache {
       }
 
       for (const response of templates.responses) {
-        if (Card.isCustomResponse(response)) {
+        if (Card.isCustom(response)) {
           throw Error("Can't have blank cards in a cached deck.");
         }
         await client.query(

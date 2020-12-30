@@ -19,6 +19,7 @@ import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html5.DragDrop as DragDrop
 import MassiveDecks.Card.Call as Call
+import MassiveDecks.Card.Call.Editor as CallEditor
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
@@ -26,7 +27,6 @@ import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Game.Action as Action
-import MassiveDecks.Game.Action.Model exposing (Action)
 import MassiveDecks.Game.History as History
 import MassiveDecks.Game.Messages exposing (..)
 import MassiveDecks.Game.Model exposing (..)
@@ -231,6 +231,46 @@ update wrap shared msg model =
             else
                 ( model, Cmd.none )
 
+        WriteCall ->
+            let
+                newStage =
+                    case round.stage of
+                        Round.S stage ->
+                            let
+                                fromId id =
+                                    stage.calls |> Maybe.andThen (List.filter (.details >> .id >> (==) id) >> List.head)
+
+                                card =
+                                    stage.pick |> Maybe.andThen fromId
+                            in
+                            Round.S { stage | editor = card |> Maybe.map CallEditor.init }
+
+                        _ ->
+                            round.stage
+            in
+            ( { model | game = { game | round = { round | stage = newStage } } }, Cmd.none )
+
+        CallEditorMsg callEditorMsg ->
+            let
+                ( newStage, cmd ) =
+                    case round.stage of
+                        Round.S stage ->
+                            let
+                                ( newEditor, editorCmd ) =
+                                    case stage.editor of
+                                        Just editor ->
+                                            CallEditor.update callEditorMsg editor |> Tuple.mapFirst Just
+
+                                        Nothing ->
+                                            ( Nothing, Cmd.none )
+                            in
+                            ( Round.S { stage | editor = newEditor }, editorCmd )
+
+                        _ ->
+                            ( round.stage, Cmd.none )
+            in
+            ( { model | game = { game | round = { round | stage = newStage } } }, cmd )
+
         PickPlay id ->
             let
                 makePick stage wrapRound =
@@ -263,7 +303,22 @@ update wrap shared msg model =
         Submit ->
             case round.stage of
                 Round.S stage ->
-                    ( model, stage.pick |> Maybe.map Actions.pickCall |> Maybe.withDefault Cmd.none )
+                    let
+                        call =
+                            stage.calls
+                                |> Maybe.andThen (List.filter (.details >> .id >> Just >> (==) stage.pick) >> List.head)
+
+                        fill c =
+                            if c.details.source == Source.Custom then
+                                stage.editor |> Maybe.map (.source >> .body)
+
+                            else
+                                Nothing
+
+                        action =
+                            Maybe.map2 Actions.pickCall stage.pick (call |> Maybe.map fill) |> Maybe.withDefault Cmd.none
+                    in
+                    ( model, action )
 
                 Round.P stage ->
                     let
@@ -779,7 +834,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                       , czar = czar
                                       , players = players
                                       , startedAt = time
-                                      , stage = Round.S (Round.Starting Nothing (Just calls) False)
+                                      , stage = Round.S (Round.Starting Nothing Nothing (Just calls) False)
                                       }
                                     , if auth.claims.uid == czar then
                                         Notifications.notify shared
@@ -796,7 +851,7 @@ applyGameEvent wrap wrapEvent auth shared gameEvent model =
                                       , czar = czar
                                       , players = players
                                       , startedAt = time
-                                      , stage = Round.S (Round.Starting Nothing Nothing False)
+                                      , stage = Round.S (Round.Starting Nothing Nothing Nothing False)
                                       }
                                     , Cmd.none
                                     )

@@ -18,7 +18,6 @@ type alias Context langContext =
     { lang : Language
     , translate : Maybe langContext -> MdString -> List (Translation.Result langContext)
     , parent : MdString
-    , shared : Shared
     }
 
 
@@ -32,9 +31,9 @@ asString context mdString =
 {-| An HTML text node from the given `MdString`. Note this is more than just convenience - we enhance some strings
 with rich HTML content (e.g: links, icons, etc...) when rendered as HTML.
 -}
-asHtml : Context langContext -> MdString -> Html Never
-asHtml context mdString =
-    [ Translation.Ref Nothing mdString ] |> resultsToHtml context |> Html.span []
+asHtml : Shared -> Context langContext -> MdString -> Html Never
+asHtml shared context mdString =
+    [ Translation.Ref Nothing mdString ] |> resultsToHtml shared context |> Html.span []
 
 
 
@@ -78,13 +77,13 @@ resultToString context result =
             EnInternal.translate Nothing parent |> partsToString
 
 
-resultsToHtml : Context langContext -> List (Translation.Result langContext) -> List (Html msg)
-resultsToHtml context results =
-    results |> List.concatMap (resultToHtml context)
+resultsToHtml : Shared -> Context langContext -> List (Translation.Result langContext) -> List (Html msg)
+resultsToHtml shared context results =
+    results |> List.concatMap (resultToHtml shared context)
 
 
-resultToHtml : Context langContext -> Translation.Result langContext -> List (Html msg)
-resultToHtml context result =
+resultToHtml : Shared -> Context langContext -> Translation.Result langContext -> List (Html msg)
+resultToHtml shared context result =
     let
         { translate, parent } =
             context
@@ -97,8 +96,8 @@ resultToHtml context result =
             in
             mdString
                 |> translate langContext
-                |> resultsToHtml childContext
-                |> enhanceHtml childContext mdString
+                |> resultsToHtml shared childContext
+                |> enhanceHtml shared childContext mdString
 
         Translation.Text text ->
             [ Html.text text ]
@@ -107,16 +106,16 @@ resultToHtml context result =
             [ mdString |> translate langContext |> resultsToString { context | parent = mdString } |> Html.text ]
 
         Translation.Em emphasised ->
-            [ Html.strong [] (emphasised |> resultsToHtml context) ]
+            [ Html.strong [] (emphasised |> resultsToHtml shared context) ]
 
         Translation.Segment cluster ->
-            [ Html.span [ HtmlA.class "segment" ] (cluster |> resultsToHtml context) ]
+            [ Html.span [ HtmlA.class "segment" ] (cluster |> resultsToHtml shared context) ]
 
         Translation.Missing ->
             let
                 english =
                     Html.span [ HtmlA.class "string", HtmlA.lang "en" ]
-                        (EnInternal.translate Nothing parent |> resultsToHtml context)
+                        (EnInternal.translate Nothing parent |> resultsToHtml shared context)
 
                 translationBeg =
                     Html.blankA
@@ -128,8 +127,8 @@ resultToHtml context result =
             [ Html.span [ HtmlA.class "not-translated" ] [ english, Html.text " ", translationBeg ] ]
 
 
-enhanceHtml : Context langContext -> MdString -> List (Html msg) -> List (Html msg)
-enhanceHtml context mdString unenhanced =
+enhanceHtml : Shared -> Context langContext -> MdString -> List (Html msg) -> List (Html msg)
+enhanceHtml shared context mdString unenhanced =
     case mdString of
         Noun { noun } ->
             case noun of
@@ -251,7 +250,7 @@ enhanceHtml context mdString unenhanced =
             term context PlayedDescription Icon.check unenhanced
 
         ManyDecks ->
-            case context.shared.sources.manyDecks of
+            case shared.sources.manyDecks of
                 Just { baseUrl } ->
                     [ Html.blankA [ HtmlA.href baseUrl ] unenhanced ]
 
@@ -259,7 +258,7 @@ enhanceHtml context mdString unenhanced =
                     unenhanced
 
         JsonAgainstHumanity ->
-            case context.shared.sources.jsonAgainstHumanity of
+            case shared.sources.jsonAgainstHumanity of
                 Just { aboutUrl } ->
                     [ Html.blankA [ HtmlA.href aboutUrl ] unenhanced ]
 

@@ -1024,6 +1024,10 @@ translate _ mdString =
         PickCall ->
             [ Missing ]
 
+        -- TODO: Translate
+        WriteCall ->
+            [ Missing ]
+
         SubmitPlay ->
             [ Text "Berikan kartu ini ke ", ref Czar, Text " sebagai permainan Anda untuk putaran tersebut." ]
 
@@ -1145,6 +1149,59 @@ translate _ mdString =
 
         Accept ->
             [ Text "OK" ]
+
+        -- Editor
+        -- TODO: Translate
+        AddSlot ->
+            [ Missing ]
+
+        -- TODO: Translate
+        AddText ->
+            [ Missing ]
+
+        -- TODO: Translate
+        EditText ->
+            [ Missing ]
+
+        -- TODO: Translate
+        EditSlotIndex ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MoveLeft ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Remove ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MoveRight ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Normal ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Capitalise ->
+            [ Missing ]
+
+        -- TODO: Translate
+        UpperCase ->
+            [ Missing ]
+
+        -- TODO: Translate
+        Emphasise ->
+            [ Missing ]
+
+        -- TODO: Translate
+        MustContainAtLeastOneSlot ->
+            [ Missing ]
+
+        -- TODO: Translate
+        SlotIndexExplanation ->
+            [ Missing ]
 
         -- Errors
         Error ->

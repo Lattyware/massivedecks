@@ -7,6 +7,7 @@ module MassiveDecks.Models.Encoders exposing
     , lobbyCreation
     , lobbyToken
     , packingHeat
+    , parts
     , playerPresence
     , privilege
     , rando
@@ -23,6 +24,8 @@ module MassiveDecks.Models.Encoders exposing
 
 import Dict
 import Json.Encode as Json
+import MassiveDecks.Card.Parts as Parts exposing (Parts)
+import MassiveDecks.Card.Parts.Part as Part exposing (Style)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
@@ -389,3 +392,68 @@ userRegistration r =
         (( "name", r.name |> Json.string )
             :: (r.password |> Maybe.map (\p -> [ ( "password", p |> Json.string ) ]) |> Maybe.withDefault [])
         )
+
+
+transform : Part.Transform -> Maybe Json.Value
+transform t =
+    let
+        name =
+            case t of
+                Part.NoTransform ->
+                    Nothing
+
+                Part.Capitalize ->
+                    Just "Capitalize"
+
+                Part.UpperCase ->
+                    Just "UpperCase"
+    in
+    name |> Maybe.map Json.string
+
+
+style : Style -> Maybe Json.Value
+style s =
+    let
+        name =
+            case s of
+                Part.NoStyle ->
+                    Nothing
+
+                Part.Em ->
+                    Just "Em"
+    in
+    name |> Maybe.map Json.string
+
+
+part : Parts.Part -> Json.Value
+part p =
+    let
+        maybeField field =
+            case field of
+                ( n, Just v ) ->
+                    Just ( n, v )
+
+                ( _, Nothing ) ->
+                    Nothing
+
+        maybeObject =
+            List.filterMap maybeField >> Json.object
+    in
+    case p of
+        Parts.Text text Part.NoStyle ->
+            text |> Json.string
+
+        Parts.Text text s ->
+            maybeObject [ ( "text", text |> Json.string |> Just ), ( "style", s |> style ) ]
+
+        Parts.Slot index t s ->
+            maybeObject [ ( "index", index |> Json.int |> Just ), ( "transform", t |> transform ), ( "style", s |> style ) ]
+
+
+parts : Parts -> Json.Value
+parts ps =
+    let
+        line =
+            Json.list part
+    in
+    ps |> Parts.toList |> Json.list line

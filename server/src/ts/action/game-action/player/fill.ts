@@ -42,7 +42,7 @@ class FillActions extends Actions.Implementation<
           "The given card doesn't exist or isn't in the player's hand."
         );
       }
-      if (Card.isCustomResponse(filled)) {
+      if (Card.isCustom(filled)) {
         filled.text = action.text;
         return { lobby };
       } else {

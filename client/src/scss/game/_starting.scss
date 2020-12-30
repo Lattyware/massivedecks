@@ -1,0 +1,25 @@
+@use "../cards/_size";
+@use "../_colors";
+@use "../_cards";
+
+.options.cards {
+  .picked.game-card .side {
+    border-color: colors.$secondary;
+  }
+}
+
+.custom {
+  .side::after {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    width: 8em;
+    height: 8em;
+
+    display: block;
+    content: "";
+    opacity: 0.3;
+    background: colors.$primary;
+    mask-image: url("../../../assets/images/pencil.svg");
+  }
+}
