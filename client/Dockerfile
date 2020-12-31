@@ -2,10 +2,12 @@ FROM node:14-alpine AS build
 
 WORKDIR /md
 
-RUN ["apk", "add", "--no-cache", "python", "make", "g++", "openjdk8-jre"]
+RUN ["apk", "add", "--no-cache", "python", "make", "g++"]
 
 ARG VERSION=dev
 ENV MD_VERSION $VERSION
+ARG MODE=production
+ENV WEBPACK_MODE $MODE
 
 COPY ["./package.json", "./package-lock.json", "./"]
 RUN ["npm", "ci"]
