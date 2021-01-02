@@ -25,5 +25,6 @@ export const of = (
   id: round.id.toString(),
   czar: round.czar,
   players: Array.from(round.players.keys()),
+  ...(round.stage === "Playing" ? { call: round.call } : {}),
   ...(drawn === undefined ? {} : { drawn }),
 });
