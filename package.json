@@ -7,15 +7,9 @@
   "private": true,
   "repository": "github:Lattyware/massivedecks",
   "engines": {
-    "node": "14.x.x"
+    "node": "15.x.x"
   },
   "scripts": {
-    "build": "cp -r server/decks decks && npm run buildServer && npm run buildClient",
-    "buildServer": "npm explore @massivedecks/server -- npm run build",
-    "buildClient": "npm explore @massivedecks/client -- npm run build"
-  },
-  "dependencies": {
-    "@massivedecks/server": "file:./server",
-    "@massivedecks/client": "file:./client"
+    "build": "cp -r server/decks decks"
   }
 }
