@@ -299,7 +299,7 @@ translate maybeDeclCase mdString =
 
         HouseRuleRebootAction { cost } ->
             [ Text "Wydaj "
-            , Text (asWord cost Masculine)
+            , Text (asWord cost Masculine Accusative)
             , Text " "
             , ref (noun Point cost)
             , Text " aby wyrzucić karty i dobrać nowe."
@@ -385,33 +385,30 @@ translate maybeDeclCase mdString =
         HouseRuleHappyEndingDescription ->
             [ Text "Gdy gra się kończy, ostatnią czarną kartą jest „Stwórz haiku”." ]
 
-        -- TODO: Translate
         HouseRuleCzarChoices ->
-            [ Missing ]
+            [ Text "Wybór Cara" ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesDescription ->
-            [ Missing ]
+            [ Text "Na początku rundy, "
+            , ref Czar
+            , Text " otrzymuje wiele "
+            , refDecl Genitive (nounUnknownQuantity Call)
+            , Text " i może wybrać jedną z nich, i/lub może napisać własną."]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesNumber ->
-            [ Missing ]
+            [ Text "Ilość" ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesNumberDescription ->
-            [ Missing ]
+            [ Text "Ile kart do wyboru dać ", refDecl Dative Czar, Text "." ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesCustom ->
-            [ Missing ]
+            [ Text "Własne" ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesCustomDescription ->
-            [ Missing ]
+            [ Text "Czy ", ref Czar, Text " może pisać własne czarne karty. Zabiera miejsce jednego z wyborów." ]
 
-        -- TODO: Translate
         SeeAlso { rule } ->
-            [ Missing ]
+            [ Text "Zobacz także: ", ref rule ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Wartość musi być większa lub równa ", Text (String.fromInt min), Text "." ]
@@ -531,7 +528,7 @@ translate maybeDeclCase mdString =
             [ Text "Biała karta z wyrażeniem używanym jako odpowiedź." ]
 
         PointDescription ->
-            [ Text "Punkt—kto ma ich więcej, ten wygrywa." ]
+            [ Text "Punkt — kto ma ich więcej, ten wygrywa." ]
 
         GameCodeTerm ->
             [ Text
@@ -614,7 +611,7 @@ translate maybeDeclCase mdString =
 
         PickDescription { numberOfCards } ->
             [ Text "Musisz wybrać "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , Text " "
             , refDecl Accusative (noun Response numberOfCards)
             , Text "."
@@ -622,7 +619,7 @@ translate maybeDeclCase mdString =
 
         DrawDescription { numberOfCards } ->
             [ Text "Dostajesz "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , Text " "
             , Text
                 (case numberOfCards of
@@ -870,17 +867,17 @@ translate maybeDeclCase mdString =
 
         NotEnoughCardsOfType { cardType, needed, have } ->
             [ Text "Dla tej liczby graczy, potrzebujesz co najmniej "
-            , Text (asWord needed Feminine)
+            , Text (asWord needed Feminine Accusative)
             , Text " "
-            , ref (noun cardType needed)
+            , refDecl Accusative (noun cardType needed)
             , Text ", ale masz tylko "
-            , Text (asWord have Feminine)
+            , Text (asWord have Feminine Accusative)
             , Text "."
             ]
 
         AddBlankCards { amount } ->
             [ Text "Dodaj "
-            , Text (asWord amount Feminine)
+            , Text (asWord amount Feminine Accusative)
             , Text " "
             , Text
                 (case amount of
@@ -939,9 +936,8 @@ translate maybeDeclCase mdString =
         APlayer ->
             [ Text "Gracz" ]
 
-        -- TODO: Translate
         Generated { by } ->
-            [ Missing ]
+            [ Text "Wygenerowane przez ", refDecl Genitive by ]
 
         DeckAlreadyAdded ->
             [ Text "Ta talia jest już w grze." ]
@@ -1066,9 +1062,15 @@ translate maybeDeclCase mdString =
         TimeLimit { stage } ->
             [ Text "Limit czasowy ", refDecl Genitive stage ]
 
-        -- TODO: Translate
         StartingTimeLimitDescription ->
-            [ Missing ]
+            [ Text "Ile czasu (w sekundach) ma "
+            , ref Czar
+            , Text " na wybranie/napisanie "
+            , refDecl Genitive (noun Call 1)
+            , Text ", gdy zasada specjalna "
+            , raw HouseRuleCzarChoices
+            , Text " jest włączona."
+            ]
 
         PlayingTimeLimitDescription ->
             [ Text "Jak długo (w sekundach) mają ", ref Players, Text " na wybór swoich kart." ]
@@ -1127,13 +1129,11 @@ translate maybeDeclCase mdString =
             [ Text "Skonfiguruj następną grę" ]
 
         -- Game
-        -- TODO: Translate
         PickCall ->
-            [ Missing ]
+            [ Text "Wybierz tę ", refDecl Accusative (noun Call 1), Text " dla innych graczy w obecnej rundzie." ]
 
-        -- TODO: Translate
         WriteCall ->
-            [ Missing ]
+            [ Text "Napisz własną ", refDecl Accusative (noun Call 1), Text " dla innych graczy w obecnej rundzie." ]
 
         SubmitPlay ->
             [ Text "Daj te karty ", refDecl Dative Czar, Text " jako odpowiedzi w tej rundzie." ]
@@ -1150,9 +1150,8 @@ translate maybeDeclCase mdString =
         AdvanceRound ->
             [ Text "Następna runda." ]
 
-        -- TODO: Translate
         Starting ->
-            [ Missing ]
+            [ raw HouseRuleCzarChoices ]
 
         Playing ->
             [ Text "Odpowiadanie" ]
@@ -1176,7 +1175,30 @@ translate maybeDeclCase mdString =
             [ Text "Ustaw wszystkich graczy którzy nie wykonali wyboru jako poza grą i pomijaj ich kolej aż wrócą." ]
 
         Blank ->
-            [ Text "Puste pole" ]
+            [ Text
+                (case declCase of
+                    Nominative ->
+                        "puste pole"
+
+                    Genitive ->
+                        "pustego pola"
+
+                    Dative ->
+                        "pustemu polu"
+
+                    Accusative ->
+                        "puste pole"
+
+                    Instrumental ->
+                        "pustym polem"
+
+                    Locative ->
+                        "pustym polu"
+
+                    Vocative ->
+                        "puste pole"
+                )
+            ]
 
         RoundStarted ->
             [ Text "Runda rozpoczęta" ]
@@ -1201,17 +1223,20 @@ translate maybeDeclCase mdString =
             ]
 
         -- Instructions
-        -- TODO: Translate
         PickCallInstruction ->
-            [ Missing ]
+            [ Text "Wybierz tę ", refDecl Accusative (noun Call 1), Text " na którą będzie musiała odpowiedzieć reszta graczy." ]
 
-        -- TODO: Translate
         WaitForCallInstruction ->
-            [ Missing ]
+            [ Text "Czekasz aż "
+            , ref Czar
+            , Text " wybierze "
+            , refDecl Accusative (noun Call 1)
+            , Text " na którą będziesz musiał odpowiedzieć."
+            ]
 
         PlayInstruction { numberOfCards } ->
             [ Text "Musisz wybrać jeszcze "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , refDecl Accusative (noun Response numberOfCards)
             , Text " z ręki w tej rundzie, aby wysłać odpowiedź."
             ]
@@ -1257,57 +1282,51 @@ translate maybeDeclCase mdString =
             [ Text "OK" ]
 
         -- Editor
-        -- TODO: Translate
         AddSlot ->
-            [ Missing ]
+            [ Text "Dodaj ", refDecl Accusative Blank ]
 
-        -- TODO: Translate
         AddText ->
-            [ Missing ]
+            [ Text "Dodaj tekst" ]
 
-        -- TODO: Translate
         EditText ->
-            [ Missing ]
+            [ Text "Edytuj" ]
 
-        -- TODO: Translate
         EditSlotIndex ->
-            [ Missing ]
+            [ Text "Zmień indeks" ]
 
-        -- TODO: Translate
         MoveLeft ->
-            [ Missing ]
+            [ Text "Rusz w lewo" ]
 
-        -- TODO: Translate
         Remove ->
-            [ Missing ]
+            [ Text "Usuń" ]
 
-        -- TODO: Translate
         MoveRight ->
-            [ Missing ]
+            [ Text "Rusz w prawo" ]
 
-        -- TODO: Translate
         Normal ->
-            [ Missing ]
+            [ Text "Normalny tekst" ]
 
-        -- TODO: Translate
         Capitalise ->
-            [ Missing ]
+            [ Text "Wielkie litery" ]
 
-        -- TODO: Translate
         UpperCase ->
-            [ Missing ]
+            [ Text "Caps Lock" ]
 
-        -- TODO: Translate
         Emphasise ->
-            [ Missing ]
+            [ Text "Wyróżnienie" ]
 
-        -- TODO: Translate
         MustContainAtLeastOneSlot ->
-            [ Missing ]
+            [ Text "Karta musi zawierać przynajmniej jedno ", ref Blank, Text " do wypełnienia przez graczy." ]
 
-        -- TODO: Translate
         SlotIndexExplanation ->
-            [ Missing ]
+            [ Text "Która w kolejności "
+            , ref (noun Response 1)
+            , Text " będzie użyta do wypełnienia tego "
+            , refDecl Genitive Blank
+            , Text ". To pozwala na powtórzenie tej samej "
+            , refDecl Genitive (noun Response 1)
+            , Text "."
+            ]
 
         -- Errors
         Error ->
@@ -1703,14 +1722,17 @@ dependingOnGender masculine feminine neuter gender =
 
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}
-asWord : Int -> Gender -> String
-asWord number gender =
+asWord : Int -> Gender -> DeclensionCase -> String
+asWord number gender declCase =
     case number of
         0 ->
             "zero"
 
         1 ->
-            dependingOnGender "jeden" "jedna" "jedno" gender
+            {- We assume feminine accusative is the only non-nominative case we need.
+            It's true for now and implementing other cases would take more code.
+            -}
+            dependingOnGender "jeden" (if declCase == Accusative then "jedną" else "jedna") "jedno" gender
 
         2 ->
             dependingOnGender "dwa" "dwie" "dwa" gender
