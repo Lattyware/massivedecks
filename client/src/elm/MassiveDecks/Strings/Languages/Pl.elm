@@ -299,7 +299,7 @@ translate maybeDeclCase mdString =
 
         HouseRuleRebootAction { cost } ->
             [ Text "Wydaj "
-            , Text (asWord cost Masculine)
+            , Text (asWord cost Masculine Accusative)
             , Text " "
             , ref (noun Point cost)
             , Text " aby wyrzucić karty i dobrać nowe."
@@ -528,7 +528,7 @@ translate maybeDeclCase mdString =
             [ Text "Biała karta z wyrażeniem używanym jako odpowiedź." ]
 
         PointDescription ->
-            [ Text "Punkt—kto ma ich więcej, ten wygrywa." ]
+            [ Text "Punkt — kto ma ich więcej, ten wygrywa." ]
 
         GameCodeTerm ->
             [ Text
@@ -611,7 +611,7 @@ translate maybeDeclCase mdString =
 
         PickDescription { numberOfCards } ->
             [ Text "Musisz wybrać "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , Text " "
             , refDecl Accusative (noun Response numberOfCards)
             , Text "."
@@ -619,7 +619,7 @@ translate maybeDeclCase mdString =
 
         DrawDescription { numberOfCards } ->
             [ Text "Dostajesz "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , Text " "
             , Text
                 (case numberOfCards of
@@ -867,17 +867,17 @@ translate maybeDeclCase mdString =
 
         NotEnoughCardsOfType { cardType, needed, have } ->
             [ Text "Dla tej liczby graczy, potrzebujesz co najmniej "
-            , Text (asWord needed Feminine)
+            , Text (asWord needed Feminine Accusative)
             , Text " "
-            , ref (noun cardType needed)
+            , refDecl Accusative (noun cardType needed)
             , Text ", ale masz tylko "
-            , Text (asWord have Feminine)
+            , Text (asWord have Feminine Accusative)
             , Text "."
             ]
 
         AddBlankCards { amount } ->
             [ Text "Dodaj "
-            , Text (asWord amount Feminine)
+            , Text (asWord amount Feminine Accusative)
             , Text " "
             , Text
                 (case amount of
@@ -1236,7 +1236,7 @@ translate maybeDeclCase mdString =
 
         PlayInstruction { numberOfCards } ->
             [ Text "Musisz wybrać jeszcze "
-            , Text (asWord numberOfCards Feminine)
+            , Text (asWord numberOfCards Feminine Accusative)
             , refDecl Accusative (noun Response numberOfCards)
             , Text " z ręki w tej rundzie, aby wysłać odpowiedź."
             ]
@@ -1719,14 +1719,17 @@ dependingOnGender masculine feminine neuter gender =
 
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}
-asWord : Int -> Gender -> String
-asWord number gender =
+asWord : Int -> Gender -> DeclensionCase -> String
+asWord number gender declCase =
     case number of
         0 ->
             "zero"
 
         1 ->
-            dependingOnGender "jeden" "jedna" "jedno" gender
+            {- We assume feminine accusative is the only non-nominative case we need.
+            It's true for now and implementing other cases would take more code.
+            -}
+            dependingOnGender "jeden" (if declCase == Accusative then "jedną" else "jedna") "jedno" gender
 
         2 ->
             dependingOnGender "dwa" "dwie" "dwa" gender
