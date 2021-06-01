@@ -1,4 +1,4 @@
-FROM node:14-alpine AS build
+FROM --platform=linux/amd64 node:16-alpine AS build
 
 WORKDIR /md
 

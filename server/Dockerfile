@@ -1,4 +1,4 @@
-FROM node:14-alpine AS build
+FROM --platform=linux/amd64 node:16-alpine AS build
 
 WORKDIR /md
 
@@ -9,7 +9,7 @@ COPY ["./src", "./src"]
 COPY ["./tsconfig.json", "./config.json5", "./"]
 RUN ["npm", "run", "build"]
 
-FROM node:14-alpine
+FROM node:16-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
