@@ -34,7 +34,8 @@
 
     // Allows players to load decks from Many Decks.
     manyDecks: {
-      baseUrl: "https://decks.rereadgames.com/",
+      // The base URL to the instance of Many Decks. This should *not* have a trailing slash.
+      baseUrl: "https://decks.rereadgames.com",
 
       // How long to wait for a response from Many Decks before giving up and telling the user there is a problem.
       timeout: "PT10S",

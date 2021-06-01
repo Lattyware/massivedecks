@@ -34,7 +34,8 @@
 
     // Allows players to load decks from Many Decks.
     manyDecks: {
-      baseUrl: "https://decks.rereadgames.com/",
+      // The base URL to the instance of Many Decks. This should *not* have a trailing slash.
+      baseUrl: "https://decks.rereadgames.com",
 
       // How long to wait for a response from Many Decks before giving up and telling the user there is a problem.
       timeout: "PT10S",
@@ -46,7 +47,7 @@
     // Allows players to use decks from JSON Against Humanity
     jsonAgainstHumanity: {
       aboutUrl: "https://github.com/crhallberg/json-against-humanity",
-      url: "https://raw.githubusercontent.com/crhallberg/json-against-humanity/v2/compact.md.json",
+      url: "https://raw.githubusercontent.com/crhallberg/json-against-humanity/v2.0/cah-all-compact.json",
     },
   },
 
@@ -61,10 +62,12 @@
         // reboot: { cost: 1 },
         // comedyWriter: { number: 300, exclusive: true },
         // rando: { number: 1 },
-        // neverHaveIEver: {}
+        // neverHaveIEver: {},
+        // happyEnding: {}
       },
       stages: {
         timeLimitMode: "Soft",
+        starting: 30,
         playing: {
           duration: 60,
           after: 2,
