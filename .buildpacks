@@ -1,0 +1,4 @@
+client=https://github.com/heroku/heroku-buildpack-nodejs.git
+server=https://github.com/heroku/heroku-buildpack-nodejs.git
+https://github.com/heroku/heroku-buildpack-nodejs.git
+https://github.com/heroku/heroku-buildpack-nginx.git 
