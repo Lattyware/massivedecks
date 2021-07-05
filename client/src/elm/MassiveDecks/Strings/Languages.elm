@@ -53,6 +53,7 @@ languages =
     , DeXInformal
     , Pl
     , Id
+    , Es
     ]
 
 
@@ -224,3 +225,6 @@ pack language =
 
         Id ->
             IdLang.pack
+            
+        Es ->
+            EsLang.pack
