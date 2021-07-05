@@ -1308,6 +1308,9 @@ translate _ mdString =
 
         Indonesian ->
             [ Text "Indonesian" ]
+            
+        Spanish ->
+            [ Text "Spanish" ]
 
 
 

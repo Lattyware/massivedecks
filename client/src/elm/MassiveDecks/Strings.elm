@@ -417,3 +417,5 @@ type MdString
     | GermanInformal -- The name of the german informal language (Informal).
     | Polish -- The name of the Polish language.
     | Indonesian -- The name of the Indonesian language.
+    | Spanish -- The name of the Spanish language.
+    
