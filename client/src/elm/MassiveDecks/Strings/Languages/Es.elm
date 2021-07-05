@@ -19,7 +19,7 @@ pack =
     Translation.pack
         { lang = Es
         , code = "es"
-        , name = Espanol
+        , name = Spanish
         , translate = translate
         , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
         }
