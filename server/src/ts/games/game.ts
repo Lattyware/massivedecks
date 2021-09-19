@@ -453,13 +453,13 @@ export class Game {
             additionallyByPlayer
           ),
     ];
+
+    const plays = round.plays;
     const ais = this.rules.houseRules.rando.current;
     for (const ai of ais) {
       const player = this.players[ai] as Player.Player;
-      const plays = round.plays;
-      const playId = Play.id();
       plays.push({
-        id: playId,
+        id: Play.id(),
         play: player.hand.slice(0, slotCount) as Card.Response[],
         playedBy: ai,
         revealed: false,
