@@ -1,5 +1,4 @@
 const webpack = require("webpack");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
@@ -55,6 +54,7 @@ module.exports = (env, argv) => {
   }
 
   return {
+    mode,
     context: path.resolve(__dirname),
     entry: {
       // Main entry point.
@@ -66,8 +66,8 @@ module.exports = (env, argv) => {
       path: dist,
       publicPath: "/",
       filename: "assets/scripts/[name].[contenthash].js",
+      clean: true,
     },
-    mode,
     module: {
       rules: [
         // Elm scripts.
@@ -135,35 +135,28 @@ module.exports = (env, argv) => {
         // Image assets.
         {
           test: /\.(jpg|png|svg)$/,
-          loader: "file-loader",
-          options: {
-            name: "assets/images/[name].[hash].[ext]",
-            esModule: false,
+          type: "asset/resource",
+          generator: {
+            filename: "assets/images/[name].[hash].[ext]",
           },
         },
         // Font assets.
         {
           test: /\.(woff2)$/,
-          loader: "file-loader",
-          options: {
-            name: "assets/fonts/[name].[hash].[ext]",
-            publicPath: "/",
-            esModule: false,
+          type: "asset/resource",
+          generator: {
+            filename: "assets/fonts/[name].[hash].[ext]",
           },
         },
         // App manifest.
         {
           test: /\.webmanifest$/,
           exclude: [/elm-stuff/, /node_modules/, /dist/],
+          type: "asset/resource",
+          generator: {
+            filename: "assets/[name].[hash].[ext]",
+          },
           use: [
-            {
-              loader: "file-loader",
-              options: {
-                name: "assets/[name].[hash].[ext]",
-                publicPath: "/",
-                esModule: false,
-              },
-            },
             {
               loader: "app-manifest-loader",
             },
@@ -177,7 +170,6 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new InjectMetadataPlugin(),
-      new CleanWebpackPlugin(),
       new MiniCssExtractPlugin({
         filename: "assets/styles/[name].[contenthash].css",
       }),
@@ -216,7 +208,9 @@ module.exports = (env, argv) => {
     },
     devtool: !production ? "eval-source-map" : undefined,
     devServer: {
+      static: [{ directory: dist }],
       hot: true,
+      //host: "0.0.0.0",
       allowedHosts: ["localhost"],
       proxy: {
         // Forward to the server.

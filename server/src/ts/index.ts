@@ -226,7 +226,8 @@ async function main(): Promise<void> {
       if (lobbies > 0) {
         Logging.logger.info(`Collected ${lobbies} ended/abandoned lobbies.`);
       }
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       Logging.logException("Error garbage collecting:", error);
     }
   }, config.storage.garbageCollectionFrequency);
@@ -234,7 +235,8 @@ async function main(): Promise<void> {
   setInterval(async () => {
     try {
       await Timeout.handle(state);
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       Logging.logException("Error running timeout:", error);
     }
   }, config.timeouts.timeoutCheckFrequency);
@@ -242,7 +244,8 @@ async function main(): Promise<void> {
   setInterval(async () => {
     try {
       await state.tasks.process(state);
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       Logging.logException("Error processing task queue:", error);
     }
   }, config.tasks.processTickFrequency);

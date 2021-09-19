@@ -8,20 +8,21 @@ variable "VCS_REF" {
    
 function "splitSemVer" {
     params = [version]
-    result = regex("^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$", version)
+    result = regexall("^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$", version)
 }   
     
 function "generateVersionTags" {
     params = [semVer]
-    result = concat(
-        ["latest-prerelease"], semVer.prerelease != null ? 
-            [ "${semVer.major}.${semVer.minor}.${semVer.patch}-${semVer.prerelease}" ] : 
+    result = length(semVer) != 1 ? [] : concat(
+        semVer[0]["prerelease"] != null ?
+            [ "${semVer[0]["major"]}.${semVer[0]["minor"]}.${semVer[0]["patch"]}-${semVer[0]["prerelease"]}" ] : 
             [
+                "${semVer[0]["major"]}.${semVer[0]["minor"]}.${semVer[0]["patch"]}",
+                "${semVer[0]["major"]}.${semVer[0]["minor"]}",
+                "${semVer[0]["major"]}",
                 "latest-release",
-                "${semVer.major}",
-                "${semVer.major}.${semVer.minor}",
-                "${semVer.major}.${semVer.minor}.${semVer.patch}",
-            ]
+            ],
+        ["latest-prerelease"]
     )
 }
 
@@ -29,14 +30,14 @@ function "repos" {
     params = []
     result = [
         "ghcr.io/lattyware/massivedecks/",
-        "registry.hub.docker.com/lattyware/massivedecks/"
+        "massivedecks/"
     ]
 }   
     
 function "generateTags" {
     params = [repos, versionTags, commitHash, component]
     result = flatten([
-        for repo in repos: [ for tag in flatten(["latest", versionTags, commitHash]) : "${repo}${component}:${tag}" ]
+        for repo in repos: [ for tag in flatten([commitHash, versionTags, "latest"]) : "${repo}${component}:${tag}" ]
     ])
 }
 
@@ -50,13 +51,13 @@ target "build" {
 target "server" {
     context = "./server"
     inherits = ["build"]
-    tags = generateTags(repos(), VERSION == "" ? [] : generateVersionTags(splitSemVer(VERSION)), VCS_REF, "server")
+    tags = generateTags(repos(), generateVersionTags(splitSemVer(VERSION)), VCS_REF, "server")
 }
 
 target "client" {
     context = "./client"
     inherits = ["build"]
-    tags = generateTags(repos(), VERSION == "" ? [] : generateVersionTags(splitSemVer(VERSION)), VCS_REF, "client")
+    tags = generateTags(repos(), generateVersionTags(splitSemVer(VERSION)), VCS_REF, "client")
 }
 
 group "default" {

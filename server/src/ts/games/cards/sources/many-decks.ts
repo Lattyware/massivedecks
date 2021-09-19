@@ -1,6 +1,6 @@
 import * as Source from "../source";
 import genericPool from "generic-pool";
-import http, { AxiosInstance, AxiosRequestConfig } from "axios";
+import http, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import * as Config from "../../../config";
 import HttpStatus from "http-status-codes";
 import {
@@ -10,6 +10,7 @@ import {
 import * as Decks from "../decks";
 import JSON5 from "json5";
 import * as Card from "../card";
+import { MassiveDecksError } from "../../../errors";
 
 /**
  * A source that just tries to load an arbitrary URL.
@@ -98,16 +99,17 @@ export class Resolver extends Source.Resolver<ManyDecks> {
           responses: new Set(data.responses.map(this.response)),
         },
       };
-    } catch (error) {
-      if (error.response) {
+    } catch (e) {
+      if (Object.prototype.hasOwnProperty.call(e, "response")) {
+        const error = e as AxiosError;
         const response = error.response;
-        if (response.status === HttpStatus.NOT_FOUND) {
+        if (response?.status === HttpStatus.NOT_FOUND) {
           throw new SourceNotFoundError(this.source);
         } else {
           throw new SourceServiceError(this.source);
         }
       } else {
-        throw error;
+        throw e;
       }
     } finally {
       await this.connectionPool.release(connection);

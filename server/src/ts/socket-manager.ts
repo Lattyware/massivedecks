@@ -18,7 +18,8 @@ import * as Token from "./user/token";
 const parseJson = (raw: string): object => {
   try {
     return JSON.parse(raw);
-  } catch (error) {
+  } catch (e) {
+    const error = e as Error;
     throw new InvalidActionError(error.message);
   }
 };
@@ -91,35 +92,39 @@ export class SocketManager {
     this.sockets = new Sockets();
   }
 
-  private readonly errorWSHandler = <T>(
-    socket: WebSocket,
-    fn: (data: WebSocket.Data) => Promise<T>
-  ): ((data: WebSocket.Data) => Promise<T | void>) => async (data) => {
-    try {
-      return await fn(data);
-    } catch (error) {
+  private readonly errorWSHandler =
+    <T>(
+      socket: WebSocket,
+      fn: (data: WebSocket.Data) => Promise<T>
+    ): ((data: WebSocket.Data) => Promise<T | void>) =>
+    async (data) => {
       try {
-        const dataDescription =
-          typeof data === "string" ? data : `(${typeof data})`;
-        if (error instanceof MassiveDecksError) {
-          const details = error.details();
-          Logging.logger.warn("WebSocket bad request:", {
-            data: dataDescription,
-            details,
-            errorMessage: error.message,
-          });
-          socket.send(JSON.stringify(details));
-        } else {
-          Logging.logException("WebSocket error:", error, dataDescription);
-          socket.send(JSON.stringify({ error: "InternalServerError" }));
-          socket.close();
+        return await fn(data);
+      } catch (e) {
+        const error = e as Error;
+        try {
+          const dataDescription =
+            typeof data === "string" ? data : `(${typeof data})`;
+          if (error instanceof MassiveDecksError) {
+            const details = error.details();
+            Logging.logger.warn("WebSocket bad request:", {
+              data: dataDescription,
+              details,
+              errorMessage: error.message,
+            });
+            socket.send(JSON.stringify(details));
+          } else {
+            Logging.logException("WebSocket error:", error, dataDescription);
+            socket.send(JSON.stringify({ error: "InternalServerError" }));
+            socket.close();
+          }
+        } catch (e) {
+          const error = e as Error;
+          Logging.logException("Error resolving WebSocket error:", error);
         }
-      } catch (error) {
-        Logging.logException("Error resolving WebSocket error:", error);
+        return;
       }
-      return;
-    }
-  };
+    };
 
   public add(server: ServerState, gameCode: GameCode, socket: WebSocket): void {
     const sockets = this.sockets;

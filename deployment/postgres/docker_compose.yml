@@ -15,7 +15,7 @@ volumes:
 services:
     storage:
         container_name: storage
-        image: "postgres:12"
+        image: "postgres:13"
         # See the postgres image's documentation for more on configuring it.
         # https://hub.docker.com/_/postgres
         environment:
@@ -32,7 +32,7 @@ services:
         container_name: server
         # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
         # Make sure you always deploy the same tag for client and server.
-        image: "massivedecks/server:latest"
+        image: "ghcr.io/lattyware/massivedecks/server:latest"
         depends_on:
             - storage
         environment:
@@ -52,7 +52,7 @@ services:
         container_name: client
         # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
         # Make sure you always deploy the same tag for client and server.
-        image: "massivedecks/client:latest"
+        image: "ghcr.io/lattyware/massivedecks/client:latest"
         depends_on:
             - server
         ports:

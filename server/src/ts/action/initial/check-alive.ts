@@ -14,6 +14,7 @@ export const validate = (action: object): CheckAlive => {
   try {
     return _validateCheckAlive(action);
   } catch (e) {
-    throw new InvalidActionError(e.message);
+    const error = e as Error;
+    throw new InvalidActionError(error.message);
   }
 };

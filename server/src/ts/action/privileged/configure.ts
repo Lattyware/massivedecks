@@ -167,7 +167,8 @@ class ConfigureActions extends Actions.Implementation<
     }
     try {
       validated = _validateConfig(patched);
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       throw new InvalidActionError(`${error.name}: ${error.message}`);
     }
     const { result, events, tasks } = apply(

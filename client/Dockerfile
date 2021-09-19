@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 node:16-alpine AS build
 
 WORKDIR /md
 
-RUN ["apk", "add", "--no-cache", "python", "make", "g++"]
+RUN ["apk", "add", "--no-cache", "python3", "make", "g++"]
 
 ARG VERSION=dev
 ENV MD_VERSION $VERSION

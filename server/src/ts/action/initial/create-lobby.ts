@@ -21,6 +21,7 @@ export const validate = (action: object): CreateLobby => {
   try {
     return _validateCreateLobby(action);
   } catch (e) {
-    throw new InvalidActionError(e.message);
+    const error = e as Error;
+    throw new InvalidActionError(error.message);
   }
 };

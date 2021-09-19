@@ -13,7 +13,7 @@ export abstract class TaskBase<T> implements Task {
     this.gameCode = gameCode;
   }
 
-  protected abstract  begin(server: ServerState): Promise<T>;
+  protected abstract begin(server: ServerState): Promise<T>;
 
   protected abstract resolve(
     lobby: Lobby,
@@ -32,7 +32,8 @@ export abstract class TaskBase<T> implements Task {
     let work: T;
     try {
       work = await this.begin(server);
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       await Change.apply(server, this.gameCode, (lobby) =>
         this.resolveError(lobby, error, server)
       );

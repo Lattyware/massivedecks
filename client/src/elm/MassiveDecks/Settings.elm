@@ -331,7 +331,7 @@ autoAdvanceRound wrap shared =
             [ HtmlA.class "multipart" ]
             [ Switch.view
                 [ HtmlE.onCheck (ToggleAutoAdvance >> wrap)
-                , HtmlA.checked (settings.autoAdvance |> Maybe.withDefault False)
+                , HtmlA.selected (settings.autoAdvance |> Maybe.withDefault False)
                 , HtmlA.id "auto-advance-enable"
                 ]
             , Html.label [ HtmlA.for "auto-advance-enable" ]
@@ -381,7 +381,7 @@ speechVoiceSelector wrap shared =
                     [ Switch.view
                         [ HtmlE.onCheck (ToggleSpeech >> wrap)
                         , HtmlA.disabled isDisabled
-                        , HtmlA.checked enabled
+                        , HtmlA.selected enabled
                         , HtmlA.id "speech-enable"
                         ]
                     , Html.label [ HtmlA.for "speech-enable" ]
@@ -483,7 +483,7 @@ notificationsSwitch wrap shared =
                 [ Switch.view
                     [ HtmlE.onCheck (ToggleNotifications >> wrap)
                     , HtmlA.disabled unsupported
-                    , HtmlA.checked enabled
+                    , HtmlA.selected enabled
                     , HtmlA.id "notifications-enable"
                     ]
                 , Html.label [ HtmlA.for "notifications-enable" ]
@@ -501,7 +501,7 @@ notificationsSwitch wrap shared =
                         [ Switch.view
                             [ HtmlE.onCheck (ToggleOnlyWhenHidden >> wrap)
                             , HtmlA.disabled visibilityDisabled
-                            , HtmlA.checked settings.requireNotVisible
+                            , HtmlA.selected settings.requireNotVisible
                             , HtmlA.id "only-when-hidden-toggle"
                             ]
                         , Html.label [ HtmlA.for "only-when-hidden-toggle" ]

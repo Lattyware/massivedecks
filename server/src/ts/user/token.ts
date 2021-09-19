@@ -50,7 +50,8 @@ export function validate(token: Token, issuer: string, secret: string): Claims {
       algorithms: ["HS256"],
       issuer: issuer,
     }) as Claims;
-  } catch (error) {
+  } catch (e) {
+    const error = e as Error;
     if (error.hasOwnProperty("name") && error.name === "JsonWebTokenError") {
       if (error.message.startsWith("jwt issuer invalid.")) {
         throw new IncorrectIssuerError();

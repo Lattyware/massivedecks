@@ -57,7 +57,7 @@ maybe default base noOp update model value args =
                     ( False, True )
     in
     Switch.view
-        [ checked |> HtmlA.checked
+        [ checked |> HtmlA.selected
         , if readOnly || disabled then
             HtmlA.disabled True
 
@@ -83,7 +83,7 @@ bool label _ update _ value { shared, readOnly } =
             ]
         )
         [ Switch.view
-            [ value |> Maybe.withDefault False |> HtmlA.checked
+            [ value |> Maybe.withDefault False |> HtmlA.selected
             , if disabled then
                 HtmlA.disabled True
 

@@ -11,7 +11,7 @@ services:
         container_name: server
         # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
         # Make sure you always deploy the same tag for client and server.
-        image: "massivedecks/server:latest"
+        image: "ghcr.io/lattyware/massivedecks/server:latest"
         environment:
             - NODE_ENV=production
             # This needs to be changed to a secret value.
@@ -27,7 +27,7 @@ services:
             - server
         # If you want to keep your deployment stable, it would be sensible to specify a specific tag rather than just `latest` here.
         # Make sure you always deploy the same tag for client and server.
-        image: "massivedecks/client:latest"
+        image: "ghcr.io/lattyware/massivedecks/client:latest"
         ports:
             - "80:8080"
         networks:

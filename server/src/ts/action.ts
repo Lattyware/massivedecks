@@ -32,7 +32,8 @@ export const validate = (action: object): Action => {
   try {
     return _validateAction(action);
   } catch (e) {
-    throw new InvalidActionError(e.message);
+    const error = e as Error;
+    throw new InvalidActionError(error.message);
   }
 };
 

@@ -1,8 +1,10 @@
+@use "sass:math";
+
 $card-width: 18em;
 $card-margin: 0.5em;
 $card-overlap: 4em;
 
-$card-ratio: 5/7;
+$card-ratio: math.div(5, 7);
 $card-compact-ratio: 1;
 
 @mixin pad-to-aspect-ratio($ratio) {
