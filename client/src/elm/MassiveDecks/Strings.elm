@@ -124,6 +124,8 @@ type MdString
     | HouseRuleCzarChoicesNumberDescription -- A description of the setting for the number of choices the czar is given.
     | HouseRuleCzarChoicesCustom -- A name of the setting for allowing the czar to write a custom call.
     | HouseRuleCzarChoicesCustomDescription -- A description of the setting for allowing the czar to write a custom call.
+    | HouseRuleWinnersPick -- The name of the house rule where the winner of each round becomes the next czar.
+    | HouseRuleWinnersPickDescription -- A description of the house rule where the winner of each round becomes the next czar.
     | SeeAlso { rule : MdString } -- A message telling the user to see another rule.
     | MustBeMoreThanOrEqualValidationError { min : Int } -- An error when a configuration value must be more than or equal to the given value.
     | MustBeLessThanOrEqualValidationError { max : Int } -- An error when a configuration value must be less than or equal to the given value.
@@ -418,4 +420,3 @@ type MdString
     | Polish -- The name of the Polish language.
     | Indonesian -- The name of the Indonesian language.
     | Spanish -- The name of the Spanish language.
-    

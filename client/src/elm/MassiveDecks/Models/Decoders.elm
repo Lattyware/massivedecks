@@ -433,6 +433,7 @@ houseRules =
         |> Json.optional "neverHaveIEver" (neverHaveIEver |> Json.map Just) Nothing
         |> Json.optional "happyEnding" (happyEnding |> Json.map Just) Nothing
         |> Json.optional "czarChoices" (czarChoices |> Json.map Just) Nothing
+        |> Json.optional "winnersPick" (winnersPick |> Json.map Just) Nothing
 
 
 comedyWriter : Json.Decoder Rules.ComedyWriter
@@ -462,6 +463,11 @@ czarChoices =
     Json.succeed Rules.CzarChoices
         |> Json.required "numberOfChoices" Json.int
         |> Json.optional "custom" Json.bool False
+
+
+winnersPick : Json.Decoder Rules.WinnersPick
+winnersPick =
+    {} |> Json.succeed
 
 
 reboot : Json.Decoder Rules.Reboot

@@ -330,6 +330,12 @@ translate _ mdString =
         HouseRuleCzarChoicesCustomDescription ->
             [ Text "If the ", ref Czar, Text " can write custom calls. This takes up one of the choices." ]
 
+        HouseRuleWinnersPick ->
+            [ Text "Winner's Pick" ]
+
+        HouseRuleWinnersPickDescription ->
+            [ Text "The winner of each round becomes the ", ref Czar, Text " for the next round." ]
+
         SeeAlso { rule } ->
             [ Text "See also: ", ref rule ]
 

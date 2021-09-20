@@ -695,6 +695,9 @@ export const Schema = {
         reboot: {
           $ref: "#/definitions/Reboot",
         },
+        winnersPick: {
+          $ref: "#/definitions/WinnersPick",
+        },
       },
       type: "object",
     },
@@ -1103,6 +1106,17 @@ export const Schema = {
     Token: {
       description: "A token that contains the encoded claims of a user.",
       type: "string",
+    },
+    WinnersPick: {
+      $ref: "#/definitions/WinnersPick_1",
+      description:
+        'Configuration for the "Winner\'s Pick" house rule.\nThis rule makes the winner of each round the czar for the next round.',
+    },
+    WinnersPick_1: {
+      additionalProperties: false,
+      description:
+        'Configuration for the "Winner\'s Pick" house rule.\nThis rule makes the winner of each round the czar for the next round.',
+      type: "object",
     },
   },
 };

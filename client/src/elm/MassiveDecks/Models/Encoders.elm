@@ -123,6 +123,7 @@ houseRules h =
             , h.neverHaveIEver |> Maybe.map (\n -> ( "neverHaveIEver", neverHaveIEver n ))
             , h.happyEnding |> Maybe.map (\e -> ( "happyEnding", happyEnding e ))
             , h.czarChoices |> Maybe.map (\c -> ( "czarChoices", czarChoices c ))
+            , h.winnersPick |> Maybe.map (\w -> ( "winnersPick", winnersPick w ))
             ]
         )
 
@@ -168,6 +169,11 @@ czarChoices { numberOfChoices, custom } =
                 []
     in
     (( "numberOfChoices", numberOfChoices |> Json.int ) :: rest) |> Json.object
+
+
+winnersPick : Rules.WinnersPick -> Json.Value
+winnersPick _ =
+    Json.object []
 
 
 decks : Decks.Config -> Json.Value

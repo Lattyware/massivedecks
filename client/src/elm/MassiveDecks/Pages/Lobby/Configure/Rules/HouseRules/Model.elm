@@ -7,6 +7,7 @@ import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.NeverHaveIEver.Model 
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.PackingHeat.Model as PackingHeat
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Rando.Model as Rando
 import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.Reboot.Model as Reboot
+import MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.WinnersPick.Model as WinnersPick
 
 
 type Id
@@ -18,3 +19,4 @@ type Id
     | NeverHaveIEverId NeverHaveIEver.Id
     | HappyEndingId HappyEnding.Id
     | CzarChoicesId CzarChoices.Id
+    | WinnersPickId WinnersPick.Id

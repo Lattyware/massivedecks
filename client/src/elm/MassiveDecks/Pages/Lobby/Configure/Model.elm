@@ -73,6 +73,7 @@ fake =
             , neverHaveIEver = Nothing
             , happyEnding = Nothing
             , czarChoices = Nothing
+            , winnersPick = Nothing
             }
         , stages =
             { mode = Rules.Soft

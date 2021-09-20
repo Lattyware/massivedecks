@@ -377,6 +377,14 @@ translate _ mdString =
             [ Missing ]
 
         -- TODO: Translate
+        HouseRuleWinnersPick ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPickDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
         SeeAlso { rule } ->
             [ Missing ]
 
