@@ -352,6 +352,14 @@ translate _ mdString =
         HouseRuleCzarChoicesCustomDescription ->
             [ Text "Si el ", ref Czar, Text " puede escribir cartas personalizadas. Esto eliminará una de las elecciones." ]
 
+        -- TODO: Translate
+        HouseRuleWinnersPick ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPickDescription ->
+            [ Missing ]
+
         SeeAlso { rule } ->
             [ Text "Ver también: ", ref rule ]
 

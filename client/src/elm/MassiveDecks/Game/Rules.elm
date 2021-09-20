@@ -11,6 +11,7 @@ module MassiveDecks.Game.Rules exposing
     , Stage
     , Stages
     , TimeLimitMode(..)
+    , WinnersPick
     )
 
 {-| Game rules.
@@ -35,6 +36,7 @@ type alias HouseRules =
     , neverHaveIEver : Maybe NeverHaveIEver
     , happyEnding : Maybe HappyEnding
     , czarChoices : Maybe CzarChoices
+    , winnersPick : Maybe WinnersPick
     }
 
 
@@ -88,3 +90,7 @@ type alias CzarChoices =
     { numberOfChoices : Int
     , custom : Bool
     }
+
+
+type alias WinnersPick =
+    {}

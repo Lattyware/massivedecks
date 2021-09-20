@@ -393,7 +393,8 @@ translate maybeDeclCase mdString =
             , ref Czar
             , Text " otrzymuje wiele "
             , refDecl Genitive (nounUnknownQuantity Call)
-            , Text " i może wybrać jedną z nich, i/lub może napisać własną."]
+            , Text " i może wybrać jedną z nich, i/lub może napisać własną."
+            ]
 
         HouseRuleCzarChoicesNumber ->
             [ Text "Ilość" ]
@@ -406,6 +407,14 @@ translate maybeDeclCase mdString =
 
         HouseRuleCzarChoicesCustomDescription ->
             [ Text "Czy ", ref Czar, Text " może pisać własne czarne karty. Zabiera miejsce jednego z wyborów." ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPick ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPickDescription ->
+            [ Missing ]
 
         SeeAlso { rule } ->
             [ Text "Zobacz także: ", ref rule ]
@@ -1730,9 +1739,17 @@ asWord number gender declCase =
 
         1 ->
             {- We assume feminine accusative is the only non-nominative case we need.
-            It's true for now and implementing other cases would take more code.
+               It's true for now and implementing other cases would take more code.
             -}
-            dependingOnGender "jeden" (if declCase == Accusative then "jedną" else "jedna") "jedno" gender
+            dependingOnGender "jeden"
+                (if declCase == Accusative then
+                    "jedną"
+
+                 else
+                    "jedna"
+                )
+                "jedno"
+                gender
 
         2 ->
             dependingOnGender "dwa" "dwie" "dwa" gender

@@ -10,6 +10,7 @@ Contributors:
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
+import MassiveDecks.Game.Rules exposing (WinnersPick)
 import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
 import MassiveDecks.Strings.Languages.Model exposing (Language(..))
 import MassiveDecks.Strings.Translation as Translation
@@ -376,6 +377,14 @@ translate _ mdString =
 
         -- TODO: Translate
         HouseRuleCzarChoicesCustomDescription ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPick ->
+            [ Missing ]
+
+        -- TODO: Translate
+        HouseRuleWinnersPickDescription ->
             [ Missing ]
 
         -- TODO: Translate
@@ -1358,7 +1367,7 @@ translate _ mdString =
 
         Indonesian ->
             [ Text "Indonesisch" ]
-            
+
         Spanish ->
             [ Text "Spanisch" ]
 
