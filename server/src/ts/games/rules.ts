@@ -132,6 +132,12 @@ export interface ComedyWriter {
  */
 export interface NeverHaveIEver {}
 
+/**
+ * Configuration for the "Winner's Pick" house rule.
+ * This rule makes the winner of each round the czar for the next round.
+ */
+export interface WinnersPick {}
+
 export const censor = (rules: Rules): Public => ({
   ...rules,
   houseRules: HouseRules.censor(rules.houseRules),

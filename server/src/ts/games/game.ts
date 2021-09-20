@@ -112,6 +112,15 @@ export class Game {
   }
 
   public nextCzar(users: { [id: string]: User.User }): User.Id | undefined {
+    if (
+      this.rules.houseRules.winnersPick &&
+      this.rules.houseRules.winnersPick.roundWinner
+    ) {
+      const roundWinner = this.rules.houseRules.winnersPick.roundWinner;
+      if (Game.canBeCzar(users[roundWinner], this.players[roundWinner])) {
+        return roundWinner;
+      }
+    }
     const current = this.round.czar;
     const playerOrder = this.playerOrder;
     const currentIndex = playerOrder.findIndex((id) => id === current);

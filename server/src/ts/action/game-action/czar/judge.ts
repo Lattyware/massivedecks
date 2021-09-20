@@ -49,6 +49,9 @@ class JudgeAction extends Actions.Implementation<
       }
       const player = game.players[winningPlay.playedBy];
       player.score += 1;
+      if (game.rules.houseRules.winnersPick) {
+        game.rules.houseRules.winnersPick.roundWinner = winningPlay.playedBy;
+      }
       const completedRound = round.advance(winningPlay.playedBy);
       game.round = completedRound;
       game.history.splice(0, 0, completedRound.public());
