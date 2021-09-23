@@ -346,6 +346,13 @@ update wrap shared msg model =
                             , Cmd.none
                             )
 
+                        Events.ReceiveChatMessage message ->
+                            let
+                                m =
+                                    lobby.messages ++ [ message.message ]
+                            in
+                            ( Stay { model | lobbyAndConfigure = model.lobbyAndConfigure |> Maybe.map (\l -> { l | lobby = { lobby | messages = m } }) }, shared, Cmd.none )
+
                 Nothing ->
                     case event of
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
@@ -944,10 +951,14 @@ viewUsers wrap shared localUserId lobby openUserMenu game model =
 
         groups =
             List.concat [ activeGroups, inactiveGroup ]
+
+        messages =
+            lobby.messages |> List.map (\message -> (users |> Dict.get message.author |> Maybe.map .name |> Maybe.withDefault "Unknown User") ++ ": " ++ message.content) |> List.map (Html.text >> (\t -> [ t ]) >> Html.p [])
     in
     Card.view [ HtmlA.id "users" ]
         [ Html.div [ HtmlA.class "collapsible" ]
             [ HtmlK.ol [] groups
+            , Html.ol [] messages
             , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
             ]
         ]

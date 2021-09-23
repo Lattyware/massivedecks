@@ -762,7 +762,6 @@ export const Schema = {
           description: "The name the user wishes to use.",
           maxLength: 100,
           minLength: 1,
-          type: "string",
         },
         password: {
           description:

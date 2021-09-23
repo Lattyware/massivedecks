@@ -4,6 +4,7 @@ import type { ErrorEncountered } from "./lobby-event/error-encountered.js";
 import type { PresenceChanged } from "./lobby-event/presence-changed.js";
 import type { PrivilegeChanged } from "./lobby-event/privilege-changed.js";
 import type { UserRoleChanged } from "./lobby-event/user-role-changed.js";
+import type { ReceiveChatMessage } from "./lobby-event/receive-chat-message.js";
 
 export type LobbyEvent =
   | Configured
@@ -11,4 +12,5 @@ export type LobbyEvent =
   | PresenceChanged
   | PrivilegeChanged
   | UserRoleChanged
-  | ErrorEncountered;
+  | ErrorEncountered
+  | ReceiveChatMessage;

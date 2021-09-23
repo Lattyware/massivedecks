@@ -785,6 +785,9 @@ eventByName name =
         "GameEnded" ->
             gameEvent ended
 
+        "ReceiveChatMessage" ->
+            receiveChatMessage
+
         "ErrorEncountered" ->
             errorEncountered
 
@@ -816,6 +819,12 @@ ended : Json.Decoder Events.GameEvent
 ended =
     Json.map (\w -> Events.GameEnded { winner = w })
         (Json.field "winner" (Json.list userId |> Json.map Set.fromList))
+
+
+receiveChatMessage : Json.Decoder Events.Event
+receiveChatMessage =
+    Json.map (\m -> Events.ReceiveChatMessage { message = m })
+        (Json.field "message" message)
 
 
 stageTimerDone : Json.Decoder Events.GameEvent
