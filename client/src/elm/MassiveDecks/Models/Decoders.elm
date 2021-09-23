@@ -47,6 +47,7 @@ import MassiveDecks.Game.Time as Time
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Notifications.Model as Notifications
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as DeckConfig
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as PrivacyConfig
@@ -316,8 +317,16 @@ lobby ld calls =
         |> Json.required "users" users
         |> Json.required "owner" userId
         |> Json.required "config" config
+        |> Json.required "messages" (Json.list message)
         |> Json.optional "game" (game ld calls |> Json.map (Game.emptyModel >> Just)) Nothing
         |> Json.optional "errors" (Json.list gameStateError) []
+
+
+message : Json.Decoder Chat.Message
+message =
+    Json.succeed Chat.Message
+        |> Json.required "content" Json.string
+        |> Json.required "author" Json.string
 
 
 game : Maybe LikeDetail -> Maybe (List Card.Call) -> Json.Decoder Game

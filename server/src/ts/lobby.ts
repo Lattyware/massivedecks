@@ -1,5 +1,6 @@
 import type { CreateLobby } from "./action/initial/create-lobby.js";
 import type { RegisterUser } from "./action/initial/register-user.js";
+import type * as Chat from "./lobby/chat.js";
 import type * as Errors from "./errors.js";
 import * as Event from "./event.js";
 import * as PresenceChanged from "./events/lobby-event/presence-changed.js";
@@ -20,6 +21,7 @@ export interface Lobby {
   users: { [id: string]: User.User };
   owner: User.Id;
   config: Config.Config;
+  messages: Chat.Message[];
   game?: Game.Game;
   errors: Errors.Details[];
 }
@@ -50,6 +52,7 @@ export interface Public {
   users: { [id: string]: User.Public };
   owner: User.Id;
   config: Config.Public;
+  messages: Chat.Message[];
   game?: Game.Public;
   errors?: Errors.Details[];
 }
@@ -121,6 +124,7 @@ export function create(
     users: { [ownerId]: User.create(creation.owner, "Player", "Privileged") },
     owner: ownerId,
     config: config,
+    messages: [],
     errors: [],
   };
   config.rules.houseRules.rando = Rando.create(
@@ -167,6 +171,7 @@ export const censor = (lobby: Lobby): Public => ({
   users: usersObj(lobby),
   owner: lobby.owner,
   config: Config.censor(lobby.config),
+  messages: lobby.messages,
   ...(lobby.game === undefined ? {} : { game: lobby.game.public() }),
   ...(lobby.errors.length === 0 ? {} : { errors: lobby.errors }),
 });
