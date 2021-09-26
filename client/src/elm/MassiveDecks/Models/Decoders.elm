@@ -197,6 +197,7 @@ settings =
     Json.succeed Settings
         |> Json.required "tokens" (Json.dict lobbyToken)
         |> Json.required "openUserList" Json.bool
+        |> Json.required "openChat" Json.bool
         |> Json.optional "lastUsedName" (Json.string |> Json.map Just) Nothing
         |> Json.required "recentDecks" (Json.list externalSource)
         |> Json.optional "chosenLanguage" (language |> Json.map Just) Nothing

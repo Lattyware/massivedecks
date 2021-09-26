@@ -9,6 +9,7 @@ type Msg
     = ChangeLang (Maybe Language)
     | ChangeCardSize CardSize
     | ChangeOpenUserList Bool
+    | ChangeOpenChat Bool
     | ToggleOpen
     | RemoveInvalid (List Lobby.Token)
     | ToggleSpeech Bool

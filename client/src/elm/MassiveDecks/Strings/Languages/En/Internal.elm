@@ -642,6 +642,9 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Show or hide the scoreboard." ]
 
+        ToggleChat ->
+            [ Text "Show or hide the chat." ]
+
         GameMenu ->
             [ Text "Game menu." ]
 

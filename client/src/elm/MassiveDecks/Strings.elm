@@ -215,6 +215,7 @@ type MdString
     | Likes { total : Int } -- A display of a number of likes.
     | LikesDescription -- A description of the number of likes a play received or a player has recieved.
     | ToggleUserList -- A description of the action of showing or hiding the user list.
+    | ToggleChat -- A description of the action of showing or hiding the chat.
     | GameMenu -- A description of the game menu.
     | UnknownUser -- A name for a user that doesn't have a known name.
     | InvitePlayers -- A short term for inviting players to the game.

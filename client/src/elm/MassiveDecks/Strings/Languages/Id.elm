@@ -683,6 +683,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Menampilkan atau menyembunyikan papan skor." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Menu permainan." ]
 

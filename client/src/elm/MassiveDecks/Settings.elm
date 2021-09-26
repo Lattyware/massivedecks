@@ -75,6 +75,7 @@ defaults =
     { tokens = Dict.empty
     , lastUsedName = Nothing
     , openUserList = False
+    , openChat = False
     , recentDecks = []
     , chosenLanguage = Nothing
     , cardSize = Full
@@ -109,6 +110,9 @@ update shared msg =
 
         ChangeOpenUserList open ->
             changeSettings (\s -> { s | openUserList = open }) model
+
+        ChangeOpenChat open ->
+            changeSettings (\s -> { s | openChat = open }) model
 
         RemoveInvalid tokenValidity ->
             let

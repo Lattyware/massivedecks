@@ -676,6 +676,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Mostrar o esconder el marcador." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Menú de la partida." ]
 

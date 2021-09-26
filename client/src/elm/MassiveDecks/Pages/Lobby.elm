@@ -544,6 +544,9 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
         usersShown =
             shared.settings.settings.openUserList
 
+        chatShown =
+            shared.settings.settings.openChat
+
         castAttrs =
             case shared.castStatus of
                 Cast.NoDevicesAvailable ->
@@ -570,6 +573,13 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             else
                 Icon.users
 
+        chatIcon =
+            if chatShown then
+                Icon.eyeSlash
+
+            else
+                Icon.facebookMessenger
+
         lobby =
             model.lobbyAndConfigure |> Maybe.map .lobby
 
@@ -590,7 +600,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
     in
     [ Html.div
         [ HtmlA.id "lobby"
-        , HtmlA.classList [ ( "collapsed-side-bar", not usersShown ) ]
+        , HtmlA.classList [ ( "collapsed-users", not usersShown ), ( "collapsed-chat", not chatShown ) ]
         , shared.settings.settings.cardSize |> cardSizeToAttr
         ]
         (Html.div [ HtmlA.id "top-bar" ]
@@ -600,6 +610,10 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                             (usersIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
                             (Strings.ToggleUserList |> Lang.string shared)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
+                      , IconButton.view shared
+                            Strings.ToggleChat
+                            (chatIcon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                            (chatShown |> not |> Settings.ChangeOpenChat |> wrapSettings |> Just)
                       , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
                     , castButton
@@ -653,7 +667,8 @@ viewLobby wrap shared auth openUserMenu viewContent model timeAnchor lobbyAndCon
                 Message.none
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
-        [ viewSidebar wrap shared auth.claims.uid lobby openUserMenu game model
+        [ viewUsers wrap shared auth.claims.uid lobby openUserMenu game
+        , viewChat wrap lobby model
         , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobbyAndConfigure ]
         , lobby.errors |> viewErrors shared
         ]
@@ -927,8 +942,8 @@ viewError shared error =
     error |> MdError.Game |> MdError.viewSpecific shared
 
 
-viewSidebar : (Msg -> msg) -> Shared -> User.Id -> Lobby -> Maybe User.Id -> Maybe Game -> Model -> Html msg
-viewSidebar wrap shared localUserId lobby openUserMenu game model =
+viewUsers : (Msg -> msg) -> Shared -> User.Id -> Lobby -> Maybe User.Id -> Maybe Game -> Html msg
+viewUsers wrap shared localUserId lobby openUserMenu game =
     let
         users =
             lobby.users
@@ -951,18 +966,26 @@ viewSidebar wrap shared localUserId lobby openUserMenu game model =
 
         groups =
             List.concat [ activeGroups, inactiveGroup ]
+    in
+    Card.view [ HtmlA.id "users" ]
+        [ Html.div [ HtmlA.class "collapsible" ]
+            [ HtmlK.ol [] groups ]
+        ]
+
+
+viewChat : (Msg -> msg) -> Lobby -> Model -> Html msg
+viewChat wrap lobby model =
+    let
+        users =
+            lobby.users
 
         messages =
             lobby.messages |> List.map (\message -> (users |> Dict.get message.author |> Maybe.map .name |> Maybe.withDefault "Unknown User") ++ ": " ++ message.content) |> List.map (Html.text >> (\t -> [ t ]) >> Html.p [ HtmlA.class "message" ])
     in
-    Card.view [ HtmlA.id "side-bar" ]
+    Card.view [ HtmlA.id "chat" ]
         [ Html.div [ HtmlA.class "collapsible" ]
-            [ Html.div [ HtmlA.class "users" ] [ HtmlK.ol [] groups ]
-            , Html.hr [] []
-            , Html.div [ HtmlA.class "chat" ]
-                [ Html.ol [] messages
-                , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
-                ]
+            [ Html.ol [] messages
+            , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
             ]
         ]
 
