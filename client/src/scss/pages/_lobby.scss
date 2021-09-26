@@ -6,7 +6,7 @@
 @use "../cards/_colors" as card-colors;
 
 $top-bar-height: 4rem;
-$users-width: 18rem;
+$side-bar-width: 18rem;
 
 @keyframes fadeIn {
   from {
@@ -54,7 +54,7 @@ $users-width: 18rem;
 #scroll-frame {
   position: absolute;
   top: 0;
-  left: $users-width;
+  left: $side-bar-width;
   right: 0;
   bottom: 0;
   overflow: auto;
@@ -76,9 +76,8 @@ $users-width: 18rem;
   justify-content: center;
 }
 
-#users {
+#side-bar {
   font-size: 1rem;
-  overflow-y: auto;
 
   z-index: 2;
 
@@ -92,7 +91,7 @@ $users-width: 18rem;
   left: 0;
   top: 0;
   bottom: 0;
-  width: $users-width;
+  width: $side-bar-width;
 
   transition: width 0.3s;
 
@@ -102,10 +101,6 @@ $users-width: 18rem;
     left: 0;
     right: 0;
     margin: auto;
-  }
-
-  .collapsible {
-    padding: 1em;
   }
 
   .user {
@@ -173,18 +168,45 @@ $users-width: 18rem;
   }
 }
 
-@media screen and (max-width: $users-width * 2) {
+.collapsible {
+  padding: 2%;
+  min-height: 98%;
+}
+
+@media screen and (max-width: $side-bar-width * 2) {
   #scroll-frame {
     left: 100vw;
   }
 
-  #users {
+  #side-bar {
     width: 100vw;
   }
 }
 
-.collapsed-users #users {
+.collapsed-side-bar #side-bar {
   width: 0;
+}
+
+.users {
+  overflow-y: auto;
+  height: 45%;
+}
+
+.chat {
+  overflow-y: auto;
+  height: 50%;
+  display: flex;
+  flex-direction: column-reverse;
+  position: relative;
+
+  .message {
+    margin: 0.5em;
+  }
+
+  input {
+    position: absolute;
+    bottom: 0;
+  }
 }
 
 .cast-button {

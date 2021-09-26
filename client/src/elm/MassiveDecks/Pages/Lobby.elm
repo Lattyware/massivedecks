@@ -590,7 +590,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
     in
     [ Html.div
         [ HtmlA.id "lobby"
-        , HtmlA.classList [ ( "collapsed-users", not usersShown ) ]
+        , HtmlA.classList [ ( "collapsed-side-bar", not usersShown ) ]
         , shared.settings.settings.cardSize |> cardSizeToAttr
         ]
         (Html.div [ HtmlA.id "top-bar" ]
@@ -653,7 +653,7 @@ viewLobby wrap shared auth openUserMenu viewContent model timeAnchor lobbyAndCon
                 Message.none
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
-        [ viewUsers wrap shared auth.claims.uid lobby openUserMenu game model
+        [ viewSidebar wrap shared auth.claims.uid lobby openUserMenu game model
         , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobbyAndConfigure ]
         , lobby.errors |> viewErrors shared
         ]
@@ -927,8 +927,8 @@ viewError shared error =
     error |> MdError.Game |> MdError.viewSpecific shared
 
 
-viewUsers : (Msg -> msg) -> Shared -> User.Id -> Lobby -> Maybe User.Id -> Maybe Game -> Model -> Html msg
-viewUsers wrap shared localUserId lobby openUserMenu game model =
+viewSidebar : (Msg -> msg) -> Shared -> User.Id -> Lobby -> Maybe User.Id -> Maybe Game -> Model -> Html msg
+viewSidebar wrap shared localUserId lobby openUserMenu game model =
     let
         users =
             lobby.users
@@ -953,13 +953,16 @@ viewUsers wrap shared localUserId lobby openUserMenu game model =
             List.concat [ activeGroups, inactiveGroup ]
 
         messages =
-            lobby.messages |> List.map (\message -> (users |> Dict.get message.author |> Maybe.map .name |> Maybe.withDefault "Unknown User") ++ ": " ++ message.content) |> List.map (Html.text >> (\t -> [ t ]) >> Html.p [])
+            lobby.messages |> List.map (\message -> (users |> Dict.get message.author |> Maybe.map .name |> Maybe.withDefault "Unknown User") ++ ": " ++ message.content) |> List.map (Html.text >> (\t -> [ t ]) >> Html.p [ HtmlA.class "message" ])
     in
-    Card.view [ HtmlA.id "users" ]
+    Card.view [ HtmlA.id "side-bar" ]
         [ Html.div [ HtmlA.class "collapsible" ]
-            [ HtmlK.ol [] groups
-            , Html.ol [] messages
-            , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
+            [ Html.div [ HtmlA.class "users" ] [ HtmlK.ol [] groups ]
+            , Html.hr [] []
+            , Html.div [ HtmlA.class "chat" ]
+                [ Html.ol [] messages
+                , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
+                ]
             ]
         ]
 
