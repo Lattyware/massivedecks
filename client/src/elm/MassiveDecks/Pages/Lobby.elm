@@ -1106,7 +1106,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                                     ContextMenu.button Icon.userKick Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
 
                                                 User.Unprivileged ->
-                                                    Menu.button Icon.ban Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
+                                                    Nothing
                                 in
                                 let
                                     setAway =

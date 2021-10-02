@@ -61,7 +61,7 @@ $side-bar-width: 18rem;
   transition: left 0.3s;
 }
 
-.collapsed-users #scroll-frame {
+.collapsed-users.collapsed-chat #scroll-frame {
   left: 0;
 }
 
@@ -211,6 +211,10 @@ $side-bar-width: 18rem;
 
   transition: width 0.3s;
 
+  .collapsible {
+    padding: 1em;
+  }
+
   ol {
     list-style: none;
     margin: 0;
@@ -219,14 +223,6 @@ $side-bar-width: 18rem;
 
   li {
     margin-top: 0.5em;
-  }
-
-  .away {
-    opacity: 0.5;
-  }
-
-  .left {
-    opacity: 0.3;
   }
 
   display: flex;
