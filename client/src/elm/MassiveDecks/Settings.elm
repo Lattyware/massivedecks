@@ -324,14 +324,16 @@ autoAdvanceRound wrap shared =
     let
         settings =
             shared.settings.settings
+
+        currentValue = settings.autoAdvance |> Maybe.withDefault False
     in
     Form.section shared
         "auto-advance"
         (Html.div
             [ HtmlA.class "multipart" ]
             [ Switch.view
-                [ HtmlE.onCheck (ToggleAutoAdvance >> wrap)
-                , HtmlA.selected (settings.autoAdvance |> Maybe.withDefault False)
+                [ HtmlE.onClick (currentValue |> not |> ToggleAutoAdvance >> wrap)
+                , HtmlA.selected (currentValue)
                 , HtmlA.id "auto-advance-enable"
                 ]
             , Html.label [ HtmlA.for "auto-advance-enable" ]
@@ -379,7 +381,7 @@ speechVoiceSelector wrap shared =
                 [ Html.div
                     [ HtmlA.class "multipart" ]
                     [ Switch.view
-                        [ HtmlE.onCheck (ToggleSpeech >> wrap)
+                        [ HtmlE.onClick (enabled |> not |> ToggleSpeech >> wrap)
                         , HtmlA.disabled isDisabled
                         , HtmlA.selected enabled
                         , HtmlA.id "speech-enable"
@@ -481,7 +483,7 @@ notificationsSwitch wrap shared =
             [ Html.div
                 [ HtmlA.class "multipart" ]
                 [ Switch.view
-                    [ HtmlE.onCheck (ToggleNotifications >> wrap)
+                    [ HtmlE.onClick (enabled |> not |> ToggleNotifications >> wrap)
                     , HtmlA.disabled unsupported
                     , HtmlA.selected enabled
                     , HtmlA.id "notifications-enable"
@@ -499,7 +501,7 @@ notificationsSwitch wrap shared =
                     (Html.div
                         [ HtmlA.class "multipart" ]
                         [ Switch.view
-                            [ HtmlE.onCheck (ToggleOnlyWhenHidden >> wrap)
+                            [ HtmlE.onClick (settings.requireNotVisible |> not |> ToggleOnlyWhenHidden >> wrap)
                             , HtmlA.disabled visibilityDisabled
                             , HtmlA.selected settings.requireNotVisible
                             , HtmlA.id "only-when-hidden-toggle"

@@ -3,7 +3,11 @@ variable "VERSION" {
 }
 
 variable "VCS_REF" {
-    default = "dev"
+    default = ""
+}
+
+variable "BUILD_DATE" {
+    default = ""
 }
    
 function "splitSemVer" {
@@ -37,7 +41,7 @@ function "repos" {
 function "generateTags" {
     params = [repos, versionTags, commitHash, component]
     result = flatten([
-        for repo in repos: [ for tag in flatten([commitHash, versionTags, "latest"]) : "${repo}${component}:${tag}" ]
+        for repo in repos: [ for tag in flatten(["${commitHash}-dev", versionTags, "latest"]) : "${repo}${component}:${tag}" ]
     ])
 }
 
@@ -46,6 +50,11 @@ target "build" {
     platforms = ["linux/amd64", "linux/arm64"]
     output = ["type=registry"]
     pull = true
+    args = {
+        VERSION = VERSION != "" ? VERSION : "${VCS_REF}-dev"
+        VCS_REF = VCS_REF
+        BUILD_DATE = BUILD_DATE
+    }
 }
 
 target "server" {

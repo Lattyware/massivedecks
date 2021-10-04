@@ -48,7 +48,7 @@ maybe default base noOp update model value args =
         { shared, readOnly } =
             args
 
-        ( checked, disabled ) =
+        ( selected, disabled ) =
             case value of
                 Just v ->
                     ( v /= Nothing, False )
@@ -57,12 +57,20 @@ maybe default base noOp update model value args =
                     ( False, True )
     in
     Switch.view
-        [ checked |> HtmlA.selected
+        [ selected |> HtmlA.selected
         , if readOnly || disabled then
             HtmlA.disabled True
 
           else
-            HtmlE.onCheck (\c -> default |> Maybe.justIf c |> update)
+            let
+                newValue =
+                    if selected then
+                        Nothing
+                    else
+                        Just default 
+            in
+                newValue |> update |> HtmlE.onClick
+            
         ]
         :: base noOp (Just >> update) model (value |> Maybe.andThen identity) args
 
@@ -75,6 +83,9 @@ bool label _ update _ value { shared, readOnly } =
 
         labelClick =
             value |> Maybe.andThen (Maybe.justIf (not disabled)) |> Maybe.map (not >> update >> HtmlE.onClick)
+
+        selected =
+         value |> Maybe.withDefault False
     in
     [ Html.label
         (List.filterMap identity
@@ -83,12 +94,12 @@ bool label _ update _ value { shared, readOnly } =
             ]
         )
         [ Switch.view
-            [ value |> Maybe.withDefault False |> HtmlA.selected
+            [ selected |> HtmlA.selected
             , if disabled then
                 HtmlA.disabled True
 
               else
-                HtmlE.onCheckNoPropagation update
+                 selected |> not |> update |> HtmlE.onClickNoPropagation
             ]
         , label |> Lang.html shared
         ]

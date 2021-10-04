@@ -5,6 +5,7 @@ module MassiveDecks.Util.Maybe exposing
     , isNothing
     , justIf
     , toList
+    , flip
     , transformWith
     , validate
     )
@@ -98,3 +99,15 @@ isNothing =
 isJust : Maybe a -> Bool
 isJust =
     (/=) Nothing
+
+
+{-| If the given maybe holds a value, return nothing, otherwise return Just the default value.
+-}
+flip : a -> Maybe a -> Maybe a
+flip default value =
+    case value of
+        Just _ ->
+            Nothing
+
+        Nothing ->
+            Just default
