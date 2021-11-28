@@ -6,9 +6,6 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "repository": "github:Lattyware/massivedecks",
-  "engines": {
-    "node": "16.x.x"
-  },
   "scripts": {
     "build": "cp -r server/decks decks",
     "prebuild": "echo \"This script is for Heroku builds, if you are running this manually, you probably want the projects in the server and client directories instead.\""

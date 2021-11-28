@@ -11,7 +11,7 @@ import * as Generated from "./sources/generated";
 
 async function loadIfEnabled<Config, MetaResolver>(
   config: Config | undefined,
-  load: (value: Config) => Promise<MetaResolver>
+  load: (value: Config) => Promise<MetaResolver>,
 ): Promise<MetaResolver | undefined> {
   if (config === undefined) {
     return undefined;
@@ -34,7 +34,7 @@ export class Sources {
   public constructor(
     builtIn?: BuiltIn.MetaResolver,
     manyDecks?: ManyDecks.MetaResolver,
-    jsonAgainstHumanity?: JsonAgainstHumanity.MetaResolver
+    jsonAgainstHumanity?: JsonAgainstHumanity.MetaResolver,
   ) {
     if (builtIn === undefined && manyDecks === undefined) {
       throw new Error("At least one source must be enabled.");
@@ -61,7 +61,7 @@ export class Sources {
   }
 
   private metaResolverIfConfigured(
-    source: Source.External
+    source: Source.External,
   ): Source.MetaResolver<Source.External> | undefined {
     switch (source.source) {
       case "BuiltIn":
@@ -79,7 +79,7 @@ export class Sources {
   }
 
   private metaResolver(
-    source: Source.External
+    source: Source.External,
   ): Source.MetaResolver<Source.External> {
     const metaResolver = this.metaResolverIfConfigured(source);
     if (metaResolver === undefined) {
@@ -93,7 +93,7 @@ export class Sources {
    * Get the limited resolver for the given source.
    */
   public limitedResolver(
-    source: Source.External
+    source: Source.External,
   ): Source.Resolver<Source.External> {
     return this.metaResolver(source).resolver(source);
   }
@@ -103,7 +103,7 @@ export class Sources {
    */
   public resolver(
     cache: Cache,
-    source: Source.External
+    source: Source.External,
   ): Source.Resolver<Source.External> {
     const metaResolver = this.metaResolver(source);
     const resolver = metaResolver.resolver(source);
@@ -117,7 +117,7 @@ export class Sources {
    */
   details = async (
     cache: Cache,
-    source: Source.Source
+    source: Source.Source,
   ): Promise<Source.Details> => {
     switch (source.source) {
       case "Custom":
@@ -132,19 +132,12 @@ export class Sources {
   };
 
   public static async from(config: Config.Sources): Promise<Sources> {
-    const [
-      builtInMeta,
-      manyDecksMeta,
-      jsonAgainstHumanityMeta,
-    ] = await Promise.all<
-      BuiltIn.MetaResolver | undefined,
-      ManyDecks.MetaResolver | undefined,
-      JsonAgainstHumanity.MetaResolver | undefined
-    >([
-      loadIfEnabled(config.builtIn, BuiltIn.load),
-      loadIfEnabled(config.manyDecks, ManyDecks.load),
-      loadIfEnabled(config.jsonAgainstHumanity, JsonAgainstHumanity.load),
-    ]);
+    const [builtInMeta, manyDecksMeta, jsonAgainstHumanityMeta] =
+      await Promise.all([
+        loadIfEnabled(config.builtIn, BuiltIn.load),
+        loadIfEnabled(config.manyDecks, ManyDecks.load),
+        loadIfEnabled(config.jsonAgainstHumanity, JsonAgainstHumanity.load),
+      ]);
     return new Sources(builtInMeta, manyDecksMeta, jsonAgainstHumanityMeta);
   }
 }
