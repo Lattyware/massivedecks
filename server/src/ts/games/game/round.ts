@@ -77,7 +77,7 @@ export interface Timed {
 }
 
 export const isTimed = <TStage extends Stage>(
-  round: Base<TStage>
+  round: Base<TStage>,
 ): round is Base<TStage> & Timed => round.hasOwnProperty("timedOut");
 
 export class Complete extends Base<"Complete"> {
@@ -101,7 +101,7 @@ export class Complete extends Base<"Complete"> {
     czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.Revealed[],
-    winner: User.Id
+    winner: User.Id,
   ) {
     super();
     this.id = id;
@@ -189,7 +189,7 @@ export class Judging extends Base<"Judging"> implements Timed {
     czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.Revealed[],
-    timedOut = false
+    timedOut = false,
   ) {
     super();
     this.id = id;
@@ -202,7 +202,7 @@ export class Judging extends Base<"Judging"> implements Timed {
   public start(
     rules: Rules.Rules,
     previouslyRevealed: boolean,
-    newCardsAndPlayedByPlayer: Map<User.Id, StartRevealing.AfterPlaying>
+    newCardsAndPlayedByPlayer: Map<User.Id, StartRevealing.AfterPlaying>,
   ): {
     timeouts?: Iterable<Timeout.After>;
     events?: Iterable<Event.Distributor>;
@@ -213,7 +213,7 @@ export class Judging extends Base<"Judging"> implements Timed {
       : Array.from(this.revealedPlays());
     const event = Event.additionally(
       StartJudging.of(plays),
-      newCardsAndPlayedByPlayer
+      newCardsAndPlayedByPlayer,
     );
     return {
       timeouts: Util.asOptionalIterable(timeout),
@@ -284,7 +284,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     czar: User.Id,
     call: Card.Call,
     plays: StoredPlay.StoredPlay[],
-    timedOut = false
+    timedOut = false,
   ) {
     super();
     this.id = id;
@@ -294,9 +294,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     this.timedOut = timedOut;
   }
 
-  public start(
-    game: Game.Game
-  ): {
+  public start(game: Game.Game): {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
   } {
@@ -304,18 +302,18 @@ export class Revealing extends Base<"Revealing"> implements Timed {
     const events = Util.asOptionalIterable(
       Event.additionally(
         StartRevealing.of(playsToBeRevealed),
-        this.getAfterPlayingDetails(game)
-      )
+        this.getAfterPlayingDetails(game),
+      ),
     );
     const timeouts = Util.asOptionalIterable(
-      RoundStageTimerDone.ifEnabled(this, game.rules.stages)
+      RoundStageTimerDone.ifEnabled(this, game.rules.stages),
     );
     return { events, timeouts };
   }
 
   public advance(
     game: Game.Game,
-    previouslyRevealed: boolean
+    previouslyRevealed: boolean,
   ):
     | {
         round: Judging;
@@ -328,7 +326,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
       const start = judging.start(
         game.rules,
         previouslyRevealed,
-        previouslyRevealed ? new Map() : this.getAfterPlayingDetails(game)
+        previouslyRevealed ? new Map() : this.getAfterPlayingDetails(game),
       );
       return {
         round: judging,
@@ -340,7 +338,7 @@ export class Revealing extends Base<"Revealing"> implements Timed {
   }
 
   private getAfterPlayingDetails(
-    game: Game.Game
+    game: Game.Game,
   ): Map<User.Id, StartRevealing.AfterPlaying> {
     const slotCount = Card.slotCount(this.call);
     const extraCards =
@@ -428,7 +426,7 @@ export class Playing extends Base<"Playing"> implements Timed {
     players: Set<User.Id>,
     call: Card.Call,
     plays: StoredPlay.Unrevealed[] | undefined = undefined,
-    timedOut = false
+    timedOut = false,
   ) {
     super();
     this.id = id;
@@ -441,18 +439,23 @@ export class Playing extends Base<"Playing"> implements Timed {
 
   public advance(
     game: Game.Game,
-    doNotStart = false
-  ): {
-    round: Revealing;
-    events?: Iterable<Event.Distributor>;
-    timeouts?: Iterable<Timeout.After>;
-  } {
+    doNotStart = false,
+  ):
+    | {
+        round: Revealing;
+        events?: Iterable<Event.Distributor>;
+        timeouts?: Iterable<Timeout.After>;
+      }
+    | undefined {
     const revealing = new Revealing(
       this.id,
       this.czar,
       this.call,
-      Util.shuffled(this.plays)
+      Util.shuffled(this.plays),
     );
+    if (revealing.plays.length === 0) {
+      return undefined;
+    }
     game.round = revealing;
     return {
       round: revealing,
@@ -460,14 +463,17 @@ export class Playing extends Base<"Playing"> implements Timed {
     };
   }
 
-  public skipToJudging(
-    game: Game.Game
-  ): {
-    round: Judging;
-    timeouts?: Iterable<Timeout.After>;
-    events?: Iterable<Event.Distributor>;
-  } {
+  public skipToJudging(game: Game.Game):
+    | {
+        round: Judging;
+        timeouts?: Iterable<Timeout.After>;
+        events?: Iterable<Event.Distributor>;
+      }
+    | undefined {
     const advanceRevealing = this.advance(game, true);
+    if (advanceRevealing === undefined) {
+      return undefined;
+    }
     for (const play of advanceRevealing.round.plays) {
       play.revealed = true;
     }
@@ -480,7 +486,7 @@ export class Playing extends Base<"Playing"> implements Timed {
 
   public waitingFor(): Set<User.Id> | null {
     const done = new Set(
-      wu(this.players).filter((p) => !this.hasPlayed().has(p))
+      wu(this.players).filter((p) => !this.hasPlayed().has(p)),
     );
     return done.size > 0 ? done : null;
   }
@@ -531,7 +537,7 @@ export class Starting extends Base<"Starting"> implements Timed {
     czar: User.Id,
     players: Set<User.Id>,
     calls: Card.Call[],
-    timedOut = false
+    timedOut = false,
   ) {
     super();
     this.id = id;
@@ -546,7 +552,7 @@ export class Starting extends Base<"Starting"> implements Timed {
     czar: User.Id,
     players: Set<User.Id>,
     czarChoices: CzarChoices.CzarChoices,
-    decks: Decks
+    decks: Decks,
   ) {
     const first = czarChoices.custom ? [CzarChoices.customCall()] : [];
     const cards = [
@@ -564,7 +570,7 @@ export class Starting extends Base<"Starting"> implements Timed {
     server: ServerState,
     game: Game.Game,
     chosen: Card.Id,
-    fill: Part[][] | undefined
+    fill: Part[][] | undefined,
   ): {
     round: Playing;
     timeouts?: Iterable<Timeout.After>;
@@ -573,7 +579,7 @@ export class Starting extends Base<"Starting"> implements Timed {
     const call = this.calls.find((call) => call.id === chosen);
     if (call === undefined) {
       throw new InvalidActionError(
-        "The given call doesn't exist or wasn't in the given options."
+        "The given call doesn't exist or wasn't in the given options.",
       );
     }
     if (Card.isCustom(call)) {
@@ -591,7 +597,7 @@ export class Starting extends Base<"Starting"> implements Timed {
     }
     game.decks.calls.discard(
       // We destroy custom calls by not discarding them because we don't want them back in rotation.
-      this.calls.filter((card) => !Card.isCustom(card) && card.id !== chosen)
+      this.calls.filter((card) => !Card.isCustom(card) && card.id !== chosen),
     );
     const round = new Playing(this.id, this.czar, this.players, call);
     const eventsAndTimeouts = game.startPlaying(server, false, round, true);
@@ -629,7 +635,7 @@ export const fromJSON = (r: Round): Round => {
         r.czar,
         new Set(r.players),
         r.calls,
-        r.timedOut
+        r.timedOut,
       );
     case "Playing":
       return new Playing(
@@ -638,7 +644,7 @@ export const fromJSON = (r: Round): Round => {
         new Set(r.players),
         r.call,
         r.plays,
-        r.timedOut
+        r.timedOut,
       );
     case "Revealing":
       return new Revealing(r.id, r.czar, r.call, r.plays, r.timedOut);

@@ -15,18 +15,18 @@ Massive Decks is a free, open source comedy party game based on [Cards against H
 
 ## Features
 
- - Play together in the same room or online.
- - Use any device (Phone, PC, Chromecast, anything with a web browser).
- - You can set up a central screen, but you don't need to (no need to stream anything for other players online).
- - Custom decks (via [Many Decks][many-decks]).
- - Customise the rules:
-   - Custom cards.
-   - House rules.
-   - AI players.
-   - Custom time limits if you want them.
- - Spectators.
- - Keeps your game private by default, you can also set a game password if needed.
- - Community translations.
+- Play together in the same room or online.
+- Use any device (Phone, PC, Chromecast, anything with a web browser).
+- You can set up a central screen, but you don't need to (no need to stream anything for other players online).
+- Custom decks (via [Many Decks][many-decks]).
+- Customise the rules:
+  - Custom cards.
+  - House rules.
+  - AI players.
+  - Custom time limits if you want them.
+- Spectators.
+- Keeps your game private by default, you can also set a game password if needed.
+- Community translations.
 
 [many-decks]: https://decks.rereadgames.com/
 
@@ -49,8 +49,8 @@ It is suggested you read the [deployment guide on the wiki][deployment-guide].
 
 ### Docker
 
-The Docker images can be found on the GitHub Container Registry: 
-[Server](https://github.com/users/Lattyware/packages/container/package/massivedecks%2Fserver) / 
+The Docker images can be found on the GitHub Container Registry:
+[Server](https://github.com/users/Lattyware/packages/container/package/massivedecks%2Fserver) /
 [Client](https://github.com/users/Lattyware/packages/container/package/massivedecks%2Fclient).
 
 There are example docker deployments in [the deployment folder](deployment).
@@ -80,14 +80,14 @@ The game has a system for translation, and if you would like to provide translat
 
 ### Contributors
 
-Massive Decks is open source, and would not be possible without the time and work of 
+Massive Decks is open source, and would not be possible without the time and work of
 [the community members][github-contributors] who have contributed code and localizations.
 
-[github-contributors]: https://github.com/Lattyware/massivedecks/graphs/contributors 
+[github-contributors]: https://github.com/Lattyware/massivedecks/graphs/contributors
 
 ### Maintainers
 
-[Reread Games][reread] maintains Massive Decks. If you enjoy Massive Decks, please take a look at their other games. 
+[Reread Games][reread] maintains Massive Decks. If you enjoy Massive Decks, please take a look at their other games.
 
 [reread]: https://www.rereadgames.com/
 
@@ -99,8 +99,9 @@ by [Cards against Humanity][cah].
 [cah-license]: https://creativecommons.org/licenses/by-nc-sa/2.0/
 
 Massive Decks is also inspired by:
-* [CardCast][cardcast] - an app that allowed you to play on a Chromecast, now dead.
-* [Pretend You're Xyzzy][xyzzy] - another web implementation.
+
+- [CardCast][cardcast] - an app that allowed you to play on a Chromecast, now dead.
+- [Pretend You're Xyzzy][xyzzy] - another web implementation.
 
 [cardcast]: https://www.cardcastgame.com/
 [xyzzy]: http://pretendyoure.xyz/zy/

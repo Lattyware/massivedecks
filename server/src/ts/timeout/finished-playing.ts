@@ -19,7 +19,7 @@ const isFinished = (round: Round.Playing): boolean => {
 
 export const ifNeeded = (
   rules: Rules.Rules,
-  playing: Round.Playing
+  playing: Round.Playing,
 ): Timeout.After | undefined =>
   isFinished(playing)
     ? {
@@ -34,7 +34,7 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
   server,
   timeout,
   gameCode,
-  lobby
+  lobby,
 ) => {
   const game = lobby.game;
   if (game === undefined) {
@@ -44,14 +44,27 @@ export const handle: Timeout.Handler<FinishedPlaying> = (
     return {};
   }
 
-  const { round, events, timeouts } =
+  const continuation =
     game.rules.stages.revealing === undefined
       ? game.round.skipToJudging(game)
       : game.round.advance(game);
-  game.round = round;
-  return {
-    lobby,
-    events,
-    timeouts,
-  };
+
+  if (continuation !== undefined) {
+    const { round, events, timeouts } = continuation;
+    game.round = round;
+    return {
+      lobby,
+      events,
+      timeouts,
+    };
+  } else {
+    // There were no plays, presumably everyone got skipped or something.
+    // We should start a new round because the czar has nothing to pick from.
+    const { events, timeouts } = game.startNewRound(server, lobby);
+    return {
+      lobby,
+      events,
+      timeouts,
+    };
+  }
 };
