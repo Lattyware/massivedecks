@@ -6,6 +6,9 @@ ARG VERSION=${VCS_REF}-dev
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS build
 
+ARG VERSION
+ARG MODE
+
 WORKDIR /md
 
 RUN ["apk", "add", "--no-cache", "python3", "make", "g++"]
@@ -22,6 +25,10 @@ COPY ["./assets", "./assets"]
 RUN ["npm", "run", "build"]
 
 FROM --platform=$TARGETPLATFORM nginx:mainline-alpine
+
+ARG VERSION
+ARG BUILD_DATE
+ARG VCS_REF
 
 EXPOSE 8080
 

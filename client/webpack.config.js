@@ -8,7 +8,7 @@ const fs = require("fs");
 
 module.exports = (env, argv) => {
   const mode =
-    argv !== undefined && argv.mode !== undefined
+    argv?.mode !== undefined
       ? argv.mode
       : process.env["WEBPACK_MODE"] !== undefined
       ? process.env["WEBPACK_MODE"]
