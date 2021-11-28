@@ -13,20 +13,19 @@ FROM node:16-alpine
 
 ARG BUILD_DATE
 ARG VCS_REF
-ARG VERSION=dev
+ARG VERSION=$VCS_REF-dev
 
 ENV MD_VERSION $VERSION
 
-LABEL maintainer="team@rereadgames.com"
-LABEL org.label-schema.name="massivedecks/server"
-LABEL org.label-schema.description="The web server for Massive Decks, a comedy party game."
-LABEL org.label-schema.url="https://github.com/Lattyware/massivedecks"
-LABEL org.label-schema.vcs-url="https://github.com/Lattyware/massivedecks"
-LABEL org.label-schema.vendor="Reread Games"
-LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.build-date=$BUILD_DATE
-LABEL org.label-schema.vcs-ref=$VCS_REF
-LABEL org.label-schema.version=$VERSION
+LABEL org.opencontainers.image.created=$BUILD_DATE
+LABEL org.opencontainers.image.url="https://github.com/Lattyware/massivedecks"
+LABEL org.opencontainers.image.source="https://github.com/Lattyware/massivedecks"
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.revision=$VCS_REF
+LABEL org.opencontainers.image.vendor="Reread Games <team@rereadgames.com>"
+LABEL org.opencontainers.image.licenses="AGPL-3.0+"
+LABEL org.opencontainers.image.title="Massive Decks (Server)"
+LABEL org.opencontainers.image.description="The web server for Massive Decks, a comedy party game."
 
 WORKDIR /md
 
