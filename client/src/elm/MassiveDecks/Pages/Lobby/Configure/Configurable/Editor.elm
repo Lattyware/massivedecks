@@ -45,7 +45,7 @@ type alias Editor value model msg =
 maybe : value -> Def value model msg -> Def (Maybe value) model msg
 maybe default base noOp update model value args =
     let
-        { shared, readOnly } =
+        { readOnly } =
             args
 
         ( selected, disabled ) =
@@ -66,11 +66,11 @@ maybe default base noOp update model value args =
                 newValue =
                     if selected then
                         Nothing
+
                     else
-                        Just default 
+                        Just default
             in
-                newValue |> update |> HtmlE.onClick
-            
+            newValue |> update |> HtmlE.onClick
         ]
         :: base noOp (Just >> update) model (value |> Maybe.andThen identity) args
 
@@ -85,7 +85,7 @@ bool label _ update _ value { shared, readOnly } =
             value |> Maybe.andThen (Maybe.justIf (not disabled)) |> Maybe.map (not >> update >> HtmlE.onClick)
 
         selected =
-         value |> Maybe.withDefault False
+            value |> Maybe.withDefault False
     in
     [ Html.label
         (List.filterMap identity
@@ -99,7 +99,7 @@ bool label _ update _ value { shared, readOnly } =
                 HtmlA.disabled True
 
               else
-                 selected |> not |> update |> HtmlE.onClickNoPropagation
+                selected |> not |> update |> HtmlE.onClickNoPropagation
             ]
         , label |> Lang.html shared
         ]
@@ -156,7 +156,7 @@ int label noOp update _ value { shared, readOnly } =
 
 
 group : String -> Maybe MdString -> Bool -> Bool -> List (Html msg) -> Def config model msg
-group id title indent shouldFold children _ _ _ value { shared, readOnly } =
+group id title indent shouldFold children _ _ _ value { shared } =
     let
         node =
             case title of

@@ -21,7 +21,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     )
 
 import Json.Encode as Json
-import Json.Patch exposing (Patch)
+import Json.Patch
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts exposing (Parts)
 import MassiveDecks.Card.Play as Play

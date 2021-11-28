@@ -7,7 +7,7 @@ module MassiveDecks.Settings.Model exposing
     )
 
 import Dict exposing (Dict)
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Notifications.Model as Notifications
 import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Speech as Speech

@@ -15,7 +15,6 @@ import Json.Decode as Json
 import Json.Diff as Json
 import Json.Encode
 import Json.Patch as Json
-import MassiveDecks.Card.Source.Model exposing (Source)
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error.Model as Error exposing (Error)
@@ -29,7 +28,7 @@ import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model as Configurable exposing (Configurable)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Validator as Validator
 import MassiveDecks.Pages.Lobby.Configure.Decks as Decks
-import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks exposing (Deck)
+import MassiveDecks.Pages.Lobby.Configure.Decks.Model as Decks
 import MassiveDecks.Pages.Lobby.Configure.Diff as Diff
 import MassiveDecks.Pages.Lobby.Configure.Messages exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Model as Config exposing (..)

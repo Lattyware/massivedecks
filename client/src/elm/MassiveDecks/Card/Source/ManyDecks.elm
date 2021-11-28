@@ -9,16 +9,15 @@ import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Json.Decode as Json
-import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks exposing (..)
+import MassiveDecks.Card.Source.ManyDecks.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
-import Material.Select as Select
 import Material.TextField as TextField
 import Url.Builder as Url
 

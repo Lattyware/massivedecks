@@ -1368,16 +1368,6 @@ an amount =
             ""
 
 
-a : Maybe Int -> String
-a amount =
-    case amount of
-        Just 1 ->
-            "um "
-
-        _ ->
-            ""
-
-
 {-| The grammatical gender of a noun.
 -}
 type Gender

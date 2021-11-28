@@ -28,8 +28,8 @@ import Dict exposing (Dict)
 import Json.Decode as Json
 import Json.Decode.Pipeline as Json
 import Json.Patch
-import MassiveDecks.Card.Model as Card exposing (Call, Response)
-import MassiveDecks.Card.Parts as Parts exposing (Part, Parts)
+import MassiveDecks.Card.Model as Card
+import MassiveDecks.Card.Parts as Parts exposing (Parts)
 import MassiveDecks.Card.Parts.Part as Part
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn

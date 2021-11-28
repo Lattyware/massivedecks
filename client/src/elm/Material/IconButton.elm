@@ -4,7 +4,7 @@ module Material.IconButton exposing
     , viewNoPropagation
     )
 
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome.Icon as Icon
 import FontAwesome.Layering as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA

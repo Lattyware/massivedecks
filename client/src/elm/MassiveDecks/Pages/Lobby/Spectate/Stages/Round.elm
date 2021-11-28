@@ -9,7 +9,7 @@ import Html.Events as HtmlE
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card exposing (Call)
 import MassiveDecks.Card.Parts as Parts
-import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Play as Play
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action as Action
 import MassiveDecks.Game.Action.Model as Action
@@ -71,7 +71,7 @@ viewPlaying shared config playStyles round stage =
 
 
 viewRevealing : (Game.Msg -> msg) -> Shared -> Config -> Dict User.Id User -> Round -> Round.Revealing -> List (Html msg)
-viewRevealing wrapGame shared config users round stage =
+viewRevealing wrapGame shared config users _ stage =
     let
         fillWith =
             case stage.plays |> List.filter (\p -> Just p.id == stage.lastRevealed) of
@@ -99,7 +99,7 @@ viewRevealing wrapGame shared config users round stage =
 
 
 viewJudging : (Game.Msg -> msg) -> Shared -> Config -> Dict User.Id User -> Round -> Round.Judging -> List (Html msg)
-viewJudging wrapGame shared config users round stage =
+viewJudging wrapGame shared config users _ stage =
     let
         potential { id, responses } =
             ( id
@@ -119,7 +119,7 @@ viewJudging wrapGame shared config users round stage =
 
 
 viewComplete : (Game.Msg -> msg) -> Shared -> Config -> Dict User.Id User -> Round -> Round.Complete -> List (Html msg)
-viewComplete wrapGame shared config users round stage =
+viewComplete wrapGame shared config users _ stage =
     let
         potential id { play, playedBy, likes } =
             ( id
@@ -210,7 +210,7 @@ farDistance =
 
 
 viewPlay : (Game.Msg -> msg) -> Shared -> Config -> Int -> Float -> Maybe User -> Bool -> Maybe Play.Id -> Round.LikeDetail -> Play.Id -> Play.Potential -> Html msg
-viewPlay wrapGame shared config slotCount angle playedByUser isWinner picked likeDetail playId { play, playedBy, likes } =
+viewPlay wrapGame shared config slotCount angle playedByUser isWinner picked likeDetail playId { play, likes } =
     let
         isLiked =
             likeDetail.liked |> Set.member playId

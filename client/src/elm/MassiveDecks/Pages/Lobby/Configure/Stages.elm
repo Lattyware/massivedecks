@@ -114,12 +114,11 @@ mode =
                     False
 
         back a =
-            case a of
-                True ->
-                    Rules.Hard
+            if a then
+                Rules.Hard
 
-                False ->
-                    Rules.Soft
+            else
+                Rules.Soft
     in
     Configurable.value
         { id = Mode

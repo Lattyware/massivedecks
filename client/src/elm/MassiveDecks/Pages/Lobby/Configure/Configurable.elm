@@ -18,7 +18,6 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Model exposing (Shared)
-import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor exposing (Editor)
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (..)
 import MassiveDecks.Util.Maybe as Maybe
 
@@ -118,7 +117,7 @@ group g globalWrap =
 
         editorWithChildren m v args =
             let
-                { shared, readOnly } =
+                { shared } =
                     args
 
                 child (C { editor, validator, messages, isOption }) =
@@ -201,7 +200,7 @@ viewEditor (C { editor, validator, messages, isOption }) shared model local canE
 
 
 viewDiff : Component id config model msg -> Shared -> model -> config -> config -> Html msg
-viewDiff (C { editor, messages, validator, isOption }) shared model local remote =
+viewDiff (C { editor, messages, validator }) shared model local remote =
     configOption shared
         [ Html.div [ HtmlA.class "local" ]
             (editor model (Just local) { shared = shared, readOnly = False })

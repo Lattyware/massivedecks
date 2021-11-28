@@ -16,7 +16,7 @@ import Dict exposing (Dict)
 import MassiveDecks.Animated exposing (Animated)
 import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Error.Model exposing (Error)
-import MassiveDecks.Game.Model as Game exposing (Game)
+import MassiveDecks.Game.Model as Game
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError exposing (GameStateError, MdError)
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure

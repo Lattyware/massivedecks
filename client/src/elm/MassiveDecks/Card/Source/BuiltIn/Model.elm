@@ -13,7 +13,6 @@ module MassiveDecks.Card.Source.BuiltIn.Model exposing
 
 import Json.Decode as Json
 import List.Extra as List
-import MassiveDecks.Strings.Languages.Model exposing (Language)
 import MassiveDecks.Util.NeList as NonEmptyList exposing (NeList)
 
 

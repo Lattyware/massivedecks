@@ -4,7 +4,7 @@ module MassiveDecks.Util.Html.Attributes exposing
     , slot
     )
 
-import Html exposing (Html)
+import Html
 import Html.Attributes as HtmlA
 import Json.Encode as Json
 

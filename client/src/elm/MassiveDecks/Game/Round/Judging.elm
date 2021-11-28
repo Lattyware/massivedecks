@@ -17,7 +17,7 @@ import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
-import Set exposing (Set)
+import Set
 
 
 view : (Msg -> msg) -> Auth -> Shared -> Dict User.Id User -> Config -> Round.Specific Round.Judging -> RoundView msg

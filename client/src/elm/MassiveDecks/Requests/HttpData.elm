@@ -18,8 +18,8 @@ import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Route exposing (Route)
 import MassiveDecks.Requests.HttpData.Messages exposing (..)
 import MassiveDecks.Requests.HttpData.Model exposing (..)
-import MassiveDecks.Requests.Request as Request exposing (Request)
-import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Requests.Request as Request
+import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import Material.IconButton as IconButton
@@ -110,7 +110,7 @@ view shared route emptyContent viewResult model =
 {-| Show a refresh button for the data.
 -}
 refreshButton : Shared -> HttpData error result -> Html (Msg error result)
-refreshButton shared { loading, data } =
+refreshButton shared { loading } =
     let
         applyStyle =
             if loading then

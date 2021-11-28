@@ -1,11 +1,10 @@
 module MassiveDecks.Game.Round.Revealing exposing (view)
 
 import Dict exposing (Dict)
-import Html.Attributes as HtmlA
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
-import MassiveDecks.Card.Play as Play exposing (Play)
+import MassiveDecks.Card.Play exposing (Play)
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages exposing (..)
@@ -19,7 +18,7 @@ import MassiveDecks.Pages.Lobby.Model exposing (Auth)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
-import Set exposing (Set)
+import Set
 
 
 view : (Msg -> msg) -> Auth -> Shared -> Dict User.Id User -> Config -> Round.Specific Round.Revealing -> RoundView msg

@@ -74,6 +74,7 @@ menuItem shared mi =
         Button { icon, text, description } action ->
             ListView.viewItem (ListView.action action)
                 (Just icon)
+                (description |> Lang.string shared)
                 Nothing
                 Nothing
                 [ text |> Lang.string shared |> Html.text ]
@@ -84,6 +85,7 @@ menuItem shared mi =
                 [ ListView.viewItem
                     ListView.Link
                     (Just icon)
+                    (description |> Lang.string shared)
                     Nothing
                     Nothing
                     [ text |> Lang.string shared |> Html.text ]

@@ -258,7 +258,7 @@ viewDeck wrap shared canEdit index deckOrError =
             deckSummary == Nothing && failureReason == Nothing
 
         row =
-            [ Html.td attr [ name wrap shared canEdit index deckSource loading failureReason details ] ] ++ columns
+            Html.td attr [ name wrap shared canEdit index deckSource loading failureReason details ] :: columns
     in
     Html.tr [ HtmlA.class "deck-row" ] row
 

@@ -2,7 +2,7 @@ module MassiveDecks exposing (main)
 
 import Browser
 import Browser.Navigation as Navigation
-import Html exposing (Html)
+import Html
 import Html.Attributes as HtmlA
 import Http
 import Json.Decode as Json
@@ -35,7 +35,7 @@ import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Settings.Messages as Settings
 import MassiveDecks.Speech as Speech
-import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User
 import MassiveDecks.Util.Url as Url

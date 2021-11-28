@@ -15,7 +15,7 @@ import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Pages.Unknown.Model exposing (..)
 import MassiveDecks.Pages.Unknown.Route exposing (..)
-import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import Material.Card as Card
 

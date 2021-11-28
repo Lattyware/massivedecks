@@ -10,7 +10,7 @@ import Html.Attributes as HtmlA
 import List.Extra as List
 import MassiveDecks.Card.Source.JsonAgainstHumanity.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
@@ -84,7 +84,7 @@ messages () =
 
 
 problems : Id -> () -> List (Message msg)
-problems givenId () =
+problems _ () =
     []
 
 

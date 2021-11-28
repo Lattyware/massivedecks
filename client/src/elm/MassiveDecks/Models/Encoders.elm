@@ -29,7 +29,7 @@ import MassiveDecks.Card.Parts.Part as Part exposing (Style)
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.JsonAgainstHumanity.Model as JsonAgainstHumanity
 import MassiveDecks.Card.Source.ManyDecks.Model as ManyDecks
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Cast.Model as Cast
 import MassiveDecks.Game.Player as Player
 import MassiveDecks.Game.Round as Round

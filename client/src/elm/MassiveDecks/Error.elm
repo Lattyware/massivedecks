@@ -12,7 +12,7 @@ import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Pages.Route as Route exposing (Route)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
+import MassiveDecks.Strings.Languages.Model as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Version exposing (version)
 import Url.Builder

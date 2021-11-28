@@ -108,7 +108,7 @@ decodeToken =
 
 url : List String -> String
 url path =
-    Url.Builder.absolute ([ "api" ] ++ path) []
+    Url.Builder.absolute ("api" :: path) []
 
 
 noError : Json.Decoder Never

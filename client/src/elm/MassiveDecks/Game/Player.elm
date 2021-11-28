@@ -11,7 +11,7 @@ module MassiveDecks.Game.Player exposing
     , roleDescription
     )
 
-import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.User as User
 import Set

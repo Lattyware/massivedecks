@@ -55,8 +55,8 @@ action a =
 
 {-| An item within a list.
 -}
-viewItem : Action msg -> Maybe Icon -> Maybe (List (Html msg)) -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
-viewItem action_ icon secondary meta children =
+viewItem : Action msg -> Maybe Icon -> String -> Maybe (List (Html msg)) -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+viewItem action_ icon title secondary meta children =
     let
         ( optionalAttrs, optionalSlots ) =
             [ icon |> Maybe.map (\i -> ( HtmlA.attribute "graphic" "large", Icon.viewStyled [ HtmlA.slot "graphic" ] i ))
@@ -81,7 +81,7 @@ viewItem action_ icon secondary meta children =
                     True |> Json.bool |> HtmlA.property "noninteractive"
 
         attrs =
-            List.concat [ optionalAttrs, [ actionAttr ] ]
+            List.concat [ optionalAttrs, [ actionAttr, HtmlA.title title ] ]
 
         slots =
             List.concat [ optionalSlots, [ Html.span [] children ] ]

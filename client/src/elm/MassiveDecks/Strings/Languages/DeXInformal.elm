@@ -1357,23 +1357,13 @@ translate _ mdString =
 
         Indonesian ->
             [ Text "Indonesisch" ]
-            
+
         Spanish ->
             [ Text "Spanisch" ]
 
 
 an : Maybe Int -> String
 an amount =
-    case amount of
-        Just 1 ->
-            "ein "
-
-        _ ->
-            ""
-
-
-a : Maybe Int -> String
-a amount =
     case amount of
         Just 1 ->
             "ein "

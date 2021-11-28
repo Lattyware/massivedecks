@@ -14,7 +14,7 @@ import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
-import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Auth)
+import MassiveDecks.Pages.Lobby.Model as Lobby
 import MassiveDecks.Pages.Lobby.Route as Lobby
 import MassiveDecks.Pages.Lobby.Spectate.Messages exposing (Msg(..))
 import MassiveDecks.Pages.Lobby.Spectate.Model exposing (Model)

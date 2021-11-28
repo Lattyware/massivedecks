@@ -8,7 +8,7 @@ This is the primary language, strings here are the canonical representation, and
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
+import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..))
 import MassiveDecks.Strings.Languages.En.Internal as Internal
 import MassiveDecks.Strings.Languages.Model exposing (Language(..))
 import MassiveDecks.Strings.Translation as Translation

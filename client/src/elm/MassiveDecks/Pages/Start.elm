@@ -10,7 +10,7 @@ module MassiveDecks.Pages.Start exposing
 import Browser.Navigation as Navigation
 import Dict
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -23,7 +23,7 @@ import MassiveDecks.Card.Parts.Part as Part
 import MassiveDecks.Card.Response as Response
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form as Form
-import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Error as Error
 import MassiveDecks.Error.Model as Error
 import MassiveDecks.Icon as Icon
@@ -42,7 +42,7 @@ import MassiveDecks.Pages.Start.Route exposing (..)
 import MassiveDecks.Requests.Api as Api
 import MassiveDecks.Requests.HttpData as HttpData
 import MassiveDecks.Requests.HttpData.Messages as HttpData
-import MassiveDecks.Requests.HttpData.Model as HttpData exposing (HttpData)
+import MassiveDecks.Requests.HttpData.Model as HttpData
 import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang

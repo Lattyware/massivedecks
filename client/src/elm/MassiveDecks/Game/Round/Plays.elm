@@ -7,7 +7,7 @@ module MassiveDecks.Game.Round.Plays exposing
     )
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA

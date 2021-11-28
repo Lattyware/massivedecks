@@ -12,7 +12,7 @@ import Browser.Navigation as Navigation
 import Dict exposing (Dict)
 import FontAwesome.Attributes as Icon
 import FontAwesome.Brands as Icon
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome.Icon as Icon
 import FontAwesome.Layering as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
@@ -36,10 +36,10 @@ import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Model exposing (..)
-import MassiveDecks.Models.MdError as MdError exposing (MdError)
+import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.Configure as Configure
-import MassiveDecks.Pages.Lobby.Configure.Model as Configure exposing (Config)
+import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Events as Events
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
 import MassiveDecks.Pages.Lobby.Invite as Invite
@@ -53,7 +53,7 @@ import MassiveDecks.Ports as Ports
 import MassiveDecks.ServerConnection as ServerConnection
 import MassiveDecks.Settings as Settings
 import MassiveDecks.Settings.Messages as Settings
-import MassiveDecks.Settings.Model as Settings exposing (Settings)
+import MassiveDecks.Settings.Model as Settings
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
@@ -168,7 +168,7 @@ update wrap shared msg model =
             case model.lobbyAndConfigure of
                 Just lobbyAndConfigure ->
                     let
-                        { lobby, configure } =
+                        { lobby } =
                             lobbyAndConfigure
 
                         updatedLobby l m =
@@ -466,7 +466,7 @@ view wrap wrapSettings changePage shared model =
     case s of
         Play ->
             let
-                viewContent _ auth timeAnchor { lobby, configure } =
+                viewContent _ auth timeAnchor { lobby } =
                     lobby.game
                         |> Maybe.map (Game.view wrap (GameMsg >> wrap) shared auth timeAnchor lobby.config.name lobby.config lobby.users)
                         |> Maybe.withDefault (Html.div [] [ Strings.GameNotStartedError |> Lang.html shared ])

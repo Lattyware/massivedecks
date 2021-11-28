@@ -9,7 +9,7 @@ import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
-import MassiveDecks.Card.Source.Model as Source exposing (Source)
+import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form.Message exposing (Message)
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)

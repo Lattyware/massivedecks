@@ -1396,16 +1396,6 @@ an amount =
             ""
 
 
-a : Maybe Int -> String
-a amount =
-    case amount of
-        Just 1 ->
-            "un "
-
-        _ ->
-            ""
-
-
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}
 asWord : Int -> String

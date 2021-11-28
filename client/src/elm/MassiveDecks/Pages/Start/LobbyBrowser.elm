@@ -23,7 +23,7 @@ import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Requests.Api as Api
 import MassiveDecks.Requests.HttpData as HttpData
 import MassiveDecks.Requests.HttpData.Messages as HttpData
-import MassiveDecks.Requests.HttpData.Model as HttpData exposing (HttpData)
+import MassiveDecks.Requests.HttpData.Model as HttpData
 import MassiveDecks.Strings as Strings exposing (MdString(..))
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
@@ -164,17 +164,18 @@ lobby shared data =
     , ListView.viewItem
         (ListView.Enabled (Route.Start { section = Start.Join (Just data.gameCode) } |> Global.ChangePage))
         Nothing
+        data.name
         ([ Html.span [ HtmlA.class "lobby-game-code" ]
             [ Strings.GameCode { code = GameCode.toString data.gameCode } |> Lang.html shared ]
          ]
             |> Just
         )
         ([ Icon.viewStyled [ HtmlA.title "Join Game" ] Icon.signInAlt ] |> Just)
-        [ Html.span [ HtmlA.class "lobby-name", Strings.LobbyRequiresPassword |> Lang.title shared ]
+        [ Html.span [ HtmlA.class "lobby-name" ]
             [ Html.text data.name
             , Html.text " "
             , Icon.lock
-                |> Icon.viewStyled []
+                |> Icon.viewStyled [ Strings.LobbyRequiresPassword |> Lang.title shared ]
                 |> Maybe.justIf data.password
                 |> Maybe.withDefault Html.nothing
             ]

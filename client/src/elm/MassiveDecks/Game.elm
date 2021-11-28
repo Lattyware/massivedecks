@@ -12,7 +12,7 @@ import Browser.Dom as Dom
 import Browser.Events as Browser
 import Dict exposing (Dict)
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -20,7 +20,7 @@ import Html.Events as HtmlE
 import Html5.DragDrop as DragDrop
 import MassiveDecks.Card.Call as Call
 import MassiveDecks.Card.Call.Editor as CallEditor
-import MassiveDecks.Card.Model as Card exposing (Call)
+import MassiveDecks.Card.Model as Card
 import MassiveDecks.Card.Parts as Parts
 import MassiveDecks.Card.Play as Play exposing (Play)
 import MassiveDecks.Card.Response as Response
@@ -1514,18 +1514,3 @@ reveal target responses play =
 
         _ ->
             play
-
-
-type alias ActionDetails msg =
-    { content : List (Html msg)
-    , title : MdString
-    }
-
-
-type alias RoundDetails msg =
-    { instruction : MdString
-    , callback : List (Html.Attribute msg)
-    , picks : List Card.Id
-    , callFlipped : Bool
-    , playing : Bool
-    }

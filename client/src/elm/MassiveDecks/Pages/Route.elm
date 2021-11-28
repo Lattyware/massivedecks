@@ -7,7 +7,7 @@ module MassiveDecks.Pages.Route exposing
     , url
     )
 
-import Html exposing (Html)
+import Html
 import Html.Attributes as HtmlA
 import MassiveDecks.Pages.Lobby.Route as Lobby
 import MassiveDecks.Pages.Start.Route as Start

@@ -13,7 +13,7 @@ import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Game.Action.Model as Action exposing (Action)
 import MassiveDecks.Game.Messages as Game exposing (Msg(..))
 import MassiveDecks.Game.Model exposing (..)
-import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Game.Round as Round
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Pages.Lobby.Model as Lobby

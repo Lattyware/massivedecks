@@ -12,7 +12,7 @@ import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Messages as Lobby exposing (Msg(..))
 import MassiveDecks.Pages.Route as Route
 import MassiveDecks.Pages.Start.Route as Start
-import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Events as HtmlE
