@@ -55,7 +55,7 @@ export class Game {
     rules: Rules.Rules,
     paused = false,
     history: PublicRound.Complete[] | undefined = undefined,
-    winner: User.Id[] | undefined = undefined
+    winner: User.Id[] | undefined = undefined,
   ) {
     this.round = round;
     this.history = history === undefined ? [] : history;
@@ -92,12 +92,12 @@ export class Game {
       game.rules,
       game.paused,
       game.history,
-      game.winner
+      game.winner,
     );
 
   private static activePlayer(
     user: User.User,
-    player?: Player.Player
+    player?: Player.Player,
   ): boolean {
     return (
       user.presence === "Joined" &&
@@ -112,31 +112,30 @@ export class Game {
   }
 
   public nextCzar(users: { [id: string]: User.User }): User.Id | undefined {
+    const roundWinner = this.rules.houseRules.winnersPick?.roundWinner;
     if (
-      this.rules.houseRules.winnersPick &&
-      this.rules.houseRules.winnersPick.roundWinner
+      roundWinner !== undefined &&
+      Game.canBeCzar(users[roundWinner], this.players[roundWinner])
     ) {
-      const roundWinner = this.rules.houseRules.winnersPick.roundWinner;
-      if (Game.canBeCzar(users[roundWinner], this.players[roundWinner])) {
-        return roundWinner;
-      }
+      return roundWinner;
+    } else {
+      const current = this.round.czar;
+      const playerOrder = this.playerOrder;
+      const currentIndex = playerOrder.findIndex((id) => id === current);
+      return Game.internalNextCzar(
+        currentIndex,
+        users,
+        this.players,
+        playerOrder,
+      );
     }
-    const current = this.round.czar;
-    const playerOrder = this.playerOrder;
-    const currentIndex = playerOrder.findIndex((id) => id === current);
-    return Game.internalNextCzar(
-      currentIndex,
-      users,
-      this.players,
-      playerOrder
-    );
   }
 
   public static internalNextCzar(
     currentIndex: number,
     users: { [id: string]: User.User },
     players: { [id: string]: Player.Player },
-    playerOrder: User.Id[]
+    playerOrder: User.Id[],
   ): User.Id | undefined {
     let nextIndex = currentIndex;
     function incrementIndex(): void {
@@ -162,7 +161,7 @@ export class Game {
   public static start(
     templates: Iterable<Decks.Templates>,
     users: { [id: string]: User.User },
-    rules: Rules.Rules
+    rules: Rules.Rules,
   ): Game & { round: Round.Starting | Round.Playing } {
     let allTemplates: Iterable<Decks.Templates>;
     const cw = rules.houseRules.comedyWriter;
@@ -174,7 +173,7 @@ export class Game {
             id: Card.id(),
             source: { source: "Custom" },
             text: "",
-          }))
+          })),
         ),
       };
       allTemplates = [
@@ -199,18 +198,18 @@ export class Game {
         .map(([id, _]) => [
           id,
           Player.initial(gameDecks.responses.draw(rules.handSize)),
-        ])
+        ]),
     );
     const czar = Game.internalNextCzar(0, users, playerMap, playerOrder);
     if (czar === undefined) {
       throw new Error(
-        "Game was allowed to start with too few players to have a czar."
+        "Game was allowed to start with too few players to have a czar.",
       );
     }
     const playersInRound = new Set(
       wu(playerOrder).filter((id) =>
-        Game.isPlayerInRound(czar, playerMap, id, users[id])
-      )
+        Game.isPlayerInRound(czar, playerMap, id, users[id]),
+      ),
     );
     let round: Round.Starting | Round.Playing;
     if (rules.houseRules.czarChoices === undefined) {
@@ -222,7 +221,7 @@ export class Game {
         czar,
         playersInRound,
         rules.houseRules.czarChoices,
-        gameDecks
+        gameDecks,
       );
     }
     return new Game(round, playerOrder, playerMap, gameDecks, rules) as Game & {
@@ -236,7 +235,7 @@ export class Game {
       history: this.history,
       playerOrder: this.playerOrder,
       players: Util.mapObjectValues(this.players, (p: Player.Player) =>
-        Player.censor(p)
+        Player.censor(p),
       ),
       rules: Rules.censor(this.rules),
       ...(this.winner === undefined ? {} : { winner: this.winner }),
@@ -251,7 +250,7 @@ export class Game {
    */
   public startNewRound(
     server: ServerState,
-    lobby: Lobby
+    lobby: Lobby,
   ): {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
@@ -278,7 +277,7 @@ export class Game {
     if (round.stage === "Starting") {
       this.decks.calls.discard(
         // We destroy custom calls by not discarding them because we don't want them back in rotation.
-        round.calls.filter((card) => !Card.isCustom(card))
+        round.calls.filter((card) => !Card.isCustom(card)),
       );
     } else {
       // We destroy custom calls by not discarding them because we don't want them back in rotation.
@@ -293,15 +292,15 @@ export class Game {
     const roundId = round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter((id) =>
-        Game.isPlayerInRound(czar, this.players, id, lobby.users[id])
-      )
+        Game.isPlayerInRound(czar, this.players, id, lobby.users[id]),
+      ),
     );
     if (this.rules.houseRules.happyEnding?.inFinalRound) {
       this.round = new Round.Playing(
         roundId,
         czar,
         playersInRound,
-        HappyEnding.call
+        HappyEnding.call,
       );
     } else {
       const czarChoices = this.rules.houseRules.czarChoices;
@@ -314,7 +313,7 @@ export class Game {
           czar,
           playersInRound,
           czarChoices,
-          this.decks
+          this.decks,
         );
       }
     }
@@ -335,7 +334,7 @@ export class Game {
    */
   public removeFromRound(
     toRemove: User.Id,
-    server: ServerState
+    server: ServerState,
   ): { timeouts?: Iterable<Timeout.After> } {
     const player = this.players[toRemove];
     if (player !== undefined && this.round.stage !== "Starting") {
@@ -345,7 +344,7 @@ export class Game {
         if (this.round.stage === "Playing") {
           return {
             timeouts: Util.asOptionalIterable(
-              FinishedPlaying.ifNeeded(this.rules, this.round)
+              FinishedPlaying.ifNeeded(this.rules, this.round),
             ),
           };
         }
@@ -360,7 +359,7 @@ export class Game {
     czar: User.Id,
     players: { [id: string]: Player.Player },
     playerId: User.Id,
-    user: User.User
+    user: User.User,
   ): boolean {
     if (playerId === czar || user.role !== "Player") {
       return false;
@@ -372,7 +371,7 @@ export class Game {
   public startRound(
     server: ServerState,
     first: boolean,
-    round: Round.Starting | Round.Playing
+    round: Round.Starting | Round.Playing,
   ): {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
@@ -389,7 +388,7 @@ export class Game {
 
   public startStarting(
     round: Round.Starting,
-    first: boolean
+    first: boolean,
   ): {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
@@ -404,10 +403,10 @@ export class Game {
               (id, user, player) => ({
                 hand: player.hand,
                 calls: id === round.czar ? round.calls : undefined,
-              })
+              }),
             )
           : Event.playerSpecificAddition(RoundStarted.of(round), (id) =>
-              id === round.czar ? { calls: round.calls } : {}
+              id === round.czar ? { calls: round.calls } : {},
             ),
       ],
       timeouts: Util.asOptionalIterable(timer),
@@ -418,14 +417,14 @@ export class Game {
     server: ServerState,
     first: boolean,
     round: Round.Playing,
-    previouslyStarted: boolean
+    previouslyStarted: boolean,
   ): {
     events?: Iterable<Event.Distributor>;
     timeouts?: Iterable<Timeout.After>;
   } {
     if (first && previouslyStarted) {
       throw new Error(
-        "Can't be both the game start, and have had a starting phase already."
+        "Can't be both the game start, and have had a starting phase already.",
       );
     }
 
@@ -453,13 +452,13 @@ export class Game {
             GameStarted.ofPlaying(round),
             (id, user, player) => ({
               hand: player.hand,
-            })
+            }),
           )
         : Event.additionally(
             previouslyStarted
               ? PlayingStarted.of(round)
               : RoundStarted.of(round),
-            additionallyByPlayer
+            additionallyByPlayer,
           ),
     ];
 

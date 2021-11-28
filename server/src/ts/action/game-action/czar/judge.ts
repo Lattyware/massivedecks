@@ -28,7 +28,7 @@ class JudgeAction extends Actions.Implementation<
   protected handle: Handler.Custom<Judge, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     const game = lobby.game;
     const round = game.round;
