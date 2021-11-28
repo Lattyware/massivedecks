@@ -141,8 +141,8 @@ advertise shared gameCode =
     let
         qr =
             Route.externalUrl shared.origin (Route.Start { section = Start.Join (Just gameCode) })
-                |> QRCode.encodeWith QRCode.Low
-                |> Result.map (\encoded -> [ QRCode.toSvg encoded ])
+                |> QRCode.fromStringWith QRCode.Low
+                |> Result.map (QRCode.toSvg [] >> List.singleton)
                 |> Result.withDefault []
     in
     [ Html.div [ HtmlA.class "join-info" ]

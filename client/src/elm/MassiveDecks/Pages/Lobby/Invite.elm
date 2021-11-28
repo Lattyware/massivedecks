@@ -92,8 +92,8 @@ overlay shared gameCode =
 qr : String -> Html msg
 qr lobbyUrl =
     lobbyUrl
-        |> QRCode.encodeWith QRCode.Low
-        |> Result.map QRCode.toSvg
+        |> QRCode.fromStringWith QRCode.Low
+        |> Result.map (QRCode.toSvg [])
         |> Result.withDefault Html.nothing
 
 
