@@ -55,6 +55,7 @@ languages =
     , Pl
     , Id
     , Es
+    , KoKR
     ]
 
 
