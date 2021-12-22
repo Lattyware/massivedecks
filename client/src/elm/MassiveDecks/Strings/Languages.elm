@@ -230,3 +230,6 @@ pack language =
 
         Es ->
             EsLang.pack
+        
+        KoKR ->
+            KoKRLang.pack
