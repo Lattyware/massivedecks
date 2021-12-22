@@ -55,7 +55,7 @@ languages =
     , Pl
     , Id
     , Es
-    , KoKR
+    , Ko
     ]
 
 
@@ -231,5 +231,5 @@ pack language =
         Es ->
             EsLang.pack
         
-        KoKR ->
-            KoKRLang.pack
+        Ko ->
+            KoLang.pack
