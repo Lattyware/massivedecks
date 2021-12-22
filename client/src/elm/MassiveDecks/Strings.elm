@@ -420,3 +420,4 @@ type MdString
     | Polish -- The name of the Polish language.
     | Indonesian -- The name of the Indonesian language.
     | Spanish -- The name of the Spanish language.
+    | Korean -- The name of the Korean language.
