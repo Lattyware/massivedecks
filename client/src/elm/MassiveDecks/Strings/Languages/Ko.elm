@@ -1,15 +1,16 @@
 module MassiveDecks.Strings.Languages.Ko exposing (pack)
 
-{-| English localization.
+{-| Korean localization.
 
-This is the primary language, strings here are the canonical representation, and are suitable to translate from.
+Contributors:
+
+  - sjkim04 <https://github.com/sjkim04>
 
 -}
 
 import MassiveDecks.Card.Source.BuiltIn.Model as BuiltIn
 import MassiveDecks.Card.Source.Model as Source
-import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..))
-import MassiveDecks.Strings.Languages.En.Internal as Internal
+import MassiveDecks.Strings exposing (MdString(..), Noun(..), Quantity(..), noun, nounMaybe, nounUnknownQuantity)
 import MassiveDecks.Strings.Languages.Model exposing (Language(..))
 import MassiveDecks.Strings.Translation as Translation
 import MassiveDecks.Strings.Translation.Model as Translation exposing (Result(..))
@@ -19,11 +20,10 @@ pack : Translation.Pack
 pack =
     Translation.pack
         { lang = Ko
-        , code = "ko"
+        , code = "ko-kr"
         , name = Korean
-        , translate = Internal.translate
-{-|       , recommended = "cah-base-en" |> BuiltIn.Id |> Source.BuiltIn -- Change this if you add a new built-in deck for the language. -}
-        , recommended = "cah-base-en" |> BuiltIn.hardcoded |> Source.BuiltIn
+        , translate = translate
+        , recommended = "cah-base-ko" |> BuiltIn.hardcoded |> Source.BuiltIn
         }
 
 
