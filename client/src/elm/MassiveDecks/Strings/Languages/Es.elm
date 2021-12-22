@@ -1350,6 +1350,8 @@ translate _ mdString =
         Spanish ->
             [ Text "Español" ]
 
+        Korean ->
+            [ Text "Coreano" ]
 
 raw : MdString -> Translation.Result never
 raw =

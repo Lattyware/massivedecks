@@ -17,6 +17,7 @@ type Language
     | Pl
     | Id
     | Es
+    | Ko
 
 
 {-| It makes sense to apply the language and pass around the function, so we give that a nice name.

@@ -34,6 +34,7 @@ import MassiveDecks.Strings.Languages.En as EnLang
 import MassiveDecks.Strings.Languages.Es as EsLang
 import MassiveDecks.Strings.Languages.Id as IdLang
 import MassiveDecks.Strings.Languages.It as ItLang
+import MassiveDecks.Strings.Languages.Ko as KoLang
 import MassiveDecks.Strings.Languages.Model exposing (..)
 import MassiveDecks.Strings.Languages.Pl as PlLang
 import MassiveDecks.Strings.Languages.PtBR as PtBRLang
@@ -55,6 +56,7 @@ languages =
     , Pl
     , Id
     , Es
+    , Ko
     ]
 
 
@@ -229,3 +231,6 @@ pack language =
 
         Es ->
             EsLang.pack
+
+        Ko ->
+            KoLang.pack

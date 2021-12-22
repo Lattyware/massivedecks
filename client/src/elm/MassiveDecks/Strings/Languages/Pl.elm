@@ -1501,6 +1501,9 @@ translate maybeDeclCase mdString =
         Spanish ->
             [ Text "Hiszpański" ]
 
+        Korean ->
+            [ Text "Koreański" ]
+
 
 type DeclensionCase
     = Nominative -- Mianownik   kto co

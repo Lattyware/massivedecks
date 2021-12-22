@@ -1381,6 +1381,9 @@ translate _ mdString =
             [ Text "Spanisch" ]
 
 
+        Korean ->
+            [ Text "Koreanisch" ]
+
 an : Maybe Int -> String
 an amount =
     case amount of
