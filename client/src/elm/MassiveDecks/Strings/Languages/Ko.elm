@@ -91,7 +91,7 @@ translate _ mdString =
             ]
 
         NewGame ->
-            [ Text "새 게임" ]
+            [ Text "새 놀이..가 아니라 게임" ]
 
         NewGameDescription ->
             [ ref MassiveDecks, Text "의 새 게임을 시작합니다." ]
@@ -145,10 +145,10 @@ translate _ mdString =
             [ Text "“", GameCode { code = code } |> ref, Text "”에 재참가" ]
 
         LobbyRequiresPassword ->
-            [ Text "이 게임에 참가하려면 비밀번호가 필요합니다. 당신을 초대한 사람에게 물어보세요." ]
+            [ Text "이 게임에 참가하려면 패스워드가 필요합니다. 당신을 초대한 사람에게 물어보세요." ]
 
         YouWereKicked ->
-            [ Text "당신은 게임에서 추방되었습니다." ]
+            [ Text "게임에서 추방되었습니다." ]
 
         ScrollToTop ->
             [ Text "페이지 최상단으로 가기" ]
@@ -200,49 +200,49 @@ translate _ mdString =
             [ ref (Pick { numberOfCards = 2 }) ]
 
         RulesPick ->
-            [ Text "일부 카드에 답하기 위해서는 1장의 "
+            [ Text "일부 카드에 답하기 위해서는 1장보다 많은 "
             , ref (noun Response 1)
-            , Text "보다 많은 카드가 필요합니다. 그때는, 카드를 낸 순서대로 "
+            , Text "가 필요합니다. 그때는, 카드를 낸 순서대로 "
             , ref Czar
-            , Text "가 읽을 겁니다—ㅅ."
+            , Text "가 읽을 겁니다."
             ]
 
         ExamplePickDescription ->
-            [ ref (nounUnknownQuantity Call)
-            , Text " like this will require picking more "
+            [ Text “이런 
+              ref (nounUnknownQuantity Call)
+            , Text "는 갖는 "
             , ref (nounUnknownQuantity Response)
-            , Text ", but give you more to pick from."
+            , Text "가 많아지지만, 선택해야 하는 카드도 많아집니다."
             ]
 
         RulesDraw ->
-            [ Text "Some "
+            [ Text "일부의 "
             , ref (nounUnknownQuantity Call)
-            , Text " will need even more "
+            , Text "는 더 많은 "
             , ref (nounUnknownQuantity Response)
-            , Text "—these will say "
+            , Text "를 필요로 할 것입니다—이런 카드에는 "
             , ref (Draw { numberOfCards = 2 })
-            , Text " or more, and you’ll get that many extra cards before you play."
+            , Text "와 같은 표시가 있으며, 그만큼 선택하기 전에 카드를 받습니다."
             ]
 
         GameRulesTitle ->
-            [ Text "Game Rules" ]
+            [ Text "게임 규칙" ]
 
         HouseRulesTitle ->
-            [ Text "House Rules" ]
+            [ Text "하우스 규칙" ]
 
         HouseRules ->
-            [ Text "You can change the way the game is played in a variety of ways. While setting up the game, choose "
-            , Text "as many house rules as you would like to use."
+            [ Text "게임이 플레이되는 방식은 여러가지가 있으며, 자신이 원하는 대로 바꿀 수 있습니다. 게임을 설정할 때, 설정하고 싶은 만큼 하우스 규칙을 정해 주세요."
             ]
 
         HouseRuleReboot ->
-            [ Text "Rebooting the Universe" ]
+            [ Text "세계의 리부팅" ]
 
         HouseRuleRebootDescription { cost } ->
-            [ Text "At any time, players may trade in "
+            [ Text "언제나, 플레이어들은 "
             , Text (an cost)
             , ref (nounMaybe Point cost)
-            , Text " to discard their hand and draw a new one."
+            , Text "를 써서 자신의 카드를 버리고 새 카드를 드로우할 수 있습니다."
             ]
 
         HouseRuleRebootAction { cost } ->
@@ -254,272 +254,269 @@ translate _ mdString =
             ]
 
         HouseRuleRebootCost ->
-            [ ref (noun Point 1), Text " Cost" ]
+            [ ref (noun Point 1), Text " 코스트" ]
 
         HouseRuleRebootCostDescription ->
-            [ Text "How many ", ref (nounUnknownQuantity Point), Text " it costs to redraw." ]
+            [ Text "다시 드로우하는 데에 필요한 ", ref (nounUnknownQuantity Point), Text "." ] 
 
         HouseRulePackingHeat ->
-            [ Text "Packing Heat" ]
+            [ Text "패킹 히트" ]
 
         HouseRulePackingHeatDescription ->
-            [ Text "Any "
+            [ ref (Pick { numberOfCards = 2 })
+            , Text "가 들어있는 모든 "
             , ref (nounUnknownQuantity Call)
-            , Text " with "
-            , ref (Pick { numberOfCards = 2 })
-            , Text " also get "
+            , Text "는, 모두가 더 많은 선택지를 가질 수 있게 "
             , ref (Draw { numberOfCards = 1 })
-            , Text ", so everyone has more options."
+            , Text "가 같이 붙습니다."
             ]
 
         HouseRuleComedyWriter ->
-            [ Text "Comedy Writer" ]
+            [ Text "코미디 라이터" ]
 
         HouseRuleComedyWriterDescription ->
-            [ Text "Add blank "
+            [ Text "공백인 "
             , ref (nounUnknownQuantity Response)
-            , Text " where players can write custom responses."
+            , Text "를 넣어서 플레이어가 커스텀의 답변을 적을 수 있게 해 주세요."
             ]
 
         HouseRuleComedyWriterNumber ->
-            [ Text "Blank ", ref (nounUnknownQuantity Response) ]
+            [ Text "공백 ", ref (nounUnknownQuantity Response) ]
 
         HouseRuleComedyWriterNumberDescription ->
-            [ Text "The number of Blank "
+            [ Text "게임에 들어갈 공백 "
             , ref (nounUnknownQuantity Response)
-            , Text " that will be in the game."
+            , Text "."
             ]
 
         HouseRuleComedyWriterExclusive ->
-            [ Text "Only Blank ", ref (nounUnknownQuantity Response) ]
+            [ Text "공백" ref (nounUnknownQuantity Response), Text "만으로 플레이"]
 
         HouseRuleComedyWriterExclusiveDescription ->
-            [ Text "If enabled, all other "
+            [ Text "만약 이 설정이 활성화되었다면, 다른 "
             , ref (nounUnknownQuantity Response)
-            , Text " will be ignored, only blank ones will exist in-game."
+            , Text "가 무시되며, 공백 카드만 들어가게 될 것입니다."
             ]
 
         HouseRuleRandoCardrissian ->
-            [ Text "Rando Cardrissian" ]
+            [ Text "란도 카드리산" ]
 
         HouseRuleRandoCardrissianDescription ->
-            [ Text "Every round, the first "
+            [ Text "매 라운드, 덱 안의 첫"
             , ref (noun Response 1)
-            , Text " in the deck will be played as an answer. This play belongs to an AI player named "
-            , Text "Rando Cardrissian, and if he wins the game, all players go home in a state of everlasting shame."
+            , Text "가 답으로서 플레이됩니다. 이 플레이는 AI 플레이어, 란도 카드리산의 플레이로 되며, 만약 그가 게임을 이긴다면 모든 플레이어는 평생 남을, "
+            , Text "AI에게 졌다는 굴욕을 맞이할 것입니다."
             ]
 
         HouseRuleRandoCardrissianNumber ->
-            [ Text "AI Players" ]
+            [ Text "AI 플레이어" ]
 
         HouseRuleRandoCardrissianNumberDescription ->
-            [ Text "The number of AI players that will be in the game." ]
+            [ Text "게임 내에 있을 AI 플레이어의 수." ]
 
         HouseRuleNeverHaveIEver ->
-            [ Text "Never Have I Ever" ]
+            [ Text "한번도 본 적이.." ]
 
         HouseRuleNeverHaveIEverDescription ->
-            [ Text "At any time, a player may discard cards they don't understand, however, they must confess their "
-            , Text "ignorance: the card is shared publicly."
+            [ Text "언제나, 플레이어는 자신이 이해를 못하는 카드를 버릴 수 있지만, 그들은 자신의 무지를 알려야 합니다: "
+            , Text "그 카드는 모든 플레이어에게 공개됩니다."
             ]
 
         HouseRuleHappyEnding ->
-            [ Text "Happy Ending" ]
+            [ Text "해피 엔딩" ]
 
         HouseRuleHappyEndingDescription ->
-            [ Text "When the game ends, the final round is a 'Make a Haiku' ", ref (noun Call 1), Text "." ]
+            [ Text "게임이 끝날 때, 마지막 라운드는 반드시 '하이쿠 만들기' ", ref (noun Call 1), Text "가 됩니다." ]
 
         HouseRuleCzarChoices ->
-            [ ref Czar, Text " Choices" ]
+            [ ref Czar, Text " 초이스" ]
 
         HouseRuleCzarChoicesDescription ->
-            [ Text "At the beginning of the round, the "
+            [ Text "라운드의 처음에, "
             , ref Czar
-            , Text " draws multiple "
+            , Text "가 여러 "
             , ref (nounUnknownQuantity Call)
-            , Text " and chooses one of them, and/or has the choice to write their own."
+            , Text "를 뽑아서 하나를 고르거나, 자신이 쓸 수도 있습니다."
             ]
 
         HouseRuleCzarChoicesNumber ->
-            [ Text "Number" ]
+            [ Text "카드 수" ]
 
         HouseRuleCzarChoicesNumberDescription ->
-            [ Text "The number of choices to give the ", ref Czar, Text " to pick between." ]
+            [ ref Czar, Text "에게 줄 카드 수." ]
 
         HouseRuleCzarChoicesCustom ->
-            [ Text "Custom" ]
+            [ Text "커스텀" ]
 
         HouseRuleCzarChoicesCustomDescription ->
-            [ Text "If the ", ref Czar, Text " can write custom calls. This takes up one of the choices." ]
+            [ ref Czar, Text "가 커스텀 카드를 쓸 수 있는지에 대한 설정. 이것이 위 카드 수 중 1장에 포함됩니다." ]
 
         HouseRuleWinnersPick ->
-            [ Text "Winner's Pick" ]
+            [ Text "승자의 선택" ]
 
         HouseRuleWinnersPickDescription ->
-            [ Text "The winner of each round becomes the ", ref Czar, Text " for the next round." ]
+            [ Text "각 라운드의 승자는 다음 라운드에 ", ref Czar, Text "가 됩니다." ]
 
         SeeAlso { rule } ->
-            [ Text "See also: ", ref rule ]
+            [ ref rule, Text " 참조"  ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
-            [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
+            [ Text "값이 최소 ", Text (String.fromInt min), Text "가 되어야 합니다." ]
 
         MustBeLessThanOrEqualValidationError { max } ->
-            [ Text "The value must be at most ", Text (String.fromInt max), Text "." ]
+            [ Text "값이 최대 ", Text (String.fromInt max), Text "가 되어야 합니다." ]
 
         SetValue { value } ->
-            [ Text "Set the value to ", Text (String.fromInt value), Text "." ]
+            [ Text "값을 ", Text (String.fromInt value), Text "로 설정하세요." ]
 
         CantBeEmpty ->
-            [ Text "This can't be empty." ]
+            [ Text "이것은 절대로 공백이 될 수 없습니다." ]
 
         SettingsTitle ->
-            [ Text "Settings" ]
+            [ Text "설정" ]
 
         LanguageSetting ->
-            [ Text "Language" ]
+            [ Text "언어" ]
 
         MissingLanguage ->
-            [ Text "Don’t see your language? ", ref TranslationBeg ]
+            [ Text "당신의 언어가 안 보이세요?", ref TranslationBeg ]
 
         AutonymFormat { autonym } ->
             [ Text "(", Text autonym, Text ")" ]
 
         TranslationBeg ->
-            [ Text "Help translate "
-            , ref MassiveDecks
-            , Text "!"
+            [ ref MassiveDecks
+            , Text " 번역을 도와 주세요!"
             ]
 
         CardSizeSetting ->
-            [ Text "Compact Cards" ]
+            [ Text "컴팩트 카드" ]
 
         CardSizeExplanation ->
-            [ Text "Adjust how big cards are—this can be useful on small screens to scroll less." ]
+            [ Text "카드의 크기를 조절하세요—작은 스크린에서는 스크롤을 적게 할 수 있도록 도움이 될 겁니다." ]
 
         AutoAdvanceSetting ->
-            [ Text "Automatically Advance Round" ]
+            [ Text "라운드 자동 진행" ]
 
         AutoAdvanceExplanation ->
-            [ Text "When a round ends, automatically advance to the next one rather than waiting." ]
+            [ Text "라운드가 끝날 시에, 기다리지 않고 다음 라운드로 진행합니다." ]
 
         SpeechSetting ->
-            [ Text "Text To Speech" ]
+            [ Text "텍스트 음성 변환" ]
 
         SpeechExplanation ->
-            [ Text "Read out cards using text to speech." ]
+            [ Text "TTS를 사용해서 카드를 읽습니다." ]
 
         SpeechNotSupportedExplanation ->
-            [ Text "Your browser does not support text to speech, or has no voices installed." ]
+            [ Text "당신의 브라우저는 TTS를 지원하지 않거나, 음성이 설치되어 있지 않습니다." ]
 
         VoiceSetting ->
-            [ Text "Speech Voice" ]
+            [ Text "TTS 음성" ]
 
         NotificationsSetting ->
-            [ Text "Browser Notifications" ]
+            [ Text "브라우저 알림" ]
 
         NotificationsExplanation ->
-            [ Text "Alert you when you need to do something in the game using browser notifications."
-            ]
+            [ Text "당신이 게임에서 뭔가를 해야 할때 브라우저 알림을 보냅니다." ]
 
         NotificationsUnsupportedExplanation ->
-            [ Text "Your browser doesn't support notifications." ]
+            [ Text "당신의 브라우저는 알림을 지원하지 않습니다." ]
 
         NotificationsBrowserPermissions ->
-            [ Text "You will need to give permission for "
+            [ Text "알림을 보내려면, "
             , ref MassiveDecks
-            , Text " to notify you. This will only be used while the game is open and while you have this enabled."
+            , Text "에게 권한을 줘야 합니다. 당신이 게임을 키고 있을 때와 이 설정을 활성화했을 때만 이 권한이 쓰일 것입니다."
             ]
 
         NotificationOnlyWhenHiddenSetting ->
-            [ Text "Only When Hidden" ]
+            [ Text "숨겨져 있을 때만" ]
 
         NotificationsOnlyWhenHiddenExplanation ->
-            [ Text "Only send notifications when you are not looking at the page (e.g: on another tab or minimised)." ]
+            [ Text "당신이 페이지를 보고 있지 않을 때만 알림을 보냅니다. (예: 다른 탭에 있거나 최소화되어 있을 때)" ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Your browser doesn't support checking for page visibility." ]
+            [ Text "당신의 브라우저는 페이지 가시성 확인을 지원하지 않습니다." ]
 
         -- Terms
         Czar ->
-            [ Text "Card Czar" ]
+            [ Text "카드 차르" ]
 
         CzarDescription ->
-            [ Text "The player judging the round." ]
+            [ Text "라운드를 심판하는 플레이어." ]
 
         CallDescription ->
-            [ Text "A black card with a question or fill-in-the-blank phrase." ]
+            [ Text "질문이나 빈칸 채우기 문구가 적혀 있는 검정색 카드." ]
 
         ResponseDescription ->
-            [ Text "A white card with a phrase played into rounds." ]
+            [ Text "문구가 적혀 있고, 라운드 중에서 플레이되는 흰색 카드." ]
 
         PointDescription ->
-            [ Text "A point—having more means winning." ]
+            [ Text "포인트—이기는 데에 중요한 것." ]
 
         GameCodeTerm ->
-            [ Text "Game Code" ]
+            [ Text "게임 코드" ]
 
         GameCodeDescription ->
-            [ Text "A code that lets other people find and join your game." ]
+            [ Text "다른 사람들이 당신의 게임을 찾고, 참가할 수 있게 되는 코드." ]
 
         GameCode { code } ->
             [ Text code ]
 
         GameCodeSpecificDescription ->
-            [ Text "Give this game code to people and they can join the game." ]
+            [ Text "이 코드를 사이트 주소와 함께 나눠서 게임에 참가할 수 있게 하세요." ]
 
         GameCodeHowToAcquire ->
-            [ Text "Ask the person who invited you for the game’s ", ref GameCodeTerm, Text "." ]
+            [ Text "당신을 초대한 사람에게 ", ref GameCodeTerm, Text "를 물어 보세요." ]
 
         Deck ->
-            [ Text "Deck" ]
+            [ Text "덱" ]
 
         DeckSource ->
-            [ ref Deck, Text " Source" ]
+            [ ref Deck, Text " 출처" ]
 
         DeckLanguage { language } ->
-            [ Text "in ", Text language ]
+            [ Text "언어: ", Text language ]
 
         DeckAuthor { author } ->
-            [ Text "by ", Text author ]
+            [ Text author, Text "작성" ]
 
         DeckTranslator { translator } ->
-            [ Text "translation by ", Text translator ]
+            [ Text translator, Text "번역" ]
 
         StillPlaying ->
-            [ Text "Playing" ]
+            [ Text "플레이 중" ]
 
         PlayingDescription ->
-            [ Text "This player is in the round, but has not yet submitted a play." ]
+            [ Text "이 플레이어는 라운드에 참가하고 있으나, 아직 카드를 제출하지 않았습니다." ]
 
         Played ->
-            [ Text "Played" ]
+            [ Text "플레이함" ]
 
         PlayedDescription ->
-            [ Text "This player has submitted their play for the round." ]
+            [ Text "이 플레이어는 라운드 플레이를 하였습니다." ]
 
         -- Lobby Browser
         LobbyBrowserTitle ->
-            [ Text "Public Games" ]
+            [ Text "공개 게임" ]
 
         NoPublicGames ->
-            [ Text "No public games available." ]
+            [ Text "공개 게임 없음" ]
 
         PlayingGame ->
-            [ Text "Games that are in progress." ]
+            [ Text "현재 진행중인 게임." ]
 
         SettingUpGame ->
-            [ Text "Games that have not yet started." ]
+            [ Text "아직 시작하지 않은 게임." ]
 
         StartYourOwn ->
-            [ Text "Start a new game?" ]
+            [ Text "새 게임을 시작하시겠습니까?" ]
 
         -- Spectation
         JoinTheGame ->
-            [ Text "Join the game!" ]
+            [ Text "게임에 참가하세요!" ]
 
         ToggleAdvertDescription ->
-            [ Text "Toggle showing the information on joining the game." ]
+            [ Text "게임 참가에 따른 정보를 보여줍니다." ]
 
         -- Cards
         Pick numberOfCards ->
@@ -529,19 +526,18 @@ translate _ mdString =
             [ Text "Draw", ref (NumberOfCards numberOfCards) ]
 
         PickDescription { numberOfCards } ->
-            [ Text "You need to play "
-            , Text (asWord numberOfCards)
-            , Text " "
+            [ Text (asWord numberOfCards)
+            , Text "장의 "
             , ref (noun Response numberOfCards)
-            , Text "."
+            , Text "를 플레이해야 합니다."
             ]
 
         DrawDescription { numberOfCards } ->
-            [ Text "You get "
+            [ Text "플레이를 하기 전에 "
             , Text (asWord numberOfCards)
-            , Text " extra "
+            , Text "장의 추가 "
             , ref (noun Response numberOfCards)
-            , Text " before playing."
+            , Text "를 받습니다."
             ]
 
         NumberOfCards { numberOfCards } ->
@@ -549,16 +545,16 @@ translate _ mdString =
 
         -- Lobby
         LobbyNameLabel ->
-            [ Text "Game Name" ]
+            [ Text "게임 이름" ]
 
         DefaultLobbyName { owner } ->
-            [ Text owner, Text "'s Game" ]
+            [ Text owner, Text "님의 게임" ]
 
         Invite ->
-            [ Text "Invite players to the game." ]
+            [ Text "이 게임에 플레이어들을 초대하세요." ]
 
         InviteLinkHelp ->
-            [ Text "Send this link to players to invite them to the game, or let them scan the QR code below." ]
+            [ Text "이 링크를 플레이어에게 보내거나, 아래 QR 코드를 스캔시켜서 게임에 초대하세요." ]
 
         InviteExplanation { gameCode, password } ->
             let
@@ -566,7 +562,7 @@ translate _ mdString =
                     password
                         |> Maybe.map
                             (\p ->
-                                [ Text " and the game password “"
+                                [ Text "와 게임 패스워드 “"
                                 , Text p
                                 , Text "”"
                                 ]
@@ -574,771 +570,772 @@ translate _ mdString =
                         |> Maybe.withDefault []
             in
             List.concat
-                [ [ Text "Your game code is "
+                [ [ Text "당신의 게임 코드는 "
                   , ref (GameCode { code = gameCode })
-                  , Text ". Players can join the game by loading "
+                  , Text "입니다. 플레이어들은 "
                   , ref MassiveDecks
-                  , Text " and entering that code"
+                  , Text "에 들어가서 이 코드"
                   ]
                 , extra
-                , [ Text "."
+                , [ Text "를 입력해서 게임에 참가할 수 있습니다."
                   ]
                 ]
 
         Cast ->
-            [ Text "Cast to TV." ]
+            [ Text "TV로 캐스트하기" ]
 
         CastConnecting ->
-            [ Text "Connecting…" ]
+            [ Text "연결중…" ]
 
         CastConnected { deviceName } ->
-            [ Text "Casting to ", Text deviceName, Text "." ]
+            [ Text deviceName, Text "로 캐스팅 중" ]
 
         Players ->
             [ ref (nounUnknownQuantity Player) ]
 
         PlayersDescription ->
-            [ Text "Users playing the game." ]
+            [ Text "게임을 플레이하는 유저 수." ]
 
         Spectators ->
             [ ref (nounUnknownQuantity Spectator) ]
 
         SpectatorsDescription ->
-            [ Text "Users watching the game without playing." ]
+            [ Text "플레이하지 않고 게임을 관전하고 있는 유저 수." ]
 
         Left ->
-            [ Text "Left" ]
+            [ Text "나감" ]
 
         LeftDescription ->
-            [ Text "Users who have left the game." ]
+            [ Text "게임을 나간 유저 수." ]
 
         Away ->
-            [ Text "Away" ]
+            [ Text "자리 비움" ]
 
         AwayDescription ->
-            [ Text "This user is temporarily away from the game." ]
+            [ Text "이 유저는 임시적으로 게임을 중단하고 있습니다." ]
 
         Disconnected ->
-            [ Text "Disconnected" ]
+            [ Text "연결 끊김" ]
 
         DisconnectedDescription ->
-            [ Text "This user is not connected to the game." ]
+            [ Text "이 유저는 게임에 연결되어 있지 않습니다." ]
 
         Privileged ->
-            [ Text "Owner" ]
+            [ Text "오너" ]
 
         PrivilegedDescription ->
-            [ Text "This user can adjust settings in the game." ]
+            [ Text "이 유저는 게임 설정을 조절할 수 있습니다." ]
 
         Ai ->
             [ Text "AI" ]
 
         AiDescription ->
-            [ Text "This player is controlled by the computer." ]
+            [ Text "이 플레이어는 컴퓨터에 의해 조작되고 있습니다." ]
 
         Score { total } ->
             [ Text (String.fromInt total) ]
 
         ScoreDescription ->
-            [ Text "The number of "
+            [ Text "이 플레이어가 가지고 있는 "
             , ref (nounUnknownQuantity Point)
-            , Text " this player has."
+            , Text " 수."
             ]
 
         Likes { total } ->
             [ Text (String.fromInt total) ]
 
         LikesDescription ->
-            [ Text "The number of likes received."
+            [ Text "받은 좋아요 수."
             ]
 
         ToggleUserList ->
-            [ Text "Show or hide the scoreboard." ]
+            [ Text "스코어보드를 보이거나 숨깁니다." ]
 
         GameMenu ->
-            [ Text "Game menu." ]
+            [ Text "게임 메뉴." ]
 
         UnknownUser ->
-            [ Text "An unknown user" ]
+            [ Text "미확인 유저" ]
 
         InvitePlayers ->
-            [ Text "Invite Players" ]
+            [ Text "플레이어 초대" ]
 
         InvitePlayersDescription ->
-            [ Text "Get the game code/link/qr code to let others join this game." ]
+            [ Text "다른 사람들이 참가할 수 있도록 게임 코드/링크/QR 코드를 취득합니다." ]
 
         SetAway ->
-            [ Text "Mark As Away" ]
+            [ Text "자리 비움으로 표시" ]
 
         SetBack ->
-            [ Text "Mark As Back" ]
+            [ Text "돌아옴으로 표시" ]
 
         LeaveGame ->
-            [ Text "Leave Game" ]
+            [ Text "게임 나가기" ]
 
         LeaveGameDescription ->
-            [ Text "Permanently leave the game." ]
+            [ Text "완전히 게임을 나갑니다." ]
 
         Spectate ->
-            [ Text "Spectator View" ]
+            [ Text "관전자 시점" ]
 
         SpectateDescription ->
-            [ Text "Open a spectator's view of the game in a new tab/window." ]
+            [ Text "새 탭/창으로 관전자 시점을 엽니다." ]
 
         BecomeSpectator ->
-            [ Text "Spectate" ]
+            [ Text "관전" ]
 
         BecomeSpectatorDescription ->
-            [ Text "Just watch the game without playing." ]
+            [ Text "플레이하지 않고 게임을 관전합니다." ]
 
         BecomePlayer ->
-            [ Text "Play" ]
+            [ Text "플레이" ]
 
         BecomePlayerDescription ->
-            [ Text "Play in the game." ]
+            [ Text "관전을 멈추고 게임 안에 들어갑니다." ]
 
         EndGame ->
-            [ Text "End Game" ]
+            [ Text "게임 중단" ]
 
         EndGameDescription ->
-            [ Text "End the game now." ]
+            [ Text "당장 게임을 중단합니다." ]
 
         ReturnViewToGame ->
-            [ Text "Return to game" ]
+            [ Text "게임으로 돌아가기" ]
 
         ReturnViewToGameDescription ->
-            [ Text "Return to the main game view." ]
+            [ Text "메인 게임 시점으로 돌아갑니다." ]
 
         ViewConfiguration ->
-            [ Text "Configure" ]
+            [ Text "설정" ]
 
         ViewConfigurationDescription ->
-            [ Text "Switch to view the game's configuration." ]
+            [ Text "게임의 설정을 봅니다." ]
 
         KickUser ->
-            [ Text "Kick" ]
+            [ Text "추방" ]
 
         Promote ->
-            [ Text "Promote" ]
+            [ Text "승진" ]
 
         Demote ->
-            [ Text "Demote" ]
+            [ Text "강등" ]
 
         -- Notifications
         UserConnected { username } ->
-            [ Text username, Text " has reconnected to the game." ]
+            [ Text username, Text "님이 게임에 재참가했습니다." ]
 
         UserDisconnected { username } ->
-            [ Text username, Text " has disconnected from the game." ]
+            [ Text username, Text "님과의 연결이 끊겼습니다." ]
 
         UserJoined { username } ->
-            [ Text username, Text " has joined the game." ]
+            [ Text username, Text "님이 게임에 참가했습니다." ]
 
         UserLeft { username } ->
-            [ Text username, Text " has left the game." ]
+            [ Text username, Text "님이 게임을 나갔습니다." ]
 
         UserKicked { username } ->
-            [ Text username, Text " has been kicked from the game." ]
+            [ Text username, Text "님이 게임에서 추방되었습니다." ]
 
         Dismiss ->
-            [ Text "Dismiss" ]
+            [ Text "닫기" ]
 
         -- Configuration
         ConfigureTitle ->
-            [ Text "Game Setup" ]
+            [ Text "게임 설정" ]
 
         NoDecks ->
-            [ Segment [ Text "No decks. " ]
+            [ Segment [ Text "덱 없음. " ]
             , Text " "
-            , Segment [ Text "You will need to add at least one to the game." ]
+            , Segment [ Text "게임에 하나 이상의 덱은 추가해야 합니다." ]
             ]
 
         NoDecksHint ->
-            [ Text "Not sure? Add the original ", raw CardsAgainstHumanity, Text " deck." ]
+            [ Text "잘 모르겠어요? ", raw CardsAgainstHumanity, Text " 기본 덱을 추가해 보세요. 영어지만. 한국 덱은 아래의 덱 리스트 안에 있습니다." ]
 
         WaitForDecks ->
-            [ Text "The decks must load before you can start the game." ]
+            [ Text "게임을 시작하기 전에 덱이 로드되어야 합니다." ]
 
         MissingCardType { cardType } ->
-            [ Text "None of your decks contain any "
+            [ Text "당신의 덱은 "
             , ref (nounUnknownQuantity cardType)
-            , Text ". You need a deck that does to start the game."
+            , Text "를 포함하고 있지 않습니다. 포함하고 있는 덱을 추가해야 시작할 수 있습니다."
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
-            [ Text "For the number of players in the game, you need at least "
+            [ Text "게임 안 플레이어 수에 대비하면, 최소"
             , Text (needed |> String.fromInt)
-            , Text " "
+            , Text "장의 "
             , ref (noun cardType needed)
-            , Text " but you only have "
+            , Text "가 필요하지만 현재 "
             , Text (have |> String.fromInt)
-            , Text "."
+            , Text "장입니다."
             ]
 
         AddBlankCards { amount } ->
-            [ Text "Add "
             , amount |> String.fromInt |> Text
-            , Text " blank "
+            , Text "장의 공백 "
             , ref (noun Response amount)
+            , Text "를 추가"
             ]
 
         AddDeck ->
-            [ Text "Add deck." ]
+            [ Text "덱 추가하기." ]
 
         RemoveDeck ->
-            [ Text "Remove deck." ]
+            [ Text "덱 제거하기." ]
 
         SourceNotFound { source } ->
-            [ ref source, Text " doesn't recognise the deck you asked for. Check the details you gave are correct." ]
+            [ ref source, Text "가 당신이 요청한 덱을 인식하지 않습니다. 검색 조건을 다시 한번 확인해 주세요." ]
 
         SourceServiceFailure { source } ->
-            [ ref source, Text " failed to provide the deck. Please try again later or try another source." ]
+            [ ref source, Text "가 당신이 요청한 덱을 불러오지 못했습니다. 나중에 다시 시도하거나 다른 출처를 선택해 보세요." ]
 
         ManyDecks ->
             [ Text "Many Decks" ]
 
         ManyDecksDeckCodeTitle ->
-            [ Text "Deck Code" ]
+            [ Text "덱 코드" ]
 
         ManyDecksDeckCodeShort ->
-            [ Text "A deck code must be at least five characters long." ]
+            [ Text "덱 코드는 최소 5글자여야 합니다." ]
 
         ManyDecksWhereToGet ->
-            [ Text "You can create and find decks to play with at ", ref ManyDecks, Text "." ]
+            [ ref ManyDecks, Text "에서 덱을 만들거나 플레이할 덱을 찾을 수 있습니다." ]
 
         JsonAgainstHumanity ->
             [ Text "JSON Against Humanity" ]
 
         JsonAgainstHumanityAbout ->
-            [ Text "Decks provided by ", ref JsonAgainstHumanity ]
+            [ ref JsonAgainstHumanity, Text "제공" ]
 
         BuiltIn ->
-            [ Text "Built-in" ]
+            [ Text "기본" ]
 
         APlayer ->
-            [ Text "A Player" ]
+            [ Text "플레이어" ]
 
         Generated { by } ->
-            [ Text "Generated by ", ref by ]
+            [ ref by, Text "생성" ]
 
         DeckAlreadyAdded ->
-            [ Text "This deck is already in the game." ]
+            [ Text "이 덱은 이미 게임 내에 추가되어 있습니다." ]
 
         ConfigureDecks ->
-            [ Text "Decks" ]
+            [ Text "덱" ]
 
         ConfigureRules ->
-            [ Text "Rules" ]
+            [ Text "규칙" ]
 
         ConfigureTimeLimits ->
-            [ Text "Time Limits" ]
+            [ Text "시간 제한" ]
 
         ConfigurePrivacy ->
-            [ Text "Privacy" ]
+            [ Text "프라이버시" ]
 
         HandSize ->
-            [ Text "Hand Size" ]
+            [ Text "패 카드 수" ]
 
         HandSizeDescription ->
-            [ Text "The base number of cards each player has in their hand during the game." ]
+            [ Text "각 플레이어가 자신의 패에서 기본적으로 가지는 카드 수." ]
 
         ScoreLimit ->
-            [ ref (noun Point 1), Text " Limit" ]
+            [ ref (noun Point 1), Text " 제한" ]
 
         ScoreLimitDescription ->
             [ Segment
-                [ Text "The number of "
+                [ Text "플레이어가 이기기 위해 필요한 "
                 , ref (nounUnknownQuantity Point)
-                , Text " a player needs to win the game."
+                , Text "."
                 ]
             , Text " "
-            , Segment [ Text "If disabled, the game continues indefinitely." ]
+            , Segment [ Text "만약 비활성화되어 있다면, 게임이 영원히 계속됩니다." ]
             ]
 
         UnsavedChangesWarning ->
-            [ Text "You have unsaved changes to the configuration, they must be saved first if you want them to apply "
-            , Text "to the game."
+            [ Text "아직 저장하지 않은 설정 변경이 있습니다. 게임에 적용하고 싶다면 먼저 설정을 저장해야 합니다."
             ]
 
         SaveChanges ->
-            [ Text "Save your changes." ]
+            [ Text "변경 저장하기." ]
 
         RevertChanges ->
-            [ Text "Discard your unsaved changes." ]
+            [ Text "미저장 변경 취소하기." ]
 
         NeedAtLeastOneDeck ->
-            [ Text "You need a deck of cards added to start the game." ]
+            [ Text "게임을 시작하려면 덱이 최소한 1개 게임에 추가되어야 합니다." ]
 
         NeedAtLeastThreePlayers ->
-            [ Text "You need at least three players to start the game." ]
+            [ Text "게임을 시작하려면 플레이어가 최소한 3명 필요합니다." ]
 
         NeedAtLeastOneHuman ->
-            [ Text "Unfortunately computer players can't be the "
+            [ Text "불행히도 컴퓨터 플레이어들은"
             , ref Czar
-            , Text ", so you need at least one human player to start the game."
-            , Text " (Although only one human might be a bit boring!)"
+            , Text "가 될 수 없으므로, 인간 플레이어가 최소한 1명 필요합니다."
+            , Text " (인간 1명은 좀 재미가 없을 것 같기도 하지만요!)"
             ]
 
         RandoCantWrite ->
-            [ Text "Computer players can't write their own cards." ]
+            [ Text "컴퓨터 플레이어들은 자신의 커스텀 카드는 쓸 수 없습니다." ]
 
         DisableComedyWriter ->
-            [ Text "Disable ", ref HouseRuleComedyWriter ]
+            [ ref HouseRuleComedyWriter, Text " 비활성화" ]
 
         DisableRando ->
-            [ Text "Disable ", ref HouseRuleRandoCardrissian ]
+            [ ref HouseRuleRandoCardrissian, Text "비활성화" ]
 
         AddAnAiPlayer ->
-            [ Text "Add an AI player to the game." ]
+            [ Text "게임에 AI 플레이어를 추가합니다." ]
 
         PasswordShared ->
-            [ Text "Anyone in the game can see the password! "
-            , Text "Hiding it above only affects you (useful if streaming, etc…)."
+            [ Text "게임 내에 있는 모든 플레이어들은 패스워드를 볼 수 있습니다! "
+            , Text "위에서 숨기는 것은 당신에게만 적용됩니다. (방송 등에서는 유용)"
             ]
 
         PasswordNotSecured ->
-            [ Text "Game passwords are "
-            , Em [ Text "not" ]
-            , Text " stored securely—given this, please "
-            , Em [ Text "do not" ]
-            , Text " use serious passwords you use elsewhere!"
+            [ Text "게임 패스워드들은 안전하게 보관되어 있지 "
+            , Em [ Text "않습니다" ]
+            , Text "—당신을 위해서라도, "
+            , Em [ Text "절대로" ]
+            , Text " 다른 곳에서 쓰는 패스워드들을 여기서 쓰지 마세요!"
             ]
 
         LobbyPassword ->
-            [ Text "Game Password" ]
+            [ Text "게임 패스워드" ]
 
         LobbyPasswordDescription ->
-            [ Text "A password the users must enter before they can join the game." ]
+            [ Text "게임에 참가하기 전에 유저들이 입력해야 할 패스워드." ]
 
         AudienceMode ->
-            [ Text "Audience Mode" ]
+            [ Text "관객 모드" ]
 
         AudienceModeDescription ->
-            [ Text "If enabled, newly joining users will be spectators by default, and only you will be able to "
-            , Text "make them players."
+            [ Text "만약 활성화되어 있다면, 새로 참가하는 유저들은 자동으로 관전자가 되며, 당신만이 그들을 "
+            , Text "플레이어로 할 수 있습니다."
             ]
 
         StartGame ->
-            [ Text "Start Game" ]
+            [ Text "게임 시작" ]
 
         Public ->
-            [ Text "Public Game" ]
+            [ Text "공개 게임" ]
 
         PublicDescription ->
-            [ Text "If enabled, the game will show up in the public game list for anyone to find." ]
+            [ Text "만약 활성화되어 있다면, 이 게임이 아무나 참가할 수 있게 공개 게임 리스트에 추가됩니다." ]
 
         ApplyConfiguration ->
-            [ Text "Apply this change." ]
+            [ Text "이 변경을 저장하기." ]
 
         AppliedConfiguration ->
-            [ Text "Saved." ]
+            [ Text "저장됨." ]
 
         InvalidConfiguration ->
-            [ Text "This configuration value isn't valid." ]
+            [ Text "이 설정 값은 유효하지 않습니다." ]
 
         Automatic ->
-            [ Text "Automatically Mark Players As Away" ]
+            [ Text "자동으로 플레이어들을 자리 비움으로 하기" ]
 
         AutomaticDescription ->
-            [ Text "If enabled, when the time limit runs out players will automatically be marked as away. "
-            , Text "Otherwise someone will need to press the button to do so."
+            [ Text "만약 활성화되어 있다면, 제한 시간이 끝나면 플레이어들은 자동으로 자리 비움으로 표시될 것입니다. "
+            , Text "그 외에서는 누군가가 “자리 비움으로 표시” 버튼을 눌러서 설정을 해야 합니다."
             ]
 
         TimeLimit { stage } ->
-            [ ref stage, Text " Time Limit" ]
+            [ ref stage, Text " 시간 제한" ]
 
         StartingTimeLimitDescription ->
-            [ Text "How long (in seconds) the "
+            [ raw HouseRuleCzarChoices
+            , Text "가 활성화되어 있을 시에 "
             , ref Czar
-            , Text " has to choose/write a "
+            , Text "가 "
             , ref (noun Call 1)
-            , Text ", when the "
-            , raw HouseRuleCzarChoices
-            , Text " house rule is enabled."
-            ]
+            , Text "를 선택/작성하는 시간 (초 단위)."
+           ]
 
         PlayingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Players, Text " have to make their plays." ]
+            [ ref Players, Text "이 카드를 플레이하는 데에 주어진 시간 (초 단위)." ]
 
         PlayingAfterDescription ->
-            [ Text "How long (in seconds) players have to change their play before the next stage starts." ]
+            [ Text "다음 스테이지가 시작되기 전, 플레이어들이 자신의 플레이를 바꿀 수 있는 시간 (초 단위)." ]
 
         RevealingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Czar, Text " has to reveal the plays." ]
+            [ Text "ref Czar, Text "가 플레이들을 공개하는 데에 주어진 시간 (초 단위)." ]
 
         RevealingAfterDescription ->
-            [ Text "How long (in seconds) to wait after the last card is revealed before the next stage starts." ]
+            [ Text "마지막 카드가 공개된 이후, 다음 스테이지가 시작되기까지의 시간 (초 단위)." ]
 
         JudgingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Czar, Text " has to judge the plays." ]
+            [ ref Czar, Text "가 플레이들을 심판하는 데에 주어진 시간 (초 단위)." ]
 
         CompleteTimeLimitDescription ->
-            [ Text "How much time (in seconds) to wait after one round ends before starting the next one." ]
+            [ Text "한 라운드가 끝나고 나서 다음 라운드가 시작할 때까지의 시간 (초 단위)." ]
 
         RevealingEnabledTitle ->
-            [ Text "Czar Reveals Plays" ]
+            [ Text "Czar가 플레이를 공개" ]
 
         RevealingEnabled ->
-            [ Text "If this is enabled, the "
+            [ Text "이게 활성화되어 있다면, "
             , ref Czar
-            , Text " reveals one play at a time before picking a winner."
+            , Text "가 승자를 선택하기 전에 하나씩 플레이를 공개합니다."
             ]
 
         DuringTitle ->
-            [ Text "Time Limit" ]
+            [ Text "시간 제한" ]
 
         AfterTitle ->
-            [ Text "After" ]
+            [ Text "이후" ]
 
         Conflict ->
-            [ Text "Conflict" ]
+            [ Text "충돌" ]
 
         ConflictDescription ->
-            [ Text "Someone else made changes to this while you were also making changes. "
-            , Text "Please choose if you want to keep your changes or theirs."
+            [ Text "당신이 설정을 변경하고 있을 때 다른 누군가가 설정을 변경했습니다."
+            , Text "당신과 그들 중 저장할 쪽을 선택해 주세요."
             ]
 
         YourChanges ->
-            [ Text "Your Changes" ]
+            [ Text "당신의 변경" ]
 
         TheirChanges ->
-            [ Text "Their Changes" ]
+            [ Text "그들의 변경" ]
 
         ConfigurationDisabledWhileInGame ->
-            [ Text "While the game in progress, you can't change the configuration." ]
+            [ Text "게임 진행중, 설정을 변경할 수는 없습니다." ]
 
         ConfigurationDisabledIfNotPrivileged ->
-            [ Text "You can't change the configuration of this game." ]
+            [ Text "이 게임의 설정을 변경할 수 없습니다." ]
 
         ConfigureNextGame ->
-            [ Text "Configure Next Game" ]
+            [ Text "다음 게임 설정" ]
 
         -- Game
         PickCall ->
-            [ Text "Pick this ", ref (noun Call 1), Text " for the others to play into for the round." ]
+            [ Text "다른 사람들이 플레이할 ", ref (noun Call 1), Text "를 고릅니다." ]
 
         WriteCall ->
-            [ Text "Write a custom ", ref (noun Call 1), Text " for the others to play into for the round." ]
+            [ Text "다른 사람들이 플레이할 커스텀 ", ref (noun Call 1), Text "를 씁니다." ]
 
         SubmitPlay ->
-            [ Text "Give these cards to the ", ref Czar, Text " as your play for the round." ]
+            [ Text "이 카드들을 이 라운드의 당신의 플레이로서 ", ref Czar, Text "에게 줍니다." ]
 
         TakeBackPlay ->
-            [ Text "Take back your cards to change your play for the round." ]
+            [ Text "이 라운드의 당신의 플레이를 바꾸기 위해 카드를 다시 뺍니다." ]
 
         JudgePlay ->
-            [ Text "Pick this play as the winner for the round." ]
+            [ Text "이 플레이를 이 라운드의 승자로써 고릅니다." ]
 
         LikePlay ->
-            [ Text "Add a like to this play." ]
+            [ Text "이 플레이에 좋아요를 추가합니다." ]
 
         AdvanceRound ->
-            [ Text "Next round." ]
+            [ Text "다음 라운드" ]
 
         Starting ->
             [ raw HouseRuleCzarChoices ]
 
         Playing ->
-            [ Text "Playing" ]
+            [ Text "플레이 중" ]
 
         Revealing ->
-            [ Text "Revealing" ]
+            [ Text "공개 중" ]
 
         Judging ->
-            [ Text "Judging" ]
+            [ Text "심판 중" ]
 
         Complete ->
-            [ Text "Finished" ]
+            [ Text "완료" ]
 
         ViewGameHistoryAction ->
-            [ Text "View previous rounds from this game." ]
+            [ Text "이 게임에서의 이전 라운드를 봅니다." ]
 
         ViewHelpAction ->
-            [ Text "Help" ]
+            [ Text "도움말" ]
 
         EnforceTimeLimitAction ->
-            [ Text "Set all players the game is waiting on to away and skip them until they return." ]
+            [ Text "아직 플레이를 안한 모든 플레이어들을 자리 비움으로 설정하고 돌아올 때까지 그들을 건너뜁니다." ]
 
         Blank ->
-            [ Text "Blank" ]
+            [ Text "빈칸" ]
 
         RoundStarted ->
-            [ Text "Round Started" ]
+            [ Text "라운드 시작됨" ]
 
         JudgingStarted ->
-            [ Text "Judging Started" ]
+            [ Text "심판 시작됨" ]
 
         Paused ->
-            [ Text "The game has been paused because there are not enough active players to continue."
-            , Text "When someone joins or returns it will continue automatically."
+            [ Text "게임을 계속하는 데 필요한 플레이어 수가 모자라므로, 게임이 일시정지되었습니다."
+            , Text "만약 누군가가 참가하거나 돌아오면 자동으로 계속될 것입니다."
             ]
 
         ClientAway ->
-            [ Text "You are currently set as away from the game, and are not playing." ]
+            [ Text "당신은 현재 자리 비움으로 설정되어 있으며, 플레이를 하고 있지 않습니다." ]
 
         Discard ->
-            [ Text "Discard the selected card, revealing it to the other users in the game." ]
+            [ Text "선택된 카드를 버려서, 게임 내 다른 유저들에게 알립니다." ]
 
         Discarded { player } ->
             [ Text player
-            , Text " discarded the following card:"
+            , Text "님이 해당 카드를 버렸습니다:"
             ]
 
         -- Instructions
         PickCallInstruction ->
-            [ Text "Pick a ", ref (noun Call 1), Text " for the others to play into." ]
+            [ Text "다른 플레이어들에게 플레이시킬 ", ref (noun Call 1), Text "를 선택하세요." ]
 
         WaitForCallInstruction ->
-            [ Text "You are waiting for the "
+            [ Text "현재 "
             , ref Czar
-            , Text " to pick a "
+            , Text "가 당신이 플레이할 "
             , ref (noun Call 1)
-            , Text " for you to play into."
+            , Text "를 선택하는 것을 기다리는 중입니다."
             ]
 
         PlayInstruction { numberOfCards } ->
-            [ Text "You need to choose "
-            , Text (asWord numberOfCards)
-            , Text " more "
+            [ Text "플레이를 제출하기 전에 이 라운드에서 "
             , ref (noun Response numberOfCards)
-            , Text " from your hand into this round before you can submit your play."
+            , Text "를 "
+            , Text (asWord numberOfCards)
+            , Text "장 더 선택해야 합니다."
             ]
 
         SubmitInstruction ->
-            [ Text "You need to submit your play for this round." ]
+            [ Text "이 라운드의 플레이를 재출해야 합니다." ]
 
         WaitingForPlaysInstruction ->
-            [ Text "You are waiting for other players to play into the round." ]
+            [ Text "다른 플레이어들이 이 라운드에 플레이하는 것을 기다리고 있습니다." ]
 
         CzarsDontPlayInstruction ->
-            [ Text "You are the "
+            [ Text "당신은 이 라운드의 "
             , ref Czar
-            , Text " for the round - you don't submit any "
+            , Text "입니다. "
             , ref (nounUnknownQuantity Response)
-            , Text ". Instead you choose the winner once everyone else has submitted theirs."
+            , Text "는 제출하지 않고, 모두가 그들의 카드를 제출하고 나서 승자를 선택합니다."
             ]
 
         NotInRoundInstruction ->
-            [ Text "You are not in this round. You will play in the next one unless you are set to away." ]
+            [ Text "이 라운드에 참가하고 있지 않습니다. 자리 비움으로 설정이 안 된 이상 다음 라운드에서 참가할 것입니다." ]
 
         RevealPlaysInstruction ->
-            [ Text "Click on the plays to flip them, then pick the one you think is best." ]
+            [ Text "플레이를 선택해서 뒤집고, 제일 좋다고 생각하는 것을 선택해 주세요." ]
 
         WaitingForCzarInstruction ->
-            [ Text "You can like plays while you wait for the ", ref Czar, Text " to reveal the plays and pick a winner for the round." ]
+            [ ref Czar, Text "가 플레이들을 공개하고 승자를 선택할 때까지 플레이들에 좋아요를 추가할 수 있습니다." ]
 
         AdvanceRoundInstruction ->
-            [ Text "The next round has started, you can advance." ]
+            [ Text "다음 라운드가 시작되었습니다, 진행하셔도 됩니다." ]
 
         -- 404 Unknown
         UnknownPageTitle ->
-            [ Text "404 Error: Unknown page." ]
+            [ Text "404 에러: 알려지지 않은 페이지." ]
 
         GoBackHome ->
-            [ Text "Go to the main page." ]
+            [ Text "메인 페이지로 이동." ]
 
         -- Actions
         Refresh ->
-            [ Text "Refresh" ]
+            [ Text "새로고침하기" ]
 
         Accept ->
             [ Text "OK" ]
 
         -- Editor
         AddSlot ->
-            [ Text "Add ", ref Blank ]
+            [ ref Blank, Text "추가" ]
 
         AddText ->
-            [ Text "Add Text" ]
+            [ Text "텍스트 추가" ]
 
         EditText ->
-            [ Text "Edit" ]
+            [ Text "편집" ]
 
         EditSlotIndex ->
-            [ Text "Edit" ]
+            [ Text "편집" ]
 
         MoveLeft ->
-            [ Text "Move Earlier" ]
+            [ Text "왼쪽으로 이동" ]
 
         Remove ->
-            [ Text "Remove" ]
+            [ Text "제거" ]
 
         MoveRight ->
-            [ Text "Move Later" ]
+            [ Text "오른쪽으로 이동" ]
 
         Normal ->
-            [ Text "Normal" ]
+            [ Text "보통" ]
 
         Capitalise ->
-            [ Text "Capitalise" ]
+            [ Text "대문자화" ]
 
         UpperCase ->
-            [ Text "Upper Case" ]
+            [ Text "대문자" ]
 
         Emphasise ->
-            [ Text "Emphasise" ]
+            [ Text "강조" ]
 
         MustContainAtLeastOneSlot ->
-            [ Text "You must have at least one ", ref Blank, Text " for people to play into." ]
+            [ Text "사람들이 플레이할 수 있게 최소한 하나의 ", ref Blank, Text "이 필요합니다." ]
 
         SlotIndexExplanation ->
-            [ Text "What number "
-            , ref (noun Response 1)
-            , Text " played will be used for this "
+            [ Text "이 "
             , ref Blank
-            , Text ". This lets you repeat a "
+            , Text "에 쓰일 "
             , ref (noun Response 1)
-            , Text "."
+            , Text " 수입니다. 이걸로 "
+            , ref (noun Response 1)
+            , Text "를 반복 사용할 수 있습니다."
             ]
 
         -- Errors
         Error ->
-            [ Text "Error" ]
+            [ Text "에러" ]
 
         ErrorHelp ->
-            [ Text "The game server might be down, or this might be a bug. Refreshing the page should get you going "
-            , Text "again. More details can be found below."
+            [ Text "게임 서버가 오프라인이거나, 버그가 발생했을 수 있습니다. 페이지를 새로고침하면 계속 이을 수 있을 겁니다.  "
+            , Text "자세한 정보는 아래에서 확인하실 수 있습니다."
             ]
 
         ErrorHelpTitle ->
-            [ Text "Sorry, something went wrong." ]
+            [ Text "무언가가 잘못되었습니다." ]
 
         ErrorCheckOutOfBand ->
-            [ Text "Please check ", ref TwitterHandle, Text " for updates and service status. The game server will go down for a short time when a new version is released, so if you see a recent update, try again in a few minutes." ]
+            [ ref TwitterHandle, Text "를 확인하여 업데이트와 서비스 상태에 대해 알아 보세요. 새로운 업데이트가 추가되었을 때는 게임 서버들이 잠시 오프라인이 될 겁니다. 그러므로 만약 최근에 업데이트가 있었다면, 잠시 후에 다시 접속해 주시기 바랍니다." ]
 
         TwitterHandle ->
             [ Text "@Massive_Decks" ]
 
         ReportError ->
-            [ Text "Report Bug" ]
+            [ Text "버그 신고" ]
 
         ReportErrorDescription ->
-            [ Text "Let the developers know about a bug you encountered so they can fix it." ]
+            [ Text "당신이 마주한 버그를 개발자들에게 알려서 그들이 고칠 수 있게 해 주세요." ]
 
         ReportErrorBody ->
-            [ Text "I was [replace with a short explanation of what you were doing] when I got the following error:" ]
+            [ Text "제가 [당신이 하던 것의 짧은 설명으로 대체] 하고 있었을 때 이 에러를 얻었습니다:" ]
 
         BadUrlError ->
-            [ Text "We tried to make a request to an invalid page." ]
+            [ Text "저희가 무효한 페이지로 요청을 하려고 했습니다." ]
 
         TimeoutError ->
-            [ Text "The server didn’t respond for too long. It may be down, please try again after a short delay." ]
+            [ Text "서버가 오랜 시간동안 응답을 안했습니다. 서버가 나갔을 수도 있으니, 잠시 후에 다시 시도해 주시기 바랍니다." ]
 
         NetworkError ->
-            [ Text "Your internet connection was interrupted." ]
+            [ Text "인터넷 연결이 차단되었습니다." ]
 
         ServerDownError ->
-            [ Text "The game server is currently offline. Please try again later." ]
+            [ Text "게임 서버가 현재 오프라인입니다. 나중에 다시 시도해 주세요." ]
 
         BadStatusError ->
-            [ Text "The server gave a response we didn’t expect." ]
+            [ Text "서버가 저희가 예상 못한 응답을 했습니다." ]
 
         BadPayloadError ->
-            [ Text "The server gave a response we didn’t understand." ]
+            [ Text "서버가 저희가 이해 못한 응답을 했습니다." ]
 
         PatchError ->
-            [ Text "The server gave a patch we couldn't apply." ]
+            [ Text "서버가 저희가 적용을 못하는 패치를 주었습니다." ]
 
         VersionMismatch ->
-            [ Text "The server gave a config change for a different version than we expected." ]
+            [ Text "서버가 저희가 예상한 것과 다른 버전의 설정 변경을 했습니다." ]
 
         CastError ->
-            [ Text "Sorry, something went wrong trying to connect to the game." ]
+            [ Text "게임과 캐스트 연결 중에 문제가 발생했습니다." ]
 
         ActionExecutionError ->
-            [ Text "You can't perform that action." ]
+            [ Text "그 행동은 할 수 없습니다." ]
 
         IncorrectPlayerRoleError { role, expected } ->
-            [ Text "You need to be a ", ref expected, Text " to do that, but you are a ", ref role, Text "." ]
+            [ Text "그걸 하려면 ", ref expected, Text "여야 하지만, 현재 ", ref role, Text "입니다." ]
 
         IncorrectUserRoleError { role, expected } ->
-            [ Text "You need to be a ", ref expected, Text " to do that, but you are a ", ref role, Text "." ]
+            [ Text "그걸 하려면 ", ref expected, Text "여야 하지만, 현재 ", ref role, Text "입니다." ]
 
         IncorrectRoundStageError { stage, expected } ->
-            [ Text "The round needs to be at the ", ref expected, Text " stage to do that, but it is at the ", ref stage, Text " stage." ]
+            [ Text "그걸 하려면 라운드가 ", ref expected, Text " 스테이지에 있어야 하지만, 현재 ", ref stage, Text " 스테이지입니다." ]
 
         ConfigEditConflictError ->
-            [ Text "Someone else changed the configuration before you, your change was not saved." ]
+            [ Text "누군가가 당신 이전에 설정을 바꿨으며, 당신의 변경은 저장되지 않았습니다." ]
 
         UnprivilegedError ->
-            [ Text "You don't have the privileges to do that." ]
+            [ Text "그걸 할 권한이 없습니다." ]
 
         GameNotStartedError ->
-            [ Text "The game needs to started to do that." ]
+            [ Text "게임이 시작되어야 그것을 할 수 있습니다." ]
 
         InvalidActionError { reason } ->
-            [ Text "The server didn't understand a request from the client. Details: ", Text reason ]
+            [ Text "서버가 클라이언트의 요청을 이해하지 못했습니다. 자세한 정보:", Text reason ]
 
         AuthenticationError ->
-            [ Text "You can't join that game." ]
+            [ Text "그 게임에는 참가할 수 없습니다." ]
 
         IncorrectIssuerError ->
-            [ Text "Your credentials to join this game are out of date, the game no longer exists." ]
+            [ Text "게임 참가시에 사용한 정보의 유효기간이 이미 지났으며, 게임은 더 이상 존재하지 않습니다." ]
 
         InvalidAuthenticationError ->
-            [ Text "Your credentials to join this game are corrupt." ]
+            [ Text "게임 참가시에 사용한 정보가 파손되었습니다." ]
 
         InvalidLobbyPasswordError ->
-            [ Text "The game password you gave was wrong. Try typing it again and if it still doesn't work, ask the person who invited you again." ]
+            [ Text "입력한 게임 패스워드가 알맞지 않습니다. 다시 쳐도 문제가 해결되지 않는다면, 당신을 초대한 사람에게 다시 물어보세요." ]
 
         AlreadyLeftError ->
-            [ Text "You have already left this game." ]
+            [ Text "이미 게임에서 나갔습니다." ]
 
         LobbyNotFoundError ->
-            [ Text "That game doesn't exist." ]
+            [ Text "그 게임은 존재하지 않습니다." ]
 
         LobbyClosedError { gameCode } ->
-            [ Text "The game you wish to join (", ref (GameCode { code = gameCode }), Text ") has ended." ]
+            [ Text "참가하고 싶은 게임 (", ref (GameCode { code = gameCode }), Text ")이 끝났습니다." ]
 
         LobbyDoesNotExistError { gameCode } ->
-            [ Text "The game code you entered ("
+            [ Text "입력한 게임 코드 ("
             , ref (GameCode { code = gameCode })
-            , Text ") doesn't exist. "
-            , Text "Try typing it again and if it still doesn't work, ask the person who invited you again."
+            , Text ") 가 존재하지 않습니다. "
+            , Text "다시 쳐도 문제가 해결되지 않는다면, 당신을 초대한 사람에게 다시 물어보세요."
             ]
 
         RegistrationError ->
-            [ Text "Problem while joining the game." ]
+            [ Text "게임 참가중 문제가 발생했습니다." ]
 
         UsernameAlreadyInUseError { username } ->
-            [ Text "Someone is already using the username “"
+            [ Text "누군가가 벌써 “"
             , Text username
-            , Text "”—try a different name."
+            , Text "”라는 이름을 쓰고 있습니다—다른 이름을 사용해 보세요."
             ]
 
         GameError ->
-            [ Text "Something has gone wrong in the game." ]
+            [ Text "게임 내에서 무엇인가가 잘못되었습니다." ]
 
         OutOfCardsError ->
-            [ Text "There were not enough cards in the deck to deal everyone a hand! Try adding more decks in the game configuration." ]
+            [ Text "모두에게 카드를 나눠줄 정도의 카드가 없었습니다! 게임 설정에서 덱을 더 추가해 보세요." ]
 
         -- Language Names
         English ->
-            [ Text "English" ]
+            [ Text "영어" ]
 
         BritishEnglish ->
-            [ Text "English (British)" ]
+            [ Text "영어 (영국)" ]
 
         Italian ->
-            [ Text "Italian" ]
+            [ Text "이탈리아어" ]
 
         BrazilianPortuguese ->
-            [ Text "Portuguese (Brazilian)" ]
+            [ Text "포르투갈어 (브라질)" ]
 
         German ->
-            [ Text "German (Formal)" ]
+            [ Text "독일어 (정식적)" ]
 
         GermanInformal ->
-            [ Text "German (Informal)" ]
+            [ Text "독일어 (비정식적)" ]
 
         Polish ->
-            [ Text "Polish" ]
+            [ Text "폴란드어" ]
 
         Indonesian ->
-            [ Text "Indonesian" ]
+            [ Text "인도네시아어" ]
 
         Spanish ->
-            [ Text "Spanish" ]
+            [ Text "스페인어" ]
+
+        Korean ->
+            [ Text "한국어" ]
 
 
 
@@ -1359,7 +1356,7 @@ an : Maybe Int -> String
 an amount =
     case amount of
         Just 1 ->
-            "an "
+            ""
 
         _ ->
             ""
@@ -1371,43 +1368,43 @@ asWord : Int -> String
 asWord number =
     case number of
         0 ->
-            "zero"
+            "0"
 
         1 ->
-            "one"
+            "1"
 
         2 ->
-            "two"
+            "2"
 
         3 ->
-            "three"
+            "3"
 
         4 ->
-            "four"
+            "4"
 
         5 ->
-            "five"
+            "5"
 
         6 ->
-            "six"
+            "6"
 
         7 ->
-            "seven"
+            "7"
 
         8 ->
-            "eight"
+            "8"
 
         9 ->
-            "nine"
+            "9"
 
         10 ->
-            "ten"
+            "10"
 
         11 ->
-            "eleven"
+            "11"
 
         12 ->
-            "twelve"
+            "12"
 
         other ->
             String.fromInt other
