@@ -22,7 +22,7 @@
             "elm-community/random-extra": "3.2.0",
             "fapian/elm-html-aria": "1.4.0",
             "lattyware/elm-fontawesome": "5.0.0",
-            "lattyware/elm-json-diff": "1.0.0",
+            "lattyware/elm-json-diff": "1.0.2",
             "myrho/elm-round": "1.0.4",
             "norpan/elm-html5-drag-drop": "3.1.4",
             "norpan/elm-json-patch": "1.0.1",
