@@ -18,7 +18,7 @@ export type LobbyId = number;
 const hashIds = new Hashids(
   "massivedecks",
   2,
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
 );
 
 /**

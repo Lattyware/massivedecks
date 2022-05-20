@@ -1,28 +1,28 @@
 import wu from "wu";
-import { InvalidActionError } from "../errors/validation";
-import * as Event from "../event";
-import * as GameStarted from "../events/game-event/game-started";
-import * as PauseStateChanged from "../events/game-event/pause-state-changed";
-import * as PlaySubmitted from "../events/game-event/play-submitted";
-import * as RoundStarted from "../events/game-event/round-started";
-import * as PlayingStarted from "../events/game-event/playing-started";
-import { Lobby } from "../lobby";
-import { ServerState } from "../server-state";
-import * as Timeout from "../timeout";
-import * as FinishedPlaying from "../timeout/finished-playing";
-import * as RoundStageTimerDone from "../timeout/round-stage-timer-done";
-import * as User from "../user";
-import * as Util from "../util";
-import * as Card from "./cards/card";
-import * as Decks from "./cards/decks";
-import * as Play from "./cards/play";
-import * as Round from "./game/round";
-import * as PublicRound from "./game/round/public";
-import { StoredPlay } from "./game/round/stored-play";
-import * as Player from "./player";
-import * as Rules from "./rules";
-import * as HappyEnding from "./rules/happy-ending";
-import * as CzarChoices from "./rules/czar-choices";
+
+import { InvalidActionError } from "../errors/validation.js";
+import * as Event from "../event.js";
+import * as GameStarted from "../events/game-event/game-started.js";
+import * as PauseStateChanged from "../events/game-event/pause-state-changed.js";
+import * as PlaySubmitted from "../events/game-event/play-submitted.js";
+import * as PlayingStarted from "../events/game-event/playing-started.js";
+import * as RoundStarted from "../events/game-event/round-started.js";
+import type { Lobby } from "../lobby.js";
+import type { ServerState } from "../server-state.js";
+import type * as Timeout from "../timeout.js";
+import * as FinishedPlaying from "../timeout/finished-playing.js";
+import * as RoundStageTimerDone from "../timeout/round-stage-timer-done.js";
+import type * as User from "../user.js";
+import * as Util from "../util.js";
+import * as Card from "./cards/card.js";
+import * as Decks from "./cards/decks.js";
+import * as Play from "./cards/play.js";
+import * as Round from "./game/round.js";
+import type * as PublicRound from "./game/round/public.js";
+import type { StoredPlay } from "./game/round/stored-play.js";
+import * as Player from "./player.js";
+import * as Rules from "./rules.js";
+import * as HappyEnding from "./rules/happy-ending.js";
 
 export interface Public {
   round: PublicRound.Public;
@@ -107,7 +107,13 @@ export class Game {
     );
   }
 
-  private static canBeCzar(user: User.User, player?: Player.Player): boolean {
+  private static canBeCzar(
+    user: User.User | undefined,
+    player?: Player.Player | undefined,
+  ): boolean {
+    if (user === undefined) {
+      return false;
+    }
     return user.control !== "Computer" && Game.activePlayer(user, player);
   }
 
@@ -142,14 +148,13 @@ export class Game {
       nextIndex += 1;
       nextIndex = nextIndex >= playerOrder.length ? 0 : nextIndex;
     }
-
     let triedEveryone = false;
     incrementIndex();
     while (!triedEveryone) {
       if (nextIndex === currentIndex) {
         triedEveryone = true;
       }
-      const potentialCzar = playerOrder[nextIndex];
+      const potentialCzar = playerOrder[nextIndex] as string;
       if (Game.canBeCzar(users[potentialCzar], players[potentialCzar])) {
         return potentialCzar;
       }
@@ -208,7 +213,7 @@ export class Game {
     }
     const playersInRound = new Set(
       wu(playerOrder).filter((id) =>
-        Game.isPlayerInRound(czar, playerMap, id, users[id]),
+        Game.isPlayerInRound(czar, playerMap, id, users[id] as User.User),
       ),
     );
     let round: Round.Starting | Round.Playing;
@@ -292,7 +297,12 @@ export class Game {
     const roundId = round.id + 1;
     const playersInRound = new Set(
       wu(this.playerOrder).filter((id) =>
-        Game.isPlayerInRound(czar, this.players, id, lobby.users[id]),
+        Game.isPlayerInRound(
+          czar,
+          this.players,
+          id,
+          lobby.users[id] as User.User,
+        ),
       ),
     );
     if (this.rules.houseRules.happyEnding?.inFinalRound) {
@@ -317,7 +327,7 @@ export class Game {
         );
       }
     }
-    let atStart = this.startRound(server, false, this.round);
+    const atStart = this.startRound(server, false, this.round);
     return {
       events: [
         ...events,
@@ -334,7 +344,7 @@ export class Game {
    */
   public removeFromRound(
     toRemove: User.Id,
-    server: ServerState,
+    _server: ServerState,
   ): { timeouts?: Iterable<Timeout.After> } {
     const player = this.players[toRemove];
     if (player !== undefined && this.round.stage !== "Starting") {

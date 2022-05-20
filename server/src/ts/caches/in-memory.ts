@@ -1,7 +1,7 @@
-import * as Cache from "../cache";
-import * as Config from "../config";
-import * as Decks from "../games/cards/decks";
-import * as Source from "../games/cards/source";
+import * as Cache from "../cache.js";
+import type * as Config from "../config.js";
+import type * as Decks from "../games/cards/decks.js";
+import type * as Source from "../games/cards/source.js";
 
 /**
  * An in-memory cache.
@@ -23,14 +23,14 @@ export class InMemoryCache extends Cache.Cache {
   }
 
   private static key(
-    source: Source.Resolver<Source.External>
+    source: Source.Resolver<Source.External>,
   ): [string, string] {
     return [source.id(), source.deckId()];
   }
 
   public async cacheSummary(
     source: Source.Resolver<Source.External>,
-    summary: Source.Summary
+    summary: Source.Summary,
   ): Promise<void> {
     this.cache.summaries.set(InMemoryCache.key(source), {
       cached: summary,
@@ -40,7 +40,7 @@ export class InMemoryCache extends Cache.Cache {
 
   public async cacheTemplates(
     source: Source.Resolver<Source.External>,
-    templates: Decks.Templates
+    templates: Decks.Templates,
   ): Promise<void> {
     this.cache.templates.set(InMemoryCache.key(source), {
       cached: templates,
@@ -49,13 +49,13 @@ export class InMemoryCache extends Cache.Cache {
   }
 
   public async getCachedSummary(
-    source: Source.Resolver<Source.External>
+    source: Source.Resolver<Source.External>,
   ): Promise<Cache.Aged<Source.Summary> | undefined> {
     return this.cache.summaries.get(InMemoryCache.key(source));
   }
 
   public async getCachedTemplates(
-    source: Source.Resolver<Source.External>
+    source: Source.Resolver<Source.External>,
   ): Promise<Cache.Aged<Decks.Templates> | undefined> {
     return this.cache.templates.get(InMemoryCache.key(source));
   }

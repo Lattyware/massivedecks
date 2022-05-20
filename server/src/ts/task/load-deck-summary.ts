@@ -1,18 +1,19 @@
 import Rfc6902 from "rfc6902";
-import * as Event from "../event";
-import * as Configured from "../events/lobby-event/configured";
-import * as Source from "../games/cards/source";
-import { Lobby } from "../lobby";
-import { Change } from "../lobby/change";
-import * as Config from "../lobby/config";
-import { GameCode } from "../lobby/game-code";
-import { ServerState } from "../server-state";
-import * as Task from "../task";
+import type { ReplaceOperation, TestOperation } from "rfc6902/diff.js";
+
 import {
   SourceNotFoundError,
   SourceServiceError,
-} from "../errors/action-execution-error";
-import { ReplaceOperation, TestOperation } from "rfc6902/diff";
+} from "../errors/action-execution-error.js";
+import * as Event from "../event.js";
+import * as Configured from "../events/lobby-event/configured.js";
+import type * as Source from "../games/cards/source.js";
+import type { Lobby } from "../lobby.js";
+import type { Change } from "../lobby/change.js";
+import * as Config from "../lobby/config.js";
+import type { GameCode } from "../lobby/game-code.js";
+import type { ServerState } from "../server-state.js";
+import * as Task from "../task.js";
 
 export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
   public readonly source: Source.External;
@@ -34,7 +35,7 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
   private resolveInternal(
     lobby: Lobby,
     modify: (source: Config.ConfiguredSource) => void,
-    server: ServerState
+    server: ServerState,
   ): Change {
     const lobbyConfig = lobby.config;
     const oldConfig = JSON.parse(JSON.stringify(Config.censor(lobby.config)));
@@ -60,7 +61,7 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
         lobby,
         events: [
           Event.targetAll(
-            Configured.of([testVersion, ...patch, replaceVersion])
+            Configured.of([testVersion, ...patch, replaceVersion]),
           ),
         ],
       };
@@ -72,7 +73,7 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
   protected resolve(
     lobby: Lobby,
     work: Source.Summary,
-    server: ServerState
+    server: ServerState,
   ): Change {
     return this.resolveInternal(
       lobby,
@@ -81,14 +82,14 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
           summarised.summary = { ...work, tag: undefined };
         }
       },
-      server
+      server,
     );
   }
 
-  protected resolveError(
+  protected override resolveError(
     lobby: Lobby,
     error: Error,
-    server: ServerState
+    server: ServerState,
   ): Change {
     let reason: Config.FailReason;
     if (error instanceof SourceNotFoundError) {
@@ -101,17 +102,17 @@ export class LoadDeckSummary extends Task.TaskBase<Source.Summary> {
     return this.resolveInternal(
       lobby,
       (failed) => {
-        if (!failed.hasOwnProperty("summary")) {
+        if (!Object.hasOwn(failed, "summary")) {
           (failed as Config.FailedSource).failure = reason;
         }
       },
-      server
+      server,
     );
   }
 
   public static *discover(
     gameCode: GameCode,
-    lobby: Lobby
+    lobby: Lobby,
   ): Iterable<LoadDeckSummary> {
     for (const deck of lobby.config.decks) {
       if (!Config.isFailed(deck) && deck.summary === undefined) {

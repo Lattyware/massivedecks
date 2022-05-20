@@ -1,23 +1,24 @@
 import Rfc6902 from "rfc6902";
-import { ReplaceOperation, TestOperation } from "rfc6902/diff";
-import Rfc6902Patch from "rfc6902/patch";
-import * as Actions from "./../actions";
-import { ConfigEditConflictError } from "../../errors/action-execution-error";
-import { InvalidActionError } from "../../errors/validation";
-import * as Event from "../../event";
-import * as Configured from "../../events/lobby-event/configured";
-import * as Rules from "../../games/rules";
-import * as HouseRules from "../../games/rules/house-rules";
-import * as Rando from "../../games/rules/rando";
-import * as Lobby from "../../lobby";
-import * as Config from "../../lobby/config";
-import { GameCode } from "../../lobby/game-code";
-import { Task } from "../../task";
-import { LoadDeckSummary } from "../../task/load-deck-summary";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
-import * as Validation from "../validation.validator";
-import { ServerState } from "../../server-state";
+import type { ReplaceOperation, TestOperation } from "rfc6902/diff.js";
+import Rfc6902Patch from "rfc6902/patch.js";
+
+import { ConfigEditConflictError } from "../../errors/action-execution-error.js";
+import { InvalidActionError } from "../../errors/validation.js";
+import * as Event from "../../event.js";
+import * as Configured from "../../events/lobby-event/configured.js";
+import type * as Rules from "../../games/rules.js";
+import type * as HouseRules from "../../games/rules/house-rules.js";
+import * as Rando from "../../games/rules/rando.js";
+import type * as Lobby from "../../lobby.js";
+import * as Config from "../../lobby/config.js";
+import type { GameCode } from "../../lobby/game-code.js";
+import type { ServerState } from "../../server-state.js";
+import type { Task } from "../../task.js";
+import { LoadDeckSummary } from "../../task/load-deck-summary.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Validation from "../validation.validator.js";
+import * as Actions from "./../actions.js";
 
 /**
  * An action to change the configuration of the lobby.
@@ -39,7 +40,7 @@ interface Result<T> {
 function applyRando(
   lobby: Lobby.Lobby,
   existing: Rando.Rando,
-  updated?: Rando.Public
+  updated?: Rando.Public,
 ): Result<Rando.Rando> {
   const events = Rando.change(lobby, existing, updated);
   return { result: existing, events, tasks: [] };
@@ -48,12 +49,12 @@ function applyRando(
 function applyHouseRules(
   lobby: Lobby.Lobby,
   existing: HouseRules.HouseRules,
-  updated: HouseRules.Public
+  updated: HouseRules.Public,
 ): Result<HouseRules.HouseRules> {
   const { result, events, tasks } = applyRando(
     lobby,
     existing.rando,
-    updated.rando
+    updated.rando,
   );
   return {
     result: { ...updated, rando: result },
@@ -65,12 +66,12 @@ function applyHouseRules(
 function applyRules(
   lobby: Lobby.Lobby,
   existing: Rules.Rules,
-  updated: Rules.Public
+  updated: Rules.Public,
 ): Result<Rules.Rules> {
   const { result, events, tasks } = applyHouseRules(
     lobby,
     existing.houseRules,
-    updated.houseRules
+    updated.houseRules,
   );
   return {
     result: { ...updated, houseRules: result },
@@ -84,12 +85,12 @@ function apply(
   gameCode: GameCode,
   lobby: Lobby.Lobby,
   existing: Config.Config,
-  updated: Config.Public
+  updated: Config.Public,
 ): Result<Config.Config> {
   const { result, events, tasks } = applyRules(
     lobby,
     existing.rules,
-    updated.rules
+    updated.rules,
   );
   const allTasks = [...tasks];
   for (const deck of updated.decks) {
@@ -119,8 +120,8 @@ const validate = (operation: Rfc6902.Operation): void => {
     switch (operation.op) {
       case "add":
         if (
-          operation.value.hasOwnProperty("summary") ||
-          operation.value.hasOwnProperty("failure")
+          Object.hasOwn(operation.value, "summary") ||
+          Object.hasOwn(operation.value, "failure")
         ) {
           throw new InvalidActionError("Can't add summaries or failures.");
         }
@@ -150,7 +151,7 @@ class ConfigureActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => {
     const version = lobby.config.version;
     for (const op of action.change) {
@@ -176,7 +177,7 @@ class ConfigureActions extends Actions.Implementation<
       auth.gc,
       lobby,
       lobby.config,
-      validated
+      validated,
     );
     lobby.config = result;
     const testVersion: TestOperation = {

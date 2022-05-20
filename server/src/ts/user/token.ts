@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
+
 import {
   IncorrectIssuerError,
   InvalidAuthenticationError,
-} from "../errors/authentication";
-import { GameCode } from "../lobby/game-code";
-import * as User from "../user";
+} from "../errors/authentication.js";
+import type { GameCode } from "../lobby/game-code.js";
+import type * as User from "../user.js";
 
 /**
  * A token that contains the encoded claims of a user.
@@ -33,7 +34,7 @@ export interface Claims {
 export const create = (
   tokenClaims: Claims,
   issuer: string,
-  secret: string
+  secret: string,
 ): Token =>
   jwt.sign(tokenClaims, secret, { algorithm: "HS256", issuer: issuer });
 
@@ -52,7 +53,7 @@ export function validate(token: Token, issuer: string, secret: string): Claims {
     }) as Claims;
   } catch (e) {
     const error = e as Error;
-    if (error.hasOwnProperty("name") && error.name === "JsonWebTokenError") {
+    if (Object.hasOwn(error, "name") && error.name === "JsonWebTokenError") {
       if (error.message.startsWith("jwt issuer invalid.")) {
         throw new IncorrectIssuerError();
       } else if (error.message.startsWith("invalid signature")) {

@@ -1,7 +1,7 @@
-import { PostgresCache } from "./caches/postgres";
-import * as ServerConfig from "./config";
-import { Cache } from "./cache";
-import { InMemoryCache } from "./caches/in-memory";
+import type { Cache } from "./cache.js";
+import { InMemoryCache } from "./caches/in-memory.js";
+import { PostgresCache } from "./caches/postgres.js";
+import type * as ServerConfig from "./config.js";
 
 export async function from(config: ServerConfig.Cache): Promise<Cache> {
   switch (config.type) {

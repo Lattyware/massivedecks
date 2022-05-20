@@ -1,11 +1,11 @@
-import { CreateLobby } from "./action/initial/create-lobby";
-import * as ServerConfig from "./config";
-import * as Lobby from "./lobby";
-import { GameCode } from "./lobby/game-code";
-import * as Timeout from "./timeout";
-import { Token } from "./user/token";
-import { Task } from "./task";
-import * as LobbyConfig from "./lobby/config";
+import type { CreateLobby } from "./action/initial/create-lobby.js";
+import type * as ServerConfig from "./config.js";
+import type * as Lobby from "./lobby.js";
+import type * as LobbyConfig from "./lobby/config.js";
+import type { GameCode } from "./lobby/game-code.js";
+import type { Task } from "./task.js";
+import type * as Timeout from "./timeout.js";
+import type { Token } from "./user/token.js";
 
 /**
  * Represents a chunk of data that should be written as a single transaction,
@@ -45,20 +45,20 @@ export abstract class Store {
    * invalid, but if there is any security concern, change the application
    * secret, not this. That will have the same effect securely.
    */
-  public abstract  id(): Promise<string>;
+  public abstract id(): Promise<string>;
 
   /**
    * Returns if the given lobby exists.
    */
-  public abstract  exists(gameCode: GameCode): Promise<boolean>;
+  public abstract exists(gameCode: GameCode): Promise<boolean>;
 
   /** Create a new lobby.
    * @return The game code for the new lobby and the user id for the owner.
    */
-  public abstract  newLobby(
+  public abstract newLobby(
     creation: CreateLobby,
     secret: string,
-    defaults: LobbyConfig.Defaults
+    defaults: LobbyConfig.Defaults,
   ): Promise<{ gameCode: GameCode; token: Token; tasks: Iterable<Task> }>;
 
   /**
@@ -68,9 +68,10 @@ export abstract class Store {
    */
   public async read<T>(
     gameCode: GameCode,
-    read: (
-      lobby: Lobby.Lobby
-    ) => { transaction: ReadOnlyTransaction; result: T }
+    read: (lobby: Lobby.Lobby) => {
+      transaction: ReadOnlyTransaction;
+      result: T;
+    },
   ): Promise<T> {
     return this.writeAndReturn(gameCode, read);
   }
@@ -83,7 +84,7 @@ export abstract class Store {
    */
   public async write(
     gameCode: GameCode,
-    write: (lobby: Lobby.Lobby) => Transaction
+    write: (lobby: Lobby.Lobby) => Transaction,
   ): Promise<void> {
     await this.writeAndReturn(gameCode, (lobby: Lobby.Lobby) => ({
       transaction: write(lobby),
@@ -91,9 +92,9 @@ export abstract class Store {
     }));
   }
 
-  public abstract  writeAndReturn<T>(
+  public abstract writeAndReturn<T>(
     gameCode: GameCode,
-    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T }
+    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T },
   ): Promise<T>;
 
   /** Get a list of summaries for all the public lobbies in the store.*/
@@ -107,12 +108,12 @@ export abstract class Store {
   /**
    * Delete the given lobby and all associated timeouts.
    */
-  public abstract  delete(gameCode: GameCode): Promise<void>;
+  public abstract delete(gameCode: GameCode): Promise<void>;
 
   /**
    * Remove lobbies where the game is finished or everyone has been
    * disconnected for some time.
    * This should also clean up the cache as appropriate.
    */
-  public abstract  garbageCollect(): Promise<number>;
+  public abstract garbageCollect(): Promise<number>;
 }

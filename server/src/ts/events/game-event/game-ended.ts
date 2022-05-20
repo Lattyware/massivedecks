@@ -1,4 +1,4 @@
-import * as User from "../../user";
+import type * as User from "../../user.js";
 
 /**
  * Indicated a game has ended.

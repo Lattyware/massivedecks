@@ -1,5 +1,5 @@
-import * as Play from "../../games/cards/play";
-import * as Card from "../../games/cards/card";
+import type * as Card from "../../games/cards/card.js";
+import type * as Play from "../../games/cards/play.js";
 
 /**
  * Indicates players have finished playing into the round and now the czar
@@ -27,7 +27,7 @@ export interface AfterPlaying {
 export const of = (
   plays: Play.Id[],
   played?: Play.Id,
-  drawn?: Card.Response[]
+  drawn?: Card.Response[],
 ): StartRevealing => ({
   event: "StartRevealing",
   plays,

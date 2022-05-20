@@ -9,7 +9,7 @@ const logFormat = winston.format.printf((info) => {
       splat: undefined,
     },
     null,
-    2
+    2,
   );
 
   if (stringRest !== "{}") {
@@ -24,19 +24,18 @@ export const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.colorize(),
-    logFormat
+    logFormat,
   ),
 });
 
 const exceptionHandler = new winston.ExceptionHandler(logger);
-export const exceptionToMeta = exceptionHandler.getAllInfo.bind(
-  exceptionHandler
-);
+export const exceptionToMeta =
+  exceptionHandler.getAllInfo.bind(exceptionHandler);
 
 export const logException = (
   message: string,
   error: Error,
-  data?: string
+  data?: string,
 ): void => {
   const details = exceptionToMeta(error);
   logger.error(message, details === undefined ? details : { details, data });

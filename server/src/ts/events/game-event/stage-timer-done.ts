@@ -1,4 +1,4 @@
-import * as Round from "../../games/game/round";
+import type * as Round from "../../games/game/round.js";
 
 /**
  * Indicates that the stage timer has completed.

@@ -1,9 +1,9 @@
-import * as Actions from "./../actions";
-import * as Event from "../../event";
-import * as GameEnded from "../../events/game-event/game-ended";
-import * as Lobby from "../../lobby";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
+import * as Event from "../../event.js";
+import * as GameEnded from "../../events/game-event/game-ended.js";
+import type * as Lobby from "../../lobby.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Actions from "./../actions.js";
 
 /**
  * End the current game.
@@ -21,9 +21,9 @@ class EndGameActions extends Actions.Implementation<
   protected readonly name = "EndGame";
 
   protected handle: Handler.Custom<EndGame, Lobby.Lobby> = (
-    auth,
+    _auth,
     lobby,
-    action
+    _action,
   ) => {
     if (lobby.game === undefined || lobby.game.winner !== undefined) {
       // If we are asked to end a game that isn't started or is already ended,

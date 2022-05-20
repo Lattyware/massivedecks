@@ -1,5 +1,5 @@
-import * as Card from "../../games/cards/card";
-import * as User from "../../user";
+import type * as Card from "../../games/cards/card.js";
+import type * as User from "../../user.js";
 
 /**
  * Indicates the role for a user has changed.

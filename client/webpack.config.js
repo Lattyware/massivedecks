@@ -20,6 +20,7 @@ module.exports = (env, argv) => {
 
   const dist = path.resolve(__dirname, "dist");
   const src = path.resolve(__dirname, "src");
+  const assets = path.resolve(__dirname, "assets");
 
   const version = process.env["MD_VERSION"];
   const metadataFilename = `${src}/elm/MassiveDecks/Version.elm`;
@@ -76,7 +77,6 @@ module.exports = (env, argv) => {
           test: /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
           use: [
-            ...(production ? [] : [{ loader: "elm-hot-webpack-loader" }]),
             {
               loader: "elm-webpack-loader",
               options: {

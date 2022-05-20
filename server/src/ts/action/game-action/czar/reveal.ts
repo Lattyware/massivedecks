@@ -1,15 +1,15 @@
-import { InvalidActionError } from "../../../errors/validation";
-import * as Event from "../../../event";
-import * as PlayRevealed from "../../../events/game-event/play-revealed";
-import * as Play from "../../../games/cards/play";
-import * as Round from "../../../games/game/round";
-import * as Lobby from "../../../lobby";
-import * as Handler from "../../handler";
-import { Czar } from "../czar";
-import * as Actions from "./../../actions";
-import * as StoredPlay from "../../../games/game/round/stored-play";
-import * as Util from "../../../util";
-import * as FinishedRevealing from "../../../timeout/finished-revealing";
+import { InvalidActionError } from "../../../errors/validation.js";
+import * as Event from "../../../event.js";
+import * as PlayRevealed from "../../../events/game-event/play-revealed.js";
+import type * as Play from "../../../games/cards/play.js";
+import type * as Round from "../../../games/game/round.js";
+import * as StoredPlay from "../../../games/game/round/stored-play.js";
+import type * as Lobby from "../../../lobby.js";
+import * as FinishedRevealing from "../../../timeout/finished-revealing.js";
+import * as Util from "../../../util.js";
+import type * as Handler from "../../handler.js";
+import type { Czar } from "../czar.js";
+import * as Actions from "./../../actions.js";
 
 /**
  * A user judges the winning play for a round.
@@ -30,7 +30,7 @@ class RevealAction extends Actions.Implementation<
   protected handle: Handler.Custom<Reveal, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     const game = lobby.game;
     if (game.round.verifyStage<Round.Revealing>(action, "Revealing")) {
@@ -45,7 +45,7 @@ class RevealAction extends Actions.Implementation<
       const timeouts = Util.asOptionalIterable(
         StoredPlay.allRevealed(game.round)
           ? FinishedRevealing.of(game.rules.stages)
-          : undefined
+          : undefined,
       );
       return {
         lobby,

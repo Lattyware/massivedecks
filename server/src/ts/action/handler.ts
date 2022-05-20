@@ -1,18 +1,18 @@
-import { Action } from "../action";
-import { Change } from "../lobby/change";
-import { Lobby } from "../lobby";
-import * as token from "../user/token";
-import { ServerState } from "../server-state";
+import type { Action } from "../action.js";
+import type { Lobby } from "../lobby.js";
+import type { Change } from "../lobby/change.js";
+import type { ServerState } from "../server-state.js";
+import type * as Token from "../user/token.js";
 
 /**
  * A handler for a given type of action where the lobby is customised.
  * This can let us avoid making the same checks down the line.
  */
 export type Custom<A extends Action, L extends Lobby> = (
-  auth: token.Claims,
+  auth: Token.Claims,
   lobby: L,
   action: A,
-  server: ServerState
+  server: ServerState,
 ) => Change;
 
 /**

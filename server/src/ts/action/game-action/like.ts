@@ -1,11 +1,12 @@
-import * as Play from "../../games/cards/play";
-import * as Round from "../../games/game/round";
-import * as Lobby from "../../lobby";
-import * as Actions from "../actions";
-import * as Handler from "../handler";
-import { GameAction } from "../game-action";
-import * as PlayLiked from "../../events/game-event/play-liked";
-import * as Event from "../../event";
+import * as Event from "../../event.js";
+import * as PlayLiked from "../../events/game-event/play-liked.js";
+import type * as Play from "../../games/cards/play.js";
+import type * as Round from "../../games/game/round.js";
+import type { Player } from "../../games/player.js";
+import type * as Lobby from "../../lobby.js";
+import * as Actions from "../actions.js";
+import type { GameAction } from "../game-action.js";
+import type * as Handler from "../handler.js";
 
 /**
  * A player or spectator likes a play.
@@ -26,7 +27,7 @@ class LikeActions extends Actions.Implementation<
   protected handle: Handler.Custom<Like, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     if (
       lobby.game.round.isInStage<
@@ -40,7 +41,7 @@ class LikeActions extends Actions.Implementation<
         target.playedBy !== auth.uid &&
         target.likes.find((id) => id === auth.uid) === undefined
       ) {
-        lobby.game.players[target.playedBy].likes += 1;
+        (lobby.game.players[target.playedBy] as Player).likes += 1;
         target.likes.push(auth.uid);
         const events =
           lobby.game.round.stage === "Complete"

@@ -1,4 +1,4 @@
-import * as Play from "../../games/cards/play";
+import type * as Play from "../../games/cards/play.js";
 
 /**
  * Indicates a play was liked.

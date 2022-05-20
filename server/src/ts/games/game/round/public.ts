@@ -1,7 +1,7 @@
-import * as User from "../../../user";
-import * as Card from "../../cards/card";
-import * as Play from "../../cards/play";
-import * as Player from "../../player";
+import type * as User from "../../../user.js";
+import type * as Card from "../../cards/card.js";
+import type * as Play from "../../cards/play.js";
+import type * as Player from "../../player.js";
 
 export type Public = Starting | Playing | Revealing | Judging | Complete;
 

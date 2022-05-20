@@ -1,17 +1,16 @@
 import HttpStatus from "http-status-codes";
-import { Action } from "../action";
-import { GameAction } from "../action/game-action";
-import { Privileged } from "../action/privileged";
-import * as Errors from "../errors";
-import * as Round from "../games/game/round";
-import * as Player from "../games/player";
-import * as User from "../user";
-import * as Source from "../games/cards/source";
 
-abstract class ActionExecutionError extends Errors.MassiveDecksError<
-  Errors.Details
-> {
-  public readonly status: number = HttpStatus.BAD_REQUEST;
+import type { Action } from "../action.js";
+import type { GameAction } from "../action/game-action.js";
+import type { Privileged } from "../action/privileged.js";
+import * as Errors from "../errors.js";
+import type * as Source from "../games/cards/source.js";
+import type * as Round from "../games/game/round.js";
+import type * as Player from "../games/player.js";
+import type * as User from "../user.js";
+
+abstract class ActionExecutionError extends Errors.MassiveDecksError<Errors.Details> {
+  public override readonly status: number = HttpStatus.BAD_REQUEST;
   public readonly action: Action;
 
   protected constructor(message: string, action: Action) {
@@ -26,7 +25,7 @@ export class GameNotStartedError extends ActionExecutionError {
   public constructor(action: GameAction) {
     super(
       `The game must be started for this action:\n ${JSON.stringify(action)}`,
-      action
+      action,
     );
     Error.captureStackTrace(this, GameNotStartedError);
   }
@@ -38,13 +37,13 @@ export class GameNotStartedError extends ActionExecutionError {
 
 // Could happen if the user has privileges removed.
 export class UnprivilegedError extends ActionExecutionError {
-  public readonly status = HttpStatus.FORBIDDEN;
+  public override readonly status = HttpStatus.FORBIDDEN;
 
   public constructor(action: Privileged) {
     super(
       `The user does not have the privilege to perform this action:\n` +
         `${JSON.stringify(action)}`,
-      action
+      action,
     );
     Error.captureStackTrace(this, UnprivilegedError);
   }
@@ -67,12 +66,12 @@ export class IncorrectPlayerRoleError extends ActionExecutionError {
   public constructor(
     action: Action,
     role: Player.Role | null,
-    expected: Player.Role
+    expected: Player.Role,
   ) {
     super(
       `For this action the player must be ${expected} but is ${role}:\n` +
         `${JSON.stringify(action)}`,
-      action
+      action,
     );
     this.role = role;
     this.expected = expected;
@@ -100,7 +99,7 @@ export class IncorrectUserRoleError extends ActionExecutionError {
     super(
       `For this action the user must be ${expected} but is ${role}:\n` +
         `${JSON.stringify(action)}`,
-      action
+      action,
     );
     this.role = role;
     this.expected = expected;
@@ -132,7 +131,7 @@ export class IncorrectRoundStageError extends ActionExecutionError {
     super(
       `For this action the round must be in the ${expected} stage but is in ` +
         `the ${stage} stage:\n ${JSON.stringify(action)}`,
-      action
+      action,
     );
     this.stage = stage;
     this.expected = expected;
@@ -153,7 +152,7 @@ interface ConfigEditConflictDetails extends Errors.Details {
 
 // Could happen if two users edit the configuration at the same time.
 export class ConfigEditConflictError extends ActionExecutionError {
-  public readonly status: number = HttpStatus.CONFLICT;
+  public override readonly status: number = HttpStatus.CONFLICT;
   public readonly version: string;
   public readonly expected: string;
 
@@ -161,7 +160,7 @@ export class ConfigEditConflictError extends ActionExecutionError {
     super(
       `The configuration is at version ${expected}, but the client's edit ` +
         `was made to version ${version}:\n ${JSON.stringify(action)}`,
-      action
+      action,
     );
     this.version = version;
     this.expected = expected;
@@ -186,7 +185,7 @@ export class SourceNotFoundError extends ActionExecutionError {
   public constructor(source: Source.External) {
     super(
       `The given deck (${source}) was not found at the source.`,
-      (undefined as unknown) as Action
+      undefined as unknown as Action,
     );
     this.source = source;
     Error.captureStackTrace(this, SourceNotFoundError);
@@ -205,7 +204,7 @@ export class SourceServiceError extends ActionExecutionError {
   public constructor(source: Source.External) {
     super(
       `The given deck source (${source.source}) was not available.`,
-      (undefined as unknown) as Action
+      undefined as unknown as Action,
     );
     this.source = source;
     Error.captureStackTrace(this, SourceServiceError);

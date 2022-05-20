@@ -1,8 +1,9 @@
-import * as Event from "../event";
-import * as ConnectionChanged from "../events/lobby-event/connection-changed";
-import * as Timeout from "../timeout";
-import * as User from "../user";
 import wu from "wu";
+
+import * as Event from "../event.js";
+import * as ConnectionChanged from "../events/lobby-event/connection-changed.js";
+import type * as Timeout from "../timeout.js";
+import type * as User from "../user.js";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
@@ -21,7 +22,7 @@ export const handle: Timeout.Handler<UserDisconnect> = (
   server,
   timeout,
   gameCode,
-  lobby
+  lobby,
 ) => {
   const id = timeout.user;
   const sockets = server.socketManager.sockets.get(gameCode, id);

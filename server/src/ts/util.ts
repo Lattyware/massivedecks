@@ -2,13 +2,13 @@
  * Check if the given value is an iterable one.
  */
 export const isIterable = <T extends object>(
-  object: T | Iterable<T>
+  object: T | Iterable<T>,
 ): object is Iterable<T> =>
   object !== null &&
   typeof (object as Iterable<T>)[Symbol.iterator] === "function";
 
 const isSingleArgument = <A, B, C>(
-  f: ((a: A, b: B) => C) | ((b: B) => C)
+  f: ((a: A, b: B) => C) | ((b: B) => C),
 ): f is (b: B) => C => f.length === 1;
 
 /**
@@ -17,7 +17,7 @@ const isSingleArgument = <A, B, C>(
  */
 export function mapObjectValues<O extends { [key: string]: V }, V, U>(
   obj: O,
-  f: ((key: string, value: V) => U) | ((value: V) => U)
+  f: ((key: string, value: V) => U) | ((value: V) => U),
 ): { [P in keyof O]: U } {
   const newObj: { [key: string]: U } = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -29,9 +29,9 @@ export function mapObjectValues<O extends { [key: string]: V }, V, U>(
 /**
  * Create an object from the given entries.
  */
-export function entriesToObject<T>(
-  entries: Iterable<[string, T]>
-): { [key: string]: T } {
+export function entriesToObject<T>(entries: Iterable<[string, T]>): {
+  [key: string]: T;
+} {
   const obj: { [key: string]: T } = {};
   for (const [key, value] of entries) {
     obj[key] = value;
@@ -55,7 +55,7 @@ export const mapToObject = <T>(map: Map<string, T>): { [key: string]: T } =>
  */
 export function counts<T, U>(
   iterable: Iterable<T>,
-  predicates: { [P in keyof U]: (value: T) => boolean }
+  predicates: { [P in keyof U]: (value: T) => boolean },
 ): { [P in keyof U]: number } {
   const keys = Object.keys(predicates) as (keyof U)[];
   const amounts = mapObjectValues(predicates, () => 0);
@@ -86,7 +86,7 @@ export function assertNever(value: never): never {
  */
 export function findIs<T, U extends T>(
   iterable: Iterable<T>,
-  predicate: (item: T) => item is U
+  predicate: (item: T) => item is U,
 ): U | undefined {
   for (const item of iterable) {
     if (predicate(item)) {
@@ -103,7 +103,7 @@ export function findIs<T, U extends T>(
 export function shuffle<T>(items: T[]): void {
   for (let index = items.length - 1; index > 0; index -= 1) {
     const random = Math.floor(Math.random() * (index + 1));
-    [items[index], items[random]] = [items[random], items[index]];
+    [items[index], items[random]] = [items[random] as T, items[index] as T];
   }
 }
 
@@ -137,7 +137,7 @@ export function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
  * Return an item that may be undefined as either an iterable of nothing or an iterable of just that item.
  */
 export function* asIterable<T>(
-  maybeItem: T | undefined
+  maybeItem: T | undefined,
 ): Iterable<T> | undefined {
   if (maybeItem !== undefined) {
     yield maybeItem;
@@ -148,7 +148,7 @@ export function* asIterable<T>(
  * Return an item that may be undefined as either a undefined or an iterable of just that item.
  */
 export function asOptionalIterable<T>(
-  maybeItem: T | undefined
+  maybeItem: T | undefined,
 ): Iterable<T> | undefined {
   if (maybeItem === undefined) {
     return undefined;

@@ -1,16 +1,21 @@
-import * as Source from "../source";
+import {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  default as Axios,
+} from "axios";
 import genericPool from "generic-pool";
-import http, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
-import * as Config from "../../../config";
 import HttpStatus from "http-status-codes";
+import JSON5 from "json5";
+
+import type * as Config from "../../../config.js";
 import {
   SourceNotFoundError,
   SourceServiceError,
-} from "../../../errors/action-execution-error";
-import * as Decks from "../decks";
-import JSON5 from "json5";
-import * as Card from "../card";
-import { MassiveDecksError } from "../../../errors";
+} from "../../../errors/action-execution-error.js";
+import * as Card from "../card.js";
+import type * as Decks from "../decks.js";
+import * as Source from "../source.js";
 
 /**
  * A source that just tries to load an arbitrary URL.
@@ -32,7 +37,7 @@ export class Resolver extends Source.Resolver<ManyDecks> {
   public constructor(
     source: ManyDecks,
     config: Config.ManyDecks,
-    connectionPool: genericPool.Pool<AxiosInstance>
+    connectionPool: genericPool.Pool<AxiosInstance>,
   ) {
     super();
     this.source = source;
@@ -146,12 +151,12 @@ export class MetaResolver implements Source.MetaResolver<ManyDecks> {
 
     this.connectionPool = genericPool.createPool(
       {
-        create: async () => http.create(httpConfig),
+        create: async () => Axios.create(httpConfig),
         destroy: async (_) => {
           // Do nothing.
         },
       },
-      { max: config.simultaneousConnections }
+      { max: config.simultaneousConnections },
     );
   }
 

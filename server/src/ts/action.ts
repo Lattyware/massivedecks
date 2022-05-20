@@ -1,13 +1,13 @@
-import * as Actions from "./action/actions";
-import * as Authenticate from "./action/authenticate";
-import * as GameAction from "./action/game-action";
-import * as Handler from "./action/handler";
-import * as Leave from "./action/leave";
-import * as Privileged from "./action/privileged";
-import * as SetUserRole from "./action/set-user-role";
-import * as Validation from "./action/validation.validator";
-import { AlreadyAuthenticatedError } from "./errors/authentication";
-import { InvalidActionError } from "./errors/validation";
+import * as Actions from "./action/actions.js";
+import * as Authenticate from "./action/authenticate.js";
+import * as GameAction from "./action/game-action.js";
+import type * as Handler from "./action/handler.js";
+import * as Leave from "./action/leave.js";
+import * as Privileged from "./action/privileged.js";
+import * as SetUserRole from "./action/set-user-role.js";
+import * as Validation from "./action/validation.validator.js";
+import { AlreadyAuthenticatedError } from "./errors/authentication.js";
+import { InvalidActionError } from "./errors/validation.js";
 
 /**
  * An action a user takes to affect the game in some way, received via a
@@ -24,7 +24,7 @@ const allActions = new Actions.PassThroughGroup(
   GameAction.actions,
   Privileged.actions,
   SetUserRole.actions,
-  Leave.actions
+  Leave.actions,
 );
 
 const _validateAction = Validation.validate("Action");
@@ -41,7 +41,7 @@ export const handle: Handler.Handler<Action> = (
   auth,
   lobby,
   action,
-  config
+  config,
 ) => {
   const validated = validate(action);
   if (Authenticate.is(validated)) {

@@ -1,4 +1,4 @@
-import * as User from "../../user";
+import type * as User from "../../user.js";
 
 /**
  * Indicates a user's level of privilege has changed.
@@ -11,7 +11,7 @@ export interface PrivilegeChanged {
 
 export const of = (
   user: User.Id,
-  privilege: User.Privilege
+  privilege: User.Privilege,
 ): PrivilegeChanged => ({
   event: "PrivilegeChanged",
   user,

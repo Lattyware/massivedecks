@@ -1,4 +1,4 @@
-ARG NODE_VERSION=17
+ARG NODE_VERSION=18
 ARG MODE=production
 ARG BUILD_DATE
 ARG VCS_REF
@@ -47,4 +47,4 @@ COPY --from=build ["/md/dist", "./"]
 
 EXPOSE 8081
 USER node
-CMD ["node", "--es-module-specifier-resolution=node", "./index.js"]
+CMD ["node", "./index.js"]

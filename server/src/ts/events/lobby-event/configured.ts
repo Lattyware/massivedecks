@@ -1,4 +1,4 @@
-import Rfc6902 from "rfc6902";
+import type Rfc6902 from "rfc6902";
 
 /**
  * A change was made to the configuration for the lobby.

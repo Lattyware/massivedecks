@@ -1,6 +1,7 @@
 import Moment from "moment";
-import * as Util from "./util";
-import * as LobbyConfig from "./lobby/config";
+
+import type * as LobbyConfig from "./lobby/config.js";
+import * as Util from "./util.js";
 
 type Duration = UnparsedDuration | ParsedDuration;
 type UnparsedDuration = string;

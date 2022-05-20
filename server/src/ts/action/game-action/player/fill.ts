@@ -1,11 +1,12 @@
-import * as Card from "../../../games/cards/card";
-import * as Actions from "../../actions";
-import { Player } from "../player";
-import * as Lobby from "../../../lobby";
-import * as Handler from "../../handler";
-import * as Round from "../../../games/game/round";
-import { IncorrectUserRoleError } from "../../../errors/action-execution-error";
-import { InvalidActionError } from "../../../errors/validation";
+import { IncorrectUserRoleError } from "../../../errors/action-execution-error.js";
+import { InvalidActionError } from "../../../errors/validation.js";
+import * as Card from "../../../games/cards/card.js";
+import type * as Round from "../../../games/game/round.js";
+import type * as Lobby from "../../../lobby.js";
+import type { User } from "../../../user.js";
+import * as Actions from "../../actions.js";
+import type * as Handler from "../../handler.js";
+import type { Player } from "../player.js";
 
 /**
  * Indicates the user has changed the value of a blank card in their hand.
@@ -27,11 +28,11 @@ class FillActions extends Actions.Implementation<
   protected handle: Handler.Custom<Fill, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     const lobbyRound = lobby.game.round;
     if (lobbyRound.verifyStage<Round.Playing>(action, "Playing")) {
-      const user = lobby.users[auth.uid];
+      const user = lobby.users[auth.uid] as User;
       const player = lobby.game.players[auth.uid];
       if (user.role !== "Player" || player === undefined) {
         throw new IncorrectUserRoleError(action, user.role, "Player");
@@ -39,7 +40,7 @@ class FillActions extends Actions.Implementation<
       const filled = player.hand.find((c) => c.id === action.card);
       if (filled === undefined) {
         throw new InvalidActionError(
-          "The given card doesn't exist or isn't in the player's hand."
+          "The given card doesn't exist or isn't in the player's hand.",
         );
       }
       if (Card.isCustom(filled)) {

@@ -1,5 +1,5 @@
-import * as HouseRules from "./rules/house-rules";
-import * as Rando from "./rules/rando";
+import * as HouseRules from "./rules/house-rules.js";
+import * as Rando from "./rules/rando.js";
 
 /** The rules for a standard game.
  */

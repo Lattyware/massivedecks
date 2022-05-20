@@ -1,5 +1,6 @@
 import HttpStatus from "http-status-codes";
-import * as Errors from "../errors";
+
+import * as Errors from "../errors.js";
 
 export interface Details extends Errors.Details {
   reason: string;

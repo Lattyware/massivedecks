@@ -1,6 +1,6 @@
-import { InvalidActionError } from "../../errors/validation";
-import * as User from "../../user";
-import * as Validation from "../validation.validator";
+import { InvalidActionError } from "../../errors/validation.js";
+import type * as User from "../../user.js";
+import * as Validation from "../validation.validator.js";
 
 /**
  * The details to register a new user for a lobby.

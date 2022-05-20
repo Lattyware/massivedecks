@@ -1,13 +1,13 @@
-import { Cache } from "../../cache";
-import * as Util from "../../util";
-import * as Source from "./source";
-import * as Player from "./sources/custom";
-import * as Config from "../../config";
-import * as BuiltIn from "./sources/builtIn";
-import { SourceNotFoundError } from "../../errors/action-execution-error";
-import * as ManyDecks from "./sources/many-decks";
-import * as JsonAgainstHumanity from "./sources/json-against-humanity";
-import * as Generated from "./sources/generated";
+import type { Cache } from "../../cache.js";
+import type * as Config from "../../config.js";
+import { SourceNotFoundError } from "../../errors/action-execution-error.js";
+import * as Util from "../../util.js";
+import * as Source from "./source.js";
+import * as BuiltIn from "./sources/builtIn.js";
+import * as Player from "./sources/custom.js";
+import * as Generated from "./sources/generated.js";
+import * as JsonAgainstHumanity from "./sources/json-against-humanity.js";
+import * as ManyDecks from "./sources/many-decks.js";
 
 async function loadIfEnabled<Config, MetaResolver>(
   config: Config | undefined,

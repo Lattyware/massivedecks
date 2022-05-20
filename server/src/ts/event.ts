@@ -1,12 +1,12 @@
-import { GameEvent } from "./events/game-event";
-import { LobbyEvent } from "./events/lobby-event";
-import { UserEvent } from "./events/user-event";
-import { Player } from "./games/player";
-import { Lobby } from "./lobby";
-import * as Logging from "./logging";
-import * as SocketManager from "./socket-manager";
-import * as User from "./user";
-import { GameCode } from "./lobby/game-code";
+import type { GameEvent } from "./events/game-event.js";
+import type { LobbyEvent } from "./events/lobby-event.js";
+import type { UserEvent } from "./events/user-event.js";
+import type { Player } from "./games/player.js";
+import type { Lobby } from "./lobby.js";
+import type { GameCode } from "./lobby/game-code.js";
+import * as Logging from "./logging.js";
+import type * as SocketManager from "./socket-manager.js";
+import type * as User from "./user.js";
 
 /**
  * An event send to clients to update them on the state of the game.
@@ -18,7 +18,7 @@ export type Event = LobbyEvent | UserEvent | GameEvent;
  */
 export type Distributor = (
   lobby: Lobby,
-  send: (target: User.Id, payload: string, close: boolean) => void
+  send: (target: User.Id, payload: string, close: boolean) => void,
 ) => void;
 
 /**
@@ -60,7 +60,7 @@ export const targetOnly =
 export const additionally =
   <T extends Event>(
     event: T,
-    additions: Map<User.Id, Partial<T>>
+    additions: Map<User.Id, Partial<T>>,
   ): Distributor =>
   (lobby, send) => {
     const basicRendered = JSON.stringify(event);
@@ -86,7 +86,7 @@ export const conditionally =
   <T extends Event>(
     event: T,
     condition: (id: User.Id, user: User.User) => boolean,
-    addition: Partial<T>
+    addition: Partial<T>,
   ): Distributor =>
   (lobby, send) => {
     const basicRendered = JSON.stringify(event);
@@ -106,7 +106,7 @@ export const conditionally =
 export const playerSpecificAddition =
   <T extends Event, U extends Partial<T>>(
     event: T,
-    addition: (id: User.Id, user: User.User, player: Player) => U
+    addition: (id: User.Id, user: User.User, player: Player) => U,
   ): Distributor =>
   (lobby, send) => {
     const basicRendered = JSON.stringify(event);
@@ -147,7 +147,7 @@ export const targetAllAndPotentiallyClose =
 const sendHelper =
   (
     sockets: SocketManager.Sockets,
-    gameCode: GameCode
+    gameCode: GameCode,
   ): ((user: User.Id, serializedEvent: string, close: boolean) => void) =>
   (user, serializedEvent, close) => {
     try {
@@ -179,7 +179,7 @@ export function send(
   sockets: SocketManager.SocketManager,
   gameCode: GameCode,
   lobby: Lobby,
-  events: Iterable<Distributor>
+  events: Iterable<Distributor>,
 ): void {
   const sendToUser = sendHelper(sockets.sockets, gameCode);
   for (const event of events) {

@@ -1,6 +1,7 @@
+import "express-async-errors";
+
 import bodyParser from "body-parser";
 import express, { NextFunction, Request, Response } from "express";
-import "express-async-errors";
 import expressWinston from "express-winston";
 import ws from "express-ws";
 import { promises as fs } from "fs";
@@ -9,24 +10,25 @@ import HttpStatus from "http-status-codes";
 import JSON5 from "json5";
 import sourceMapSupport from "source-map-support";
 import wu from "wu";
-import * as CheckAlive from "./action/initial/check-alive";
-import * as CreateLobby from "./action/initial/create-lobby";
-import * as RegisterUser from "./action/initial/register-user";
-import * as ServerConfig from "./config";
-import { MassiveDecksError } from "./errors";
-import { InvalidLobbyPasswordError } from "./errors/authentication";
-import { UsernameAlreadyInUseError } from "./errors/registration";
-import * as Event from "./event";
-import * as PresenceChanged from "./events/lobby-event/presence-changed";
-import * as Player from "./games/player";
-import * as Change from "./lobby/change";
-import { GameCode } from "./lobby/game-code";
-import * as Logging from "./logging";
-import * as ServerState from "./server-state";
-import * as Timeout from "./timeout";
-import * as UserDisconnect from "./timeout/user-disconnect";
-import * as User from "./user";
-import * as Token from "./user/token";
+
+import * as CheckAlive from "./action/initial/check-alive.js";
+import * as CreateLobby from "./action/initial/create-lobby.js";
+import * as RegisterUser from "./action/initial/register-user.js";
+import * as ServerConfig from "./config.js";
+import { MassiveDecksError } from "./errors.js";
+import { InvalidLobbyPasswordError } from "./errors/authentication.js";
+import { UsernameAlreadyInUseError } from "./errors/registration.js";
+import * as Event from "./event.js";
+import * as PresenceChanged from "./events/lobby-event/presence-changed.js";
+import * as Player from "./games/player.js";
+import * as Change from "./lobby/change.js";
+import type { GameCode } from "./lobby/game-code.js";
+import * as Logging from "./logging.js";
+import * as ServerState from "./server-state.js";
+import * as Timeout from "./timeout.js";
+import * as UserDisconnect from "./timeout/user-disconnect.js";
+import * as User from "./user.js";
+import * as Token from "./user/token.js";
 
 sourceMapSupport.install();
 
@@ -192,7 +194,7 @@ async function main(): Promise<void> {
   });
 
   app.ws("/api/games/:gameCode", async (socket, req) => {
-    const gameCode = req.params.gameCode;
+    const gameCode = req.params["gameCode"] as string;
     state.socketManager.add(state, gameCode, socket);
   });
 

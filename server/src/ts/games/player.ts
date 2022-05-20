@@ -1,6 +1,6 @@
-import * as User from "../user";
-import { Hand } from "./cards/hand";
-import { Game } from "./game";
+import type * as User from "../user.js";
+import type { Hand } from "./cards/hand.js";
+import type { Game } from "./game.js";
 
 /**
  * A player containing only state all users can see.

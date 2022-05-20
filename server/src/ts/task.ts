@@ -1,7 +1,7 @@
-import { Lobby } from "./lobby";
-import * as Change from "./lobby/change";
-import { GameCode } from "./lobby/game-code";
-import { ServerState } from "./server-state";
+import type { Lobby } from "./lobby.js";
+import * as Change from "./lobby/change.js";
+import type { GameCode } from "./lobby/game-code.js";
+import type { ServerState } from "./server-state.js";
 
 /**
  * A good base implementation of a task.
@@ -18,12 +18,12 @@ export abstract class TaskBase<T> implements Task {
   protected abstract resolve(
     lobby: Lobby,
     work: T,
-    server: ServerState
+    server: ServerState,
   ): Change.Change;
   protected resolveError(
-    lobby: Lobby,
+    _lobby: Lobby,
     error: Error,
-    server: ServerState
+    _server: ServerState,
   ): Change.Change {
     throw error;
   }
@@ -35,12 +35,12 @@ export abstract class TaskBase<T> implements Task {
     } catch (e) {
       const error = e as Error;
       await Change.apply(server, this.gameCode, (lobby) =>
-        this.resolveError(lobby, error, server)
+        this.resolveError(lobby, error, server),
       );
       return;
     }
     await Change.apply(server, this.gameCode, (lobby) =>
-      this.resolve(lobby, work, server)
+      this.resolve(lobby, work, server),
     );
   }
 }

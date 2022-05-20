@@ -1,16 +1,16 @@
-import { CreateLobby } from "./action/initial/create-lobby";
-import { RegisterUser } from "./action/initial/register-user";
-import * as Errors from "./errors";
-import * as Event from "./event";
-import * as PresenceChanged from "./events/lobby-event/presence-changed";
-import * as Game from "./games/game";
-import * as Rules from "./games/rules";
-import * as Config from "./lobby/config";
-import { GameCode } from "./lobby/game-code";
-import * as User from "./user";
-import * as Util from "./util";
-import { LoadDeckSummary } from "./task/load-deck-summary";
-import * as Rando from "./games/rules/rando";
+import type { CreateLobby } from "./action/initial/create-lobby.js";
+import type { RegisterUser } from "./action/initial/register-user.js";
+import type * as Errors from "./errors.js";
+import * as Event from "./event.js";
+import * as PresenceChanged from "./events/lobby-event/presence-changed.js";
+import * as Game from "./games/game.js";
+import * as Rules from "./games/rules.js";
+import * as Rando from "./games/rules/rando.js";
+import * as Config from "./lobby/config.js";
+import type { GameCode } from "./lobby/game-code.js";
+import { LoadDeckSummary } from "./task/load-deck-summary.js";
+import * as User from "./user.js";
+import * as Util from "./util.js";
 
 /**
  * A game lobby.
@@ -77,13 +77,13 @@ export interface Summary {
 export const fromDefaults = (
   gameCode: GameCode,
   name: string,
-  defaults: Config.Defaults
+  defaults: Config.Defaults,
 ): {
   config: Config.Config;
   tasks: LoadDeckSummary[];
 } => {
   const tasks = defaults.decks.map(
-    (source) => new LoadDeckSummary(gameCode, source)
+    (source) => new LoadDeckSummary(gameCode, source),
   );
   return {
     config: {
@@ -109,7 +109,7 @@ export const fromDefaults = (
 export function create(
   gameCode: GameCode,
   creation: CreateLobby,
-  defaults: Config.Defaults
+  defaults: Config.Defaults,
 ): {
   lobby: Lobby;
   tasks: LoadDeckSummary[];
@@ -125,7 +125,7 @@ export function create(
   };
   config.rules.houseRules.rando = Rando.create(
     lobby,
-    defaults.rules.houseRules.rando
+    defaults.rules.houseRules.rando,
   );
   return {
     lobby,
@@ -175,7 +175,7 @@ export const addUser = (
   lobby: Lobby,
   registration: RegisterUser,
   role: User.Role,
-  change?: (user: User.User) => User.User
+  change?: (user: User.User) => User.User,
 ): {
   user: User.Id;
   events: Iterable<Event.Distributor>;

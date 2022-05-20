@@ -1,6 +1,6 @@
-import * as GameRound from "../../games/game/round";
-import * as PublicRound from "../../games/game/round/public";
-import * as User from "../../user";
+import type * as GameRound from "../../games/game/round.js";
+import type * as PublicRound from "../../games/game/round/public.js";
+import type * as User from "../../user.js";
 
 /**
  * Indicates players have finished playing into the round and now the czar

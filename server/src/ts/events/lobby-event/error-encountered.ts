@@ -1,4 +1,4 @@
-import * as Errors from "../../errors";
+import type * as Errors from "../../errors.js";
 
 /**
  * An error occurred in the lobby.

@@ -1,11 +1,11 @@
-import { InvalidActionError } from "../../../errors/validation";
-import * as Event from "../../../event";
-import * as PlayTakenBack from "../../../events/game-event/play-taken-back";
-import * as Round from "../../../games/game/round";
-import * as Lobby from "../../../lobby";
-import * as Actions from "../../actions";
-import * as Handler from "../../handler";
-import { Player } from "../player";
+import { InvalidActionError } from "../../../errors/validation.js";
+import * as Event from "../../../event.js";
+import * as PlayTakenBack from "../../../events/game-event/play-taken-back.js";
+import type * as Round from "../../../games/game/round.js";
+import type * as Lobby from "../../../lobby.js";
+import * as Actions from "../../actions.js";
+import type * as Handler from "../../handler.js";
+import type { Player } from "../player.js";
 
 /**
  * A player plays a white card into a round.
@@ -25,7 +25,7 @@ class TakeBackActions extends Actions.Implementation<
   protected handle: Handler.Custom<TakeBack, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     if (lobby.game.round.verifyStage<Round.Playing>(action, "Playing")) {
       const plays = lobby.game.round.plays;

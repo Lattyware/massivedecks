@@ -1,24 +1,31 @@
 {
-  "include": ["./src/ts/**/*"],
+  "$schema": "https://json.schemastore.org/tsconfig",
+
+  "include": ["src/**/*"],
+
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "lib": ["es2022"],
+    "module": "nodenext",
+    "target": "es2022",
+    "moduleResolution": "nodenext",
+
     "sourceMap": true,
-    "outDir": "./dist",
-    "incremental": true,
+    "rootDir": "src/ts",
+    "outDir": "dist",
     "removeComments": true,
-    "resolveJsonModule": true,
+    "newLine": "lf",
+
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noImplicitReturns": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnusedLabels": false,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "importsNotUsedAsValues": "error",
+    "checkJs": true
   }
 }

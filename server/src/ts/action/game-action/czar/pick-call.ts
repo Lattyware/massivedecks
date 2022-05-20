@@ -1,9 +1,9 @@
-import * as Card from "../../../games/cards/card";
-import * as Round from "../../../games/game/round";
-import * as Lobby from "../../../lobby";
-import * as Actions from "../../actions";
-import * as Handler from "../../handler";
-import { Czar } from "../czar";
+import type * as Card from "../../../games/cards/card.js";
+import type * as Round from "../../../games/game/round.js";
+import type * as Lobby from "../../../lobby.js";
+import * as Actions from "../../actions.js";
+import type * as Handler from "../../handler.js";
+import type { Czar } from "../czar.js";
 
 /**
  * A czar picks a call for a round.
@@ -26,7 +26,7 @@ class PickCallActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => {
     const lobbyRound = lobby.game.round;
 
@@ -35,7 +35,7 @@ class PickCallActions extends Actions.Implementation<
         server,
         lobby.game,
         action.call,
-        action.fill
+        action.fill,
       );
       lobby.game.round = round;
       return { lobby, events, timeouts };

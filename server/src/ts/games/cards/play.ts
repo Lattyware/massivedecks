@@ -1,5 +1,6 @@
 import * as uuid from "uuid";
-import { Response } from "./card";
+
+import type { Response } from "./card.js";
 
 /** A series of cards played into a round.*/
 export type Play = Response[];

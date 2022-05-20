@@ -1,5 +1,6 @@
 import Pg from "pg";
-import * as Logging from "../logging";
+
+import * as Logging from "../logging.js";
 
 /**
  * A version for the database. Undefined if none exists.
@@ -12,7 +13,7 @@ export type Version = number | undefined;
  * exception.
  */
 export type Upgrades = (
-  version: Version
+  version: Version,
 ) => Upgrade<Version, Version> | undefined;
 
 /**
@@ -35,20 +36,18 @@ export class Postgres {
   public async ensureCurrent(): Promise<void> {
     await this.inTransaction(async (client) => {
       let version = await this.findVersion(client);
-      while (true) {
-        const upgrade = this.upgrades(version);
-        if (upgrade === undefined) {
-          return;
-        }
+      let upgrade = this.upgrades(version);
+      while (upgrade !== undefined) {
         const oldVersion = version;
         version = await upgrade.apply(client);
         if (oldVersion == undefined) {
           Logging.logger.info(`Created '${this.schema}' at '${version}'`);
         } else {
           Logging.logger.info(
-            `Upgraded '${this.schema}' from '${oldVersion}' to '${version}'.`
+            `Upgraded '${this.schema}' from '${oldVersion}' to '${version}'.`,
           );
         }
+        upgrade = this.upgrades(version);
       }
     });
   }
@@ -58,7 +57,7 @@ export class Postgres {
    * done.
    */
   public async withClient<Result>(
-    f: (client: Pg.PoolClient) => Promise<Result>
+    f: (client: Pg.PoolClient) => Promise<Result>,
   ): Promise<Result> {
     const client = await this.pool.connect();
     try {
@@ -73,7 +72,7 @@ export class Postgres {
    * done.
    */
   public async *withClientIterator<Result>(
-    f: (client: Pg.PoolClient) => AsyncIterableIterator<Result>
+    f: (client: Pg.PoolClient) => AsyncIterableIterator<Result>,
   ): AsyncIterableIterator<Result> {
     const client = await this.pool.connect();
     try {
@@ -89,7 +88,7 @@ export class Postgres {
    * @param f the function to execute.
    */
   public async inTransaction<Result>(
-    f: (client: Pg.PoolClient) => Promise<Result>
+    f: (client: Pg.PoolClient) => Promise<Result>,
   ): Promise<Result> {
     return await this.withClient(async (client) => {
       await client.query("BEGIN;");
@@ -106,11 +105,11 @@ export class Postgres {
 
   private async findVersion(client: Pg.PoolClient): Promise<Version> {
     const exists = await client.query(
-      `SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = '${this.schema}');`
+      `SELECT EXISTS (SELECT FROM information_schema.schemata WHERE schema_name = '${this.schema}');`,
     );
     if (exists.rows[0]["exists"]) {
       const rows = await client.query(
-        `SELECT version FROM ${this.schema}.meta;`
+        `SELECT version FROM ${this.schema}.meta;`,
       );
       const row = rows.rows[0];
       return row["version"];

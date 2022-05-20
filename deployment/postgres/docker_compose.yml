@@ -14,7 +14,7 @@ volumes:
 
 services:
   storage:
-    image: "postgres:13"
+    image: "postgres:14"
     # See the postgres image's documentation for more on configuring it.
     # https://hub.docker.com/_/postgres
     environment:

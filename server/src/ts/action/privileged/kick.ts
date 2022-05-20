@@ -1,14 +1,14 @@
-import * as Actions from "./../actions";
-import { InvalidActionError } from "../../errors/validation";
-import * as Event from "../../event";
-import * as PresenceChanged from "../../events/lobby-event/presence-changed";
-import * as Lobby from "../../lobby";
-import { Change } from "../../lobby/change";
-import { ServerState } from "../../server-state";
-import * as Timeout from "../../timeout";
-import * as User from "../../user";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
+import { InvalidActionError } from "../../errors/validation.js";
+import * as Event from "../../event.js";
+import * as PresenceChanged from "../../events/lobby-event/presence-changed.js";
+import type * as Lobby from "../../lobby.js";
+import type { Change } from "../../lobby/change.js";
+import type { ServerState } from "../../server-state.js";
+import type * as Timeout from "../../timeout.js";
+import type * as User from "../../user.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Actions from "./../actions.js";
 
 /**
  * A player asks to leave the game.
@@ -22,9 +22,9 @@ export const removeUser = (
   userId: User.Id,
   lobby: Lobby.Lobby,
   server: ServerState,
-  leaveReason: PresenceChanged.LeaveReason
+  leaveReason: PresenceChanged.LeaveReason,
 ): Change => {
-  const user = lobby.users[userId];
+  const user = lobby.users[userId] as User.User;
   user.presence = "Left";
 
   if (user.control === "Computer") {
@@ -34,7 +34,7 @@ export const removeUser = (
   const allEvents = [
     Event.targetAllAndPotentiallyClose(
       PresenceChanged.left(userId, leaveReason),
-      (id) => id === userId
+      (id) => id === userId,
     ),
   ];
   const allTimeouts: Timeout.After[] = [];
@@ -57,13 +57,13 @@ export const removeUser = (
     const player = game.players[userId];
     if (player !== undefined) {
       addResult(
-        game.round.czar === userId ? game.startNewRound(server, lobby) : {}
+        game.round.czar === userId ? game.startNewRound(server, lobby) : {},
       );
 
       addResult(
         game.round.players.has(userId)
           ? game.removeFromRound(userId, server)
-          : {}
+          : {},
       );
     }
   }
@@ -87,7 +87,7 @@ class KickActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => removeUser(action.user, lobby, server, "Kicked");
 }
 

@@ -1,6 +1,6 @@
-import { InvalidActionError } from "../../errors/validation";
-import { Token } from "../../user/token";
-import * as Validation from "../validation.validator";
+import { InvalidActionError } from "../../errors/validation.js";
+import type { Token } from "../../user/token.js";
+import * as Validation from "../validation.validator.js";
 
 /**
  * Previously obtained tokens to check the validity of.

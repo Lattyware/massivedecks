@@ -1,8 +1,8 @@
-import * as Actions from "./../actions";
-import * as Lobby from "../../lobby";
-import { StartGame as StartGameTask } from "../../task/start-game";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
+import type * as Lobby from "../../lobby.js";
+import { StartGame as StartGameTask } from "../../task/start-game.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Actions from "./../actions.js";
 
 /**
  * Start a game in the lobby if possible.
@@ -25,7 +25,7 @@ class StartGameActions extends Actions.Implementation<
       tasks: [
         new StartGameTask(
           auth.gc,
-          lobby.config.decks.map((s) => s.source)
+          lobby.config.decks.map((s) => s.source),
         ),
       ],
     });

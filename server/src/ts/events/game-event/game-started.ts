@@ -1,6 +1,6 @@
-import * as Card from "../../games/cards/card";
-import * as Round from "../../games/game/round";
-import * as PublicRound from "../../games/game/round/public";
+import type * as Card from "../../games/cards/card.js";
+import type * as Round from "../../games/game/round.js";
+import type * as PublicRound from "../../games/game/round/public.js";
 
 /**
  * Indicated a game has started in the lobby.
@@ -23,14 +23,14 @@ export interface Playing {
 export type GameStarted = Base & (Starting | Playing);
 
 export const ofPlaying = (
-  startedRound: Round.Playing
+  startedRound: Round.Playing,
 ): GameStarted & Playing => ({
   event: "GameStarted",
   round: startedRound.public(),
 });
 
 export const ofStarting = (
-  startedRound: Round.Starting
+  startedRound: Round.Starting,
 ): GameStarted & Starting => ({
   event: "GameStarted",
   round: startedRound.public(),

@@ -1,10 +1,10 @@
-import * as Actions from "./../actions";
-import { InvalidActionError } from "../../errors/validation";
-import * as User from "../../user";
-import * as Lobby from "../../lobby";
-import * as SetPresence from "../game-action/set-presence";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
+import { InvalidActionError } from "../../errors/validation.js";
+import type * as Lobby from "../../lobby.js";
+import type * as User from "../../user.js";
+import * as SetPresence from "../game-action/set-presence.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Actions from "./../actions.js";
 
 /**
  * A privileged user asks to set a given player as away.
@@ -26,14 +26,14 @@ class SetPlayerAwayActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => {
     const game = lobby.game;
     if (game === undefined) {
       throw new InvalidActionError("Must be in a game.");
     }
 
-    const user = lobby.users[action.player];
+    const user = lobby.users[action.player] as User.User;
     if (user.control === "Computer") {
       throw new InvalidActionError("Can't do this with AIs.");
     }
@@ -48,7 +48,7 @@ class SetPlayerAwayActions extends Actions.Implementation<
       return SetPresence.dealWithLostPlayer(
         server,
         lobby as Lobby.WithActiveGame,
-        playerId
+        playerId,
       );
     } else {
       return {};

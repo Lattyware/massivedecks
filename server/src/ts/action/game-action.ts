@@ -1,18 +1,18 @@
-import * as Action from "../action";
-import * as ActionExecutionError from "../errors/action-execution-error";
-import { GameNotStartedError } from "../errors/action-execution-error";
-import { Game } from "../games/game";
-import * as Player from "../games/player";
-import * as Lobby from "../lobby";
-import { ServerState } from "../server-state";
-import * as Token from "../user/token";
-import * as Actions from "./actions";
-import * as Czar from "./game-action/czar";
-import * as EnforceTimeLimit from "./game-action/enforce-time-limit";
-import * as PlayerAction from "./game-action/player";
-import * as Redraw from "./game-action/redraw";
-import * as SetPresence from "./game-action/set-presence";
-import * as Like from "./game-action/like";
+import type * as Action from "../action.js";
+import * as ActionExecutionError from "../errors/action-execution-error.js";
+import { GameNotStartedError } from "../errors/action-execution-error.js";
+import type { Game } from "../games/game.js";
+import * as Player from "../games/player.js";
+import * as Lobby from "../lobby.js";
+import type { ServerState } from "../server-state.js";
+import type * as Token from "../user/token.js";
+import * as Actions from "./actions.js";
+import * as Czar from "./game-action/czar.js";
+import * as EnforceTimeLimit from "./game-action/enforce-time-limit.js";
+import * as Like from "./game-action/like.js";
+import * as PlayerAction from "./game-action/player.js";
+import * as Redraw from "./game-action/redraw.js";
+import * as SetPresence from "./game-action/set-presence.js";
 
 /**
  * An action only a player can perform.
@@ -38,15 +38,15 @@ class GameActions extends Actions.Group<
       Redraw.actions,
       EnforceTimeLimit.actions,
       SetPresence.actions,
-      Like.actions
+      Like.actions,
     );
   }
 
   public limit(
-    auth: Token.Claims,
+    _auth: Token.Claims,
     lobby: Lobby.Lobby,
     action: GameAction,
-    server: ServerState
+    _server: ServerState,
   ): lobby is Lobby.WithActiveGame {
     if (!Lobby.hasActiveGame(lobby)) {
       throw new GameNotStartedError(action);
@@ -61,13 +61,13 @@ export function expectRole(
   auth: Token.Claims,
   action: Czar.Czar,
   game: Game,
-  expected: "Czar"
+  expected: "Czar",
 ): void;
 export function expectRole(
   auth: Token.Claims,
   action: PlayerAction.Player,
   game: Game,
-  expected: "Player"
+  expected: "Player",
 ): void;
 /**
  * Expect a given role.
@@ -80,14 +80,14 @@ export function expectRole(
   auth: Token.Claims,
   action: GameAction,
   game: Game,
-  expected: Player.Role
+  expected: Player.Role,
 ): void {
   const playerRole = Player.role(auth.uid, game);
   if (playerRole !== expected) {
     throw new ActionExecutionError.IncorrectPlayerRoleError(
       action,
       playerRole,
-      expected
+      expected,
     );
   }
 }

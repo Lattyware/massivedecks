@@ -1,13 +1,13 @@
-import { dealWithLostPlayer } from "../action/game-action/set-presence";
-import * as Event from "../event";
-import * as StageTimerDone from "../events/game-event/stage-timer-done";
-import * as Round from "../games/game/round";
-import * as Rules from "../games/rules";
-import * as Lobby from "../lobby";
-import * as Change from "../lobby/change";
-import * as Timeout from "../timeout";
-import * as Util from "../util";
-import { Stages } from "../games/rules";
+import { dealWithLostPlayer } from "../action/game-action/set-presence.js";
+import * as Event from "../event.js";
+import * as StageTimerDone from "../events/game-event/stage-timer-done.js";
+import * as Round from "../games/game/round.js";
+import type { Stages } from "../games/rules.js";
+import type * as Rules from "../games/rules.js";
+import type * as Lobby from "../lobby.js";
+import * as Change from "../lobby/change.js";
+import type * as Timeout from "../timeout.js";
+import * as Util from "../util.js";
 
 /**
  * Indicates that the user should be marked as disconnected if they still are.
@@ -49,7 +49,7 @@ function stageDuration(stage: Round.Stage, stages: Stages): number | undefined {
  */
 export const ifEnabled = (
   round: Round.Round,
-  stages: Rules.Stages
+  stages: Rules.Stages,
 ): Timeout.After | undefined => {
   const afterSeconds = stageDuration(round.stage, stages);
   if (afterSeconds === undefined) {
@@ -69,7 +69,7 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
   server,
   timeout,
   gameCode,
-  lobby
+  lobby,
 ) => {
   const game = lobby.game;
   if (game === undefined) {
@@ -99,7 +99,7 @@ export const handle: Timeout.Handler<RoundStageTimerDone> = (
       };
     case "Hard":
       return Change.reduce(waitingFor, lobby as Lobby.WithActiveGame, (l, p) =>
-        dealWithLostPlayer(server, l, p)
+        dealWithLostPlayer(server, l, p),
       );
     default:
       Util.assertNever(stages.timeLimitMode);

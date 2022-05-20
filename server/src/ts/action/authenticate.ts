@@ -1,11 +1,11 @@
-import { Action } from "../action";
-import * as Authentication from "../errors/authentication";
-import * as Event from "../event";
-import * as ConnectionChanged from "../events/lobby-event/connection-changed";
-import * as Change from "../lobby/change";
-import { GameCode } from "../lobby/game-code";
-import { ServerState } from "../server-state";
-import * as Token from "../user/token";
+import type { Action } from "../action.js";
+import * as Authentication from "../errors/authentication.js";
+import * as Event from "../event.js";
+import * as ConnectionChanged from "../events/lobby-event/connection-changed.js";
+import * as Change from "../lobby/change.js";
+import type { GameCode } from "../lobby/game-code.js";
+import type { ServerState } from "../server-state.js";
+import * as Token from "../user/token.js";
 
 /**
  * Authenticate with the game.
@@ -34,12 +34,12 @@ export const is = (action: Action): action is Authenticate =>
 export async function handle(
   server: ServerState,
   authenticate: Authenticate,
-  gameCode: GameCode
+  gameCode: GameCode,
 ): Promise<Token.Claims> {
   const claims = Token.validate(
     authenticate.token,
     await server.store.id(),
-    server.config.secret
+    server.config.secret,
   );
   if (claims.gc !== gameCode) {
     throw new Authentication.InvalidAuthenticationError("wrong game code");

@@ -1,8 +1,13 @@
-import { PackingHeat, Reboot, ComedyWriter, NeverHaveIEver } from "../rules";
-import * as Rando from "./rando";
-import * as HappyEnding from "./happy-ending";
-import * as CzarChoices from "./czar-choices";
-import * as WinnersPick from "./winners-pick";
+import type {
+  ComedyWriter,
+  NeverHaveIEver,
+  PackingHeat,
+  Reboot,
+} from "../rules.js";
+import type * as CzarChoices from "./czar-choices.js";
+import type * as HappyEnding from "./happy-ending.js";
+import * as Rando from "./rando.js";
+import type * as WinnersPick from "./winners-pick.js";
 
 /**
  * Non-standard rules that can be applied to a game.

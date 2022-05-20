@@ -1,7 +1,7 @@
-import * as Event from "../event";
-import * as GameEnded from "../events/game-event/game-ended";
-import * as Lobby from "../lobby";
-import * as Timeout from "../timeout";
+import * as Event from "../event.js";
+import * as GameEnded from "../events/game-event/game-ended.js";
+import * as Lobby from "../lobby.js";
+import type * as Timeout from "../timeout.js";
 
 /**
  * Indicates that the round should start if it is still appropriate to do so.
@@ -18,7 +18,7 @@ export const handle: Timeout.Handler<RoundStart> = (
   server,
   timeout,
   gameCode,
-  inLobby
+  inLobby,
 ) => {
   if (Lobby.hasActiveGame(inLobby)) {
     const lobbyGame = inLobby.game;

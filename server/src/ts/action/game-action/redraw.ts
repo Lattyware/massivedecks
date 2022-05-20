@@ -1,11 +1,11 @@
-import { IncorrectUserRoleError } from "../../errors/action-execution-error";
-import { InvalidActionError } from "../../errors/validation";
-import * as Event from "../../event";
-import * as HandRedrawn from "../../events/game-event/hand-redrawn";
-import * as Lobby from "../../lobby";
-import * as Actions from "../actions";
-import * as GameAction from "../game-action";
-import * as Handler from "../handler";
+import { IncorrectUserRoleError } from "../../errors/action-execution-error.js";
+import { InvalidActionError } from "../../errors/validation.js";
+import * as Event from "../../event.js";
+import * as HandRedrawn from "../../events/game-event/hand-redrawn.js";
+import type * as Lobby from "../../lobby.js";
+import * as Actions from "../actions.js";
+import type * as GameAction from "../game-action.js";
+import type * as Handler from "../handler.js";
 
 /**
  * A player plays a white card into a round.
@@ -25,7 +25,7 @@ class RedrawActions extends Actions.Implementation<
   protected handle: Handler.Custom<Redraw, Lobby.WithActiveGame> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
     const game = lobby.game;
     const reboot = game.rules.houseRules.reboot;
@@ -47,7 +47,7 @@ class RedrawActions extends Actions.Implementation<
       events: [
         Event.additionally(
           HandRedrawn.of(auth.uid),
-          new Map([[auth.uid, { hand: player.hand }]])
+          new Map([[auth.uid, { hand: player.hand }]]),
         ),
       ],
     };

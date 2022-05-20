@@ -1,12 +1,12 @@
-import * as Actions from "./../actions";
-import * as Submit from "./player/submit";
-import * as TakeBack from "./player/take-back";
-import * as Fill from "./player/fill";
-import * as Discard from "./player/discard";
-import * as Action from "../../action";
-import * as Lobby from "../../lobby";
-import * as Token from "../../user/token";
-import * as GameAction from "../game-action";
+import type * as Action from "../../action.js";
+import type * as Lobby from "../../lobby.js";
+import type * as Token from "../../user/token.js";
+import * as GameAction from "../game-action.js";
+import * as Actions from "./../actions.js";
+import * as Discard from "./player/discard.js";
+import * as Fill from "./player/fill.js";
+import * as Submit from "./player/submit.js";
+import * as TakeBack from "./player/take-back.js";
 
 /**
  * An action only players can perform.
@@ -30,7 +30,7 @@ class PlayerActions extends Actions.Group<
   limit(
     auth: Token.Claims,
     lobby: Lobby.WithActiveGame,
-    action: Player
+    action: Player,
   ): lobby is Lobby.WithActiveGame {
     GameAction.expectRole(auth, action, lobby.game, "Player");
     return true;

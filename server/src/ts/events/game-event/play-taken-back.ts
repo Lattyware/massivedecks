@@ -1,4 +1,4 @@
-import * as User from "../../user";
+import type * as User from "../../user.js";
 
 /**
  * Indicates a player has taken back their play for the round.

@@ -1,9 +1,9 @@
-import { RegisterUser } from "../../action/initial/register-user";
-import * as Event from "../../event";
-import * as PresenceChanged from "../../events/lobby-event/presence-changed";
-import * as Lobby from "../../lobby";
-import * as User from "../../user";
-import * as Util from "../../util";
+import type { RegisterUser } from "../../action/initial/register-user.js";
+import * as Event from "../../event.js";
+import * as PresenceChanged from "../../events/lobby-event/presence-changed.js";
+import * as Lobby from "../../lobby.js";
+import type * as User from "../../user.js";
+import * as Util from "../../util.js";
 
 /**
  * The maximum number of AI players allowed in a single game.
@@ -76,12 +76,16 @@ const isId = (ai: User.Id | RegisterUser): ai is User.Id =>
 
 export const createIfNeeded = (
   inLobby: Lobby.Lobby,
-  ai: User.Id | RegisterUser
+  ai: User.Id | RegisterUser,
 ): { user: User.Id; events: Iterable<Event.Distributor> } => {
   if (isId(ai)) {
     return {
       user: ai,
-      events: [Event.targetAll(PresenceChanged.joined(ai, inLobby.users[ai]))],
+      events: [
+        Event.targetAll(
+          PresenceChanged.joined(ai, inLobby.users[ai] as User.User),
+        ),
+      ],
     };
   } else {
     return Lobby.addUser(inLobby, ai, "Player", (user) => ({
@@ -94,13 +98,13 @@ export const createIfNeeded = (
 function* add(
   inLobby: Lobby.Lobby,
   config: Rando,
-  number: number
+  number: number,
 ): Iterable<Event.Distributor> {
   const added = config.unused
     .splice(0, number)
     .map((ai) => createIfNeeded(inLobby, ai));
   for (const { user, events } of added) {
-    const userData = inLobby.users[user];
+    const userData = inLobby.users[user] as User.User;
     userData.presence = "Joined";
     config.current.push(user);
     yield* events;
@@ -134,7 +138,7 @@ export const create = (inLobby: Lobby.Lobby, initial?: Public): Rando => {
 export function* change(
   inLobby: Lobby.Lobby,
   config: Rando,
-  changeTo?: Public
+  changeTo?: Public,
 ): Iterable<Event.Distributor> {
   const want = changeTo !== undefined ? changeTo.number : 0;
   const have = config.current.length;
@@ -147,10 +151,10 @@ export function* change(
     const toRemove = have - want;
     const removed = config.current.splice(
       config.current.length - toRemove,
-      toRemove
+      toRemove,
     );
     for (const ai of removed) {
-      const user = inLobby.users[ai];
+      const user = inLobby.users[ai] as User.User;
       user.presence = "Left";
       yield Event.targetAll(PresenceChanged.left(ai, "Left"));
     }

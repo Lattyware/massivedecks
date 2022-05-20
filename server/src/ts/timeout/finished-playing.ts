@@ -1,8 +1,9 @@
 import wu from "wu";
-import * as Round from "../games/game/round";
-import * as Timeout from "../timeout";
-import * as Util from "../util";
-import * as Rules from "../games/rules";
+
+import type * as Round from "../games/game/round.js";
+import type * as Rules from "../games/rules.js";
+import type * as Timeout from "../timeout.js";
+import * as Util from "../util.js";
 
 /**
  * Indicates that the round should start the revealing phase if it is appropriate

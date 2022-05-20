@@ -1,7 +1,8 @@
 import * as uuid from "uuid";
 import wu from "wu";
-import { Source } from "./source";
-import { Custom } from "./sources/custom";
+
+import type { Source } from "./source.js";
+import type { Custom } from "./sources/custom.js";
 
 /**
  * A game card.
@@ -41,7 +42,7 @@ export type CustomCard<TCard extends Card> = TCard & { source: Custom };
  * If the response is a custom one, and therefore mutable.
  */
 export const isCustom = <TCard extends Card>(
-  card: TCard
+  card: TCard,
 ): card is CustomCard<TCard> => card.source.source == "Custom";
 
 /** A unique id for an instance of a card.*/
@@ -65,10 +66,10 @@ export interface Styled {
 }
 
 export const isSlot = (part: Part): part is Slot =>
-  typeof part !== "string" && !part.hasOwnProperty("text");
+  typeof part !== "string" && !Object.hasOwn(part, "text");
 
 export const isStyled = (part: Part): part is Styled =>
-  typeof part !== "string" && part.hasOwnProperty("text");
+  typeof part !== "string" && Object.hasOwn(part, "text");
 
 /** Either text or a slot.*/
 export type Part = string | Styled | Slot;
@@ -96,11 +97,11 @@ export const isResponse = (card: Card): card is Response =>
 export const slotCount = (call: Call | Part[][]): number => {
   let next = 0;
   const indices = wu(
-    call.hasOwnProperty("parts") ? (call as Call).parts : (call as Part[][])
+    Object.hasOwn(call, "parts") ? (call as Call).parts : (call as Part[][]),
   )
     .flatten(true)
     .concatMap((part) =>
-      isSlot(part) ? [part.index !== undefined ? part.index : next++] : []
+      isSlot(part) ? [part.index !== undefined ? part.index : next++] : [],
     );
   return new Set(indices).size;
 };

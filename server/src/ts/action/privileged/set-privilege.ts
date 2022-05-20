@@ -1,11 +1,11 @@
-import * as Actions from "./../actions";
-import { InvalidActionError } from "../../errors/validation";
-import * as Event from "../../event";
-import * as PrivilegeChanged from "../../events/lobby-event/privilege-changed";
-import * as Lobby from "../../lobby";
-import * as User from "../../user";
-import * as Handler from "../handler";
-import { Privileged } from "../privileged";
+import { InvalidActionError } from "../../errors/validation.js";
+import * as Event from "../../event.js";
+import * as PrivilegeChanged from "../../events/lobby-event/privilege-changed.js";
+import type * as Lobby from "../../lobby.js";
+import type * as User from "../../user.js";
+import type * as Handler from "../handler.js";
+import type { Privileged } from "../privileged.js";
+import * as Actions from "./../actions.js";
 
 /**
  * A privileged user asks to change the privilege of another user.
@@ -27,9 +27,9 @@ class SetPrivilegeActions extends Actions.Implementation<
   protected handle: Handler.Custom<SetPrivilege, Lobby.Lobby> = (
     auth,
     lobby,
-    action
+    action,
   ) => {
-    const user = lobby.users[action.user];
+    const user = lobby.users[action.user] as User.User;
 
     if (user.control === "Computer") {
       throw new InvalidActionError("Can't do this with AIs.");

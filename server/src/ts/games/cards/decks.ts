@@ -1,8 +1,9 @@
 import wu from "wu";
-import * as Cache from "../../cache";
-import { OutOfCardsError } from "../../errors/game-state-error";
-import * as Util from "../../util";
-import * as Card from "./card";
+
+import type * as Cache from "../../cache.js";
+import { OutOfCardsError } from "../../errors/game-state-error.js";
+import * as Util from "../../util.js";
+import * as Card from "./card.js";
 
 const union = <T>(sets: Iterable<Set<T>>): Set<T> => {
   const result = new Set<T>();
@@ -42,6 +43,10 @@ export abstract class Deck<C extends Card.BaseCard> {
     this.discarded.add(card);
   }
 
+  public draw(cards: 1): [C];
+  public draw(cards: 2): [C, C];
+  public draw(cards: 3): [C, C, C];
+  public draw(cards: number): C[];
   public draw(cards: number): C[] {
     const cardsLeft = this.cards.length;
     const toDraw = Math.min(cardsLeft, cards);
@@ -54,6 +59,10 @@ export abstract class Deck<C extends Card.BaseCard> {
     }
   }
 
+  public replace(...cards: [C]): [C];
+  public replace(...cards: [C, C]): [C, C];
+  public replace(...cards: [C, C, C]): [C, C, C];
+  public replace(...cards: C[]): C[];
   public replace(...cards: C[]): C[] {
     this.discard(cards);
     return this.draw(cards.length);
@@ -95,7 +104,7 @@ export class Calls extends Deck<Card.Call> {
  * (in the case of custom cards).
  */
 export class Responses extends Deck<Card.Response> {
-  protected discardSingle(card: Card.Response): void {
+  protected override discardSingle(card: Card.Response): void {
     // We duplicate the card here so we don't damage any references to it hanging around elsewhere (e.g: history).
     this.discarded.add({
       ...card,
@@ -105,7 +114,7 @@ export class Responses extends Deck<Card.Response> {
   }
 
   public static fromTemplates(
-    template: Iterable<Template<Card.Response>>
+    template: Iterable<Template<Card.Response>>,
   ): Responses {
     const deck = new Responses([], union(template));
     deck.reshuffle();
@@ -141,6 +150,6 @@ export interface Templates extends Cache.Tagged {
 export const decks = (templates: Iterable<Templates>): Decks => ({
   calls: Calls.fromTemplates(wu(templates).map((template) => template.calls)),
   responses: Responses.fromTemplates(
-    wu(templates).map((template) => template.responses)
+    wu(templates).map((template) => template.responses),
   ),
 });

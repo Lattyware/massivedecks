@@ -1,10 +1,10 @@
-import * as Cache from "../../cache";
-import * as Decks from "./decks";
-import { Custom } from "./sources/custom";
-import { Generated } from "./sources/generated";
-import { BuiltIn } from "./sources/builtIn";
-import { ManyDecks } from "./sources/many-decks";
-import { JsonAgainstHumanity } from "./sources/json-against-humanity";
+import type * as Cache from "../../cache.js";
+import type * as Decks from "./decks.js";
+import type { BuiltIn } from "./sources/builtIn.js";
+import type { Custom } from "./sources/custom.js";
+import type { Generated } from "./sources/generated.js";
+import type { JsonAgainstHumanity } from "./sources/json-against-humanity.js";
+import type { ManyDecks } from "./sources/many-decks.js";
 
 /**
  * A source for a card or deck.
@@ -73,7 +73,7 @@ export interface AtLeastTemplates {
  * A resolver that only allows access to properties that don't require store
  * access.
  */
-export interface LimitedResolver<S extends External> {
+export interface LimitedResolver {
   id: () => string;
   deckId: () => string;
   loadingDetails: () => Details;
@@ -83,8 +83,7 @@ export interface LimitedResolver<S extends External> {
 /**
  * Resolve information about the given source.
  */
-export abstract class Resolver<S extends External>
-  implements LimitedResolver<S> {
+export abstract class Resolver<S extends External> implements LimitedResolver {
   /**
    * The source in question.
    */
@@ -115,13 +114,13 @@ export abstract class Resolver<S extends External>
    * Note that if you have a fresh summary, you should check if that has a
    * tag first.
    */
-  public abstract  getTag(): Promise<Cache.Tag | undefined>;
+  public abstract getTag(): Promise<Cache.Tag | undefined>;
 
   /**
    * The summary for the source, and potentially the templates if efficient to
    * return both.
    */
-  public abstract  atLeastSummary(): Promise<AtLeastSummary>;
+  public abstract atLeastSummary(): Promise<AtLeastSummary>;
 
   /**
    * The summary for the source.
@@ -141,7 +140,7 @@ export abstract class Resolver<S extends External>
    * The deck templates for the source, and potentially the summary if
    * efficient to return both.
    */
-  public abstract  atLeastTemplates(): Promise<AtLeastTemplates>;
+  public abstract atLeastTemplates(): Promise<AtLeastTemplates>;
 
   /**
    * The deck templates for the source.
@@ -202,7 +201,7 @@ export class CachedResolver<S extends External> extends Resolver<S> {
     return {
       summary: await this.cache.getSummary(
         this.resolver,
-        async () => await this.resolver.atLeastSummary()
+        async () => await this.resolver.atLeastSummary(),
       ),
     };
   }
@@ -211,7 +210,7 @@ export class CachedResolver<S extends External> extends Resolver<S> {
     return {
       templates: await this.cache.getTemplates(
         this.resolver,
-        async () => await this.resolver.atLeastTemplates()
+        async () => await this.resolver.atLeastTemplates(),
       ),
     };
   }
@@ -250,6 +249,6 @@ export interface MetaResolver<S extends External> {
    * If the source should be cached.
    */
   readonly cache: boolean;
-  limitedResolver(source: S): LimitedResolver<S>;
+  limitedResolver(source: S): LimitedResolver;
   resolver(source: S): Resolver<S>;
 }

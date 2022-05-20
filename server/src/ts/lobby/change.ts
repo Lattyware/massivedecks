@@ -1,11 +1,11 @@
-import { GameStateError } from "../errors/game-state-error";
-import * as Event from "../event";
-import * as ErrorEncountered from "../events/lobby-event/error-encountered";
-import { Lobby } from "../lobby";
-import { ServerState } from "../server-state";
-import { Task } from "../task";
-import * as Timeout from "../timeout";
-import { GameCode } from "./game-code";
+import { GameStateError } from "../errors/game-state-error.js";
+import * as Event from "../event.js";
+import * as ErrorEncountered from "../events/lobby-event/error-encountered.js";
+import type { Lobby } from "../lobby.js";
+import type { ServerState } from "../server-state.js";
+import type { Task } from "../task.js";
+import * as Timeout from "../timeout.js";
+import type { GameCode } from "./game-code.js";
 
 export interface Change {
   lobby?: Lobby;
@@ -17,9 +17,10 @@ export interface Change {
 export type ConstrainedChange<L extends Lobby> = Change & { lobby?: L };
 
 export type Handler = (lobby: Lobby) => Change;
-export type HandlerWithReturnValue<T> = (
-  lobby: Lobby
-) => { change: Change; returnValue: T };
+export type HandlerWithReturnValue<T> = (lobby: Lobby) => {
+  change: Change;
+  returnValue: T;
+};
 
 /**
  * Reduce a list of items to a single change by applying a function to each one
@@ -31,7 +32,7 @@ export type HandlerWithReturnValue<T> = (
 export function reduce<T, L extends Lobby>(
   items: Iterable<T>,
   lobby: L,
-  toChange: (lobby: L, item: T) => ConstrainedChange<L>
+  toChange: (lobby: L, item: T) => ConstrainedChange<L>,
 ): ConstrainedChange<L> {
   let currentLobby = lobby;
   let lobbyChanged = false;
@@ -66,7 +67,7 @@ function internalApply(
   server: ServerState,
   gameCode: GameCode,
   originalLobby: Lobby,
-  change: Change
+  change: Change,
 ): {
   lobby?: Lobby;
   timeouts?: Iterable<Timeout.After>;
@@ -87,7 +88,7 @@ function internalApply(
           server,
           gameCode,
           currentLobby,
-          Timeout.handler(server, timeoutAfter.timeout, gameCode, currentLobby)
+          Timeout.handler(server, timeoutAfter.timeout, gameCode, currentLobby),
         );
         if (chained.lobby !== undefined) {
           lobbyUnchanged = false;
@@ -125,7 +126,7 @@ export async function applyAndReturn<T>(
   server: ServerState,
   gameCode: GameCode,
   handler: HandlerWithReturnValue<T>,
-  timeoutId?: Timeout.Id
+  timeoutId?: Timeout.Id,
 ): Promise<T> {
   try {
     const [tasks, returnValue] = await server.store.writeAndReturn(
@@ -138,7 +139,7 @@ export async function applyAndReturn<T>(
             server.socketManager,
             gameCode,
             result.lobby ?? lobby,
-            result.events
+            result.events,
           );
         }
         return {
@@ -149,7 +150,7 @@ export async function applyAndReturn<T>(
           },
           result: [result.tasks, returnValue],
         };
-      }
+      },
     );
     if (tasks !== undefined) {
       for (const task of tasks) {
@@ -184,7 +185,7 @@ export async function apply(
   server: ServerState,
   gameCode: GameCode,
   handler: Handler,
-  timeoutId?: Timeout.Id
+  timeoutId?: Timeout.Id,
 ): Promise<void> {
   await applyAndReturn(
     server,
@@ -193,6 +194,6 @@ export async function apply(
       change: handler(lobby),
       returnValue: undefined,
     }),
-    timeoutId
+    timeoutId,
   );
 }

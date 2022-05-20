@@ -1,24 +1,16 @@
 import * as uuid from "uuid";
 import wu from "wu";
-import { CreateLobby } from "../action/initial/create-lobby";
-import * as ServerConfig from "../config";
-import { LobbyClosedError, LobbyDoesNotExistError } from "../errors/lobby";
-import * as Lobby from "../lobby";
-import * as GameCode from "../lobby/game-code";
-import { Store, Transaction } from "../store";
-import * as Timeout from "../timeout";
-import * as Token from "../user/token";
-import * as LobbyConfig from "../lobby/config";
-import { Task } from "../task";
 
-declare module "wu" {
-  // Fix incorrect types.
-  // noinspection JSUnusedGlobalSymbols
-  interface WuIterable<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    spreadMap<U>(fn: (...x: any[]) => U): WuIterable<U>;
-  }
-}
+import type { CreateLobby } from "../action/initial/create-lobby.js";
+import type * as ServerConfig from "../config.js";
+import { LobbyClosedError, LobbyDoesNotExistError } from "../errors/lobby.js";
+import * as Lobby from "../lobby.js";
+import type * as LobbyConfig from "../lobby/config.js";
+import * as GameCode from "../lobby/game-code.js";
+import { Store, Transaction } from "../store.js";
+import type { Task } from "../task.js";
+import type * as Timeout from "../timeout.js";
+import * as Token from "../user/token.js";
 
 interface TimeoutMeta {
   timeout: Timeout.Timeout;
@@ -68,7 +60,7 @@ export class InMemoryStore extends Store {
   public async newLobby(
     creation: CreateLobby,
     secret: string,
-    defaults: LobbyConfig.Defaults
+    defaults: LobbyConfig.Defaults,
   ): Promise<{
     gameCode: GameCode.GameCode;
     token: Token.Token;
@@ -86,7 +78,7 @@ export class InMemoryStore extends Store {
           uid: lobby.owner,
         },
         this._id,
-        secret
+        secret,
       ),
       tasks,
     };
@@ -108,7 +100,7 @@ export class InMemoryStore extends Store {
 
   public async writeAndReturn<T>(
     gameCode: GameCode.GameCode,
-    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T }
+    write: (lobby: Lobby.Lobby) => { transaction: Transaction; result: T },
   ): Promise<T> {
     const { transaction, result } = write(await this.lobby(gameCode));
     if (transaction.lobby !== undefined) {
@@ -138,7 +130,7 @@ export class InMemoryStore extends Store {
       if (
         lastWrite + this.config.abandonedTime < Date.now() ||
         wu(Object.values(lobby.users)).every(
-          (u) => u.control === "Computer" || u.presence === "Left"
+          (u) => u.control === "Computer" || u.presence === "Left",
         )
       ) {
         toRemove.add(gameCode);

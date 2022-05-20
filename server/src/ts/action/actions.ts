@@ -1,11 +1,12 @@
 import wu from "wu";
-import { Action } from "../action";
-import { InvalidActionError } from "../errors/validation";
-import { Lobby } from "../lobby";
-import { Change } from "../lobby/change";
-import { ServerState } from "../server-state";
-import * as Token from "../user/token";
-import * as Handler from "./handler";
+
+import type { Action } from "../action.js";
+import { InvalidActionError } from "../errors/validation.js";
+import type { Lobby } from "../lobby.js";
+import type { Change } from "../lobby/change.js";
+import type { ServerState } from "../server-state.js";
+import type * as Token from "../user/token.js";
+import type * as Handler from "./handler.js";
 
 export interface Actions<Parent extends Action, ParentLobby extends Lobby> {
   is: (action: Action) => boolean;
@@ -14,7 +15,7 @@ export interface Actions<Parent extends Action, ParentLobby extends Lobby> {
     auth: Token.Claims,
     lobby: ParentLobby,
     action: Parent,
-    server: ServerState
+    server: ServerState,
   ) => Change | undefined;
 }
 
@@ -22,8 +23,9 @@ export abstract class Implementation<
   ParentType extends Action,
   Type extends ParentType & { action: Name },
   Name extends string,
-  ParentLobby extends Lobby
-> implements Actions<ParentType, ParentLobby> {
+  ParentLobby extends Lobby,
+> implements Actions<ParentType, ParentLobby>
+{
   protected abstract readonly name: Name;
 
   // Should be Action, broken due to https://github.com/microsoft/TypeScript/pull/37195
@@ -41,7 +43,7 @@ export abstract class Implementation<
     auth: Token.Claims,
     lobby: ParentLobby,
     action: Action,
-    server: ServerState
+    server: ServerState,
   ): Change | undefined {
     if (this.is(action)) {
       return this.handle(auth, lobby, action, server);
@@ -57,8 +59,9 @@ export abstract class Group<
   ParentType extends Action,
   Type extends ParentType,
   ParentLobby extends Lobby,
-  LimitedLobby extends ParentLobby
-> implements Actions<ParentType, LimitedLobby> {
+  LimitedLobby extends ParentLobby,
+> implements Actions<ParentType, LimitedLobby>
+{
   private readonly childActions: Actions<Type, LimitedLobby>[];
 
   protected constructor(...childActions: Actions<Type, LimitedLobby>[]) {
@@ -73,14 +76,14 @@ export abstract class Group<
     auth: Token.Claims,
     lobby: ParentLobby,
     action: Type,
-    server: ServerState
+    server: ServerState,
   ): lobby is LimitedLobby;
 
   tryHandle(
     auth: Token.Claims,
     lobby: ParentLobby,
     action: Action,
-    server: ServerState
+    server: ServerState,
   ): Change | undefined {
     if (this.is(action)) {
       if (this.limit(auth, lobby, action, server)) {
@@ -104,17 +107,17 @@ export abstract class Group<
  */
 export class PassThroughGroup<
   Type extends Action,
-  ParentLobby extends Lobby
+  ParentLobby extends Lobby,
 > extends Group<Type, Type, ParentLobby, ParentLobby> {
   constructor(...childActions: Actions<Type, ParentLobby>[]) {
     super(...childActions);
   }
 
   public limit(
-    auth: Token.Claims,
+    _auth: Token.Claims,
     lobby: ParentLobby,
-    action: Type,
-    server: ServerState
+    _action: Type,
+    _server: ServerState,
   ): lobby is ParentLobby {
     return true;
   }

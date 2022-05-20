@@ -1,24 +1,25 @@
 import wu from "wu";
-import { Action } from "../../action";
-import { IncorrectRoundStageError } from "../../errors/action-execution-error";
-import * as User from "../../user";
-import * as Util from "../../util";
-import * as Card from "../cards/card";
-import * as Play from "../cards/play";
-import * as PublicRound from "./round/public";
-import * as StoredPlay from "./round/stored-play";
-import * as RoundStageTimerDone from "../../timeout/round-stage-timer-done";
-import * as Timeout from "../../timeout";
-import * as Event from "../../event";
-import * as StartJudging from "../../events/game-event/start-judging";
-import * as StartRevealing from "../../events/game-event/start-revealing";
-import * as Rules from "../rules";
-import * as Game from "../game";
-import { InvalidActionError } from "../../errors/validation";
-import { ServerState } from "../../server-state";
-import { Part } from "../cards/card";
-import * as CzarChoices from "../rules/czar-choices";
-import { Decks } from "../cards/decks";
+
+import type { Action } from "../../action.js";
+import { IncorrectRoundStageError } from "../../errors/action-execution-error.js";
+import { InvalidActionError } from "../../errors/validation.js";
+import * as Event from "../../event.js";
+import * as StartJudging from "../../events/game-event/start-judging.js";
+import * as StartRevealing from "../../events/game-event/start-revealing.js";
+import type { ServerState } from "../../server-state.js";
+import type * as Timeout from "../../timeout.js";
+import * as RoundStageTimerDone from "../../timeout/round-stage-timer-done.js";
+import type * as User from "../../user.js";
+import * as Util from "../../util.js";
+import type { Part } from "../cards/card.js";
+import * as Card from "../cards/card.js";
+import type { Decks } from "../cards/decks.js";
+import type * as Play from "../cards/play.js";
+import type * as Game from "../game.js";
+import type * as Rules from "../rules.js";
+import * as CzarChoices from "../rules/czar-choices.js";
+import type * as PublicRound from "./round/public.js";
+import * as StoredPlay from "./round/stored-play.js";
 
 export type Round = Starting | Playing | Revealing | Judging | Complete;
 
@@ -78,7 +79,7 @@ export interface Timed {
 
 export const isTimed = <TStage extends Stage>(
   round: Base<TStage>,
-): round is Base<TStage> & Timed => round.hasOwnProperty("timedOut");
+): round is Base<TStage> & Timed => Object.hasOwn(round, "timedOut");
 
 export class Complete extends Base<"Complete"> {
   public get stage(): "Complete" {

@@ -1,4 +1,4 @@
-import * as Source from "../source";
+import type * as Source from "../source.js";
 
 /**
  * A source for custom cards made during the game.

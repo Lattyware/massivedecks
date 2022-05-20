@@ -1,5 +1,6 @@
 import HttpStatus from "http-status-codes";
-import * as Errors from "../errors";
+
+import * as Errors from "../errors.js";
 
 export type Reason = "UsernameAlreadyInUse";
 
@@ -34,9 +35,7 @@ export interface UsernameDetails {
   username: string;
 }
 
-export class UsernameAlreadyInUseError extends RegistrationError<
-  UsernameDetails
-> {
+export class UsernameAlreadyInUseError extends RegistrationError<UsernameDetails> {
   protected readonly reason = "UsernameAlreadyInUse";
   private readonly username: string;
 

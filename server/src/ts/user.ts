@@ -1,4 +1,4 @@
-import { RegisterUser } from "./action/initial/register-user";
+import type { RegisterUser } from "./action/initial/register-user.js";
 
 /** A user in a lobby.*/
 export interface User {
@@ -80,7 +80,7 @@ export const isSpectating: (user: User) => boolean = (user) =>
 export const create = (
   registration: RegisterUser,
   role: Role,
-  privilege: Privilege = "Unprivileged"
+  privilege: Privilege = "Unprivileged",
 ): User => ({
   name: registration.name,
   presence: "Joined",

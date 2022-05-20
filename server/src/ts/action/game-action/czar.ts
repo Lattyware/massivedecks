@@ -1,11 +1,11 @@
-import * as Action from "../../action";
-import * as Lobby from "../../lobby";
-import * as Token from "../../user/token";
-import * as GameAction from "../game-action";
-import * as Actions from "../actions";
-import * as Judge from "./czar/judge";
-import * as PickCall from "./czar/pick-call";
-import * as Reveal from "./czar/reveal";
+import type * as Action from "../../action.js";
+import type * as Lobby from "../../lobby.js";
+import type * as Token from "../../user/token.js";
+import * as Actions from "../actions.js";
+import * as GameAction from "../game-action.js";
+import * as Judge from "./czar/judge.js";
+import * as PickCall from "./czar/pick-call.js";
+import * as Reveal from "./czar/reveal.js";
 
 /**
  * An action only the czar can perform.
@@ -25,7 +25,7 @@ class CzarActions extends Actions.Group<
   limit(
     auth: Token.Claims,
     lobby: Lobby.WithActiveGame,
-    action: Czar
+    action: Czar,
   ): lobby is Lobby.WithActiveGame {
     GameAction.expectRole(auth, action, lobby.game, "Czar");
     return true;

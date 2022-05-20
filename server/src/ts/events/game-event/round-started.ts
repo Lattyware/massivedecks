@@ -1,6 +1,6 @@
-import * as Card from "../../games/cards/card";
-import * as Round from "../../games/game/round";
-import * as User from "../../user";
+import type * as Card from "../../games/cards/card.js";
+import type * as Round from "../../games/game/round.js";
+import type * as User from "../../user.js";
 
 export interface Base {
   event: "RoundStarted";
@@ -19,7 +19,7 @@ export type RoundStarted = Base & Call;
 
 export const of = (
   round: Round.Round,
-  drawn?: Card.Response[]
+  drawn?: Card.Response[],
 ): RoundStarted => ({
   event: "RoundStarted",
   id: round.id.toString(),

@@ -1,14 +1,14 @@
-import { Action } from "../action";
-import * as Event from "../event";
-import * as UserRoleChanged from "../events/lobby-event/user-role-changed";
-import * as Player from "../games/player";
-import * as Lobby from "../lobby";
-import * as Timeout from "../timeout";
-import * as User from "../user";
-import * as Actions from "./actions";
-import * as Handler from "./handler";
-import { UnprivilegedError } from "../errors/action-execution-error";
-import { Privileged } from "./privileged";
+import type { Action } from "../action.js";
+import { UnprivilegedError } from "../errors/action-execution-error.js";
+import * as Event from "../event.js";
+import * as UserRoleChanged from "../events/lobby-event/user-role-changed.js";
+import * as Player from "../games/player.js";
+import type * as Lobby from "../lobby.js";
+import type * as Timeout from "../timeout.js";
+import type * as User from "../user.js";
+import * as Actions from "./actions.js";
+import type * as Handler from "./handler.js";
+import type { Privileged } from "./privileged.js";
 
 /**
  * A player asks to leave the game.
@@ -31,10 +31,10 @@ class SetUserRoleActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => {
     const userId = action.id === undefined ? auth.uid : action.id;
-    const targetUser = lobby.users[userId];
+    const targetUser = lobby.users[userId] as User.User;
     const oldRole = targetUser.role;
     const newRole = action.role;
     const additionalMap = new Map();
@@ -56,10 +56,10 @@ class SetUserRoleActions extends Actions.Implementation<
     };
 
     if (
-      lobby.users[auth.uid].privilege !== "Privileged" &&
+      lobby.users[auth.uid]?.privilege !== "Privileged" &&
       (userId !== auth.uid || lobby.config.audienceMode)
     ) {
-      throw new UnprivilegedError((action as unknown) as Privileged);
+      throw new UnprivilegedError(action as unknown as Privileged);
     }
 
     if (oldRole !== newRole) {
@@ -80,7 +80,7 @@ class SetUserRoleActions extends Actions.Implementation<
           }
         }
         if (newRole === "Player") {
-          if (!game.players.hasOwnProperty(userId)) {
+          if (!Object.hasOwn(game.players, userId)) {
             const hand = game.decks.responses.draw(game.rules.handSize);
             additionalMap.set(auth.uid, { hand });
             game.players[userId] = Player.initial(hand);
@@ -92,7 +92,7 @@ class SetUserRoleActions extends Actions.Implementation<
         events: [
           Event.additionally(
             UserRoleChanged.of(userId, action.role),
-            additionalMap
+            additionalMap,
           ),
           ...allEvents,
         ],

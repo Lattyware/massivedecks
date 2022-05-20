@@ -1,4 +1,4 @@
-import * as Card from "./card";
+import type * as Card from "./card.js";
 
 /**
  * A hand of cards.

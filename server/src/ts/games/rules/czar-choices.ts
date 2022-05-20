@@ -1,4 +1,4 @@
-import * as Card from "../cards/card";
+import * as Card from "../cards/card.js";
 
 /**
  * Configuration for the "Czar Choices" house rule.

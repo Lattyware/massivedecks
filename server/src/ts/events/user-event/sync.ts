@@ -1,7 +1,7 @@
-import * as Card from "../../games/cards/card";
-import { Hand } from "../../games/cards/hand";
-import * as Lobby from "../../lobby";
-import { LikeDetail } from "../../games/game/round/public";
+import type * as Card from "../../games/cards/card.js";
+import type { Hand } from "../../games/cards/hand.js";
+import type { LikeDetail } from "../../games/game/round/public.js";
+import type * as Lobby from "../../lobby.js";
 
 /**
  * Synchronise the game state.
@@ -21,7 +21,7 @@ export const of = (
   hand?: Hand,
   play?: Card.Id[],
   likeDetail?: LikeDetail,
-  calls?: Card.Call[]
+  calls?: Card.Call[],
 ): Sync => ({
   event: "Sync",
   state,

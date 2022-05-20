@@ -1,19 +1,20 @@
-import WebSocket from "ws";
-import * as Action from "./action";
-import * as Authenticate from "./action/authenticate";
-import { MassiveDecksError } from "./errors";
-import { NotAuthenticatedError } from "./errors/authentication";
-import { InvalidActionError } from "./errors/validation";
-import * as Event from "./event";
-import * as Sync from "./events/user-event/sync";
-import * as Lobby from "./lobby";
-import * as Change from "./lobby/change";
-import { GameCode } from "./lobby/game-code";
-import * as Logging from "./logging";
-import { ServerState } from "./server-state";
-import * as UserDisconnect from "./timeout/user-disconnect";
-import * as User from "./user";
-import * as Token from "./user/token";
+import type WebSocket from "ws";
+
+import * as Action from "./action.js";
+import * as Authenticate from "./action/authenticate.js";
+import { MassiveDecksError } from "./errors.js";
+import { NotAuthenticatedError } from "./errors/authentication.js";
+import { InvalidActionError } from "./errors/validation.js";
+import * as Event from "./event.js";
+import * as Sync from "./events/user-event/sync.js";
+import * as Lobby from "./lobby.js";
+import * as Change from "./lobby/change.js";
+import type { GameCode } from "./lobby/game-code.js";
+import * as Logging from "./logging.js";
+import type { ServerState } from "./server-state.js";
+import * as UserDisconnect from "./timeout/user-disconnect.js";
+import type * as User from "./user.js";
+import type * as Token from "./user/token.js";
 
 const parseJson = (raw: string): object => {
   try {
@@ -95,7 +96,7 @@ export class SocketManager {
   private readonly errorWSHandler =
     <T>(
       socket: WebSocket,
-      fn: (data: WebSocket.Data) => Promise<T>
+      fn: (data: WebSocket.Data) => Promise<T>,
     ): ((data: WebSocket.Data) => Promise<T | void>) =>
     async (data) => {
       try {
@@ -157,7 +158,7 @@ export class SocketManager {
                     .filter((p) => p.likes.some((l) => l === uid))
                     .map((p) => p.id);
                   const playedCard = round.plays.find(
-                    (p) => p.playedBy === uid
+                    (p) => p.playedBy === uid,
                   );
                   const played =
                     playedCard === undefined ? undefined : playedCard.id;
@@ -167,7 +168,7 @@ export class SocketManager {
                   calls = round.czar === uid ? round.calls : undefined;
                 } else {
                   const potentialPlay = round.plays.find(
-                    (play) => play.playedBy === uid
+                    (play) => play.playedBy === uid,
                   );
                   if (potentialPlay !== undefined) {
                     play = potentialPlay.play.map((card) => card.id);
@@ -175,14 +176,14 @@ export class SocketManager {
                 }
               }
 
-              const user = lobby.users[uid];
+              const user = lobby.users[uid] as User.User;
               user.connection = "Connected";
               return {
                 lobby,
                 events: [
                   Event.targetOnly(
                     Sync.of(Lobby.censor(lobby), hand, play, likeDetail, calls),
-                    uid
+                    uid,
                   ),
                 ],
               };
@@ -197,14 +198,14 @@ export class SocketManager {
         } else {
           const claims = auth;
           await Change.apply(server, auth.gc, (lobby) =>
-            Action.handle(claims, lobby, validated, server)
+            Action.handle(claims, lobby, validated, server),
           );
           Logging.logger.info("WebSocket receive:", {
             user: auth.uid,
             action: validated,
           });
         }
-      })
+      }),
     );
     socket.on(
       "close",
@@ -225,7 +226,7 @@ export class SocketManager {
             Logging.logger.info("User disconnect:", { user: auth.uid });
           }
         }
-      })
+      }),
     );
   }
 }

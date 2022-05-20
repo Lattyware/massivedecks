@@ -1,5 +1,6 @@
 import HttpStatus from "http-status-codes";
-import * as Errors from "../errors";
+
+import * as Errors from "../errors.js";
 
 export type Reason =
   | "IncorrectIssuer"
@@ -14,9 +15,7 @@ export interface Details extends Errors.Details {
   reason: Reason;
 }
 
-abstract class AuthenticationFailureError extends Errors.MassiveDecksError<
-  Details
-> {
+abstract class AuthenticationFailureError extends Errors.MassiveDecksError<Details> {
   public readonly status = HttpStatus.FORBIDDEN;
   abstract readonly reason: Reason;
 
@@ -38,7 +37,7 @@ export class IncorrectIssuerError extends AuthenticationFailureError {
   public constructor() {
     super(
       "the authentication was not for this server or the server data store " +
-        "has been wiped"
+        "has been wiped",
     );
     Error.captureStackTrace(this, IncorrectIssuerError);
   }

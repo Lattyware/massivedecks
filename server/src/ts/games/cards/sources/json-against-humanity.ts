@@ -1,9 +1,10 @@
-import * as Source from "../source";
-import http, { AxiosRequestConfig } from "axios";
-import * as Config from "../../../config";
-import { SourceNotFoundError } from "../../../errors/action-execution-error";
-import * as Decks from "../decks";
-import * as Card from "../card";
+import { AxiosRequestConfig, default as Axios } from "axios";
+
+import type * as Config from "../../../config.js";
+import { SourceNotFoundError } from "../../../errors/action-execution-error.js";
+import * as Card from "../card.js";
+import type * as Decks from "../decks.js";
+import * as Source from "../source.js";
 
 /**
  * From JSON Against Humanity (https://crhallberg.com/cah/)
@@ -44,7 +45,7 @@ function* introduceSlots(line: string): Iterable<Card.Part> {
       yield nextSlot;
     }
     yield part;
-    const last = part.trimRight().substr(-1);
+    const last = part.trimEnd().slice(-1);
     if (part === "" || endsSentence.has(last)) {
       nextSlot = { transform: "Capitalize" };
     } else {
@@ -56,7 +57,7 @@ function* introduceSlots(line: string): Iterable<Card.Part> {
 function rawDeckToSummaryAndTemplates(
   raw: Packs,
   pack: Pack,
-  id: string
+  id: string,
 ): {
   summary: Source.Summary;
   templates: Decks.Templates;
@@ -67,7 +68,7 @@ function rawDeckToSummaryAndTemplates(
   };
 
   function call(index: number): Card.Call {
-    const from = raw.black[index];
+    const from = raw.black[index] as { text: string; pick: number };
     const parts = from.text.split("\n").map((t) => [...introduceSlots(t)]);
     const slots = Card.slotCount(parts);
     const extraSlots = Math.max(0, from.pick - slots);
@@ -79,7 +80,7 @@ function rawDeckToSummaryAndTemplates(
   }
 
   function response(index: number): Card.Response {
-    const from = raw.white[index];
+    const from = raw.white[index] as string;
     const stripped = from.replace("\n", "");
     return {
       id: Card.id(),
@@ -113,7 +114,7 @@ export class Resolver extends Source.Resolver<JsonAgainstHumanity> {
     source: JsonAgainstHumanity,
     config: Config.JsonAgainstHumanity,
     summary: Source.Summary,
-    templates: Decks.Templates
+    templates: Decks.Templates,
   ) {
     super();
     this.source = source;
@@ -179,7 +180,7 @@ export class MetaResolver implements Source.MetaResolver<JsonAgainstHumanity> {
     const protoOrder: [string, Pack][] = [];
     for (let index = 0; index < decks.packs.length; index++) {
       const id = index.toString();
-      const pack = decks.packs[index];
+      const pack = decks.packs[index] as Pack;
       this.decks.set(id, rawDeckToSummaryAndTemplates(decks, pack, id));
       protoOrder.push([id, pack]);
     }
@@ -189,7 +190,7 @@ export class MetaResolver implements Source.MetaResolver<JsonAgainstHumanity> {
 
   private static compare(
     [_idA, a]: [string, Pack],
-    [_idB, b]: [string, Pack]
+    [_idB, b]: [string, Pack],
   ): number {
     return MetaResolver.boolCompare(a, b, (v) => v.official);
   }
@@ -227,7 +228,7 @@ export class MetaResolver implements Source.MetaResolver<JsonAgainstHumanity> {
 }
 
 export const load = async (
-  config: Config.JsonAgainstHumanity
+  config: Config.JsonAgainstHumanity,
 ): Promise<MetaResolver> => {
   const httpConfig: AxiosRequestConfig = {
     method: "GET",
@@ -235,6 +236,6 @@ export const load = async (
     responseType: "json",
   };
 
-  const data = await http.get("", httpConfig);
+  const data = await Axios.get("", httpConfig);
   return new MetaResolver(config, data.data);
 };

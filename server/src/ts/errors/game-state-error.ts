@@ -1,9 +1,8 @@
 import HttpStatus from "http-status-codes";
-import * as Errors from "../errors";
 
-export abstract class GameStateError extends Errors.MassiveDecksError<
-  Errors.Details
-> {
+import * as Errors from "../errors.js";
+
+export abstract class GameStateError extends Errors.MassiveDecksError<Errors.Details> {
   public readonly status: number = HttpStatus.INTERNAL_SERVER_ERROR;
 
   protected constructor(message: string) {

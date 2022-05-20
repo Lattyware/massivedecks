@@ -1,10 +1,10 @@
-import { Lobby } from "../lobby";
-import { GameCode } from "../lobby/game-code";
-import * as Logging from "../logging";
-import { ServerState } from "../server-state";
-import { Task } from "../task";
-import { LoadDeckSummary } from "./load-deck-summary";
-import { StartGame } from "./start-game";
+import type { Lobby } from "../lobby.js";
+import type { GameCode } from "../lobby/game-code.js";
+import * as Logging from "../logging.js";
+import type { ServerState } from "../server-state.js";
+import type { Task } from "../task.js";
+import { LoadDeckSummary } from "./load-deck-summary.js";
+import { StartGame } from "./start-game.js";
 
 interface Discoverable {
   discover: (gameCode: GameCode, lobby: Lobby) => Iterable<Task>;

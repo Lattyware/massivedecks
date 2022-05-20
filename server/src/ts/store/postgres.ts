@@ -1,17 +1,18 @@
-import Pg from "pg";
+import type Pg from "pg";
 import * as uuid from "uuid";
-import { CreateLobby } from "../action/initial/create-lobby";
-import * as Config from "../config";
-import { LobbyClosedError } from "../errors/lobby";
-import * as Lobby from "../lobby";
-import * as GameCode from "../lobby/game-code";
-import * as Store from "../store";
-import * as Timeout from "../timeout";
-import * as Token from "../user/token";
-import * as Postgres from "../util/postgres";
-import * as LobbyConfig from "../lobby/config";
-import { LoadDeckSummary } from "../task/load-deck-summary";
-import * as Task from "../task";
+
+import type { CreateLobby } from "../action/initial/create-lobby.js";
+import type * as Config from "../config.js";
+import { LobbyClosedError } from "../errors/lobby.js";
+import * as Lobby from "../lobby.js";
+import type * as LobbyConfig from "../lobby/config.js";
+import * as GameCode from "../lobby/game-code.js";
+import * as Store from "../store.js";
+import type * as Task from "../task.js";
+import { LoadDeckSummary } from "../task/load-deck-summary.js";
+import type * as Timeout from "../timeout.js";
+import * as Token from "../user/token.js";
+import * as Postgres from "../util/postgres.js";
 
 class To0 extends Postgres.Upgrade<undefined, 0> {
   public readonly to = 0;
@@ -19,7 +20,7 @@ class To0 extends Postgres.Upgrade<undefined, 0> {
   public async apply(client: Pg.PoolClient): Promise<0> {
     await client.query("CREATE SCHEMA massivedecks;");
     await client.query(
-      "CREATE TABLE massivedecks.meta ( version INTEGER NOT NULL, id UUID NOT NULL );"
+      "CREATE TABLE massivedecks.meta ( version INTEGER NOT NULL, id UUID NOT NULL );",
     );
     await client.query(`
           CREATE TABLE massivedecks.lobbies ( 
@@ -81,12 +82,12 @@ export class PostgresStore extends Store.Store {
   private readonly pg: Postgres.Postgres;
 
   public static async create(
-    config: Config.PostgreSQL
+    config: Config.PostgreSQL,
   ): Promise<PostgresStore> {
     const pg = new Postgres.Postgres(
       "massivedecks",
       config.connection,
-      upgrades
+      upgrades,
     );
     await pg.ensureCurrent();
     return await pg.withClient(async (client) => {
@@ -98,7 +99,7 @@ export class PostgresStore extends Store.Store {
   private constructor(
     id: string,
     config: Config.PostgreSQL,
-    pg: Postgres.Postgres
+    pg: Postgres.Postgres,
   ) {
     super();
     this.cachedId = id;
@@ -117,9 +118,9 @@ export class PostgresStore extends Store.Store {
         (
           await client.query(
             "SELECT EXISTS (SELECT id FROM massivedecks.lobbies WHERE id = $1)",
-            [lobbyId]
+            [lobbyId],
           )
-        ).rows[0].exists
+        ).rows[0].exists,
     );
   }
 
@@ -129,7 +130,7 @@ export class PostgresStore extends Store.Store {
       async (client) =>
         await client.query("DELETE FROM massivedecks.lobbies WHERE id = $1", [
           lobbyId,
-        ])
+        ]),
     );
   }
 
@@ -141,7 +142,7 @@ export class PostgresStore extends Store.Store {
             ((last_access + $1::interval ) < NOW()) OR
             (SELECT bool_and(value->>'control' = 'Computer' OR value->>'presence' = 'Left') FROM jsonb_each(lobby->'users'));
         `,
-        [`${this.config.abandonedTime} milliseconds`]
+        [`${this.config.abandonedTime} milliseconds`],
       );
       return result.rowCount;
     });
@@ -149,12 +150,12 @@ export class PostgresStore extends Store.Store {
 
   public async *lobbySummaries(): AsyncIterableIterator<Lobby.Summary> {
     yield* this.pg.withClientIterator(
-      PostgresStore.lobbySummariesInternal.bind(this)
+      PostgresStore.lobbySummariesInternal.bind(this),
     );
   }
 
   private static async *lobbySummariesInternal(
-    client: Pg.PoolClient
+    client: Pg.PoolClient,
   ): AsyncIterableIterator<Lobby.Summary> {
     const result = await client.query("SELECT * FROM massivedecks.summaries");
     for (const { id, name, started, ended, users, password } of result.rows) {
@@ -174,7 +175,7 @@ export class PostgresStore extends Store.Store {
   public async newLobby(
     creation: CreateLobby,
     secret: string,
-    defaults: LobbyConfig.Defaults
+    defaults: LobbyConfig.Defaults,
   ): Promise<{
     gameCode: GameCode.GameCode;
     token: Token.Token;
@@ -184,11 +185,11 @@ export class PostgresStore extends Store.Store {
       const { lobby, tasks } = Lobby.create(
         "fake-game-code",
         creation,
-        defaults
+        defaults,
       );
       const result = await client.query(
         "INSERT INTO massivedecks.lobbies VALUES (DEFAULT, $1) RETURNING id",
-        [lobby]
+        [lobby],
       );
       const gameCode = GameCode.encode(result.rows[0]["id"]);
       return {
@@ -199,7 +200,7 @@ export class PostgresStore extends Store.Store {
             uid: lobby.owner,
           },
           await this.id(),
-          secret
+          secret,
         ),
         tasks: tasks.map((task) => new LoadDeckSummary(gameCode, task.source)),
       };
@@ -211,11 +212,11 @@ export class PostgresStore extends Store.Store {
   }
 
   private static async *timedOutInternal(
-    client: Pg.PoolClient
+    client: Pg.PoolClient,
   ): AsyncIterableIterator<Timeout.TimedOut> {
     const result = await client.query(
       "SELECT * FROM massivedecks.timeouts WHERE after < $1;",
-      [Date.now()]
+      [Date.now()],
     );
     for (const row of result.rows) {
       yield {
@@ -228,31 +229,34 @@ export class PostgresStore extends Store.Store {
 
   public async writeAndReturn<T>(
     gameCode: string,
-    write: (lobby: Lobby.Lobby) => { transaction: Store.Transaction; result: T }
+    write: (lobby: Lobby.Lobby) => {
+      transaction: Store.Transaction;
+      result: T;
+    },
   ): Promise<T> {
     const lobbyId = GameCode.decode(gameCode);
     return await this.pg.inTransaction(async (client) => {
       const get = await client.query(
         "SELECT lobby FROM massivedecks.lobbies WHERE id = $1;",
-        [lobbyId]
+        [lobbyId],
       );
       if (get.rowCount < 1) {
         throw new LobbyClosedError(gameCode);
       }
       const { transaction, result } = write(
-        Lobby.fromJSON(get.rows[0]["lobby"] as Lobby.Lobby)
+        Lobby.fromJSON(get.rows[0]["lobby"] as Lobby.Lobby),
       );
       if (transaction.lobby) {
         await client.query(
           "UPDATE massivedecks.lobbies SET lobby=$2, last_access=NOW() WHERE id = $1;",
-          [lobbyId, transaction.lobby]
+          [lobbyId, transaction.lobby],
         );
       }
       if (transaction.timeouts !== undefined) {
         for (const timeout of transaction.timeouts) {
           await client.query(
             "INSERT INTO massivedecks.timeouts VALUES (DEFAULT, $1, $2, $3)",
-            [lobbyId, Date.now() + timeout.after, timeout.timeout]
+            [lobbyId, Date.now() + timeout.after, timeout.timeout],
           );
         }
       }

@@ -1,13 +1,14 @@
-import { InvalidActionError } from "../../../errors/validation";
-import * as Event from "../../../event";
-import * as RoundFinished from "../../../events/game-event/round-finished";
-import * as Play from "../../../games/cards/play";
-import * as Round from "../../../games/game/round";
-import * as Lobby from "../../../lobby";
-import * as RoundStart from "../../../timeout/round-start";
-import * as Handler from "../../handler";
-import { Czar } from "../czar";
-import * as Actions from "./../../actions";
+import { InvalidActionError } from "../../../errors/validation.js";
+import * as Event from "../../../event.js";
+import * as RoundFinished from "../../../events/game-event/round-finished.js";
+import type * as Play from "../../../games/cards/play.js";
+import type * as Round from "../../../games/game/round.js";
+import type { Player } from "../../../games/player.js";
+import type * as Lobby from "../../../lobby.js";
+import * as RoundStart from "../../../timeout/round-start.js";
+import type * as Handler from "../../handler.js";
+import type { Czar } from "../czar.js";
+import * as Actions from "./../../actions.js";
 
 /**
  * A user declares the winning play for a round.
@@ -37,7 +38,7 @@ class JudgeAction extends Actions.Implementation<
       let winningPlay = undefined;
       for (const play of plays) {
         if (play.likes.length > 0) {
-          const player = game.players[play.playedBy];
+          const player = game.players[play.playedBy] as Player;
           player.likes += play.likes.length;
         }
         if (play.id === action.winner) {
@@ -47,7 +48,7 @@ class JudgeAction extends Actions.Implementation<
       if (winningPlay === undefined) {
         throw new InvalidActionError("Given play doesn't exist.");
       }
-      const player = game.players[winningPlay.playedBy];
+      const player = game.players[winningPlay.playedBy] as Player;
       player.score += 1;
       if (game.rules.houseRules.winnersPick) {
         game.rules.houseRules.winnersPick.roundWinner = winningPlay.playedBy;

@@ -1,15 +1,16 @@
-import * as Source from "../source";
-import * as Decks from "../decks";
-import JSON5 from "json5";
 import { promises as fs } from "fs";
-import * as Config from "../../../config";
+import JSON5 from "json5";
 import * as path from "path";
-import { Part } from "../card";
-import * as Card from "../card";
+
+import type * as Config from "../../../config.js";
 import {
   SourceNotFoundError,
   SourceServiceError,
-} from "../../../errors/action-execution-error";
+} from "../../../errors/action-execution-error.js";
+import type { Part } from "../card.js";
+import * as Card from "../card.js";
+import type * as Decks from "../decks.js";
+import * as Source from "../source.js";
 
 const extension = ".deck.json5";
 
@@ -56,7 +57,7 @@ export class Resolver extends Source.Resolver<BuiltIn> {
     config: Config.BuiltIn,
     source: BuiltIn,
     summary?: Source.Summary,
-    deck?: BuiltInDeck
+    deck?: BuiltInDeck,
   ) {
     super();
     this.config = config;
@@ -143,14 +144,14 @@ export class MetaResolver implements Source.MetaResolver<BuiltIn> {
   public constructor(
     config: Config.BuiltIn,
     summaries: Map<string, Source.Summary>,
-    decks: Map<string, BuiltInDeck>
+    decks: Map<string, BuiltInDeck>,
   ) {
     this.config = config;
     this.summaries = summaries;
     this.decks = decks;
   }
 
-  limitedResolver(source: BuiltIn): Source.LimitedResolver<BuiltIn> {
+  limitedResolver(source: BuiltIn): Source.LimitedResolver {
     return this.resolver(source);
   }
 
@@ -185,7 +186,9 @@ export async function load(config: Config.BuiltIn): Promise<MetaResolver> {
 
   for (const id of config.decks) {
     const rawDeck = JSON5.parse(
-      (await fs.readFile(path.join(config.basePath, id + extension))).toString()
+      (
+        await fs.readFile(path.join(config.basePath, id + extension))
+      ).toString(),
     ) as BuiltInDeck;
     summaries.set(id, {
       details: {

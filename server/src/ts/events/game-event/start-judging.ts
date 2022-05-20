@@ -1,6 +1,6 @@
-import * as Play from "../../games/cards/play";
-import * as StartRevealing from "./start-revealing";
-import * as Card from "../../games/cards/card";
+import type * as Card from "../../games/cards/card.js";
+import type * as Play from "../../games/cards/play.js";
+import type * as StartRevealing from "./start-revealing.js";
 
 /**
  * Indicates the czar has finished revealing the plays and is now picking a winner.
@@ -17,7 +17,7 @@ export interface StartJudging extends StartRevealing.AfterPlaying {
 export const of = (
   plays?: Play.Revealed[],
   played?: Play.Id,
-  drawn?: Card.Response[]
+  drawn?: Card.Response[],
 ): StartJudging => ({
   event: "StartJudging",
   plays,

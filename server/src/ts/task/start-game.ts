@@ -1,12 +1,13 @@
 import wu from "wu";
-import * as Decks from "../games/cards/decks";
-import * as Source from "../games/cards/source";
-import { Game } from "../games/game";
-import { Lobby } from "../lobby";
-import { Change } from "../lobby/change";
-import { GameCode } from "../lobby/game-code";
-import { ServerState } from "../server-state";
-import * as Task from "../task";
+
+import type * as Decks from "../games/cards/decks.js";
+import type * as Source from "../games/cards/source.js";
+import { Game } from "../games/game.js";
+import type { Lobby } from "../lobby.js";
+import type { Change } from "../lobby/change.js";
+import type { GameCode } from "../lobby/game-code.js";
+import type { ServerState } from "../server-state.js";
+import * as Task from "../task.js";
 
 export class StartGame extends Task.TaskBase<Decks.Templates[]> {
   private readonly decks: Iterable<Source.External>;
@@ -19,15 +20,15 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
   protected async begin(server: ServerState): Promise<Decks.Templates[]> {
     return Promise.all(
       wu(this.decks).map((deck) =>
-        server.sources.resolver(server.cache, deck).templates()
-      )
+        server.sources.resolver(server.cache, deck).templates(),
+      ),
     );
   }
 
   protected resolve(
     lobby: Lobby,
     work: Decks.Templates[],
-    server: ServerState
+    server: ServerState,
   ): Change {
     if (lobby.game !== undefined && lobby.game.winner === undefined) {
       // If we have an existing game that isn't finished, we don't try and
@@ -40,7 +41,7 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
     const { events, timeouts } = lobbyGame.startRound(
       server,
       true,
-      lobbyGame.round
+      lobbyGame.round,
     );
 
     lobby.game = lobbyGame;
@@ -55,8 +56,8 @@ export class StartGame extends Task.TaskBase<Decks.Templates[]> {
   // This is super unlikely timing-wise, and if it happens, the user just has
   // to click start again. They'll live.
   public static *discover(
-    gameCode: GameCode,
-    lobby: Lobby
+    _gameCode: GameCode,
+    _lobby: Lobby,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
   ): Iterable<StartGame> {}
 }

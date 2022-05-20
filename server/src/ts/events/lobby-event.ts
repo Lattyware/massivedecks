@@ -1,9 +1,9 @@
-import { Configured } from "./lobby-event/configured";
-import { ConnectionChanged } from "./lobby-event/connection-changed";
-import { ErrorEncountered } from "./lobby-event/error-encountered";
-import { PresenceChanged } from "./lobby-event/presence-changed";
-import { PrivilegeChanged } from "./lobby-event/privilege-changed";
-import { UserRoleChanged } from "./lobby-event/user-role-changed";
+import type { Configured } from "./lobby-event/configured.js";
+import type { ConnectionChanged } from "./lobby-event/connection-changed.js";
+import type { ErrorEncountered } from "./lobby-event/error-encountered.js";
+import type { PresenceChanged } from "./lobby-event/presence-changed.js";
+import type { PrivilegeChanged } from "./lobby-event/privilege-changed.js";
+import type { UserRoleChanged } from "./lobby-event/user-role-changed.js";
 
 export type LobbyEvent =
   | Configured

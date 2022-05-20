@@ -1,8 +1,8 @@
-import * as Action from "../action";
-import * as Lobby from "../lobby";
-import * as Actions from "./actions";
-import * as Handler from "./handler";
-import * as Kick from "./privileged/kick";
+import type * as Action from "../action.js";
+import type * as Lobby from "../lobby.js";
+import * as Actions from "./actions.js";
+import type * as Handler from "./handler.js";
+import * as Kick from "./privileged/kick.js";
 
 /**
  * A player asks to leave the game.
@@ -23,7 +23,7 @@ class LeaveActions extends Actions.Implementation<
     auth,
     lobby,
     action,
-    server
+    server,
   ) => Kick.removeUser(auth.uid, lobby, server, "Left");
 }
 

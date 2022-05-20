@@ -1,5 +1,5 @@
-import * as Source from "../games/cards/source";
-import * as Rules from "../games/rules";
+import type * as Source from "../games/cards/source.js";
+import * as Rules from "../games/rules.js";
 
 /**
  * Configuration for a lobby.
@@ -72,7 +72,7 @@ export interface FailedSource {
 }
 
 export const isFailed = (source: ConfiguredSource): source is FailedSource =>
-  source.hasOwnProperty("failure");
+  Object.hasOwn(source, "failure");
 
 export const censor = (config: Config): Public => ({
   version: config.version.toString(),

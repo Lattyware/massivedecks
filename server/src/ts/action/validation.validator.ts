@@ -1,12 +1,14 @@
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
-import {
-  RegisterUser,
-  CreateLobby,
+/* eslint-disable */
+import { default as Ajv } from "ajv";
+import { default as addFormats } from "ajv-formats";
+
+import type {
   Action,
   CheckAlive,
+  CreateLobby,
   PublicConfig,
-} from "./validation";
+  RegisterUser,
+} from "./validation.js";
 
 export const ajv = new Ajv({
   allErrors: false,
@@ -14,9 +16,6 @@ export const ajv = new Ajv({
   useDefaults: true,
 });
 addFormats(ajv, { mode: "full" });
-
-import metaSchema from "ajv/lib/refs/json-schema-draft-06.json";
-ajv.addMetaSchema(metaSchema);
 
 export { RegisterUser, CreateLobby, Action, CheckAlive, PublicConfig };
 export const Schema = {
@@ -1122,24 +1121,24 @@ export const Schema = {
 };
 ajv.addSchema(Schema, "Schema");
 export function validate(
-  typeName: "RegisterUser"
+  typeName: "RegisterUser",
 ): (value: unknown) => RegisterUser;
 export function validate(
-  typeName: "CreateLobby"
+  typeName: "CreateLobby",
 ): (value: unknown) => CreateLobby;
 export function validate(typeName: "Action"): (value: unknown) => Action;
 export function validate(
-  typeName: "CheckAlive"
+  typeName: "CheckAlive",
 ): (value: unknown) => CheckAlive;
 export function validate(
-  typeName: "PublicConfig"
+  typeName: "PublicConfig",
 ): (value: unknown) => PublicConfig;
 export function validate(typeName: string): (value: unknown) => any {
   const validator: any = ajv.getSchema(`Schema#/definitions/${typeName}`);
   return (value: unknown): any => {
     if (!validator) {
       throw new Error(
-        `No validator defined for Schema#/definitions/${typeName}`
+        `No validator defined for Schema#/definitions/${typeName}`,
       );
     }
 
@@ -1152,8 +1151,8 @@ export function validate(typeName: string): (value: unknown) => any {
           ": " +
           ajv.errorsText(
             validator.errors!.filter((e: any) => e.keyword !== "if"),
-            { dataVar: typeName }
-          )
+            { dataVar: typeName },
+          ),
       );
     }
 

@@ -1,14 +1,14 @@
-import { Action } from "../action";
-import { UnprivilegedError } from "../errors/action-execution-error";
-import * as Lobby from "../lobby";
-import * as Token from "../user/token";
-import * as Actions from "./actions";
-import * as Configure from "./privileged/configure";
-import * as EndGame from "./privileged/end-game";
-import * as Kick from "./privileged/kick";
-import * as SetPlayerAway from "./privileged/set-player-away";
-import * as SetPrivilege from "./privileged/set-privilege";
-import * as StartGame from "./privileged/start-game";
+import type { Action } from "../action.js";
+import { UnprivilegedError } from "../errors/action-execution-error.js";
+import type * as Lobby from "../lobby.js";
+import type * as Token from "../user/token.js";
+import * as Actions from "./actions.js";
+import * as Configure from "./privileged/configure.js";
+import * as EndGame from "./privileged/end-game.js";
+import * as Kick from "./privileged/kick.js";
+import * as SetPlayerAway from "./privileged/set-player-away.js";
+import * as SetPrivilege from "./privileged/set-privilege.js";
+import * as StartGame from "./privileged/start-game.js";
 
 /**
  * An action only a privileged user can perform.
@@ -34,14 +34,14 @@ class PrivilegedActions extends Actions.Group<
       SetPlayerAway.actions,
       SetPrivilege.actions,
       Kick.actions,
-      EndGame.actions
+      EndGame.actions,
     );
   }
 
   public limit(
     auth: Token.Claims,
     lobby: Lobby.Lobby,
-    action: Privileged
+    action: Privileged,
   ): lobby is Lobby.WithActiveGame {
     const user = lobby.users[auth.uid];
     if (user === undefined || user.privilege !== "Privileged") {

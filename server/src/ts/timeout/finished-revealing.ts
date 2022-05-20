@@ -1,5 +1,5 @@
-import * as Timeout from "../timeout";
-import * as Rules from "../games/rules";
+import type * as Rules from "../games/rules.js";
+import type * as Timeout from "../timeout.js";
 
 /**
  * Indicates that the round should start the judging phase if it is appropriate
@@ -17,10 +17,10 @@ export const of = (stages: Rules.Stages): Timeout.After => ({
 });
 
 export const handle: Timeout.Handler<FinishedRevealing> = (
-  server,
-  timeout,
-  gameCode,
-  lobby
+  _server,
+  _timeout,
+  _gameCode,
+  lobby,
 ) => {
   const game = lobby.game;
   if (game === undefined) {

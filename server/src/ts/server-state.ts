@@ -1,11 +1,11 @@
-import { Cache } from "./cache";
-import * as caches from "./caches";
-import * as Config from "./config";
-import { SocketManager } from "./socket-manager";
-import { Store } from "./store";
-import * as Stores from "./store/stores";
-import * as Tasks from "./task/tasks";
-import { Sources } from "./games/cards/sources";
+import type { Cache } from "./cache.js";
+import * as caches from "./caches.js";
+import type * as Config from "./config.js";
+import { Sources } from "./games/cards/sources.js";
+import { SocketManager } from "./socket-manager.js";
+import type { Store } from "./store.js";
+import * as Stores from "./store/stores.js";
+import * as Tasks from "./task/tasks.js";
 
 export interface ServerState {
   config: Config.Parsed;
