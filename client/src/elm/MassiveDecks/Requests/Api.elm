@@ -3,7 +3,7 @@ module MassiveDecks.Requests.Api exposing
     , joinLobby
     , lobbySummaries
     , newLobby
-    , sourceInfo
+    , serverConfig
     )
 
 import Http
@@ -19,6 +19,7 @@ import MassiveDecks.Pages.Lobby.Token as Token
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
 import MassiveDecks.Pages.Start.Model as Start
 import MassiveDecks.Requests.Request as Request exposing (Request)
+import MassiveDecks.ServerConfig exposing (ServerConfig)
 import MassiveDecks.User as User
 import MassiveDecks.Util.Result as Result
 import Url.Builder
@@ -80,15 +81,15 @@ checkAlive msg tokens =
     }
 
 
-{-| Find out what sources the server offers.
+{-| Get configuration from the server.
 -}
-sourceInfo : (Request.Response Never Source.Info -> msg) -> Request msg
-sourceInfo msg =
+serverConfig : (Request.Response Never ServerConfig -> msg) -> Request msg
+serverConfig msg =
     { method = "GET"
     , headers = []
-    , url = url [ "sources" ]
+    , url = url [ "config" ]
     , body = Http.emptyBody
-    , expect = Request.expectResponse msg noError Decoders.sourceInfo
+    , expect = Request.expectResponse msg noError Decoders.serverConfig
     , timeout = Nothing
     , tracker = Nothing
     }

@@ -9,6 +9,11 @@
   display: flex;
   justify-content: flex-end;
   z-index: 10;
+  pointer-events: none;
+
+  > div {
+    pointer-events: all;
+  }
 }
 
 .settings-panel {

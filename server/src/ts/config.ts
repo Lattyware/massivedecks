@@ -29,6 +29,7 @@ export interface Config<D extends Duration> extends EnvironmentalConfig {
   storage: BaseStorage<D>;
   cache: BaseCache<D>;
   defaults: LobbyConfig.Defaults;
+  adverts?: Adverts;
 }
 
 export type Parsed = Config<ParsedDuration>;
@@ -121,8 +122,13 @@ export type PostgreSQLCache = BasePostgreSQLCache<ParsedDuration>;
 const parseDuration = (unparsed: UnparsedDuration): ParsedDuration =>
   Moment.duration(unparsed).asMilliseconds();
 
+interface Adverts {
+  manyDecks?: boolean;
+  atTheParty?: boolean;
+}
+
 export const parseStorage = (
-  storage: BaseStorage<UnparsedDuration>
+  storage: BaseStorage<UnparsedDuration>,
 ): BaseStorage<ParsedDuration> => ({
   ...storage,
   abandonedTime: parseDuration(storage.abandonedTime),
@@ -130,28 +136,28 @@ export const parseStorage = (
 });
 
 export const parseCache = (
-  cache: BaseCache<UnparsedDuration>
+  cache: BaseCache<UnparsedDuration>,
 ): BaseCache<ParsedDuration> => ({
   ...cache,
   checkAfter: parseDuration(cache.checkAfter),
 });
 
 export const parseTimeouts = (
-  timeouts: Timeouts<UnparsedDuration>
+  timeouts: Timeouts<UnparsedDuration>,
 ): Timeouts<ParsedDuration> =>
   Util.mapObjectValues(timeouts, (key: string, value: UnparsedDuration) =>
-    parseDuration(value)
+    parseDuration(value),
   );
 
 export const parseTasks = (
-  tasks: Tasks<UnparsedDuration>
+  tasks: Tasks<UnparsedDuration>,
 ): Tasks<ParsedDuration> => ({
   ...tasks,
   processTickFrequency: parseDuration(tasks.processTickFrequency),
 });
 
 const parseManyDecks = (
-  manyDecks: BaseManyDecks<UnparsedDuration>
+  manyDecks: BaseManyDecks<UnparsedDuration>,
 ): ManyDecks => ({
   ...manyDecks,
   baseUrl: manyDecks.baseUrl.endsWith("/")

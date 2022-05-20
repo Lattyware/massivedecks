@@ -138,7 +138,7 @@ module.exports = (env, argv) => {
           test: /\.(jpg|png|svg)$/,
           type: "asset/resource",
           generator: {
-            filename: "assets/images/[name].[hash].[ext]",
+            filename: "assets/images/[name].[hash][ext]",
           },
         },
         // Font assets.
@@ -146,7 +146,7 @@ module.exports = (env, argv) => {
           test: /\.(woff2)$/,
           type: "asset/resource",
           generator: {
-            filename: "assets/fonts/[name].[hash].[ext]",
+            filename: "assets/fonts/[name].[hash][ext]",
           },
         },
         // App manifest.
@@ -155,7 +155,7 @@ module.exports = (env, argv) => {
           exclude: [/elm-stuff/, /node_modules/, /dist/],
           type: "asset/resource",
           generator: {
-            filename: "assets/[name].[hash].[ext]",
+            filename: "assets/[name].[hash][ext]",
           },
           use: [
             {

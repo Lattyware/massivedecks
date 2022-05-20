@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="200" viewBox="0 0 135 52.9">
+  <defs/>
+  <defs>
+    <linearGradient id="a">
+      <stop stop-color="#f69c30"/>
+    </linearGradient>
+    <linearGradient id="b">
+      <stop stop-color="#30b4f6"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#b)" d="M13.2 25v4.63l1.66-.66 1.65.66V25z" paint-order="stroke fill markers" transform="matrix(3.67 0 0 3.67 -26.7 -91.5)"/>
+  <path stroke-width=".13" d="M29.08 9.42l-.56.02h-1.63l-.57-.02-.55 1.82q-.24.06-.7.06-.44 0-.72-.1l-.06-.09 2.6-7.81q.43-.06.93-.06t.87.07l2.55 7.82q-.34.2-.82.2-.46 0-.67-.18-.2-.18-.34-.67zM26.7 8.2l.52-.01h1l.5.01-.36-1.18q-.4-1.33-.62-2.26h-.07q-.1.5-.51 1.97z" aria-label="A"/>
+  <path fill="url(#a)" d="M17.5 25v4.63l1.66-.66 1.65.66V25z" paint-order="stroke fill markers" transform="matrix(3.67 0 0 3.67 -26.7 -91.5)"/>
+  <path stroke-width=".13" d="M44.5 4.65l.01.87v5.8q-.34.05-.8.05-.43 0-.77-.05v-5.8l.01-.87-.7.02h-1.3q-.06-.3-.06-.66t.06-.65h5.58q.08.29.08.64 0 .34-.2.5t-.64.16h-.54l-.71-.01z" aria-label="T"/>
+  <path fill="url(#b)" d="M26.2 25v4.63l1.65-.66 1.66.66V25z" paint-order="stroke fill markers" transform="matrix(3.67 0 0 3.67 -26.7 -91.5)"/>
+  <path stroke-width=".13" d="M76.43 4.65v6.67q-.33.05-.78.05-.44 0-.78-.05v-5.8l.01-.87-.7.02h-1.3q-.06-.3-.06-.66t.06-.65h5.58q.08.29.08.64 0 .34-.2.5t-.64.16h-.54l-.71-.01z" aria-label="T"/>
+  <path fill="url(#a)" d="M30.6 25v4.63l1.65-.66 1.66.66V25z" paint-order="stroke fill markers" transform="matrix(3.67 0 0 3.67 -26.7 -91.5)"/>
+  <path stroke-width=".13" d="M93.3 6.49V3.29q.3-.06.76-.06.48 0 .8.06v7.96q-.33.06-.8.06-.45 0-.76-.06V7.8h-2.88l.02.86v2.6q-.3.05-.78.05t-.78-.06V3.3q.3-.06.78-.06t.78.06v2.34l-.02.86.63-.01h1.64z" aria-label="H"/>
+  <path fill="url(#b)" d="M35 25v4.63l1.65-.66 1.66.66V25z" paint-order="stroke fill markers" transform="matrix(3.67 0 0 3.67 -26.7 -91.5)"/>
+  <path stroke-width=".13" d="M106.52 9.42l-.01.73.81-.03h2.86q0 .38-.04.57-.13.75-1 .75h-3.27q-.42 0-.67-.25-.23-.25-.23-.68V3.54l.08-.09h4.85q.06.3.06.63t-.13.69h-3.33l.01.8v1.2l.76-.01h1.96q.1.27.1.64t-.1.64h-2.72z" aria-label="E"/>
+</svg>

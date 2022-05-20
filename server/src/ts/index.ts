@@ -50,8 +50,8 @@ function getConfigFilePath(): string {
 async function main(): Promise<void> {
   const config = ServerConfig.parse(
     JSON5.parse(
-      (await fs.readFile(getConfigFilePath())).toString()
-    ) as ServerConfig.Unparsed
+      (await fs.readFile(getConfigFilePath())).toString(),
+    ) as ServerConfig.Unparsed,
   );
 
   const { app } = ws(express());
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   if (environment !== "development" && config.secret === "CHANGE ME") {
     throw new Error(
       "Secret not set - this should never be the case outside of " +
-        "development. Please set a real random secret value in 'config.json5'."
+        "development. Please set a real random secret value in 'config.json5'.",
     );
   }
 
@@ -75,10 +75,18 @@ async function main(): Promise<void> {
   app.use(
     expressWinston.logger({
       winstonInstance: Logging.logger,
-    })
+    }),
   );
 
   app.get("/api/version", async (req, res) => res.json(config.version));
+
+  app.get("/api/config", async (req, res) =>
+    res.json({
+      version: config.version,
+      sources: state.sources.clientInfo(),
+      adverts: config.adverts,
+    }),
+  );
 
   app.get("/api/games", async (req, res) => {
     const result = [];
@@ -92,14 +100,14 @@ async function main(): Promise<void> {
     const { gameCode, token, tasks } = await state.store.newLobby(
       CreateLobby.validate(req.body),
       config.secret,
-      config.defaults
+      config.defaults,
     );
     for (const task of tasks) {
       state.tasks.enqueue(state, task);
     }
     res.append(
       "Location",
-      `${req.protocol}://${req.hostname}/${config.basePath}api/games/${gameCode}`
+      `${req.protocol}://${req.hostname}/${config.basePath}api/games/${gameCode}`,
     );
     res.status(HttpStatus.CREATED).json(token);
   });
@@ -111,7 +119,7 @@ async function main(): Promise<void> {
         const claims = Token.validate(
           current,
           await state.store.id(),
-          state.config.secret
+          state.config.secret,
         );
         if (await state.store.exists(claims.gc)) {
           result.push(current);
@@ -133,7 +141,7 @@ async function main(): Promise<void> {
       }
       const newUser = User.create(
         registration,
-        lobby.config.audienceMode ? "Spectator" : "Player"
+        lobby.config.audienceMode ? "Spectator" : "Player",
       );
       if (
         wu(Object.values(lobby.users)).find((u) => u.name === registration.name)
@@ -148,7 +156,7 @@ async function main(): Promise<void> {
         game.playerOrder.push(id);
         if (newUser.role === "Player") {
           game.players[id] = Player.initial(
-            game.decks.responses.draw(game.rules.handSize)
+            game.decks.responses.draw(game.rules.handSize),
           );
         }
       }
@@ -208,7 +216,7 @@ async function main(): Promise<void> {
     expressWinston.errorLogger({
       winstonInstance: Logging.logger,
       msg: "{{err.message}}",
-    })
+    }),
   );
 
   app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
@@ -253,7 +261,7 @@ async function main(): Promise<void> {
   state.tasks
     .loadFromStore(state)
     .catch((error) =>
-      Logging.logException("Error running store tasks:", error)
+      Logging.logException("Error running store tasks:", error),
     );
 
   app.listen(config.listenOn, async () => {

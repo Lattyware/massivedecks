@@ -88,7 +88,9 @@ init flags url key =
             , speech = speech
             , notifications = Notifications.init
             , remoteMode = remoteMode
+            , serverVersion = Nothing
             , sources = { builtIn = Nothing, manyDecks = Nothing, jsonAgainstHumanity = Nothing }
+            , adverts = { manyDecks = False, atTheParty = False }
             }
 
         ( page, pageCmd ) =
@@ -99,7 +101,7 @@ init flags url key =
                 ( Pages.Loading, Cmd.none )
 
         sourceCmd =
-            Request.map (Error.Add >> ErrorMsg) never UpdateSources |> Api.sourceInfo |> Http.request
+            Request.map (Error.Add >> ErrorMsg) never UpdateServerConfig |> Api.serverConfig |> Http.request
     in
     ( { page = page, shared = shared, errorOverlay = Overlay.init }
     , Cmd.batch [ sourceCmd, pageCmd, settingsCmd, speechCmd ]
@@ -271,12 +273,21 @@ update msg model =
             in
             ( { model | shared = { oldShared | notifications = notifications } }, notificationsCmd )
 
-        UpdateSources info ->
+        UpdateServerConfig { serverVersion, sourceInfo, adverts } ->
             let
                 oldShared =
                     model.shared
             in
-            ( { model | shared = { oldShared | sources = info } }, Cmd.none )
+            ( { model
+                | shared =
+                    { oldShared
+                        | serverVersion = Just serverVersion
+                        , sources = sourceInfo
+                        , adverts = adverts
+                    }
+              }
+            , Cmd.none
+            )
 
         Refresh ->
             ( model, Navigation.reload )

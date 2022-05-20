@@ -67,8 +67,17 @@ translate maybeDeclCase mdString =
             [ Text (decl noun quantity declCase) ]
 
         -- Start screen.
-        Version { versionNumber } ->
-            [ Text "Wersja „", Text versionNumber, Text "”" ]
+        Version { clientVersion, serverVersion } ->
+            let
+                quote version =
+                    [ Text "„", Text version, Text "”" ]
+            in
+            List.concat
+                [ [ Text "Wersja " ]
+                , clientVersion |> quote
+                , [ Text " / " ]
+                , serverVersion |> Maybe.map quote |> Maybe.withDefault []
+                ]
 
         ShortGameDescription ->
             [ Text "Komediowa gra towarzyska." ]

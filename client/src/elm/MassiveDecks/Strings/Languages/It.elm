@@ -91,8 +91,17 @@ translate _ mdString =
                             [ Text "Spettatori" ]
 
         -- Start screen.
-        Version { versionNumber } ->
-            [ Text "Versione “", Text versionNumber, Text "”" ]
+        Version { clientVersion, serverVersion } ->
+            let
+                quote version =
+                    [ Text "“", Text version, Text "”" ]
+            in
+            List.concat
+                [ [ Text "Versione " ]
+                , clientVersion |> quote
+                , [ Text " / " ]
+                , serverVersion |> Maybe.map quote |> Maybe.withDefault []
+                ]
 
         ShortGameDescription ->
             [ Text "Un divertente gioco di società." ]

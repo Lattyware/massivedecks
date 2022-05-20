@@ -46,8 +46,17 @@ translate _ mdString =
             List.concat [ singular, plural ]
 
         -- Start screen.
-        Version { versionNumber } ->
-            [ Text "Version “", Text versionNumber, Text "”" ]
+        Version { clientVersion, serverVersion } ->
+            let
+                quote version =
+                    [ Text "“", Text version, Text "”" ]
+            in
+            List.concat
+                [ [ Text "Version " ]
+                , clientVersion |> quote
+                , [ Text " / " ]
+                , serverVersion |> Maybe.map quote |> Maybe.withDefault []
+                ]
 
         ShortGameDescription ->
             [ Text "A comedy party game." ]

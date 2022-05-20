@@ -200,13 +200,34 @@ view shared model =
             model.route
 
         manyDecksAd { baseUrl } =
-            Html.blankA
-                [ HtmlA.href baseUrl, HtmlA.id "many-decks-ad", Strings.ManyDecksWhereToGet |> Lang.title shared ]
-                [ Html.div []
-                    [ Icon.boxOpen |> Icon.viewIcon
-                    , Html.span [] [ Strings.ManyDecks |> Lang.string shared |> Html.text ]
+            if shared.adverts.manyDecks then
+                Html.blankA
+                    [ HtmlA.href baseUrl, HtmlA.id "many-decks-ad", Strings.ManyDecksWhereToGet |> Lang.title shared ]
+                    [ Html.div []
+                        [ Icon.boxOpen |> Icon.viewIcon
+                        , Html.span [] [ Strings.ManyDecks |> Lang.string shared |> Html.text ]
+                        ]
                     ]
-                ]
+
+            else
+                Html.nothing
+
+        atThePartyAd =
+            if shared.adverts.atTheParty then
+                Html.div [ HtmlA.id "at-the-party-ad" ]
+                    [ Html.div []
+                        [ Html.blankA
+                            [ HtmlA.href "https://store.steampowered.com/app/1506530/At_The_Party"
+                            , HtmlA.title "Check out Reread Game's new game, At The Party!"
+                            ]
+                            [ Html.div [ HtmlA.class "at-the" ] [ Html.span [] [ Html.text "At The" ] ]
+                            , Html.div [ HtmlA.class "party" ] [ Html.span [] [ Html.text "Party" ] ]
+                            ]
+                        ]
+                    ]
+
+            else
+                Html.nothing
     in
     [ Html.div [ HtmlA.class "page start" ]
         [ overlay shared model.overlay
@@ -247,11 +268,12 @@ view shared model =
                 [ Html.text "\""
                 , Strings.MassiveDecks |> Lang.html shared
                 , Html.text "\" "
-                , Strings.Version { versionNumber = Version.version } |> Lang.html shared
+                , Strings.Version { clientVersion = Version.version, serverVersion = shared.serverVersion } |> Lang.html shared
                 ]
             ]
         ]
     , shared.sources.manyDecks |> Maybe.map manyDecksAd |> Maybe.withDefault Html.nothing
+    , atThePartyAd
     ]
 
 

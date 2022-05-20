@@ -16,6 +16,7 @@ module MassiveDecks.Models.Decoders exposing
     , privilege
     , remoteControlCommand
     , revealingRound
+    , serverConfig
     , settings
     , sourceInfo
     , specificRound
@@ -53,6 +54,7 @@ import MassiveDecks.Pages.Lobby.Events as Events exposing (Event)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Model as Lobby exposing (Lobby)
 import MassiveDecks.Pages.Start.LobbyBrowser.Model as LobbyBrowser
+import MassiveDecks.ServerConfig as ServerConfig exposing (ServerConfig)
 import MassiveDecks.Settings.Model as Settings exposing (Settings)
 import MassiveDecks.Speech as Speech
 import MassiveDecks.Strings.Languages as Lang
@@ -60,6 +62,13 @@ import MassiveDecks.Strings.Languages.Model as Lang exposing (Language)
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.NeList as NonEmptyList
 import Set exposing (Set)
+
+
+adverts : Json.Decoder ServerConfig.Adverts
+adverts =
+    Json.succeed ServerConfig.Adverts
+        |> Json.optional "manyDecks" Json.bool False
+        |> Json.optional "atTheParty" Json.bool False
 
 
 sourceInfo : Json.Decoder Source.Info
@@ -77,6 +86,14 @@ sourceInfo =
         |> Json.optional "manyDecks" (manyDecksInfo |> Json.map Just) Nothing
         |> Json.optional "jsonAgainstHumanity" (jsonAgainstHumanityInfo |> Json.map Just) Nothing
         |> Json.andThen atLeastOne
+
+
+serverConfig : Json.Decoder ServerConfig
+serverConfig =
+    Json.succeed ServerConfig
+        |> Json.required "version" Json.string
+        |> Json.required "sources" sourceInfo
+        |> Json.optional "adverts" adverts { manyDecks = False, atTheParty = False }
 
 
 builtInInfo : Json.Decoder BuiltIn.Info

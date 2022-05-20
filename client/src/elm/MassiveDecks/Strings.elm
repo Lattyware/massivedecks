@@ -54,7 +54,7 @@ type MdString
       -- Special
     | Noun { noun : Noun, quantity : Quantity } -- The given noun, described in the given quantity and context.
       -- Start screen.
-    | Version { versionNumber : String } -- The version of the game being played.
+    | Version { clientVersion : String, serverVersion : Maybe String } -- The version of the game being played.
     | ShortGameDescription -- A one-line description of the game.
     | WhatIsThis -- A title for a section describing the game.
     | GameDescription -- A long description of the game.
