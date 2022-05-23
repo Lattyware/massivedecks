@@ -47,7 +47,7 @@
     "@types/chromecast-caf-sender": "^1.0.3",
     "ajv": "^8.8.2",
     "app-manifest-loader": "^2.4.1",
-    "chromecast-device-emulator": "^1.1.2",
+    "chromecast-device-emulator": "^1.2.7",
     "compression-webpack-plugin": "^10.0.0",
     "css-hot-loader": "^1.4.4",
     "css-loader": "^6.3.0",
