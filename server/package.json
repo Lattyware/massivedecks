@@ -24,9 +24,9 @@
     "dev": "nodemon --exec \"npm run start\"",
     "debug": "nodemon --exec \"npm run inspect\"",
     "generate-secret": "npm run prestart && node dist/secret.js",
-    "docker:build": "mkdir -p \"$(pwd)/../workaround\" && ROOT_DIR=\"$(pwd)/..\" USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop.yml run --rm server run build",
-    "docker:generate-secret": "mkdir -p \"$(pwd)/../workaround\" && ROOT_DIR=\"$(pwd)/..\" USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop.yml run --rm server run generate-secret",
-    "docker:dev": "mkdir -p \"$(pwd)/../workaround\" && ROOT_DIR=\"$(pwd)/..\" USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop.yml up --build --no-log-prefix server"
+    "docker:build": "USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop-compose.yaml run --rm server run build",
+    "docker:generate-secret": "USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop-compose.yaml run --rm server run generate-secret",
+    "docker:dev": "USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop-compose.yaml up --build --no-log-prefix server"
   },
   "files": [
     "dist/*",

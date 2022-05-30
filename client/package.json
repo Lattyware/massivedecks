@@ -9,8 +9,8 @@
   "scripts": {
     "build": "npx webpack",
     "dev": "npx webpack serve --mode=development",
-    "docker:build": "mkdir -p \"$(pwd)/../workaround\" && ROOT_DIR=\"$(pwd)/..\" USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop.yml run --rm client run build",
-    "docker:dev": "mkdir -p \"$(pwd)/../workaround\" && ROOT_DIR=\"$(pwd)/..\" USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop.yml up --build --no-log-prefix client"
+    "docker:build": "USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop-compose.yaml run --rm client run build",
+    "docker:dev": "USER_ID=$(id -u ${USER}) GROUP_ID=$(id -g ${USER}) docker compose -f ../develop-compose.yaml up --build --no-log-prefix client"
   },
   "files": [
     "dist/*"

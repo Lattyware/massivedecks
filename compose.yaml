@@ -2,8 +2,6 @@
 # If you want to deploy a production instance, please see 
 # https://github.com/Lattyware/massivedecks/wiki/Deploying for important steps you should take.
 
-version: "3"
-
 networks:
   internal:
 
@@ -19,7 +17,7 @@ services:
     build: ./client
     image: "massivedecks/client:dev"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080/tcp"
     networks:
       - internal
     restart: unless-stopped

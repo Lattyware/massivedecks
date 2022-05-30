@@ -1,8 +1,9 @@
 ARG NODE_VERSION=18
 ARG MODE=production
-ARG BUILD_DATE
-ARG VCS_REF
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
 ARG VERSION=${VCS_REF}-dev
+
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS build
 
@@ -24,7 +25,13 @@ COPY ["./src", "./src"]
 COPY ["./assets", "./assets"]
 RUN ["npm", "run", "build"]
 
-FROM --platform=$TARGETPLATFORM nginx:mainline-alpine
+
+FROM scratch AS static
+
+COPY --from=build ["/md/dist", "/"]
+
+
+FROM --platform=$TARGETPLATFORM nginx:mainline-alpine AS nginx
 
 ARG VERSION
 ARG BUILD_DATE
@@ -42,5 +49,5 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0+"
 LABEL org.opencontainers.image.title="Massive Decks (Client)"
 LABEL org.opencontainers.image.description="The web client for Massive Decks, a comedy party game."
 
-COPY --from=build ["/md/dist", "/usr/share/nginx/html/"]
+COPY --from=static ["/md/dist", "/usr/share/nginx/html/"]
 COPY ["./nginx.conf", "/etc/nginx/nginx.conf"]

@@ -167,6 +167,16 @@
     checkAfter: "PT5M",
   },
 
+  // Show additional content to users of the application. These are not adverts
+  // you can buy, just related projects to Massive Decks.
+  adverts: {
+    // Show a link to Many Decks for users to build their own decks.
+    // Note this will only work if you have Many Decks set as a source.
+    manyDecks: true,
+    // Show a link to At The Party, Reread Games new game.
+    atTheParty: false,
+  },
+
   // A file to touch when the server is started. If null, we won't touch any files.
   touchOnStart: null,
   // This will be overwritten by the environment variable MD_TOUCH_ON_START, if set.

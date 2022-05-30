@@ -9,34 +9,26 @@
 # GROUP_ID: The id of the group of the user running this (used so files created in the containers have the right permissions.)
 # ROOT_DIR: The root directory of the massive decks repository you are working in (work around docker compose issues).
 
-# This requires a "${ROOT_DIR}/workaround" empty directory that should stay empty. This is to work around a docker compose issue.
-
-version: "3.9"
-
 networks:
   internal:
 
 services:
   client:
     build:
-      context: "${ROOT_DIR?err}/workaround"
-      dockerfile: "../client/Dockerfile.dev"
+      context: "./client/dev"
     user: "${USER_ID:?err}:${GROUP_ID:?err}"
-    tty: true
     ports:
       - "127.0.0.1:8080:8080/tcp"
     volumes:
-      - ${ROOT_DIR?err}/client:/md/client
+      - ./client:/md/client
     networks:
       - internal
 
   server:
     build:
-      context: "${ROOT_DIR?err}/workaround"
-      dockerfile: "../server/Dockerfile.dev"
+      context: "./server/dev"
     user: "${USER_ID:?err}:${GROUP_ID:?err}"
-    tty: true
     volumes:
-      - ${ROOT_DIR?err}/server:/md/server
+      - ./server:/md/server
     networks:
       - internal

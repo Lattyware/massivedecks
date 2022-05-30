@@ -2,15 +2,19 @@
 # This uses images built by the project.
 # This version also configures a postgres server for data storage.
 
-version: "3"
-
 networks:
   internal:
 
 # You may not want docker to manage your data like this.
-# Please see Docker's documentation for more on managing volumes: https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+# Please see Docker's documentation for more on managing volumes: https://docs.docker.com/compose/compose-file/#volumes-top-level-element
 volumes:
   storage-volume:
+
+# You will want to make a config, e.g:
+# docker config create md_server_config config.json5
+configs:
+  md_server_config:
+    external: true
 
 services:
   storage:
@@ -30,29 +34,25 @@ services:
   server:
     # Pick your tag wisely for stability. In general, it's best to specify an exact version by commit hash and update manually.
     # Versioned tags are also provided, in order of stability: by version number (major "x", minor "x.y", and patch "x.y.z"), latest-release, latest-prerelease, or latest (head of main).
-    image: "ghcr.io/lattyware/massivedecks/server:latest"
+    image: "ghcr.io/lattyware/massivedecks/server:latest-release"
     depends_on:
       - storage
     environment:
       - NODE_ENV=production
-      # This needs to be changed to a secret value.
-      # You can run `npm run generate-secret` in the server project to generate an appropriate value.
-      - MD_SECRET=CHANGE ME
     networks:
       - internal
-    volumes:
-      # This mounts a new configuration file over the default one, which is easier than building a whole new image on top of the normal one with a new config file.
-      # Note the path to the local file will need changing to the real location.
-      - /host/path/to/config.json5:/md/config.json5:ro
+    configs:
+      - source: md_server_config
+        target: /md/config.json5
     restart: unless-stopped
 
   client:
-    # Make sure you always deploy the same tag as the server.
-    image: "ghcr.io/lattyware/massivedecks/client:latest"
+    # Make sure you always deploy the exact same tag as the server and pull both at the same time.
+    image: "ghcr.io/lattyware/massivedecks/client:latest-release"
     depends_on:
       - server
     ports:
-      - "80:8080"
+      - "80:8080/tcp"
     networks:
       - internal
     restart: unless-stopped

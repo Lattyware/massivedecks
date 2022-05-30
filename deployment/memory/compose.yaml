@@ -1,0 +1,38 @@
+# This docker compose file is for building and running a production version of Massive Decks.
+# This uses images built by the project.
+
+networks:
+  internal:
+
+# You will want to make a config, e.g:
+# docker config create md_server_config config.json5
+configs:
+  md_server_config:
+    external: true
+
+services:
+  server:
+    # Pick your tag wisely for stability. In general, it's best to specify an exact version by commit hash and update ma>
+    # Versioned tags are also provided, in order of stability: by version number (major "x", minor "x.y", and patch "x.y>
+    image: "ghcr.io/lattyware/massivedecks/server:latest-release"
+    depends_on:
+      - storage
+    environment:
+      - NODE_ENV=production
+    networks:
+      - internal
+    configs:
+      - source: md_server_config
+        target: /md/config.json5
+    restart: unless-stopped
+
+  client:
+    # Make sure you always deploy the exact same tag as the server and pull both at the same time.
+    image: "ghcr.io/lattyware/massivedecks/client:latest-release"
+    depends_on:
+      - server
+    ports:
+      - "80:8080/tcp"
+    networks:
+      - internal
+    restart: unless-stopped

@@ -3,7 +3,7 @@ variable "VERSION" {
 }
 
 variable "VCS_REF" {
-    default = ""
+    default = "unknown"
 }
 
 variable "BUILD_DATE" {

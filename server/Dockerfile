@@ -1,8 +1,9 @@
 ARG NODE_VERSION=18
 ARG MODE=production
-ARG BUILD_DATE
-ARG VCS_REF
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
 ARG VERSION=${VCS_REF}-dev
+
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS build
 
@@ -14,6 +15,7 @@ RUN ["npm", "ci"]
 COPY ["./src", "./src"]
 COPY ["./tsconfig.json", "./config.json5", "./"]
 RUN ["npm", "run", "build"]
+
 
 FROM --platform=$TARGETPLATFORM node:${NODE_VERSION}-alpine
 

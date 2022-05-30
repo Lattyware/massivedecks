@@ -332,11 +332,13 @@
       > .at-the {
         transform-origin: top center;
         background-image: url(../../../assets/images/at-the-party/at-the.svg);
+        background-repeat: no-repeat;
       }
 
       > .party {
         background-image: url(../../../assets/images/at-the-party/party.svg);
         animation-delay: 0.5s;
+        background-repeat: no-repeat;
       }
     }
   }

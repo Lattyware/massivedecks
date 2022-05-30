@@ -6,7 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
-            "NoRedInk/elm-json-decode-pipeline": "1.0.0",
+            "NoRedInk/elm-json-decode-pipeline": "1.0.1",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",
@@ -18,7 +18,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-community/dict-extra": "2.4.0",
-            "elm-community/list-extra": "8.5.1",
+            "elm-community/list-extra": "8.5.2",
             "elm-community/random-extra": "3.2.0",
             "fapian/elm-html-aria": "1.4.0",
             "lattyware/elm-fontawesome": "5.0.0",
@@ -34,15 +34,13 @@
             "danfishgold/base64-bytes": "1.1.0",
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
-            "elm/virtual-dom": "1.0.2",
+            "elm/virtual-dom": "1.0.3",
             "folkertdev/elm-flate": "2.0.5",
             "justgook/elm-image": "4.0.0"
         }
     },
     "test-dependencies": {
         "direct": {},
-        "indirect": {
-            "owanturist/elm-union-find": "1.0.0"
-        }
+        "indirect": {}
     }
 }
