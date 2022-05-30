@@ -328,7 +328,7 @@ translate _ mdString =
             [ Text "El número de bots en la partida." ]
 
         HouseRuleNeverHaveIEver ->
-            [ Text "No me interesa" ]
+            [ Text "Yo nunca" ]
 
         HouseRuleNeverHaveIEverDescription ->
             [ Text "En cualquier momento, un jugador podrá descartar las cartas que no entienda, sin embargo, tendrá que confesar su "
@@ -371,7 +371,7 @@ translate _ mdString =
             [ Text "El ganador de cada ronda será el ", ref Czar, Text " durante la próxima ronda." ]
 
         SeeAlso { rule } ->
-            [ Text "Ver también: ", ref rule ]
+            [ Text "Véase también: ", ref rule ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "El valor tiene que ser al menos ", Text (String.fromInt min), Text "." ]
@@ -450,7 +450,7 @@ translate _ mdString =
             [ Text "Solo se enviarán notificaciones cuando el juego esté en segundo plano (p.ej: en otra pestaña o minimizado)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Tu navegador soporta comprobar la visibilidad de la página." ]
+            [ Text "Tu navegador no soporta comprobar la visibilidad de la página." ]
 
         -- Terms
         Czar ->
@@ -478,7 +478,7 @@ translate _ mdString =
             [ Text code ]
 
         GameCodeSpecificDescription ->
-            [ Text "Dale este código a la gente para que se puedan unir a la partida." ]
+            [ Text "Comparte este código para que la gente pueda unirse a la partida." ]
 
         GameCodeHowToAcquire ->
             [ Text "Pide el ", ref GameCodeTerm, Text " a la persona que te ha invitado." ]
