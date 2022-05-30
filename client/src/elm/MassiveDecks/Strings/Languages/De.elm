@@ -5,6 +5,7 @@ module MassiveDecks.Strings.Languages.De exposing (pack)
 Contributors:
 
   - rfuehrer <https://github.com/rfuehrer>
+  - Unkn0wnCat <https://github.com/Unkn0wnCat>
 
 -}
 
@@ -42,10 +43,19 @@ ref =
     Ref Nothing
 
 
+refDecl : DeclensionCase -> MdString -> Translation.Result DeclensionCase
+refDecl declCase =
+    Ref (Just declCase)
+
+
 {-| The German translation
 -}
-translate : Maybe Never -> MdString -> List (Translation.Result Never)
-translate _ mdString =
+translate : Maybe DeclensionCase -> MdString -> List (Translation.Result DeclensionCase)
+translate maybeDeclCase mdString =
+    let
+        declCase =
+            maybeDeclCase |> Maybe.withDefault Nominative
+    in
     case mdString of
         -- General
         MassiveDecks ->
@@ -56,40 +66,7 @@ translate _ mdString =
 
         -- Special
         Noun { noun, quantity } ->
-            case quantity of
-                Quantity 1 ->
-                    case noun of
-                        Call ->
-                            [ Text "Schwarze Karte" ]
-
-                        Response ->
-                            [ Text "Weiße Karte" ]
-
-                        Point ->
-                            [ Text "großartiger Punkt" ]
-
-                        Player ->
-                            [ Text "Spieler" ]
-
-                        Spectator ->
-                            [ Text "Zuschauer" ]
-
-                _ ->
-                    case noun of
-                        Call ->
-                            [ Text "schwarze Karten" ]
-
-                        Response ->
-                            [ Text "weiße Karten" ]
-
-                        Point ->
-                            [ Text "großartige Punkte" ]
-
-                        Player ->
-                            [ Text "Spieler" ]
-
-                        Spectator ->
-                            [ Text "Zuschauer" ]
+            [ Text (decl noun quantity declCase) ]
 
         -- Start screen.
         Version { clientVersion, serverVersion } ->
@@ -112,13 +89,13 @@ translate _ mdString =
 
         GameDescription ->
             [ ref MassiveDecks
-            , Text "  ist ein lustiges Partyspiel basierend auf "
+            , Text " ist ein lustiges Partyspiel basierend auf "
             , ref CardsAgainstHumanity
             , Text ", entwickelt von "
             , ref RereadGames
-            , Text " und andere Mitwirkende - das Spiel ist Open Source unter "
+            , Text " und anderen Mitwirkenden - das Spiel ist Open Source unter "
             , ref License
-            , Text ", damit Sie helfen können, das Spiel zu verbessern, auf den Quellcode zuzugreifen oder einfach mehr unter "
+            , Text ". Damit können Sie helfen das Spiel zu verbessern, auf den Quellcode zugreifen oder einfach mehr unter "
             , ref MDProject
             , Text "."
             ]
@@ -127,7 +104,7 @@ translate _ mdString =
             [ Text "Neu" ]
 
         NewGameDescription ->
-            [ Text "Beginnen Sie eine neues Spiel ", ref MassiveDecks, Text "." ]
+            [ Text "Beginnen Sie eine neues ", ref MassiveDecks, Text " Spiel." ]
 
         FindPublicGame ->
             [ Text "Suchen" ]
@@ -148,7 +125,7 @@ translate _ mdString =
             [ Text "Informieren Sie sich über ", ref MassiveDecks, Text " und wie es entwickelt wurde." ]
 
         MDLogoDescription ->
-            [ Text "Ein ", ref (noun Call 1), Text " und ein ", ref (noun Response 1), Text "mit einem “M” un einem “D” beschriftet." ]
+            [ Text "Eine ", ref (noun Call 1), Text " und eine ", ref (noun Response 1), Text "mit einem “M” un einem “D” beschriftet." ]
 
         RereadLogoDescription ->
             [ Text "Ein von einem Recycling-Pfeil umkreistes Buch." ]
@@ -166,7 +143,7 @@ translate _ mdString =
             [ Text "Reread Games" ]
 
         NameLabel ->
-            [ Text "Dein Name" ]
+            [ Text "Ihr Name" ]
 
         NameInUse ->
             [ Text "Jemand anderes benutzt diesen Namen in dem angegeben Spiel - bitte versuchen Sie es mit einen anderen Namen." ]
@@ -184,7 +161,7 @@ translate _ mdString =
             [ Text "Sie wurden aus dem Spiel geworfen." ]
 
         ScrollToTop ->
-            [ Text "Zum Anfang blättern." ]
+            [ Text "Zum Anfang scrollen." ]
 
         Copy ->
             [ Text "Kopieren" ]
@@ -205,7 +182,7 @@ translate _ mdString =
             , Text ". Der "
             , ref Czar
             , Text " liest die Frage oder den leeren Satz auf der "
-            , ref (noun Call 1)
+            , refDecl Genitive (noun Call 1)
             , Text " laut vor."
             ]
 
@@ -225,7 +202,7 @@ translate _ mdString =
             , Text " laut vor, bevor jede Antwort einzeln aufgedeckt wird. Der "
             , ref Czar
             , Text " wählt dann die lustigste Antwort aus und der jeweilige Spieler erhält einen "
-            , ref (noun Point 1)
+            , refDecl Accusative (noun Point 1)
             , Text "."
             ]
 
@@ -237,13 +214,13 @@ translate _ mdString =
             , ref (noun Response 1)
             , Text " als Antwort. Spielen Sie die Karten in der Reihenfolge, wie der "
             , ref Czar
-            , Text " sie vorlesen soll - die Reihenfolge ist bei deisen Karten entscheidend."
+            , Text " sie vorlesen soll - die Reihenfolge ist bei diesen Karten entscheidend."
             ]
 
         ExamplePickDescription ->
             [ ref (nounUnknownQuantity Call)
             , Text " wie diese erfordern die Auswahl von mehreren "
-            , ref (nounUnknownQuantity Response)
+            , refDecl Dative (noun Response 2)
             , Text ", die Ihnen vorab zur Verfügung gestellt werden."
             ]
 
@@ -254,7 +231,7 @@ translate _ mdString =
             , ref (nounUnknownQuantity Response)
             , Text "— diese sind mit  "
             , ref (Draw { numberOfCards = 2 })
-            , Text " oder mehr beschriftet. Die Spieler erhalten entsprechend viele zusätzliche Karten für Ihre Hand."
+            , Text " oder anderen Zahlen beschriftet. Die Spieler erhalten entsprechend viele zusätzliche Karten für Ihre Hand."
             ]
 
         GameRulesTitle ->
@@ -265,7 +242,7 @@ translate _ mdString =
 
         HouseRules ->
             [ Text "Sie können die Art und Weise, wie das Spiel gespielt wird, auf verschiedene Weise ändern. Wählen Sie beim Einrichten des Spiels "
-            , Text "so viele Hausregeln, wie Sie verwenden möchten."
+            , Text "so viele Hausregeln, wie Sie möchten."
             ]
 
         HouseRuleReboot ->
@@ -273,21 +250,21 @@ translate _ mdString =
 
         HouseRuleRebootDescription { cost } ->
             [ Text "Die Spieler können jederzeit "
-            , Text (an cost)
-            , ref (nounMaybe Point cost)
+            , Text (an cost Masculine Accusative)
+            , refDecl Accusative (noun Point (Maybe.withDefault 1 cost))
             , Text " verwenden, um ihre Hand gegen eine neue Hand zu tauschen."
             ]
 
         HouseRuleRebootAction { cost } ->
             [ Text "Investiere "
-            , Text (asWord cost)
+            , Text (asWord cost Masculine Accusative)
             , Text " "
-            , ref (noun Point cost)
+            , refDecl Accusative (noun Point cost)
             , Text ", um die Hand gegen eine neue Hand auszuwechseln."
             ]
 
         HouseRuleRebootCost ->
-            [ ref (noun Point 1), Text " Punkte" ]
+            [ ref (noun Point 2) ]
 
         HouseRuleRebootCostDescription ->
             [ Text "Wie viele ", ref (nounUnknownQuantity Point), Text " es kostet, um neu ziehen zu können." ]
@@ -297,7 +274,7 @@ translate _ mdString =
 
         HouseRulePackingHeatDescription ->
             [ Text "Jede "
-            , ref (nounUnknownQuantity Call)
+            , ref (noun Call 1)
             , Text " mit "
             , ref (Pick { numberOfCards = 2 })
             , Text " erhält zusätzlich "
@@ -356,49 +333,43 @@ translate _ mdString =
             , Text "eingestehen: die Karte wird öffentlich geteilt."
             ]
 
-        -- TODO: Translate
         HouseRuleHappyEnding ->
-            [ Missing ]
+            [ Text "Gutes Ende" ]
 
-        -- TODO: Translate
         HouseRuleHappyEndingDescription ->
-            [ Missing ]
+            [ Text "Wenn das Spiel endet, ist die letzte Runde eine 'Schreibe ein Haiku'-", ref (noun Call 1) ]
 
-        -- TODO: Translate
         HouseRuleCzarChoices ->
-            [ Missing ]
+            [ Text "Wahl vom ", ref Czar ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesDescription ->
-            [ Missing ]
+            [ Text "Am Anfang der Runde zieht der "
+            , ref Czar
+            , Text " mehrere "
+            , ref (nounUnknownQuantity Call)
+            , Text " und wählt eine davon, und/oder kann eine eigene schreiben."
+            ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesNumber ->
-            [ Missing ]
+            [ Text "Anzahl" ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesNumberDescription ->
-            [ Missing ]
+            [ Text "Die Anzahl der Karten, die der ", ref Czar, Text " zur Auswahl bekommt." ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesCustom ->
-            [ Missing ]
+            [ Text "Eigene Karte" ]
 
-        -- TODO: Translate
         HouseRuleCzarChoicesCustomDescription ->
-            [ Missing ]
+            [ Text "Der ", ref Czar, Text " kann eine eigene Karte schreiben. Diese Option verwendet eine der Auswahlen." ]
 
-        -- TODO: Translate
         HouseRuleWinnersPick ->
-            [ Missing ]
+            [ Text "Gewinnerwahl" ]
 
-        -- TODO: Translate
         HouseRuleWinnersPickDescription ->
-            [ Missing ]
+            [ Text "Der Gewinner einer Runde wird der ", ref Czar, Text " für die nächste Runde." ]
 
-        -- TODO: Translate
         SeeAlso { rule } ->
-            [ Missing ]
+            [ Text "Siehe auch: ", ref rule ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
             [ Text "Der Wert muss mindestens ", Text (String.fromInt min), Text " betragen." ]
@@ -437,7 +408,7 @@ translate _ mdString =
             [ Text "Stellen Sie ein, wie groß die Karten dargestellt werden - dies kann auf kleinen Bildschirmen nützlich sein, um weniger scrollen zu müssen." ]
 
         AutoAdvanceSetting ->
-            [ Text "Runde automatisch vorrücken" ]
+            [ Text "Runde automatisch weiterlaufen lassen" ]
 
         AutoAdvanceExplanation ->
             [ Text "Wenn eine Runde beendet ist, werden Sie automatisch zur nächsten Runde übergeblendet, anstatt warten zu müssen." ]
@@ -471,7 +442,7 @@ translate _ mdString =
             ]
 
         NotificationOnlyWhenHiddenSetting ->
-            [ Text "Nur wenn versteckt" ]
+            [ Text "Nur wenn im Hintergrund" ]
 
         NotificationsOnlyWhenHiddenExplanation ->
             [ Text "Sendet Benachrichtigungen nur, wenn Sie sich die Seite nicht ansehen (z.B.: auf einem anderen Tab oder minimiert)." ]
@@ -493,7 +464,7 @@ translate _ mdString =
             [ Text "Eine weiße Karte mit einem Satz, der in Runden ausgespielt wird." ]
 
         PointDescription ->
-            [ Text "Wer mehr Punkte hat, gewinnt." ]
+            [ Text "Wer die meisten Punkte hat, gewinnt." ]
 
         GameCodeTerm ->
             [ Text "Spiel-Code" ]
@@ -565,11 +536,11 @@ translate _ mdString =
             [ Text "Wähle", ref (NumberOfCards numberOfCards) ]
 
         Draw numberOfCards ->
-            [ Text "Ablegen", ref (NumberOfCards numberOfCards) ]
+            [ ref (NumberOfCards numberOfCards), Text " aufnehmen" ]
 
         PickDescription { numberOfCards } ->
             [ Text "Sie müssen "
-            , Text (asWord numberOfCards)
+            , Text (asWord numberOfCards Feminine Nominative)
             , Text " "
             , ref (noun Response numberOfCards)
             , Text " spielen."
@@ -577,7 +548,7 @@ translate _ mdString =
 
         DrawDescription { numberOfCards } ->
             [ Text "Sie bekommen "
-            , Text (asWord numberOfCards)
+            , Text (asWord numberOfCards Feminine Nominative)
             , Text " "
             , ref (noun Response numberOfCards)
             , Text " zusätzlich vor dem Spiel."
@@ -591,7 +562,7 @@ translate _ mdString =
             [ Text "Spielname" ]
 
         DefaultLobbyName { owner } ->
-            [ Text owner, Text "'s Spiel" ]
+            [ Text owner, Text "s Spiel" ]
 
         Invite ->
             [ Text "Laden Sie Spieler zum Spiel ein." ]
@@ -789,7 +760,7 @@ translate _ mdString =
         NoDecks ->
             [ Segment [ Text "Keine Kartensätze. " ]
             , Text " "
-            , Segment [ Text "Sie müssen mindestens ein Kartensatz zum Spiel hinzufügen." ]
+            , Segment [ Text "Sie müssen mindestens einen Kartensatz zum Spiel hinzufügen." ]
             ]
 
         NoDecksHint ->
@@ -857,9 +828,8 @@ translate _ mdString =
         APlayer ->
             [ Text "Ein Spieler" ]
 
-        -- TODO: Translate
         Generated { by } ->
-            [ Missing ]
+            [ Text "Generiert von ", ref by ]
 
         DeckAlreadyAdded ->
             [ Text "Dieser Kartensatz ist bereits im Spiel." ]
@@ -883,7 +853,7 @@ translate _ mdString =
             [ Text "Die Basisanzahl der Karten, die jeder Spieler während des Spiels auf der Hand hat." ]
 
         ScoreLimit ->
-            [ ref (noun Point 1), Text " Begrenzung" ]
+            [ ref (noun Point 2), Text "-Begrenzung" ]
 
         ScoreLimitDescription ->
             [ Segment
@@ -1048,13 +1018,11 @@ translate _ mdString =
             [ Text "Nächstes Spiel konfigurieren" ]
 
         -- Game
-        -- TODO: Translate
         PickCall ->
-            [ Missing ]
+            [ Text "Wählen Sie diese ", ref (noun Call 1), Text " für die Spieler in dieser Runde." ]
 
-        -- TODO: Translate
         WriteCall ->
-            [ Missing ]
+            [ Text "Schreiben Sie eine ", ref (noun Call 1), Text " für die Spieler in dieser Runde." ]
 
         SubmitPlay ->
             [ Text "Geben Sie diese Karten dem ", ref Czar, Text " zum Abschluss dieser Runde." ]
@@ -1071,9 +1039,8 @@ translate _ mdString =
         AdvanceRound ->
             [ Text "Nächste Runde." ]
 
-        -- TODO: Translate
         Starting ->
-            [ Missing ]
+            [ raw HouseRuleCzarChoices ]
 
         Playing ->
             [ Text "Spielen" ]
@@ -1097,7 +1064,7 @@ translate _ mdString =
             [ Text "Setzen Sie alle Spieler, auf die das Spiel wartet, auf Abwesend und überspringen Sie sie, bis sie zurückkehren." ]
 
         Blank ->
-            [ Text "Leer" ]
+            [ Text "Lücke" ]
 
         RoundStarted ->
             [ Text "Runde begonnen" ]
@@ -1122,17 +1089,20 @@ translate _ mdString =
             ]
 
         -- Instructions
-        -- TODO: Translate
         PickCallInstruction ->
-            [ Missing ]
+            [ Text "Wählen Sie eine ", ref (noun Call 1), Text " für die Spieler in dieser Runde." ]
 
-        -- TODO: Translate
         WaitForCallInstruction ->
-            [ Missing ]
+            [ Text "Sie warten auf den "
+            , ref Czar
+            , Text " um eine "
+            , ref (noun Call 1)
+            , Text " für Sie auszuwählen."
+            ]
 
         PlayInstruction { numberOfCards } ->
             [ Text "Sie müssen "
-            , Text (asWord numberOfCards)
+            , Text (asWord numberOfCards Feminine Nominative)
             , Text " weitere "
             , ref (noun Response numberOfCards)
             , Text " von Ihrer Hand abwerfen, bevor die Runde übermittelt werden kann."
@@ -1179,57 +1149,51 @@ translate _ mdString =
             [ Text "OK" ]
 
         -- Editor
-        -- TODO: Translate
         AddSlot ->
-            [ Missing ]
+            [ Text "Füge ", ref Blank, Text " hinzu" ]
 
-        -- TODO: Translate
         AddText ->
-            [ Missing ]
+            [ Text "Füge Text hinzu" ]
 
-        -- TODO: Translate
         EditText ->
-            [ Missing ]
+            [ Text "Bearbeiten" ]
 
-        -- TODO: Translate
         EditSlotIndex ->
-            [ Missing ]
+            [ Text "Bearbeiten" ]
 
-        -- TODO: Translate
         MoveLeft ->
-            [ Missing ]
+            [ Text "Weiter nach Vorne" ]
 
-        -- TODO: Translate
         Remove ->
-            [ Missing ]
+            [ Text "Entfernen" ]
 
-        -- TODO: Translate
         MoveRight ->
-            [ Missing ]
+            [ Text "Weiter nach Hinten" ]
 
-        -- TODO: Translate
         Normal ->
-            [ Missing ]
+            [ Text "Normal" ]
 
-        -- TODO: Translate
         Capitalise ->
-            [ Missing ]
+            [ Text "Groß schreiben" ]
 
-        -- TODO: Translate
         UpperCase ->
-            [ Missing ]
+            [ Text "Ganz groß schreiben" ]
 
-        -- TODO: Translate
         Emphasise ->
-            [ Missing ]
+            [ Text "Hervorheben" ]
 
-        -- TODO: Translate
         MustContainAtLeastOneSlot ->
-            [ Missing ]
+            [ Text "Sie müssen mindestens eine ", ref Blank, Text " für die Spieler hinzufügen." ]
 
-        -- TODO: Translate
         SlotIndexExplanation ->
-            [ Missing ]
+            [ Text "Welche Anzahl "
+            , ref (noun Response 1)
+            , Text " sollen in dieser "
+            , ref Blank
+            , Text " gespielt werden? Dies lässt Sie eine "
+            , ref (noun Response 1)
+            , Text " wiederholen."
+            ]
 
         -- Errors
         Error ->
@@ -1380,12 +1344,162 @@ translate _ mdString =
         Spanish ->
             [ Text "Spanisch" ]
 
+type DeclensionCase
+    = Nominative -- Normalform
+    | Genitive -- Wessen?
+    | Dative -- Wem?
+    | Accusative -- Wen?
 
-an : Maybe Int -> String
-an amount =
+
+type alias ByDeclensionCase =
+    { nominative : String
+    , genitive : String
+    , dative : String
+    , accusative : String
+    }
+
+decl : Noun -> Quantity -> DeclensionCase -> String
+decl noun quantity declCase =
+    noun |> declTable |> getByQuantity quantity |> getByCase declCase
+
+
+type alias ByQuantity =
+    { singular : ByDeclensionCase
+    , plural : ByDeclensionCase
+    }
+
+
+getByCase : DeclensionCase -> ByDeclensionCase -> String
+getByCase declCase =
+    case declCase of
+        Nominative ->
+            .nominative
+
+        Genitive ->
+            .genitive
+
+        Dative ->
+            .dative
+
+        Accusative ->
+            .accusative
+
+
+getByQuantity : Quantity -> ByQuantity -> ByDeclensionCase
+getByQuantity quantity =
+    case quantity of
+        Quantity 1 ->
+            .singular
+
+        _ ->
+            .plural
+
+declTable : Noun -> ByQuantity
+declTable noun =
+    case noun of
+        Call ->
+            { singular =
+                ByDeclensionCase
+                    "schwarze Karte"
+                    "schwarzen Karte"
+                    "schwarzen Karte"
+                    "schwarze Karte"
+            , plural =
+                ByDeclensionCase
+                    "schwarzen Karten"
+                    "schwarzen Karten"
+                    "schwarzen Karten"
+                    "schwarzen Karten"
+            }
+
+        Response ->
+            { singular =
+                ByDeclensionCase
+                    "weiße Karte"
+                    "weißen Karte"
+                    "weißen Karte"
+                    "weiße Karte"
+            , plural =
+                ByDeclensionCase
+                    "weißen Karten"
+                    "weißen Karten"
+                    "weißen Karten"
+                    "weißen Karten"
+            }
+
+        Point ->
+            { singular =
+                ByDeclensionCase
+                    "großartige Punkt"
+                    "großartigen Punktes"
+                    "großartigen Punkt"
+                    "großartigen Punkt"
+            , plural =
+                ByDeclensionCase
+                    "großartigen Punkte"
+                    "großartigen Punkte"
+                    "großartigen Punkten"
+                    "großartigen Punkte"
+            }
+
+        Player ->
+            { singular =
+                ByDeclensionCase
+                    "Spieler"
+                    "Spielers"
+                    "Spieler"
+                    "Spieler"
+            , plural =
+                ByDeclensionCase
+                    "Spieler"
+                    "Spieler"
+                    "Spielern"
+                    "Spieler"
+            }
+
+        Spectator ->
+            { singular =
+                ByDeclensionCase
+                    "Zuschauer"
+                    "Zuschauers"
+                    "Zuschauer"
+                    "Zuschauer"
+            , plural =
+                ByDeclensionCase
+                    "Zuschauer"
+                    "Zuschauer"
+                    "Zuschauern"
+                    "Zuschauer"
+            }
+
+type Gender
+    = Masculine
+    | Feminine
+    | Neuter
+
+dependingOnGender : String -> String -> String -> Gender -> String
+dependingOnGender masculine feminine neuter gender =
+    case gender of
+        Masculine ->
+            masculine
+
+        Feminine ->
+            feminine
+
+        Neuter ->
+            neuter
+
+
+
+an : Maybe Int -> Gender -> DeclensionCase -> String
+an amount gender declCase =
     case amount of
         Just 1 ->
-            "ein "
+            getByCase declCase (ByDeclensionCase
+              (dependingOnGender "ein" "eine" "ein" gender)
+              (dependingOnGender "eines" "einer" "eines" gender)
+              (dependingOnGender "einen" "einer" "einem" gender)
+              (dependingOnGender "einen" "eine" "ein" gender))
 
         _ ->
             ""
@@ -1393,14 +1507,14 @@ an amount =
 
 {-| Take a number and give back the name of that number. Falls back to the number when it gets too big.
 -}
-asWord : Int -> String
-asWord number =
+asWord : Int -> Gender -> DeclensionCase -> String
+asWord number gender declCase =
     case number of
         0 ->
-            "Null"
+            "null"
 
         1 ->
-            "eins"
+            an (Just number) gender declCase
 
         2 ->
             "zwei"
