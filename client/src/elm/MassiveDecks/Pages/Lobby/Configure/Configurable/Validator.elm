@@ -7,8 +7,8 @@ module MassiveDecks.Pages.Lobby.Configure.Configurable.Validator exposing
     , whenJust
     )
 
-import FontAwesome.Solid as Icon
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Util.Maybe as Maybe
 
@@ -32,14 +32,14 @@ between min max set value =
         [ Message.errorWithFix (Strings.MustBeMoreThanOrEqualValidationError { min = min })
             [ { description = Strings.SetValue { value = min }
               , action = set min
-              , icon = Icon.arrowUp
+              , icon = Icon.toTop
               }
             ]
             |> Maybe.justIf (value < min)
         , Message.errorWithFix (Strings.MustBeLessThanOrEqualValidationError { max = max })
             [ { description = Strings.SetValue { value = max }
               , action = set max
-              , icon = Icon.arrowDown
+              , icon = Icon.toBottom
               }
             ]
             |> Maybe.justIf (value > max)

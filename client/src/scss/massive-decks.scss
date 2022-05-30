@@ -10,7 +10,7 @@
 @use "_settings";
 @use "_error";
 
-@import "~@fortawesome/fontawesome-free/css/svg-with-js.min.css";
+@use "@fortawesome/fontawesome-svg-core/styles.css";
 
 $min-page-width: 320px;
 

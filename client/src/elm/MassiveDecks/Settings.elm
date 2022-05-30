@@ -12,9 +12,8 @@ module MassiveDecks.Settings exposing
 
 import Dict exposing (Dict)
 import Dict.Extra as Dict
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -162,15 +161,15 @@ view wrap shared =
 
         icon =
             if model.open then
-                Icon.check
+                Icon.accept
 
             else
-                Icon.cog
+                Icon.configure
 
         button =
             IconButton.view shared
                 Strings.SettingsTitle
-                (icon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                (icon |> Icon.styled [ Icon.lg ] |> NeList.just)
                 (ToggleOpen |> wrap |> Just)
 
         panel =
@@ -297,14 +296,13 @@ cardSize wrap shared =
             [ HtmlA.class "multipart" ]
             [ Html.div
                 [ HtmlA.class "card-size-slider" ]
-                [ Icon.viewStyled [] Icon.minimalCardSize
+                [ Icon.minimalCardSize |> Icon.view
                 , Slider.view
                     [ HtmlA.class "primary"
                     , Slider.step 1
                     , Slider.min 1
                     , Slider.max 3
-                    , Slider.pin
-                    , Slider.markers
+                    , Slider.withTickMarks 3
                     , cardSizeFromValue
                         >> Maybe.withDefault Full
                         >> ChangeCardSize
@@ -312,7 +310,7 @@ cardSize wrap shared =
                         |> Slider.onChange
                     , settings.cardSize |> cardSizeToValue |> Slider.value
                     ]
-                , Icon.viewStyled [] Icon.callCard
+                , Icon.callCard |> Icon.view
                 ]
             ]
         )
@@ -325,7 +323,8 @@ autoAdvanceRound wrap shared =
         settings =
             shared.settings.settings
 
-        currentValue = settings.autoAdvance |> Maybe.withDefault False
+        currentValue =
+            settings.autoAdvance |> Maybe.withDefault False
     in
     Form.section shared
         "auto-advance"
@@ -333,11 +332,11 @@ autoAdvanceRound wrap shared =
             [ HtmlA.class "multipart" ]
             [ Switch.view
                 [ HtmlE.onClick (currentValue |> not |> ToggleAutoAdvance >> wrap)
-                , HtmlA.selected (currentValue)
+                , HtmlA.selected currentValue
                 , HtmlA.id "auto-advance-enable"
                 ]
             , Html.label [ HtmlA.for "auto-advance-enable" ]
-                [ Icon.viewIcon Icon.commentDots
+                [ Icon.view Icon.autoAdvance
                 , Html.text " "
                 , Strings.AutoAdvanceSetting |> Lang.html shared
                 ]
@@ -387,7 +386,7 @@ speechVoiceSelector wrap shared =
                         , HtmlA.id "speech-enable"
                         ]
                     , Html.label [ HtmlA.for "speech-enable" ]
-                        [ Icon.viewIcon Icon.commentDots
+                        [ Icon.view Icon.tts
                         , Html.text " "
                         , Strings.SpeechSetting |> Lang.html shared
                         ]
@@ -489,7 +488,7 @@ notificationsSwitch wrap shared =
                     , HtmlA.id "notifications-enable"
                     ]
                 , Html.label [ HtmlA.for "notifications-enable" ]
-                    [ Icon.viewIcon Icon.bell
+                    [ Icon.view Icon.notification
                     , Html.text " "
                     , Strings.NotificationsSetting |> Lang.html shared
                     ]
@@ -507,7 +506,7 @@ notificationsSwitch wrap shared =
                             , HtmlA.id "only-when-hidden-toggle"
                             ]
                         , Html.label [ HtmlA.for "only-when-hidden-toggle" ]
-                            [ Icon.viewIcon Icon.eyeSlash
+                            [ Icon.view Icon.hide
                             , Html.text " "
                             , Strings.NotificationOnlyWhenHiddenSetting |> Lang.html shared
                             ]

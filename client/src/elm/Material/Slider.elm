@@ -1,12 +1,12 @@
 module Material.Slider exposing
-    ( markers
+    ( discrete
     , max
     , min
     , onChange
-    , pin
     , step
     , value
     , view
+    , withTickMarks
     )
 
 import Html exposing (Html)
@@ -36,19 +36,19 @@ max =
     Json.int >> HtmlA.property "max"
 
 
-markers : Html.Attribute msg
-markers =
-    True |> Json.bool |> HtmlA.property "markers"
-
-
-pin : Html.Attribute msg
-pin =
-    True |> Json.bool |> HtmlA.property "pin"
+withTickMarks : Int -> Html.Attribute msg
+withTickMarks =
+    Json.int >> HtmlA.property "withTickMarks"
 
 
 value : Int -> Html.Attribute msg
 value =
     Json.int >> HtmlA.property "value"
+
+
+discrete : Bool -> Html.Attribute msg
+discrete =
+    Json.bool >> HtmlA.property "discrete"
 
 
 onChange : (Int -> msg) -> Html.Attribute msg

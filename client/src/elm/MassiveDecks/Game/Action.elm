@@ -1,11 +1,11 @@
 module MassiveDecks.Game.Action exposing (view)
 
-import FontAwesome.Icon as Icon exposing (Icon)
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Game.Action.Model exposing (..)
 import MassiveDecks.Game.Messages as Game exposing (Msg)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import Material.Fab as Fab
@@ -41,39 +41,39 @@ viewSingle wrap shared visible action =
         { icon, attrs, type_, title, onClick } =
             case action of
                 PickCall ->
-                    IconView Icon.check blocking Fab.Normal Strings.PickCall Game.Submit
+                    IconView Icon.accept blocking Fab.Normal Strings.PickCall Game.Submit
 
                 EditCall ->
-                    IconView Icon.pencilAlt blocking Fab.Normal Strings.WriteCall Game.WriteCall
+                    IconView Icon.edit blocking Fab.Normal Strings.WriteCall Game.WriteCall
 
                 Submit ->
-                    IconView Icon.check blocking Fab.Normal Strings.SubmitPlay Game.Submit
+                    IconView Icon.accept blocking Fab.Normal Strings.SubmitPlay Game.Submit
 
                 TakeBack ->
                     IconView Icon.undo normal Fab.Normal Strings.TakeBackPlay Game.TakeBack
 
                 Judge ->
-                    IconView Icon.trophy blocking Fab.Normal Strings.JudgePlay Game.Judge
+                    IconView Icon.win blocking Fab.Normal Strings.JudgePlay Game.Judge
 
                 Like ->
-                    IconView Icon.thumbsUp normal Fab.Normal Strings.LikePlay Game.Like
+                    IconView Icon.like normal Fab.Normal Strings.LikePlay Game.Like
 
                 Advance ->
-                    IconView Icon.forward blocking Fab.Normal Strings.AdvanceRound Game.AdvanceRound
+                    IconView Icon.skip blocking Fab.Normal Strings.AdvanceRound Game.AdvanceRound
 
                 Discard ->
-                    IconView Icon.trash normal Fab.Mini Strings.HouseRuleNeverHaveIEver Game.Discard
+                    IconView Icon.discard normal Fab.Mini Strings.HouseRuleNeverHaveIEver Game.Discard
     in
     Fab.view shared
         type_
         title
-        (icon |> Icon.present)
+        icon
         (onClick |> wrap |> Just)
         (HtmlA.classList [ ( "action", True ), ( "exited", visible /= Just action ) ] :: attrs)
 
 
 type alias IconView msg =
-    { icon : Icon
+    { icon : Icon Icon.WithoutId
     , attrs : List (Html.Attribute msg)
     , type_ : Fab.Type
     , title : MdString

@@ -1,11 +1,11 @@
 module MassiveDecks.Pages.Lobby.Spectate.Stages.Pregame exposing (view)
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.Strings as Strings
@@ -38,15 +38,15 @@ player _ ( id, user ) =
                 icon =
                     case user.control of
                         User.Human ->
-                            Icon.user
+                            Icon.human
 
                         User.Computer ->
-                            Icon.robot
+                            Icon.computer
             in
             Just
                 ( id
                 , Html.li [ HtmlA.class "player" ]
-                    [ Icon.viewStyled [ SvgA.class "head" ] icon
+                    [ icon |> Icon.styled [ SvgA.class "head" ] |> Icon.view
                     , Html.span [ HtmlA.class "name" ] [ user.name |> Html.text ]
                     ]
                 )

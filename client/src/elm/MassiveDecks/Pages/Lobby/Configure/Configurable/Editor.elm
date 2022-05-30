@@ -12,11 +12,11 @@ module MassiveDecks.Pages.Lobby.Configure.Configurable.Editor exposing
     , toggle
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
@@ -184,15 +184,15 @@ password setPasswordVisibility label _ update model value { shared, readOnly } =
     let
         ( icon, type_ ) =
             if model.passwordVisible then
-                ( Icon.eyeSlash, TextField.Text )
+                ( Icon.hide, TextField.Text )
 
             else
-                ( Icon.eye, TextField.Password )
+                ( Icon.show, TextField.Password )
 
         toggleVisibility =
             IconButton.view shared
                 Strings.LobbyPassword
-                (icon |> Icon.present |> NeList.just)
+                (icon |> NeList.just)
                 (model.passwordVisible |> not |> setPasswordVisibility |> Just)
     in
     [ TextField.view shared

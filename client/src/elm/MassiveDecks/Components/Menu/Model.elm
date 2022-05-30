@@ -6,7 +6,7 @@ module MassiveDecks.Components.Menu.Model exposing
     , State(..)
     )
 
-import FontAwesome.Icon exposing (Icon)
+import FontAwesome as Icon exposing (Icon)
 import MassiveDecks.Strings exposing (MdString)
 
 
@@ -28,7 +28,7 @@ type Part msg
 {-| A menu item
 -}
 type alias Item =
-    { icon : Icon
+    { icon : Icon Icon.WithoutId
     , text : MdString
     , description : MdString
     }

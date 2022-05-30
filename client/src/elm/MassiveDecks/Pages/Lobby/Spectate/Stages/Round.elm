@@ -1,8 +1,7 @@
 module MassiveDecks.Pages.Lobby.Spectate.Stages.Round exposing (view)
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -16,6 +15,7 @@ import MassiveDecks.Game.Action.Model as Action
 import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Model as Game
 import MassiveDecks.Game.Round as Round exposing (Round)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
@@ -227,7 +227,7 @@ viewPlay wrapGame shared config slotCount angle playedByUser isWinner picked lik
         [ Html.div [ HtmlA.class "with-byline", action |> Maybe.withDefault (HtmlA.disabled True) ]
             [ Html.span [ HtmlA.class "byline" ]
                 (List.filterMap identity
-                    [ Icon.viewIcon Icon.trophy |> Maybe.justIf isWinner
+                    [ Icon.view Icon.win |> Maybe.justIf isWinner
                     , playedByUser |> Maybe.map (.name >> Html.text)
                     , likes |> Maybe.map (\l -> Strings.Likes { total = l } |> Lang.html shared)
                     ]

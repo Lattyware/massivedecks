@@ -1,12 +1,12 @@
 module MassiveDecks.Pages.Lobby.Invite exposing (button, dialog, overlay)
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Messages as Lobby exposing (Msg(..))
@@ -27,7 +27,7 @@ import Url exposing (Url)
 -}
 button : (Msg -> msg) -> Shared -> Html msg
 button wrap shared =
-    IconButton.view shared Strings.Invite (Icon.bullhorn |> Icon.present |> NeList.just) (ToggleInviteDialog |> wrap |> Just)
+    IconButton.view shared Strings.Invite (Icon.invite |> NeList.just) (ToggleInviteDialog |> wrap |> Just)
 
 
 {-| A dialog overlay that displays information on how to invite people to the game.
@@ -45,7 +45,7 @@ dialog wrap shared gameCode password open =
         ]
         [ IconButton.viewNoPropagation shared
             Strings.Close
-            (Icon.times |> Icon.present |> NeList.just)
+            (Icon.close |> NeList.just)
             (Lobby.ToggleInviteDialog |> wrap |> Just)
         , Card.view [ HtmlE.onClickNoPropagation (wrap NoOp) ]
             [ Strings.InviteExplanation { gameCode = GameCode.toString gameCode, password = password } |> Lang.html shared
@@ -61,7 +61,7 @@ dialog wrap shared gameCode password open =
                         []
                     , IconButton.view shared
                         Strings.Copy
-                        (Icon.copy |> Icon.present |> NeList.just)
+                        (Icon.copy |> NeList.just)
                         ("invite-link-field" |> Copy |> wrap |> Just)
                     ]
                 )

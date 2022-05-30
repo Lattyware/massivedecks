@@ -3,8 +3,7 @@ module MassiveDecks.Card.Source.ManyDecks exposing
     , methods
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -13,6 +12,7 @@ import MassiveDecks.Card.Source.ManyDecks.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
@@ -127,7 +127,7 @@ tooltip dc tooltipRender =
 
         content =
             [ Html.p [ HtmlA.class "source-id" ]
-                [ logoInternal
+                [ Icon.manyDecks |> Icon.view
                 , Html.div [ HtmlA.class "many-decks-deck-code" ] [ dc |> toString |> Html.text ]
                 ]
             ]
@@ -137,9 +137,4 @@ tooltip dc tooltipRender =
 
 logo : () -> Maybe (Html msg)
 logo () =
-    logoInternal |> Just
-
-
-logoInternal : Html msg
-logoInternal =
-    Icon.boxOpen |> Icon.viewIcon
+    Icon.manyDecks |> Icon.view |> Just

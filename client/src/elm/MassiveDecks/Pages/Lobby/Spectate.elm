@@ -5,12 +5,12 @@ module MassiveDecks.Pages.Lobby.Spectate exposing
     )
 
 import Dict
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Game.Messages as Game
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Actions as Actions
 import MassiveDecks.Pages.Lobby.GameCode as GameCode exposing (GameCode)
@@ -77,10 +77,10 @@ viewSettings wrap changePage shared lobby =
         let
             advertiseIcon =
                 if lobby.spectate.advertise then
-                    Icon.eyeSlash
+                    Icon.show
 
                 else
-                    Icon.eye
+                    Icon.hide
 
             route =
                 lobby.route
@@ -99,15 +99,15 @@ viewSettings wrap changePage shared lobby =
         [ Html.div [ HtmlA.id "spectate-actions" ]
             [ IconButton.view shared
                 backDescription
-                (Icon.arrowLeft |> Icon.present |> NeList.just)
+                (Icon.back |> NeList.just)
                 (Just backAction)
             , IconButton.view shared
                 Strings.ViewConfigurationDescription
-                (Icon.cog |> Icon.present |> NeList.just)
+                (Icon.configure |> NeList.just)
                 ({ route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> Just)
             , IconButton.view shared
                 Strings.ToggleAdvertDescription
-                (advertiseIcon |> Icon.present |> NeList.just)
+                (advertiseIcon |> NeList.just)
                 (ToggleAdvert |> wrap |> Just)
             ]
         ]
@@ -133,7 +133,7 @@ viewStage wrapGame shared lobbyModel =
                     Pregame.view shared lobby
 
         Nothing ->
-            [ Icon.viewStyled [ Icon.spin ] Icon.sync ]
+            [ Icon.loading |> Icon.view ]
 
 
 advertise : Shared -> GameCode -> List (Html msg)

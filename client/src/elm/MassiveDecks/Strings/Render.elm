@@ -1,8 +1,7 @@
 module MassiveDecks.Strings.Render exposing (Context, asHtml, asString)
 
+import FontAwesome as Icon exposing (Icon)
 import FontAwesome.Brands as Icon
-import FontAwesome.Icon as Icon exposing (Icon)
-import FontAwesome.Solid as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Icon as Icon
@@ -122,7 +121,7 @@ resultToHtml shared context result =
                         [ HtmlA.href "https://github.com/Lattyware/massivedecks/wiki/Translation"
                         , Strings.TranslationBeg |> asString context |> HtmlA.title
                         ]
-                        [ Icon.language |> Icon.viewIcon ]
+                        [ Icon.language |> Icon.view ]
             in
             [ Html.span [ HtmlA.class "not-translated" ] [ english, Html.text " ", translationBeg ] ]
 
@@ -139,16 +138,16 @@ enhanceHtml shared context mdString unenhanced =
                     term context ResponseDescription Icon.responseCard unenhanced
 
                 Point ->
-                    term context PointDescription Icon.star unenhanced
+                    term context PointDescription Icon.point unenhanced
 
                 _ ->
                     unenhanced
 
         Czar ->
-            term context CzarDescription Icon.gavel unenhanced
+            term context CzarDescription Icon.czar unenhanced
 
         GameCodeTerm ->
-            term context GameCodeDescription Icon.qrcode unenhanced
+            term context GameCodeDescription Icon.gameCode unenhanced
 
         GameCode _ ->
             [ Html.span
@@ -166,58 +165,58 @@ enhanceHtml shared context mdString unenhanced =
             [ Html.span [ HtmlA.class "instruction", DrawDescription numberOfCards |> asString context |> HtmlA.title ] unenhanced ]
 
         Players ->
-            term context PlayersDescription Icon.chessPawn unenhanced
+            term context PlayersDescription Icon.player unenhanced
 
         Spectators ->
-            term context SpectatorsDescription Icon.eye unenhanced
+            term context SpectatorsDescription Icon.spectator unenhanced
 
         Left ->
-            term context LeftDescription Icon.signOutAlt unenhanced
+            term context LeftDescription Icon.leave unenhanced
 
         Away ->
-            term context AwayDescription Icon.userClock unenhanced
+            term context AwayDescription Icon.userAway unenhanced
 
         Disconnected ->
-            term context DisconnectedDescription Icon.ghost unenhanced
+            term context DisconnectedDescription Icon.disconnected unenhanced
 
         Privileged ->
-            term context PrivilegedDescription Icon.userCog unenhanced
+            term context PrivilegedDescription Icon.configure unenhanced
 
         Ai ->
-            term context AiDescription Icon.robot unenhanced
+            term context AiDescription Icon.computer unenhanced
 
         Score _ ->
-            [ Html.span [ HtmlA.class "no-wrap", (ScoreDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.star) ]
+            [ Html.span [ HtmlA.class "no-wrap", (ScoreDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.point) ]
 
         Likes _ ->
-            [ Html.span [ HtmlA.class "no-wrap", (LikesDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.thumbsUp) ]
+            [ Html.span [ HtmlA.class "no-wrap", (LikesDescription |> asString context) |> HtmlA.title ] (suffixed unenhanced Icon.like) ]
 
         NumberOfCards _ ->
             [ Html.span [ HtmlA.class "amount" ] unenhanced ]
 
         HouseRulePackingHeat ->
-            prefixed unenhanced Icon.parachuteBox
+            prefixed unenhanced Icon.packingHeat
 
         HouseRuleReboot ->
             prefixed unenhanced Icon.random
 
         HouseRuleComedyWriter ->
-            prefixed unenhanced Icon.pen
+            prefixed unenhanced Icon.edit
 
         HouseRuleRandoCardrissian ->
-            prefixed unenhanced Icon.robot
+            prefixed unenhanced Icon.computer
 
         HouseRuleNeverHaveIEver ->
-            prefixed unenhanced Icon.trash
+            prefixed unenhanced Icon.discard
 
         HouseRuleHappyEnding ->
-            prefixed unenhanced Icon.smile
+            prefixed unenhanced Icon.happyEnding
 
         HouseRuleCzarChoices ->
-            prefixed unenhanced Icon.clipboardList
+            prefixed unenhanced Icon.czarChoices
 
         HouseRuleWinnersPick ->
-            prefixed unenhanced Icon.trophy
+            prefixed unenhanced Icon.win
 
         RereadGames ->
             [ Html.blankA [ HtmlA.class "no-wrap", HtmlA.href "https://www.rereadgames.com/" ] unenhanced ]
@@ -235,22 +234,22 @@ enhanceHtml shared context mdString unenhanced =
             [ Html.blankA [ HtmlA.href "https://twitter.com/Massive_Decks" ] (suffixed unenhanced Icon.twitter) ]
 
         Error ->
-            prefixed unenhanced Icon.exclamationTriangle
+            prefixed unenhanced Icon.bug
 
         ErrorHelpTitle ->
-            prefixed unenhanced Icon.carCrash
+            prefixed unenhanced Icon.warning
 
         ReportError ->
             prefixed unenhanced Icon.bug
 
         SettingsTitle ->
-            prefixed unenhanced Icon.cog
+            prefixed unenhanced Icon.configure
 
         StillPlaying ->
-            term context PlayingDescription Icon.clock unenhanced
+            term context PlayingDescription Icon.waiting unenhanced
 
         Played ->
-            term context PlayedDescription Icon.check unenhanced
+            term context PlayedDescription Icon.played unenhanced
 
         ManyDecks ->
             case shared.sources.manyDecks of
@@ -272,21 +271,21 @@ enhanceHtml shared context mdString unenhanced =
             unenhanced
 
 
-prefixed : List (Html msg) -> Icon -> List (Html msg)
+prefixed : List (Html msg) -> Icon Icon.WithoutId -> List (Html msg)
 prefixed base prefix =
-    Html.span [ HtmlA.class "icon-prefix" ] [ Icon.viewIcon prefix, Html.text " " ] :: base
+    Html.span [ HtmlA.class "icon-prefix" ] [ Icon.view prefix, Html.text " " ] :: base
 
 
-suffixed : List (Html msg) -> Icon -> List (Html msg)
+suffixed : List (Html msg) -> Icon Icon.WithoutId -> List (Html msg)
 suffixed base suffix =
-    base ++ [ Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.viewIcon suffix ] ]
+    base ++ [ Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.view suffix ] ]
 
 
-term : Context langContext -> MdString -> Icon -> List (Html msg) -> List (Html msg)
+term : Context langContext -> MdString -> Icon Icon.WithoutId -> List (Html msg) -> List (Html msg)
 term context description icon unenhanced =
     [ Html.span
         [ HtmlA.class "term", description |> asString context |> HtmlA.title ]
         [ Html.span [ HtmlA.class "full" ] unenhanced
-        , Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.viewIcon icon ]
+        , Html.span [ HtmlA.class "icon-suffix" ] [ Html.text " ", Icon.view icon ]
         ]
     ]

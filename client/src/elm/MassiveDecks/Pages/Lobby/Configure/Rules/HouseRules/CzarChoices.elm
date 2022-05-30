@@ -1,8 +1,8 @@
 module MassiveDecks.Pages.Lobby.Configure.Rules.HouseRules.CzarChoices exposing (all)
 
-import FontAwesome.Solid as Icon
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
@@ -42,7 +42,7 @@ enabled wrap =
             always
                 [ Message.info Strings.HouseRuleCzarChoicesDescription
                 , Message.infoWithFix (Strings.SeeAlso { rule = Strings.DuringTitle })
-                    [ { description = Strings.ConfigureTimeLimits, icon = Icon.eye, action = ChangeTab Stages |> wrap } ]
+                    [ { description = Strings.ConfigureTimeLimits, icon = Icon.show, action = ChangeTab Stages |> wrap } ]
                 ]
         }
 

@@ -7,13 +7,13 @@ module MassiveDecks.Game.Round.Plays exposing
     )
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
 import MassiveDecks.Card.Play as Play
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
@@ -67,12 +67,12 @@ viewByLine shared users { by, specialRole, likes } =
                 ( cls, icon ) =
                     case role of
                         Winner ->
-                            ( "trophy", Icon.trophy )
+                            ( "trophy", Icon.win )
 
                         Czar ->
-                            ( "czar", Icon.gavel )
+                            ( "czar", Icon.czar )
             in
-            Html.span [ HtmlA.class cls ] [ Icon.viewIcon icon ]
+            Html.span [ HtmlA.class cls ] [ Icon.view icon ]
 
         name =
             users |> Dict.get by |> Maybe.map .name |> Maybe.withDefault (Strings.UnknownUser |> Lang.string shared)

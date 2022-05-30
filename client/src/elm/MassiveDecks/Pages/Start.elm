@@ -9,9 +9,8 @@ module MassiveDecks.Pages.Start exposing
 
 import Browser.Navigation as Navigation
 import Dict
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -204,7 +203,7 @@ view shared model =
                 Html.blankA
                     [ HtmlA.href baseUrl, HtmlA.id "many-decks-ad", Strings.ManyDecksWhereToGet |> Lang.title shared ]
                     [ Html.div []
-                        [ Icon.boxOpen |> Icon.viewIcon
+                        [ Icon.manyDecks |> Icon.view
                         , Html.span [] [ Strings.ManyDecks |> Lang.string shared |> Html.text ]
                         ]
                     ]
@@ -256,13 +255,13 @@ view shared model =
                     , Strings.MDProject |> Lang.title shared
                     , HtmlA.href "https://github.com/Lattyware/massivedecks"
                     ]
-                    [ Icon.viewStyled [ Strings.MDLogoDescription |> Lang.alt shared ] Icon.massiveDecks ]
+                    [ Icon.massiveDecks |> Icon.styled [ Strings.MDLogoDescription |> Lang.alt shared ] |> Icon.view ]
                 , Html.blankA
                     [ HtmlA.class "logo"
                     , Strings.DevelopedByReread |> Lang.title shared
                     , HtmlA.href "https://www.rereadgames.com/"
                     ]
-                    [ Icon.viewStyled [ Strings.RereadLogoDescription |> Lang.alt shared ] Icon.rereadGames ]
+                    [ Icon.rereadGames |> Icon.styled [ Strings.RereadLogoDescription |> Lang.alt shared ] |> Icon.view ]
                 ]
             , Html.p [ HtmlA.class "version" ]
                 [ Html.text "\""
@@ -285,16 +284,16 @@ tabFor : Section -> Tabs.TabModel
 tabFor section =
     case section of
         New ->
-            Tabs.TabModel Strings.NewGame (Just Icon.plus)
+            Tabs.TabModel Strings.NewGame (Just Icon.new)
 
         Join _ ->
-            Tabs.TabModel Strings.JoinPrivateGame (Just Icon.signInAlt)
+            Tabs.TabModel Strings.JoinPrivateGame (Just Icon.join)
 
         Find ->
-            Tabs.TabModel Strings.FindPublicGame (Just Icon.search)
+            Tabs.TabModel Strings.FindPublicGame (Just Icon.find)
 
         About ->
-            Tabs.TabModel Strings.AboutTheGame (Just Icon.questionCircle)
+            Tabs.TabModel Strings.AboutTheGame (Just Icon.about)
 
 
 overlay : Shared -> Maybe MdString -> Html Global.Msg
@@ -304,7 +303,7 @@ overlay shared content =
             Html.div [ HtmlA.id "overlay" ]
                 [ IconButton.view shared
                     Strings.Close
-                    (Icon.times |> Icon.present |> NeList.just)
+                    (Icon.close |> NeList.just)
                     (HideOverlay |> Global.StartMsg |> Just)
                 , Card.view []
                     [ text |> Lang.html shared
@@ -407,10 +406,10 @@ newContent shared model =
 
         buttonIcon =
             if loading then
-                Icon.viewStyled [ Icon.spin ] Icon.circleNotch
+                Icon.loading |> Icon.view
 
             else
-                Icon.viewIcon Icon.play
+                Icon.view Icon.start
 
         error =
             model.newLobbyRequest.generalError
@@ -448,10 +447,10 @@ joinContent shared model =
 
         buttonIcon =
             if loading then
-                Icon.viewStyled [ Icon.spin ] Icon.circleNotch
+                Icon.loading |> Icon.view
 
             else
-                Icon.viewIcon Icon.play
+                Icon.view Icon.start
 
         error =
             model.joinLobbyRequest.generalError

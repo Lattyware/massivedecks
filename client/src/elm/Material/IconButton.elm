@@ -4,7 +4,7 @@ module Material.IconButton exposing
     , viewNoPropagation
     )
 
-import FontAwesome.Icon as Icon
+import FontAwesome as Icon exposing (Icon)
 import FontAwesome.Layering as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
@@ -18,14 +18,14 @@ import MassiveDecks.Util.NeList exposing (NeList(..))
 
 {-| View a button that displays as a simple icon.
 -}
-view : Shared -> MdString -> NeList (Icon.Presentation id msg) -> Maybe msg -> Html msg
+view : Shared -> MdString -> NeList (Icon hasId) -> Maybe msg -> Html msg
 view shared title icon action =
     viewRenderedIcon [ actionAttrFromMaybe HtmlE.onClick action ] shared title (renderIcon icon)
 
 
 {-| View a button that displays as a simple icon, and blocks clicks propagating to other elements.
 -}
-viewNoPropagation : Shared -> MdString -> NeList (Icon.Presentation id msg) -> Maybe msg -> Html msg
+viewNoPropagation : Shared -> MdString -> NeList (Icon hasId) -> Maybe msg -> Html msg
 viewNoPropagation shared title icon action =
     viewRenderedIcon [ actionAttrFromMaybe HtmlE.onClickNoPropagation action ] shared title (renderIcon icon)
 
@@ -51,7 +51,7 @@ actionAttrFromMaybe onClick action =
             HtmlA.disabled True
 
 
-renderIcon : NeList (Icon.Presentation id msg) -> Html msg
+renderIcon : NeList (Icon hasId) -> Html msg
 renderIcon (NeList first rest) =
     case rest of
         [] ->

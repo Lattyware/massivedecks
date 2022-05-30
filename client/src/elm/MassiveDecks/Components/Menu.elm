@@ -6,7 +6,7 @@ module MassiveDecks.Components.Menu exposing
     , view
     )
 
-import FontAwesome.Icon exposing (Icon)
+import FontAwesome as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Attributes.Aria as HtmlA
@@ -45,14 +45,14 @@ open isOpen =
 
 {-| Convenience function for a menu button.
 -}
-button : Icon -> MdString -> MdString -> Maybe msg -> Part msg
+button : Icon Icon.WithoutId -> MdString -> MdString -> Maybe msg -> Part msg
 button icon text description action =
     Button (Item icon text description) action
 
 
 {-| Convenience function for a menu link.
 -}
-link : Icon -> MdString -> MdString -> Maybe String -> Part msg
+link : Icon Icon.WithoutId -> MdString -> MdString -> Maybe String -> Part msg
 link icon text description href =
     Link (Item icon text description) href
 

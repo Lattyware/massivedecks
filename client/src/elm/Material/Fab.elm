@@ -3,7 +3,7 @@ module Material.Fab exposing
     , view
     )
 
-import FontAwesome.Icon as Icon
+import FontAwesome as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -19,7 +19,7 @@ type Type
     | Mini
 
 
-view : Shared -> Type -> MdString -> Icon.Presentation id msg -> Maybe msg -> List (Html.Attribute msg) -> Html msg
+view : Shared -> Type -> MdString -> Icon hasId -> Maybe msg -> List (Html.Attribute msg) -> Html msg
 view shared type_ title icon action attrs =
     let
         content =

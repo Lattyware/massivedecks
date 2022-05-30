@@ -3,8 +3,7 @@ module MassiveDecks.Card.Source.JsonAgainstHumanity exposing
     , methods
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import List.Extra as List
@@ -12,6 +11,7 @@ import MassiveDecks.Card.Source.JsonAgainstHumanity.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
@@ -107,7 +107,7 @@ editor selected shared existing update _ _ =
                     , icon = Nothing
                     , primary = [ Html.text d.name ]
                     , secondary = Nothing
-                    , meta = Icon.check |> Icon.viewIcon |> Maybe.justIf (existing |> List.any matches)
+                    , meta = Icon.accept |> Icon.view |> Maybe.justIf (existing |> List.any matches)
                     }
             in
             Html.span [ HtmlA.id "json-against-humanity-editor", HtmlA.class "primary" ]
@@ -151,4 +151,4 @@ tooltip givenId tooltipRender =
 
 logo : () -> Maybe (Html msg)
 logo () =
-    Icon.code |> Icon.viewIcon |> Just
+    Icon.jsonAgainstHumanity |> Icon.view |> Just

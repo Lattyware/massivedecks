@@ -11,9 +11,8 @@ module MassiveDecks.Game exposing
 import Browser.Dom as Dom
 import Browser.Events as Browser
 import Dict exposing (Dict)
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -39,6 +38,7 @@ import MassiveDecks.Game.Round.Revealing as Revealing
 import MassiveDecks.Game.Round.Starting as Starting
 import MassiveDecks.Game.Rules as Rules
 import MassiveDecks.Game.Time as Time exposing (Time)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Notifications as Notifications
 import MassiveDecks.Pages.Lobby.Actions as Actions
@@ -1177,7 +1177,7 @@ viewWinner wrapLobby shared users localUser winners =
                     Button.Raised
                     Strings.ConfigureNextGame
                     Strings.ConfigureNextGame
-                    (Icon.cog |> Icon.viewIcon)
+                    (Icon.configure |> Icon.view)
                     [ HtmlA.id "new-game-config"
                     , Lobby.Configure |> Just |> Lobby.ChangeSection |> wrapLobby |> HtmlE.onClick
                     ]
@@ -1186,7 +1186,7 @@ viewWinner wrapLobby shared users localUser winners =
                 Html.nothing
     in
     [ Card.view [ HtmlA.id "game-winner" ]
-        [ Html.span [] [ Icon.trophy |> Icon.viewIcon ]
+        [ Html.span [] [ Icon.win |> Icon.view ]
         , Html.ul [] (winners |> Set.toList |> List.map (viewWinnerListItem shared users))
         ]
     , configureNextGame
@@ -1244,7 +1244,7 @@ viewRound wrap shared auth timeAnchor config users model =
     [ Html.div [ HtmlA.id "top-content" ]
         [ case instruction |> Maybe.andThen (Maybe.justIf model.helpVisible) of
             Just i ->
-                Card.view [ HtmlA.class "help" ] [ Icon.questionCircle |> Icon.viewIcon, i |> Lang.html shared ]
+                Card.view [ HtmlA.class "help" ] [ Icon.info |> Icon.view, i |> Lang.html shared ]
 
             Nothing ->
                 Html.nothing
@@ -1257,7 +1257,7 @@ viewRound wrap shared auth timeAnchor config users model =
 
     -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
     , Html.div [ HtmlA.class "scroll-top" ]
-        [ IconButton.view shared Strings.ScrollToTop (Icon.arrowUp |> Icon.present |> NeList.just) (ScrollToTop |> wrap |> Just) ]
+        [ IconButton.view shared Strings.ScrollToTop (Icon.toTop |> NeList.just) (ScrollToTop |> wrap |> Just) ]
     , renderDiscarded wrap shared config users model.discarded |> Maybe.withDefault Html.nothing
     ]
 
@@ -1282,7 +1282,7 @@ renderDiscarded wrap shared config users discarded =
                         Button.Standard
                         Strings.Accept
                         Strings.Accept
-                        (Icon.check |> Icon.viewIcon)
+                        (Icon.accept |> Icon.view)
                         [ DismissDiscard |> wrap |> HtmlE.onClick ]
                     ]
                 ]
@@ -1297,13 +1297,13 @@ toggleHelp wrap shared enabled =
     let
         extra =
             if enabled then
-                [ Icon.slash |> Icon.present |> Icon.styled [ Icon.fw ] ]
+                [ Icon.slash |> Icon.styled [ Icon.fw ] ]
 
             else
                 []
 
         icon =
-            Icon.question |> Icon.present |> Icon.styled [ Icon.fw ] |> NeList.just |> NeList.extend extra
+            Icon.help |> Icon.styled [ Icon.fw ] |> NeList.just |> NeList.extend extra
     in
     IconButton.view shared Strings.ViewHelpAction icon (ToggleHelp |> wrap |> Just)
 
@@ -1408,7 +1408,7 @@ minorActions wrap shared auth game helpEnabled =
             if timedOut && game.rules.stages.mode == Rules.Soft then
                 IconButton.view shared
                     Strings.EnforceTimeLimitAction
-                    (Icon.forward |> Icon.present |> NeList.just)
+                    (Icon.skip |> NeList.just)
                     (EnforceTimeLimit |> wrap |> Just)
                     |> Just
 
@@ -1441,7 +1441,7 @@ discardButton wrap shared game =
     in
     IconButton.view shared
         Strings.Discard
-        (Icon.trash |> Icon.present |> NeList.just)
+        (Icon.discard |> NeList.just)
         action
 
 
@@ -1449,7 +1449,7 @@ historyButton : (Msg -> msg) -> Shared -> Html msg
 historyButton wrap shared =
     IconButton.view shared
         Strings.ViewGameHistoryAction
-        (Icon.history |> Icon.present |> NeList.just)
+        (Icon.history |> NeList.just)
         (ToggleHistoryView |> wrap |> Just)
 
 
@@ -1465,7 +1465,7 @@ rebootButton wrap shared score reboot =
     in
     IconButton.view shared
         ({ cost = reboot.cost } |> Strings.HouseRuleRebootAction)
-        (Icon.random |> Icon.present |> NeList.just)
+        (Icon.random |> NeList.just)
         action
 
 

@@ -6,7 +6,7 @@ module Material.ListView exposing
     , viewItem
     )
 
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -55,11 +55,11 @@ action a =
 
 {-| An item within a list.
 -}
-viewItem : Action msg -> Maybe Icon -> String -> Maybe (List (Html msg)) -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
+viewItem : Action msg -> Maybe (Icon hasId) -> String -> Maybe (List (Html msg)) -> Maybe (List (Html msg)) -> List (Html msg) -> Html msg
 viewItem action_ icon title secondary meta children =
     let
         ( optionalAttrs, optionalSlots ) =
-            [ icon |> Maybe.map (\i -> ( HtmlA.attribute "graphic" "large", Icon.viewStyled [ HtmlA.slot "graphic" ] i ))
+            [ icon |> Maybe.map (\i -> ( HtmlA.attribute "graphic" "large", i |> Icon.styled [ HtmlA.slot "graphic" ] |> Icon.view ))
             , meta |> Maybe.map (\m -> ( True |> Json.bool |> HtmlA.property "hasMeta", Html.span [ HtmlA.slot "meta" ] m ))
             , secondary |> Maybe.map (\s -> ( True |> Json.bool |> HtmlA.property "twoline", Html.span [ HtmlA.slot "secondary" ] s ))
             ]

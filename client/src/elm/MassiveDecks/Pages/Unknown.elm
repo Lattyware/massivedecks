@@ -5,10 +5,10 @@ module MassiveDecks.Pages.Unknown exposing
     , view
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages exposing (..)
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Route as Route
@@ -39,7 +39,7 @@ view : Shared -> Model -> List (Html Msg)
 view shared _ =
     [ Html.div [ HtmlA.class "page unknown-page" ]
         [ Card.view []
-            [ Html.h1 [] [ Icon.viewIcon Icon.exclamationCircle, Lang.html shared Strings.UnknownPageTitle ]
+            [ Html.h1 [] [ Icon.view Icon.warning, Lang.html shared Strings.UnknownPageTitle ]
             , Html.p []
                 [ Html.a [ Route.url (Route.Start { section = Start.New }) |> HtmlA.href ]
                     [ Lang.html shared Strings.GoBackHome

@@ -1,12 +1,12 @@
 module MassiveDecks.Error.Overlay exposing (init, update, view)
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Error as Error
 import MassiveDecks.Error.Messages exposing (..)
 import MassiveDecks.Error.Model as Error
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Route exposing (Route)
@@ -32,11 +32,11 @@ view shared route model =
             [ Html.div [ HtmlA.class "actions" ]
                 [ IconButton.view shared
                     Strings.Close
-                    (Icon.times |> Icon.present |> NeList.just)
+                    (Icon.close |> NeList.just)
                     (Clear |> Global.ErrorMsg |> Just)
                 , IconButton.view shared
                     Strings.Refresh
-                    (Icon.redo |> Icon.present |> NeList.just)
+                    (Icon.redo |> NeList.just)
                     (Just Global.Refresh)
                 ]
             , Card.view [ HtmlA.class "help" ]

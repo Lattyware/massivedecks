@@ -1,13 +1,13 @@
 module MassiveDecks.Pages.Lobby.Spectate.Stages.Postgame exposing (view)
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
 import MassiveDecks.Game.Model exposing (Game)
 import MassiveDecks.Game.Player exposing (Player)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.Strings as Strings
@@ -52,16 +52,16 @@ viewPlayer shared winner ( id, user, player ) =
         icon =
             case user.control of
                 User.Human ->
-                    Icon.user
+                    Icon.human
 
                 User.Computer ->
-                    Icon.robot
+                    Icon.computer
     in
     ( id
     , Html.li [ HtmlA.class "player" ]
         [ Html.span [ HtmlA.class "head" ]
-            [ Icon.viewIcon Icon.trophy |> Maybe.justIf (Set.member id winner) |> Maybe.withDefault Html.nothing
-            , Icon.viewIcon icon
+            [ Icon.view Icon.win |> Maybe.justIf (Set.member id winner) |> Maybe.withDefault Html.nothing
+            , Icon.view icon
             ]
         , Html.span [ HtmlA.class "name" ]
             [ user.name |> Html.text

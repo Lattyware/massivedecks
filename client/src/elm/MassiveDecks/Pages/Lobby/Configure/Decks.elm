@@ -7,9 +7,8 @@ module MassiveDecks.Pages.Lobby.Configure.Decks exposing
     , view
     )
 
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -19,6 +18,7 @@ import MassiveDecks.Card.Source.Model as Source
 import MassiveDecks.Components as Components
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Models.Encoders as Encoders
 import MassiveDecks.Pages.Lobby.Actions as Actions
@@ -98,7 +98,7 @@ view wrap shared model remote canEdit =
                 [ Html.tr [ HtmlA.class "empty-info" ]
                     [ Html.td [ HtmlA.colspan 3 ]
                         [ Html.p []
-                            [ Icon.viewIcon Icon.ghost
+                            [ Icon.view Icon.empty
                             , Html.text " "
                             , Strings.NoDecks |> Lang.html shared
                             ]
@@ -204,7 +204,7 @@ addDeckWidget wrap shared existing deckToAdd =
                 [ deckPicker
                 , IconButton.view shared
                     Strings.AddDeck
-                    (NeList (Icon.plus |> Icon.present) [])
+                    (NeList Icon.add [])
                     (submit |> Result.toMaybe)
                 ]
             ]
@@ -286,7 +286,7 @@ name wrap shared canEdit index source loading maybeError details =
             IconButton.view
                 shared
                 Strings.RemoveDeck
-                (NeList (Icon.trash |> Icon.present) [])
+                (NeList Icon.remove [])
                 (index |> Remove |> wrap |> Just)
                 |> Maybe.justIf canEdit
 
@@ -303,7 +303,7 @@ name wrap shared canEdit index source loading maybeError details =
             Html.span attrs [ Maybe.transformWith nameText makeLink details.url ] |> Just
 
         spinner =
-            Icon.viewStyled [ Icon.spin, SvgA.class "loading-deck-info" ] Icon.circleNotch |> Maybe.justIf loading
+            Icon.loading |> Icon.styled [ SvgA.class "loading-deck-info" ] |> Icon.view |> Maybe.justIf loading
 
         content =
             List.filterMap identity [ linkOrText, removeButton, spinner, tooltip ]

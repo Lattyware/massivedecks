@@ -1,8 +1,7 @@
 module MassiveDecks.Game.History exposing (view)
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
@@ -13,6 +12,7 @@ import MassiveDecks.Card.Response as Response
 import MassiveDecks.Game.Messages exposing (Msg(..))
 import MassiveDecks.Game.Round as Round
 import MassiveDecks.Game.Round.Plays as Plays
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
@@ -28,7 +28,7 @@ view wrap shared config users name history =
         [ Html.div [ HtmlA.id "minor-actions" ]
             [ IconButton.view shared
                 Strings.ViewGameHistoryAction
-                (Icon.arrowLeft |> Icon.present |> NeList.just)
+                (Icon.back |> NeList.just)
                 (ToggleHistoryView |> wrap |> Just)
             ]
         ]

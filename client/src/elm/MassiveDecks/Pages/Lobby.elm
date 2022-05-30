@@ -10,11 +10,10 @@ module MassiveDecks.Pages.Lobby exposing
 
 import Browser.Navigation as Navigation
 import Dict exposing (Dict)
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
 import FontAwesome.Brands as Icon
-import FontAwesome.Icon as Icon
 import FontAwesome.Layering as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -35,6 +34,7 @@ import MassiveDecks.Game.Model as Game exposing (Game)
 import MassiveDecks.Game.Player as Player exposing (Player)
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Time as Time
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Actions as Actions
@@ -542,7 +542,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
 
         usersIcon =
             if usersShown then
-                Icon.eyeSlash
+                Icon.hide
 
             else
                 Icon.users
@@ -575,7 +575,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                 (List.concat
                     [ [ IconButton.view shared
                             Strings.ToggleUserList
-                            (usersIcon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                            (usersIcon |> Icon.styled [ Icon.lg ] |> NeList.just)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
                       , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
@@ -589,7 +589,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                     |> Maybe.map2 (viewLobby wrap shared model.auth model.userMenu viewContent) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
-                            [ Icon.viewStyled [ Icon.spin, Icon.fa3x ] Icon.circleNotch ]
+                            [ Icon.loading |> Icon.styled [ Icon.fa3x ] |> Icon.view ]
                         ]
                )
         )
@@ -621,7 +621,7 @@ viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobbyAndConfigure
             else if game |> Maybe.map (.winner >> Maybe.isNothing) |> Maybe.withDefault False then
                 Message.infoWithFix Strings.ConfigurationDisabledWhileInGame
                     [ { description = Strings.EndGame
-                      , icon = Icon.stopCircle
+                      , icon = Icon.end
                       , action = wrap EndGame
                       }
                     ]
@@ -654,7 +654,7 @@ lobbyMenu : (Msg -> msg) -> Shared -> Menu.State -> Route -> Section -> Bool -> 
 lobbyMenu wrap shared menuState r s audienceMode user player game =
     let
         lobbyMenuItems =
-            [ Menu.button Icon.bullhorn Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
+            [ Menu.button Icon.invite Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
 
         setPresence =
             setPresenceMenuItem wrap player
@@ -662,10 +662,10 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
         playerState role =
             case role of
                 User.Player ->
-                    Menu.button Icon.eye Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole Nothing User.Spectator |> wrap |> Just)
+                    Menu.button Icon.spectator Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole Nothing User.Spectator |> wrap |> Just)
 
                 User.Spectator ->
-                    Menu.button Icon.chessPawn Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole Nothing User.Player |> wrap |> Just)
+                    Menu.button Icon.player Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole Nothing User.Player |> wrap |> Just)
 
         userLobbyMenuItems =
             [ setPresence |> Just
@@ -673,7 +673,7 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
                 |> Maybe.andThen (\u -> u |> Maybe.justIf (u.privilege == User.Privileged || not audienceMode))
                 |> Maybe.map (.role >> playerState)
             , Menu.button
-                Icon.signOutAlt
+                Icon.leave
                 Strings.LeaveGame
                 Strings.LeaveGameDescription
                 (Leave |> wrap |> Just)
@@ -682,17 +682,17 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
                 |> List.filterMap identity
 
         viewMenuItems =
-            [ Menu.link Icon.tv Strings.Spectate Strings.SpectateDescription ({ r | section = Just Spectate } |> Route.Lobby |> Route.url |> Just)
+            [ Menu.link Icon.spectator Strings.Spectate Strings.SpectateDescription ({ r | section = Just Spectate } |> Route.Lobby |> Route.url |> Just)
             , case s of
                 Configure ->
-                    Menu.button Icon.play Strings.ReturnViewToGame Strings.ReturnViewToGameDescription (Nothing |> ChangeSection |> wrap |> Maybe.justIf (game /= Nothing))
+                    Menu.button Icon.start Strings.ReturnViewToGame Strings.ReturnViewToGameDescription (Nothing |> ChangeSection |> wrap |> Maybe.justIf (game /= Nothing))
 
                 _ ->
-                    Menu.button Icon.cog Strings.ViewConfiguration Strings.ViewConfigurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
+                    Menu.button Icon.configure Strings.ViewConfiguration Strings.ViewConfigurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
             ]
 
         privilegedLobbyMenuItems =
-            [ Menu.button Icon.stopCircle Strings.EndGame Strings.EndGameDescription (game |> Maybe.andThen (\g -> EndGame |> wrap |> Maybe.justIf (g.winner == Nothing)))
+            [ Menu.button Icon.end Strings.EndGame Strings.EndGameDescription (game |> Maybe.andThen (\g -> EndGame |> wrap |> Maybe.justIf (g.winner == Nothing)))
             ]
 
         mdMenuItems =
@@ -717,7 +717,7 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
         Menu.BottomEnd
         (IconButton.view shared
             Strings.GameMenu
-            (Icon.bars |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+            (Icon.menu |> Icon.styled [ Icon.lg ] |> NeList.just)
             (menuState |> Menu.toggle |> SetGameMenuState |> wrap |> Just)
         )
         separatedMenuItems
@@ -832,25 +832,25 @@ viewNotification wrap shared users animationState notification =
         ( icon, message, class ) =
             case notification.message of
                 UserConnected id ->
-                    ( Icon.viewIcon Icon.plug
+                    ( Icon.view Icon.connected
                     , Strings.UserConnected { username = username shared users id } |> Lang.html shared
                     , Nothing
                     )
 
                 UserDisconnected id ->
-                    ( Icon.layers [] [ Icon.viewIcon Icon.plug, Icon.viewIcon Icon.slash ]
+                    ( Icon.view Icon.disconnected
                     , Strings.UserDisconnected { username = username shared users id } |> Lang.html shared
                     , Nothing
                     )
 
                 UserJoined id ->
-                    ( Icon.viewIcon Icon.signInAlt
+                    ( Icon.view Icon.join
                     , Strings.UserJoined { username = username shared users id } |> Lang.html shared
                     , Nothing
                     )
 
                 UserLeft id leaveReason ->
-                    ( Icon.viewIcon Icon.signOutAlt
+                    ( Icon.view Icon.leave
                     , case leaveReason of
                         User.LeftNormally ->
                             Strings.UserLeft { username = username shared users id } |> Lang.html shared
@@ -861,7 +861,7 @@ viewNotification wrap shared users animationState notification =
                     )
 
                 Error mdError ->
-                    ( Icon.viewIcon Icon.exclamationTriangle
+                    ( Icon.view Icon.bug
                     , MdError.describe mdError |> Lang.html shared
                     , Just "error"
                     )
@@ -990,7 +990,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                 if localUserId /= userId then
                                     case user.privilege of
                                         User.Unprivileged ->
-                                            [ Menu.button Icon.userPlus
+                                            [ Menu.button Icon.userPromote
                                                 Strings.Promote
                                                 Strings.Promote
                                                 (SetPrivilege userId User.Privileged |> wrap |> Just)
@@ -999,7 +999,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
 
                                         User.Privileged ->
                                             [ Menu.button
-                                                Icon.userMinus
+                                                Icon.userDemote
                                                 Strings.Demote
                                                 Strings.Demote
                                                 (SetPrivilege userId User.Unprivileged |> wrap |> Just)
@@ -1016,7 +1016,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                         if (localUserId == userId && not audienceMode) || localUserPrivilege == User.Privileged then
                             case user.role of
                                 User.Player ->
-                                    [ Menu.button Icon.eye
+                                    [ Menu.button Icon.spectator
                                         Strings.BecomeSpectator
                                         Strings.BecomeSpectatorDescription
                                         (SetUserRole (Just userId) User.Spectator |> wrap |> Just)
@@ -1024,7 +1024,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                     ]
 
                                 User.Spectator ->
-                                    [ Menu.button Icon.chessPawn
+                                    [ Menu.button Icon.player
                                         Strings.BecomePlayer
                                         Strings.BecomePlayerDescription
                                         (SetUserRole (Just userId) User.Player |> wrap |> Just)
@@ -1040,12 +1040,12 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                 let
                                     kickOrLeave =
                                         if userId == localUserId then
-                                            Menu.button Icon.signOutAlt Strings.LeaveGame Strings.LeaveGame (Leave |> wrap |> Just) |> Just
+                                            Menu.button Icon.leave Strings.LeaveGame Strings.LeaveGame (Leave |> wrap |> Just) |> Just
 
                                         else
                                             case localUserPrivilege of
                                                 User.Privileged ->
-                                                    Menu.button Icon.ban Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
+                                                    Menu.button Icon.userKick Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
 
                                                 User.Unprivileged ->
                                                     Nothing
@@ -1058,7 +1058,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                         else if not isAway && game /= Nothing then
                                             case localUserPrivilege of
                                                 User.Privileged ->
-                                                    Menu.button Icon.userClock Strings.SetAway Strings.SetAway (userId |> SetAway |> wrap |> Just) |> Just
+                                                    Menu.button Icon.userAway Strings.SetAway Strings.SetAway (userId |> SetAway |> wrap |> Just) |> Just
 
                                                 User.Unprivileged ->
                                                     Nothing
@@ -1124,13 +1124,13 @@ setPresenceMenuItem : (Msg -> msg) -> Maybe Player -> Menu.Part msg
 setPresenceMenuItem wrap player =
     case player |> Maybe.map .presence of
         Just Player.Active ->
-            Menu.button Icon.userClock Strings.SetAway Strings.SetAway (Player.Away |> Game.SetPresence |> GameMsg |> wrap |> Just)
+            Menu.button Icon.userAway Strings.SetAway Strings.SetAway (Player.Away |> Game.SetPresence |> GameMsg |> wrap |> Just)
 
         Just Player.Away ->
-            Menu.button Icon.userCheck Strings.SetBack Strings.SetBack (Player.Active |> Game.SetPresence |> GameMsg |> wrap |> Just)
+            Menu.button Icon.userBack Strings.SetBack Strings.SetBack (Player.Active |> Game.SetPresence |> GameMsg |> wrap |> Just)
 
         Nothing ->
-            Menu.button Icon.userClock Strings.SetAway Strings.SetAway Nothing
+            Menu.button Icon.userAway Strings.SetAway Strings.SetAway Nothing
 
 
 userDetails : Shared -> Maybe Game -> User.Id -> User -> ( List (Html msg), List (Html msg) )
@@ -1193,7 +1193,7 @@ viewCastButton wrap shared auth attrs =
     [ Html.div (HtmlA.class "cast-button" :: attrs)
         [ IconButton.view shared
             Strings.Cast
-            (Icon.chromecast |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+            (Icon.chromecast |> Icon.styled [ Icon.lg ] |> NeList.just)
             (auth |> TryCast |> wrap |> Just)
         ]
     ]

@@ -8,12 +8,12 @@ module MassiveDecks.Requests.HttpData exposing
     , view
     )
 
+import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Error as Error
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Route exposing (Route)
 import MassiveDecks.Requests.HttpData.Messages exposing (..)
@@ -121,5 +121,5 @@ refreshButton shared { loading } =
     in
     IconButton.view shared
         Strings.Refresh
-        (Icon.sync |> Icon.present |> applyStyle |> NeList.just)
+        (Icon.refresh |> applyStyle |> NeList.just)
         (Pull |> Maybe.justIf (not loading))

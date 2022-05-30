@@ -12,11 +12,11 @@ module MassiveDecks.Components.Form.Message exposing
     , warning
     )
 
+import FontAwesome as Icon exposing (Icon)
 import FontAwesome.Attributes as Icon
-import FontAwesome.Icon as Icon exposing (Icon)
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Strings exposing (MdString)
@@ -28,7 +28,7 @@ import Svg.Attributes as Svg
 
 type alias Fix msg =
     { description : MdString
-    , icon : Icon
+    , icon : Icon Icon.WithoutId
     , action : msg
     }
 
@@ -120,16 +120,16 @@ internalMessage shared { severity, description, fixes } =
         ( class, icon ) =
             case severity of
                 Info ->
-                    ( "info", Icon.infoCircle )
+                    ( "info", Icon.info )
 
                 Warning ->
-                    ( "warning", Icon.exclamationTriangle )
+                    ( "warning", Icon.warning )
 
                 Error ->
-                    ( "inline-error", Icon.exclamationCircle )
+                    ( "inline-error", Icon.bug )
     in
     Html.span [ HtmlA.class class ]
-        [ Icon.viewStyled [ Icon.fw, Svg.class "message-type-icon" ] icon
+        [ icon |> Icon.styled [ Icon.fw, Svg.class "message-type-icon" ] |> Icon.view
         , Html.span [] [ description |> Lang.html shared ]
         , Html.ul [ HtmlA.class "fixes" ] (fixes |> List.map (viewFix shared))
         ]
@@ -137,4 +137,4 @@ internalMessage shared { severity, description, fixes } =
 
 viewFix : Shared -> Fix msg -> Html msg
 viewFix shared { icon, description, action } =
-    Html.li [] [ IconButton.view shared description (icon |> Icon.present |> NeList.just) (Just action) ]
+    Html.li [] [ IconButton.view shared description (icon |> NeList.just) (Just action) ]

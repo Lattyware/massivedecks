@@ -5,9 +5,8 @@ module MassiveDecks.Card.Call.Editor exposing
     , view
     )
 
-import FontAwesome.Icon as Icon
+import FontAwesome as Icon
 import FontAwesome.Layering as Icon
-import FontAwesome.Solid as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -19,6 +18,7 @@ import MassiveDecks.Card.Parts as Parts exposing (Parts)
 import MassiveDecks.Card.Parts.Part as Part
 import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
@@ -134,8 +134,8 @@ view wrap shared { parts, selected, error } =
 
         inlineControls =
             Html.p []
-                [ Button.view shared Button.Outlined Strings.AddText Strings.AddText (Icon.plus |> Icon.viewIcon) [ addAction (Parts.Text "..." Part.NoStyle) |> HtmlE.onClick ]
-                , Button.view shared Button.Outlined Strings.AddSlot Strings.AddSlot (Icon.plus |> Icon.viewIcon) [ addSlot |> HtmlE.onClick ]
+                [ Button.view shared Button.Outlined Strings.AddText Strings.AddText (Icon.add |> Icon.view) [ addAction (Parts.Text "..." Part.NoStyle) |> HtmlE.onClick ]
+                , Button.view shared Button.Outlined Strings.AddSlot Strings.AddSlot (Icon.add |> Icon.view) [ addSlot |> HtmlE.onClick ]
                 ]
 
         selectedPart =
@@ -180,7 +180,7 @@ view wrap shared { parts, selected, error } =
                     Html.nothing
 
         viewError e =
-            Message.errorWithFix e [ { description = Strings.AddSlot, icon = Icon.plus, action = addSlot } ]
+            Message.errorWithFix e [ { description = Strings.AddSlot, icon = Icon.add, action = addSlot } ]
                 |> Message.view shared
     in
     Html.div [ HtmlA.class "call-editor" ]
@@ -243,17 +243,17 @@ controls wrap shared max selected =
             index |> Maybe.andThen (\i -> Move i by |> wrap |> Maybe.justIf (test i))
 
         generalControls =
-            [ IconButton.view shared Strings.Remove (Icon.minus |> Icon.present |> NeList.just) (index |> Maybe.map (Remove >> wrap))
-            , IconButton.view shared Strings.MoveLeft (Icon.arrowLeft |> Icon.present |> NeList.just) (move -1 ((<) 0))
-            , IconButton.view shared Strings.MoveRight (Icon.arrowRight |> Icon.present |> NeList.just) (move 1 ((>) max))
+            [ IconButton.view shared Strings.Remove (Icon.remove |> NeList.just) (index |> Maybe.map (Remove >> wrap))
+            , IconButton.view shared Strings.MoveLeft (Icon.left |> NeList.just) (move -1 ((<) 0))
+            , IconButton.view shared Strings.MoveRight (Icon.right |> NeList.just) (move 1 ((>) max))
             ]
 
         setIfDifferent old updated new =
             index |> Maybe.andThen (\i -> Set i (updated new) |> wrap |> Maybe.justIf (old /= new))
 
         styleControls setStyle =
-            [ IconButton.view shared Strings.Normal (Icon.font |> Icon.present |> NeList.just) (setStyle Part.NoStyle)
-            , IconButton.view shared Strings.Emphasise (Icon.italic |> Icon.present |> NeList.just) (setStyle Part.Em)
+            [ IconButton.view shared Strings.Normal (Icon.normalText |> NeList.just) (setStyle Part.NoStyle)
+            , IconButton.view shared Strings.Emphasise (Icon.italicText |> NeList.just) (setStyle Part.Em)
             ]
 
         transformControls setTransform =

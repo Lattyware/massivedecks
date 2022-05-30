@@ -1,8 +1,8 @@
 module MassiveDecks.Pages.Lobby.Configure.Stages exposing (all)
 
-import FontAwesome.Solid as Icon
 import MassiveDecks.Components.Form.Message as Message
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Pages.Lobby.Configure.Configurable as Configurable
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Editor as Editor
 import MassiveDecks.Pages.Lobby.Configure.Configurable.Model exposing (Configurable)
@@ -85,7 +85,7 @@ starting wrap =
                     always
                         [ Message.info Strings.StartingTimeLimitDescription
                         , Message.infoWithFix (Strings.SeeAlso { rule = Strings.HouseRuleCzarChoices })
-                            [ { description = Strings.ConfigureRules, icon = Icon.eye, action = Rules |> ChangeTab |> wrap } ]
+                            [ { description = Strings.ConfigureRules, icon = Icon.show, action = Rules |> ChangeTab |> wrap } ]
                         ]
                 }
             ]

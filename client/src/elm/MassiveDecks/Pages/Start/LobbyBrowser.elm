@@ -5,12 +5,12 @@ module MassiveDecks.Pages.Start.LobbyBrowser exposing
     , view
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Keyed as HtmlK
 import Http
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Messages as Global
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.GameCode as GameCode
@@ -100,7 +100,7 @@ lobbyList shared summaries =
 emptyContent : Shared -> Html Global.Msg
 emptyContent shared =
     Html.div [ HtmlA.class "empty-info" ]
-        [ Icon.viewIcon Icon.ghost
+        [ Icon.view Icon.empty
         , NoPublicGames |> Lang.html shared
         , Html.text " "
         , Html.a [ Route.Start { section = Start.New } |> Route.href ] [ StartYourOwn |> Lang.html shared ]
@@ -170,12 +170,13 @@ lobby shared data =
          ]
             |> Just
         )
-        ([ Icon.viewStyled [ HtmlA.title "Join Game" ] Icon.signInAlt ] |> Just)
+        ([ Icon.join |> Icon.styled [ HtmlA.title "Join Game" ] |> Icon.view ] |> Just)
         [ Html.span [ HtmlA.class "lobby-name" ]
             [ Html.text data.name
             , Html.text " "
             , Icon.lock
-                |> Icon.viewStyled [ Strings.LobbyRequiresPassword |> Lang.title shared ]
+                |> Icon.styled [ Strings.LobbyRequiresPassword |> Lang.title shared ]
+                |> Icon.view
                 |> Maybe.justIf data.password
                 |> Maybe.withDefault Html.nothing
             ]

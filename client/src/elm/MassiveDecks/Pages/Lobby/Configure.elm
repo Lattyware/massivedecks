@@ -6,8 +6,7 @@ module MassiveDecks.Pages.Lobby.Configure exposing
     )
 
 import Dict exposing (Dict)
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -19,6 +18,7 @@ import MassiveDecks.Components.Form as Form
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Game.Rules as Rules
+import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.Decoders as Decoders
 import MassiveDecks.Models.Encoders as Encoders
@@ -195,7 +195,7 @@ view wrap wrapLobby shared return disabledReason gameCode { lobby, configure } =
                 Button.Raised
                 Strings.ReturnViewToGame
                 Strings.ReturnViewToGameDescription
-                (Icon.arrowLeft |> Icon.viewIcon)
+                (Icon.back |> Icon.view)
                 [ HtmlA.class "game-in-progress", HtmlE.onClick msg ]
 
         returnButton =
@@ -262,13 +262,13 @@ actions wrap shared hasChanges config =
         [ Fab.view shared
             Fab.Normal
             Strings.SaveChanges
-            (Icon.save |> Icon.present)
+            Icon.save
             (SaveChanges |> wrap |> Maybe.justIf (Configurable.isValid (all wrap config) config))
             [ HtmlA.classList [ ( "action", True ), ( "important", True ), ( "exited", not hasChanges ) ] ]
         , Fab.view shared
             Fab.Mini
             Strings.RevertChanges
-            (Icon.undo |> Icon.present)
+            Icon.undo
             (RevertChanges |> wrap |> Just)
             [ HtmlA.classList [ ( "action", True ), ( "exited", not hasChanges ), ( "normal", True ) ] ]
         ]
@@ -410,7 +410,7 @@ startGameSegment wrap wrapLobby shared canEdit model lobby returnButton =
                 Button.Raised
                 Strings.StartGame
                 Strings.StartGame
-                (Icon.rocket |> Icon.viewIcon)
+                (Icon.start |> Icon.view)
                 [ startGameAttrs ]
             ]
         ]
@@ -480,7 +480,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                 [ Message.errorWithFix
                     Strings.NeedAtLeastOneDeck
                     [ { description = Strings.NoDecksHint
-                      , icon = Icon.plus
+                      , icon = Icon.add
                       , action = shared |> Lang.recommended |> Decks.Add |> DecksMsg |> wrap
                       }
                     ]
@@ -520,7 +520,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                     |> Maybe.justIf (summaries .calls < 1)
                 , Message.errorWithFix
                     (Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredResponses, have = numberOfResponses })
-                    [ Message.Fix (Strings.AddBlankCards { amount = diff }) Icon.plus fixMsg ]
+                    [ Message.Fix (Strings.AddBlankCards { amount = diff }) Icon.add fixMsg ]
                     |> Maybe.justIf (numberOfResponses < requiredResponses)
                 ]
 
@@ -545,11 +545,11 @@ startGameProblems shared wrap wrapLobby users model remote =
             [ Message.errorWithFix
                 Strings.NeedAtLeastThreePlayers
                 [ { description = Strings.Invite
-                  , icon = Icon.bullhorn
+                  , icon = Icon.invite
                   , action = wrapLobby Lobby.ToggleInviteDialog
                   }
                 , { description = Strings.AddAnAiPlayer
-                  , icon = Icon.robot
+                  , icon = Icon.computer
                   , action = addAisFixMsg
                   }
                 ]
@@ -557,7 +557,7 @@ startGameProblems shared wrap wrapLobby users model remote =
             , Message.errorWithFix
                 Strings.NeedAtLeastOneHuman
                 [ { description = Strings.Invite
-                  , icon = Icon.bullhorn
+                  , icon = Icon.invite
                   , action = wrapLobby Lobby.ToggleInviteDialog
                   }
                 ]
@@ -594,11 +594,11 @@ startGameProblems shared wrap wrapLobby users model remote =
             [ Message.errorWithFix
                 Strings.RandoCantWrite
                 [ { description = Strings.DisableRando
-                  , icon = Icon.powerOff
+                  , icon = Icon.disableAi
                   , action = disableRandoFixMsg
                   }
                 , { description = Strings.DisableComedyWriter
-                  , icon = Icon.eraser
+                  , icon = Icon.disableEdit
                   , action = disableComedyWriterFixMsg
                   }
                 ]

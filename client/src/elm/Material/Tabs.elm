@@ -4,7 +4,7 @@ module Material.Tabs exposing
     , view
     )
 
-import FontAwesome.Icon as Icon exposing (Icon)
+import FontAwesome as Icon exposing (Icon)
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -34,7 +34,7 @@ type alias Model id msg =
 -}
 type alias TabModel =
     { label : MdString
-    , icon : Maybe Icon
+    , icon : Maybe (Icon Icon.WithoutId)
     }
 
 
@@ -56,7 +56,7 @@ view shared { selected, change, ids, tab, equals } =
                 ( iconAttr, iconNode ) =
                     case icon of
                         Just i ->
-                            ( hasImageIcon, Icon.viewStyled [ HtmlA.slot "icon" ] i )
+                            ( hasImageIcon, i |> Icon.styled [ HtmlA.slot "icon" ] |> Icon.view )
 
                         Nothing ->
                             ( HtmlA.nothing, Html.nothing )

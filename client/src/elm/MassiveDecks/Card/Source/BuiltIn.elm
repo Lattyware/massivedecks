@@ -3,8 +3,7 @@ module MassiveDecks.Card.Source.BuiltIn exposing
     , methods
     )
 
-import FontAwesome.Icon as Icon
-import FontAwesome.Solid as Icon
+import FontAwesome as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
 import MassiveDecks.Card.Source.BuiltIn.Model exposing (..)
@@ -122,7 +121,7 @@ editor selected shared existing update _ _ =
                     , icon = Nothing
                     , primary = [ Html.text name ]
                     , secondary = Just secondary
-                    , meta = Icon.check |> Icon.viewIcon |> Maybe.justIf (existing |> List.any matches)
+                    , meta = Icon.accept |> Icon.view |> Maybe.justIf (existing |> List.any matches)
                     }
             in
             Html.div [ HtmlA.class "primary" ]
@@ -189,4 +188,4 @@ tooltip id renderTooltip =
 
 logo : () -> Maybe (Html msg)
 logo () =
-    Icon.massiveDecks |> Icon.viewIcon |> Just
+    Icon.massiveDecks |> Icon.view |> Just
