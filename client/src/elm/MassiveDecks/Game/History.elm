@@ -16,9 +16,9 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Pages.Lobby.Configure.Model exposing (Config)
 import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NeList
 import Material.IconButton as IconButton
 
 
@@ -26,9 +26,9 @@ view : (Msg -> msg) -> Shared -> Config -> Dict User.Id User -> String -> List (
 view wrap shared config users name history =
     [ Html.div [ HtmlA.id "top-content" ]
         [ Html.div [ HtmlA.id "minor-actions" ]
-            [ IconButton.view shared
-                Strings.ViewGameHistoryAction
-                (Icon.back |> NeList.just)
+            [ IconButton.view
+                (Icon.back |> Icon.view)
+                (Strings.ViewGameHistoryAction |> Lang.string shared)
                 (ToggleHistoryView |> wrap |> Just)
             ]
         ]

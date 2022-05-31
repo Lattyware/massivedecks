@@ -1,5 +1,5 @@
 import "@webcomponents/webcomponentsjs/webcomponents-loader";
-import "./material";
+import "../../elm-material/src/ts/material";
 import "./paper";
 import "../scss/massive-decks.scss";
 import * as serverConnection from "./server-connection";
@@ -30,22 +30,22 @@ export function load(remoteMode: boolean) {
         copy.register(app.ports.copyText);
         notificationManager.register(
           app.ports.notificationState,
-          app.ports.notificationCommands
+          app.ports.notificationCommands,
         );
         language.register(app.ports.languageChanged);
         confetti.register(app.ports.startConfetti);
         import(/* webpackChunkName: "cast-client" */ "./cast/client").then(
           (cast) => {
             cast.register(app.ports.tryCast, app.ports.castStatus);
-          }
+          },
         );
       } else {
         import(/* webpackChunkName: "cast-server" */ "./cast/server").then(
           (cast) => {
             cast.register(app.ports.remoteControl);
-          }
+          },
         );
       }
-    }
+    },
   );
 }

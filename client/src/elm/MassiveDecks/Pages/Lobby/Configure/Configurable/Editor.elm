@@ -15,14 +15,12 @@ module MassiveDecks.Pages.Lobby.Configure.Configurable.Editor exposing
 import FontAwesome as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (Shared)
 import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Util.Html.Events as HtmlE
+import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NeList
 import Material.IconButton as IconButton
 import Material.Switch as Switch
 import Material.TextField as TextField
@@ -55,23 +53,18 @@ maybe default base noOp update model value args =
 
                 Nothing ->
                     ( False, True )
+
+        updateWithNewValue v =
+            if v then
+                default |> Just |> update
+
+            else
+                Nothing |> update
     in
     Switch.view
-        [ selected |> HtmlA.selected
-        , if readOnly || disabled then
-            HtmlA.disabled True
-
-          else
-            let
-                newValue =
-                    if selected then
-                        Nothing
-
-                    else
-                        Just default
-            in
-            newValue |> update |> HtmlE.onClick
-        ]
+        Html.nothing
+        selected
+        (updateWithNewValue |> Maybe.justIf (not (readOnly || disabled)))
         :: base noOp (Just >> update) model (value |> Maybe.andThen identity) args
 
 
@@ -81,28 +74,14 @@ bool label _ update _ value { shared, readOnly } =
         disabled =
             readOnly || value == Nothing
 
-        labelClick =
-            value |> Maybe.andThen (Maybe.justIf (not disabled)) |> Maybe.map (not >> update >> HtmlE.onClick)
-
         selected =
             value |> Maybe.withDefault False
     in
-    [ Html.label
-        (List.filterMap identity
-            [ labelClick
-            , HtmlA.class "primary" |> Just
-            ]
-        )
-        [ Switch.view
-            [ selected |> HtmlA.selected
-            , if disabled then
-                HtmlA.disabled True
-
-              else
-                selected |> not |> update |> HtmlE.onClickNoPropagation
-            ]
-        , label |> Lang.html shared
-        ]
+    [ Switch.viewWithAttrs
+        (label |> Lang.html shared)
+        selected
+        (update |> Maybe.justIf (not disabled))
+        [ HtmlA.class "primary" ]
     ]
 
 
@@ -125,33 +104,23 @@ map f g base noOp update model value args =
 
 string : MdString -> Def String model msg
 string label _ update _ value { shared, readOnly } =
-    [ TextField.view shared
-        label
+    [ TextField.viewWithAttrs
+        (label |> Lang.string shared)
         TextField.Text
         (value |> Maybe.withDefault "")
-        [ if readOnly || value == Nothing then
-            HtmlA.disabled True
-
-          else
-            HtmlE.onInput update
-        , HtmlA.class "primary"
-        ]
+        (update |> Maybe.justIf (not (readOnly || (value == Nothing))))
+        [ HtmlA.class "primary" ]
     ]
 
 
 int : MdString -> Def Int model msg
 int label noOp update _ value { shared, readOnly } =
-    [ TextField.view shared
-        label
+    [ TextField.viewWithAttrs
+        (label |> Lang.string shared)
         TextField.Number
         (value |> Maybe.withDefault 0 |> String.fromInt)
-        [ if readOnly || value == Nothing then
-            HtmlA.disabled True
-
-          else
-            HtmlE.onInput (String.toInt >> Maybe.map update >> Maybe.withDefault noOp)
-        , HtmlA.class "primary"
-        ]
+        ((String.toInt >> Maybe.map update >> Maybe.withDefault noOp) |> Maybe.justIf (not (readOnly || (value == Nothing))))
+        [ HtmlA.class "primary" ]
     ]
 
 
@@ -190,21 +159,16 @@ password setPasswordVisibility label _ update model value { shared, readOnly } =
                 ( Icon.show, TextField.Password )
 
         toggleVisibility =
-            IconButton.view shared
-                Strings.LobbyPassword
-                (icon |> NeList.just)
+            IconButton.view
+                (icon |> Icon.view)
+                (Strings.LobbyPassword |> Lang.string shared)
                 (model.passwordVisible |> not |> setPasswordVisibility |> Just)
     in
-    [ TextField.view shared
-        label
+    [ TextField.viewWithAttrs
+        (label |> Lang.string shared)
         type_
         (value |> Maybe.withDefault "")
-        [ if readOnly || (value == Nothing) then
-            HtmlA.disabled True
-
-          else
-            HtmlE.onInput update
-        , HtmlA.class "primary"
-        ]
+        (update |> Maybe.justIf (not (readOnly || (value == Nothing))))
+        [ HtmlA.class "primary" ]
     , toggleVisibility
     ]

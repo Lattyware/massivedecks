@@ -8,6 +8,7 @@ import MassiveDecks.Game.Messages as Game exposing (Msg)
 import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings.Languages as Lang
 import Material.Fab as Fab
 
 
@@ -64,10 +65,10 @@ viewSingle wrap shared visible action =
                 Discard ->
                     IconView Icon.discard normal Fab.Mini Strings.HouseRuleNeverHaveIEver Game.Discard
     in
-    Fab.view shared
+    Fab.view
         type_
-        title
-        icon
+        (title |> Lang.string shared)
+        (icon |> Icon.view)
         (onClick |> wrap |> Just)
         (HtmlA.classList [ ( "action", True ), ( "exited", visible /= Just action ) ] :: attrs)
 

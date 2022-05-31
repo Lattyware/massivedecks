@@ -202,9 +202,9 @@ addDeckWidget wrap shared existing deckToAdd =
             [ Html.div [ HtmlA.class "multipart" ] [ sourcePicker ]
             , Html.div [ HtmlA.class "multipart" ]
                 [ deckPicker
-                , IconButton.view shared
-                    Strings.AddDeck
-                    (NeList Icon.add [])
+                , IconButton.view
+                    (Icon.add |> Icon.view)
+                    (Strings.AddDeck |> Lang.string shared)
                     (submit |> Result.toMaybe)
                 ]
             ]
@@ -284,9 +284,8 @@ name wrap shared canEdit index source loading maybeError details =
     let
         removeButton =
             IconButton.view
-                shared
-                Strings.RemoveDeck
-                (NeList Icon.remove [])
+                (Icon.remove |> Icon.view)
+                (Strings.RemoveDeck |> Lang.string shared)
                 (index |> Remove |> wrap |> Just)
                 |> Maybe.justIf canEdit
 

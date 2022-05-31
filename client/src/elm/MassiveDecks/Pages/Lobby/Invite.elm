@@ -16,7 +16,6 @@ import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Events as HtmlE
-import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import Material.Card as Card
 import Material.IconButton as IconButton
 import QRCode
@@ -27,7 +26,10 @@ import Url exposing (Url)
 -}
 button : (Msg -> msg) -> Shared -> Html msg
 button wrap shared =
-    IconButton.view shared Strings.Invite (Icon.invite |> NeList.just) (ToggleInviteDialog |> wrap |> Just)
+    IconButton.view
+        (Icon.invite |> Icon.view)
+        (Strings.Invite |> Lang.string shared)
+        (ToggleInviteDialog |> wrap |> Just)
 
 
 {-| A dialog overlay that displays information on how to invite people to the game.
@@ -43,9 +45,9 @@ dialog wrap shared gameCode password open =
         , HtmlA.classList [ ( "open", open ) ]
         , Lobby.ToggleInviteDialog |> wrap |> HtmlE.onClick
         ]
-        [ IconButton.viewNoPropagation shared
-            Strings.Close
-            (Icon.close |> NeList.just)
+        [ IconButton.viewNoPropagation
+            (Icon.close |> Icon.view)
+            (Strings.Close |> Lang.string shared)
             (Lobby.ToggleInviteDialog |> wrap |> Just)
         , Card.view [ HtmlE.onClickNoPropagation (wrap NoOp) ]
             [ Strings.InviteExplanation { gameCode = GameCode.toString gameCode, password = password } |> Lang.html shared
@@ -59,9 +61,9 @@ dialog wrap shared gameCode password open =
                         , HtmlA.id "invite-link-field"
                         ]
                         []
-                    , IconButton.view shared
-                        Strings.Copy
-                        (Icon.copy |> NeList.just)
+                    , IconButton.view
+                        (Icon.copy |> Icon.view)
+                        (Strings.Copy |> Lang.string shared)
                         ("invite-link-field" |> Copy |> wrap |> Just)
                     ]
                 )

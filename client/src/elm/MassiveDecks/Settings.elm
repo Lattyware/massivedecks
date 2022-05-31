@@ -16,7 +16,6 @@ import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
 import Http
 import MassiveDecks.Card.Source as Source
 import MassiveDecks.Card.Source.Model as Source
@@ -167,9 +166,9 @@ view wrap shared =
                 Icon.configure
 
         button =
-            IconButton.view shared
-                Strings.SettingsTitle
-                (icon |> Icon.styled [ Icon.lg ] |> NeList.just)
+            IconButton.view
+                (icon |> Icon.styled [ Icon.lg ] |> Icon.view)
+                (Strings.SettingsTitle |> Lang.string shared)
                 (ToggleOpen |> wrap |> Just)
 
         panel =
@@ -298,18 +297,18 @@ cardSize wrap shared =
                 [ HtmlA.class "card-size-slider" ]
                 [ Icon.minimalCardSize |> Icon.view
                 , Slider.view
-                    [ HtmlA.class "primary"
-                    , Slider.step 1
-                    , Slider.min 1
-                    , Slider.max 3
-                    , Slider.withTickMarks 3
-                    , cardSizeFromValue
-                        >> Maybe.withDefault Full
-                        >> ChangeCardSize
-                        >> wrap
-                        |> Slider.onChange
-                    , settings.cardSize |> cardSizeToValue |> Slider.value
-                    ]
+                    { min = 1
+                    , max = 3
+                    , step = 1
+                    , value = settings.cardSize |> cardSizeToValue
+                    , onChange =
+                        cardSizeFromValue
+                            >> Maybe.withDefault Full
+                            >> ChangeCardSize
+                            >> wrap
+                            |> Just
+                    , attrs = [ HtmlA.class "primary" ]
+                    }
                 , Icon.callCard |> Icon.view
                 ]
             ]
@@ -331,15 +330,14 @@ autoAdvanceRound wrap shared =
         (Html.div
             [ HtmlA.class "multipart" ]
             [ Switch.view
-                [ HtmlE.onClick (currentValue |> not |> ToggleAutoAdvance >> wrap)
-                , HtmlA.selected currentValue
-                , HtmlA.id "auto-advance-enable"
-                ]
-            , Html.label [ HtmlA.for "auto-advance-enable" ]
-                [ Icon.view Icon.autoAdvance
-                , Html.text " "
-                , Strings.AutoAdvanceSetting |> Lang.html shared
-                ]
+                (Html.span []
+                    [ Icon.view Icon.autoAdvance
+                    , Html.text " "
+                    , Strings.AutoAdvanceSetting |> Lang.html shared
+                    ]
+                )
+                currentValue
+                (ToggleAutoAdvance >> wrap |> Just)
             ]
         )
         [ Message.info Strings.AutoAdvanceExplanation ]
@@ -380,28 +378,26 @@ speechVoiceSelector wrap shared =
                 [ Html.div
                     [ HtmlA.class "multipart" ]
                     [ Switch.view
-                        [ HtmlE.onClick (enabled |> not |> ToggleSpeech >> wrap)
-                        , HtmlA.disabled isDisabled
-                        , HtmlA.selected enabled
-                        , HtmlA.id "speech-enable"
-                        ]
-                    , Html.label [ HtmlA.for "speech-enable" ]
-                        [ Icon.view Icon.tts
-                        , Html.text " "
-                        , Strings.SpeechSetting |> Lang.html shared
-                        ]
+                        (Html.span []
+                            [ Icon.view Icon.tts
+                            , Html.text " "
+                            , Strings.SpeechSetting |> Lang.html shared
+                            ]
+                        )
+                        enabled
+                        (ToggleSpeech >> wrap |> Maybe.justIf (not isDisabled))
                     ]
                 , Html.div [ HtmlA.class "children" ]
-                    [ Select.view shared
-                        { label = Strings.VoiceSetting
+                    [ Select.view
+                        { label = Strings.VoiceSetting |> Lang.string shared
                         , idToString = identity
                         , idFromString = Just
                         , selected = selectedVoice
                         , wrap = ChangeSpeech >> wrap
+                        , disabled = not enabled || isDisabled
+                        , fullWidth = True
+                        , attrs = [ HtmlA.class "secondary" ]
                         }
-                        [ HtmlA.disabled (not enabled || isDisabled)
-                        , HtmlA.class "secondary"
-                        ]
                         (voices |> List.sortWith voiceSortOrder |> List.map speechVoiceOption)
                     ]
                 ]
@@ -464,34 +460,34 @@ notificationsSwitch wrap shared =
         settings =
             shared.settings.settings.notifications
 
-        unsupported =
-            not (Notifications.supportsNotifications shared.notifications)
+        supported =
+            Notifications.supportsNotifications shared.notifications
 
         enabled =
-            not unsupported && settings.enabled
+            supported && settings.enabled
 
         visibilityUnsupported =
             not (Notifications.supportsVisibility shared.notifications)
 
         visibilityDisabled =
-            visibilityUnsupported || unsupported || not settings.enabled
+            visibilityUnsupported || not enabled
     in
     Form.section shared
         "notifications"
         (Html.div []
             [ Html.div
                 [ HtmlA.class "multipart" ]
-                [ Switch.view
-                    [ HtmlE.onClick (enabled |> not |> ToggleNotifications >> wrap)
-                    , HtmlA.disabled unsupported
-                    , HtmlA.selected enabled
-                    , HtmlA.id "notifications-enable"
-                    ]
-                , Html.label [ HtmlA.for "notifications-enable" ]
-                    [ Icon.view Icon.notification
-                    , Html.text " "
-                    , Strings.NotificationsSetting |> Lang.html shared
-                    ]
+                [ Switch.viewWithAttrs
+                    (Html.span
+                        []
+                        [ Icon.view Icon.notification
+                        , Html.text " "
+                        , Strings.NotificationsSetting |> Lang.html shared
+                        ]
+                    )
+                    enabled
+                    (ToggleNotifications >> wrap |> Maybe.justIf supported)
+                    [ HtmlA.id "notifications-enable" ]
                 ]
             , Html.div [ HtmlA.classList [ ( "children", True ), ( "inactive", not enabled ) ] ]
                 [ Form.section
@@ -499,17 +495,16 @@ notificationsSwitch wrap shared =
                     "only-when-hidden"
                     (Html.div
                         [ HtmlA.class "multipart" ]
-                        [ Switch.view
-                            [ HtmlE.onClick (settings.requireNotVisible |> not |> ToggleOnlyWhenHidden >> wrap)
-                            , HtmlA.disabled visibilityDisabled
-                            , HtmlA.selected settings.requireNotVisible
-                            , HtmlA.id "only-when-hidden-toggle"
-                            ]
-                        , Html.label [ HtmlA.for "only-when-hidden-toggle" ]
-                            [ Icon.view Icon.hide
-                            , Html.text " "
-                            , Strings.NotificationOnlyWhenHiddenSetting |> Lang.html shared
-                            ]
+                        [ Switch.viewWithAttrs
+                            (Html.span []
+                                [ Icon.view Icon.hide
+                                , Html.text " "
+                                , Strings.NotificationOnlyWhenHiddenSetting |> Lang.html shared
+                                ]
+                            )
+                            settings.requireNotVisible
+                            (ToggleOnlyWhenHidden >> wrap |> Maybe.justIf (not visibilityDisabled))
+                            [ HtmlA.id "only-when-hidden-enable" ]
                         ]
                     )
                     [ Message.info Strings.NotificationsOnlyWhenHiddenExplanation
@@ -524,11 +519,11 @@ notificationsSwitch wrap shared =
         )
         [ Message.info Strings.NotificationsExplanation
         , Message.info Strings.NotificationsBrowserPermissions
-        , if unsupported then
-            Message.warning Strings.NotificationsUnsupportedExplanation
+        , if supported then
+            Message.none
 
           else
-            Message.none
+            Message.warning Strings.NotificationsUnsupportedExplanation
         ]
 
 
@@ -541,14 +536,16 @@ languageSelector wrap shared =
     Form.section
         shared
         "language"
-        (Select.view shared
-            { label = Strings.LanguageSetting
+        (Select.view
+            { label = Strings.LanguageSetting |> Lang.string shared
             , idToString = Lang.code
             , idFromString = Lang.fromCode
             , selected = Just selected
             , wrap = ChangeLang >> wrap
+            , disabled = False
+            , fullWidth = True
+            , attrs = []
             }
-            []
             (Lang.languages |> List.map (languageOption shared selected))
         )
         [ Message.info Strings.MissingLanguage ]

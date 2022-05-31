@@ -14,7 +14,6 @@ module MassiveDecks.Pages.Lobby.Model exposing
 
 import Dict exposing (Dict)
 import MassiveDecks.Animated exposing (Animated)
-import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Game.Model as Game
 import MassiveDecks.Game.Time as Time
@@ -24,6 +23,7 @@ import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
 import MassiveDecks.Pages.Lobby.Spectate.Model as Spectate
 import MassiveDecks.User as User exposing (User)
+import Material.Menu as Menu
 
 
 {-| A change. This is the result of the update function, and implies either an update to the current page or a redirect

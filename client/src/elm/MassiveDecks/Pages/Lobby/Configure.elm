@@ -88,7 +88,7 @@ update shared msg model config =
             ( model, shared, Actions.startGame )
 
         ChangeTab t ->
-            ( { model | tab = t }, shared, Cmd.none )
+            ( { model | tab = t |> Maybe.withDefault model.tab }, shared, Cmd.none )
 
         ResolveConflict source id ->
             case getComponent id of
@@ -191,12 +191,13 @@ view wrap wrapLobby shared return disabledReason gameCode { lobby, configure } =
                     Privacy.All |> PrivacyId |> getComponent |> Maybe.map viewComponent |> Maybe.withDefault []
 
         viewReturnButton msg =
-            Button.view shared
+            Button.viewWithAttrs
                 Button.Raised
-                Strings.ReturnViewToGame
-                Strings.ReturnViewToGameDescription
-                (Icon.back |> Icon.view)
-                [ HtmlA.class "game-in-progress", HtmlE.onClick msg ]
+                Button.Padded
+                (Strings.ReturnViewToGame |> Lang.string shared)
+                (Icon.back |> Icon.view |> Just)
+                (Just msg)
+                [ HtmlA.class "game-in-progress" ]
 
         returnButton =
             return |> Maybe.map viewReturnButton |> Maybe.withDefault (Html.div [] [])
@@ -218,12 +219,13 @@ view wrap wrapLobby shared return disabledReason gameCode { lobby, configure } =
             , disabledReason
                 |> Message.view shared
                 |> Maybe.withDefault Html.nothing
-            , Tabs.view shared
+            , Tabs.view
                 { selected = model.tab
                 , change = ChangeTab >> wrap
                 , ids = tabs
-                , tab = tab
+                , tab = tab shared
                 , equals = (==)
+                , stacked = False
                 }
             , Html.div [] tabComponent
             , startGameSegment wrap wrapLobby shared canEdit model lobby returnButton
@@ -259,16 +261,16 @@ applyChange wrap change config model =
 actions : (Msg -> msg) -> Shared -> Bool -> Config -> Html msg
 actions wrap shared hasChanges config =
     Html.div [ HtmlA.class "actions" ]
-        [ Fab.view shared
+        [ Fab.view
             Fab.Normal
-            Strings.SaveChanges
-            Icon.save
+            (Strings.SaveChanges |> Lang.string shared)
+            (Icon.save |> Icon.view)
             (SaveChanges |> wrap |> Maybe.justIf (Configurable.isValid (all wrap config) config))
             [ HtmlA.classList [ ( "action", True ), ( "important", True ), ( "exited", not hasChanges ) ] ]
-        , Fab.view shared
+        , Fab.view
             Fab.Mini
-            Strings.RevertChanges
-            Icon.undo
+            (Strings.RevertChanges |> Lang.string shared)
+            (Icon.undo |> Icon.view)
             (RevertChanges |> wrap |> Just)
             [ HtmlA.classList [ ( "action", True ), ( "exited", not hasChanges ), ( "normal", True ) ] ]
         ]
@@ -319,12 +321,13 @@ viewConflict wrap shared model local config conflict =
 
 resolveButton : (Msg -> msg) -> Shared -> Id -> Config.Source -> MdString -> Html msg
 resolveButton wrap shared conflict source description =
-    Button.view shared
+    Button.viewWithAttrs
         Button.Raised
-        description
-        description
-        Html.nothing
-        [ HtmlA.class "resolve", ResolveConflict source conflict |> wrap |> HtmlE.onClick ]
+        Button.Padded
+        (description |> Lang.string shared)
+        Nothing
+        (ResolveConflict source conflict |> wrap |> Just)
+        [ HtmlA.class "resolve" ]
 
 
 all : (Msg -> msg) -> Config -> Configurable.Component Id Config Model msg
@@ -390,13 +393,6 @@ startGameSegment wrap wrapLobby shared canEdit model lobby returnButton =
 
         startErrors =
             startGameProblems shared wrap wrapLobby lobby.users model config
-
-        startGameAttrs =
-            if List.isEmpty startErrors && canEdit then
-                StartGame |> wrap |> HtmlE.onClick
-
-            else
-                HtmlA.disabled True
     in
     Html.div []
         [ Form.section
@@ -406,12 +402,12 @@ startGameSegment wrap wrapLobby shared canEdit model lobby returnButton =
             (startErrors |> Maybe.justIf canEdit |> Maybe.withDefault [])
         , Html.div [ HtmlA.class "button-spread" ]
             [ returnButton
-            , Button.view shared
+            , Button.view
                 Button.Raised
-                Strings.StartGame
-                Strings.StartGame
-                (Icon.start |> Icon.view)
-                [ startGameAttrs ]
+                Button.Padded
+                (Strings.StartGame |> Lang.string shared)
+                (Icon.start |> Icon.view |> Just)
+                (StartGame |> wrap |> Maybe.justIf (List.isEmpty startErrors && canEdit))
             ]
         ]
 
@@ -626,14 +622,14 @@ startGameProblems shared wrap wrapLobby users model remote =
     [ deckIssues, playerIssues, aisNoWriteGoodIssues, configurationIssues ] |> List.concat |> List.filterMap identity
 
 
-tabs : NeList Tab
+tabs : List Tab
 tabs =
-    NeList Decks [ Rules, Stages, Privacy ]
+    [ Decks, Rules, Stages, Privacy ]
 
 
-tab : Tab -> Tabs.TabModel
-tab target =
-    { label = target |> tabName
+tab : Shared -> Tab -> Tabs.TabModel msg
+tab shared target =
+    { label = target |> tabName |> Lang.string shared
     , icon = Nothing
     }
 

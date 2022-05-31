@@ -1,9 +1,7 @@
-module MassiveDecks.Components.Menu.Model exposing
-    ( Corner(..)
-    , Item
+module MassiveDecks.Components.ContextMenu.Model exposing
+    ( Item
     , Menu
     , Part(..)
-    , State(..)
     )
 
 import FontAwesome as Icon exposing (Icon)
@@ -32,23 +30,3 @@ type alias Item =
     , text : MdString
     , description : MdString
     }
-
-
-{-| The corner of the anchor element the menu should position itself at.
--}
-type Corner
-    = TopLeft
-    | TopRight
-    | BottomLeft
-    | BottomRight
-    | TopStart
-    | TopEnd
-    | BottomStart
-    | BottomEnd
-
-
-{-| If the menu is visible or not.
--}
-type State
-    = Open
-    | Closed

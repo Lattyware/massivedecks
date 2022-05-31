@@ -13,6 +13,7 @@ import Browser.Events as Browser
 import Dict exposing (Dict)
 import FontAwesome as Icon
 import FontAwesome.Attributes as Icon
+import FontAwesome.Layering as Icon
 import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
@@ -1173,14 +1174,13 @@ viewWinner wrapLobby shared users localUser winners =
     let
         configureNextGame =
             if users |> Dict.get localUser |> Maybe.map (.privilege >> (==) User.Privileged) |> Maybe.withDefault False then
-                Button.view shared
+                Button.viewWithAttrs
                     Button.Raised
-                    Strings.ConfigureNextGame
-                    Strings.ConfigureNextGame
-                    (Icon.configure |> Icon.view)
-                    [ HtmlA.id "new-game-config"
-                    , Lobby.Configure |> Just |> Lobby.ChangeSection |> wrapLobby |> HtmlE.onClick
-                    ]
+                    Button.Padded
+                    (Strings.ConfigureNextGame |> Lang.string shared)
+                    (Icon.configure |> Icon.view |> Just)
+                    (Lobby.Configure |> Just |> Lobby.ChangeSection |> wrapLobby |> Just)
+                    [ HtmlA.id "new-game-config" ]
 
             else
                 Html.nothing
@@ -1257,7 +1257,7 @@ viewRound wrap shared auth timeAnchor config users model =
 
     -- TODO: Hide this when at top. Waiting on native elm scroll events, as currently we'd have to ping constantly.
     , Html.div [ HtmlA.class "scroll-top" ]
-        [ IconButton.view shared Strings.ScrollToTop (Icon.toTop |> NeList.just) (ScrollToTop |> wrap |> Just) ]
+        [ IconButton.view (Icon.toTop |> Icon.view) (Strings.ScrollToTop |> Lang.string shared) (ScrollToTop |> wrap |> Just) ]
     , renderDiscarded wrap shared config users model.discarded |> Maybe.withDefault Html.nothing
     ]
 
@@ -1278,12 +1278,12 @@ renderDiscarded wrap shared config users discarded =
                         [ Strings.Discarded { player = name } |> Lang.html shared
                         ]
                     , card |> Response.view shared config Card.Front []
-                    , Button.view shared
+                    , Button.view
                         Button.Standard
-                        Strings.Accept
-                        Strings.Accept
-                        (Icon.accept |> Icon.view)
-                        [ DismissDiscard |> wrap |> HtmlE.onClick ]
+                        Button.Padded
+                        (Strings.Accept |> Lang.string shared)
+                        (Icon.accept |> Icon.view |> Just)
+                        (DismissDiscard |> wrap |> Just)
                     ]
                 ]
                 |> Just
@@ -1297,15 +1297,16 @@ toggleHelp wrap shared enabled =
     let
         extra =
             if enabled then
-                [ Icon.slash |> Icon.styled [ Icon.fw ] ]
+                [ Icon.slash |> Icon.styled [ Icon.fw ] |> Icon.view ]
 
             else
                 []
 
         icon =
-            Icon.help |> Icon.styled [ Icon.fw ] |> NeList.just |> NeList.extend extra
+            ((Icon.help |> Icon.styled [ Icon.fw ] |> Icon.view) :: extra)
+                |> Icon.layers []
     in
-    IconButton.view shared Strings.ViewHelpAction icon (ToggleHelp |> wrap |> Just)
+    IconButton.view icon (Strings.ViewHelpAction |> Lang.string shared) (ToggleHelp |> wrap |> Just)
 
 
 timer : Time.Anchor -> Model -> Html msg
@@ -1406,9 +1407,9 @@ minorActions wrap shared auth game helpEnabled =
 
         enforceTimeLimit =
             if timedOut && game.rules.stages.mode == Rules.Soft then
-                IconButton.view shared
-                    Strings.EnforceTimeLimitAction
-                    (Icon.skip |> NeList.just)
+                IconButton.view
+                    (Icon.skip |> Icon.view)
+                    (Strings.EnforceTimeLimitAction |> Lang.string shared)
                     (EnforceTimeLimit |> wrap |> Just)
                     |> Just
 
@@ -1439,17 +1440,17 @@ discardButton wrap shared game =
                 _ ->
                     Nothing
     in
-    IconButton.view shared
-        Strings.Discard
-        (Icon.discard |> NeList.just)
+    IconButton.view
+        (Icon.discard |> Icon.view)
+        (Strings.Discard |> Lang.string shared)
         action
 
 
 historyButton : (Msg -> msg) -> Shared -> Html msg
 historyButton wrap shared =
-    IconButton.view shared
-        Strings.ViewGameHistoryAction
-        (Icon.history |> NeList.just)
+    IconButton.view
+        (Icon.history |> Icon.view)
+        (Strings.ViewGameHistoryAction |> Lang.string shared)
         (ToggleHistoryView |> wrap |> Just)
 
 
@@ -1463,9 +1464,9 @@ rebootButton wrap shared score reboot =
             else
                 Redraw |> wrap |> Just
     in
-    IconButton.view shared
-        ({ cost = reboot.cost } |> Strings.HouseRuleRebootAction)
-        (Icon.random |> NeList.just)
+    IconButton.view
+        (Icon.random |> Icon.view)
+        ({ cost = reboot.cost } |> Strings.HouseRuleRebootAction |> Lang.string shared)
         action
 
 

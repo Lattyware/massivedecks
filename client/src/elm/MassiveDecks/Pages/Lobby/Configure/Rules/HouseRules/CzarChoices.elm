@@ -42,7 +42,11 @@ enabled wrap =
             always
                 [ Message.info Strings.HouseRuleCzarChoicesDescription
                 , Message.infoWithFix (Strings.SeeAlso { rule = Strings.DuringTitle })
-                    [ { description = Strings.ConfigureTimeLimits, icon = Icon.show, action = ChangeTab Stages |> wrap } ]
+                    [ { description = Strings.ConfigureTimeLimits
+                      , icon = Icon.show
+                      , action = Stages |> Just |> ChangeTab |> wrap
+                      }
+                    ]
                 ]
         }
 

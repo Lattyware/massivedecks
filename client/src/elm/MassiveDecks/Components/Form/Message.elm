@@ -21,7 +21,6 @@ import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
-import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import Material.IconButton as IconButton
 import Svg.Attributes as Svg
 
@@ -137,4 +136,8 @@ internalMessage shared { severity, description, fixes } =
 
 viewFix : Shared -> Fix msg -> Html msg
 viewFix shared { icon, description, action } =
-    Html.li [] [ IconButton.view shared description (icon |> NeList.just) (Just action) ]
+    Html.li []
+        [ IconButton.view (icon |> Icon.view)
+            (description |> Lang.string shared)
+            (Just action)
+        ]

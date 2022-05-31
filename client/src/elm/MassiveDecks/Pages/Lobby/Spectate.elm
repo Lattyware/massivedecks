@@ -26,7 +26,6 @@ import MassiveDecks.Pages.Start.Route as Start
 import MassiveDecks.Strings as Strings
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.User as User
-import MassiveDecks.Util.NeList as NeList
 import Material.IconButton as IconButton
 import QRCode
 import Url exposing (Url)
@@ -97,17 +96,17 @@ viewSettings wrap changePage shared lobby =
                         ( wrap BecomePlayer, Strings.BecomePlayerDescription )
         in
         [ Html.div [ HtmlA.id "spectate-actions" ]
-            [ IconButton.view shared
-                backDescription
-                (Icon.back |> NeList.just)
+            [ IconButton.view
+                (Icon.back |> Icon.view)
+                (backDescription |> Lang.string shared)
                 (Just backAction)
-            , IconButton.view shared
-                Strings.ViewConfigurationDescription
-                (Icon.configure |> NeList.just)
+            , IconButton.view
+                (Icon.configure |> Icon.view)
+                (Strings.ViewConfigurationDescription |> Lang.string shared)
                 ({ route | section = Just Lobby.Configure } |> Route.Lobby |> changePage |> Just)
-            , IconButton.view shared
-                Strings.ToggleAdvertDescription
-                (advertiseIcon |> NeList.just)
+            , IconButton.view
+                (advertiseIcon |> Icon.view)
+                (Strings.ToggleAdvertDescription |> Lang.string shared)
                 (ToggleAdvert |> wrap |> Just)
             ]
         ]

@@ -239,12 +239,13 @@ view shared model =
                 ]
             ]
         , Card.view []
-            [ Tabs.view shared
+            [ Tabs.view
                 { selected = r.section
-                , change = \s -> Route.Start { r | section = s } |> Global.ChangePage
-                , ids = NeList New [ Join model.gameCode, Find, About ]
-                , tab = tabFor
+                , change = \s -> Route.Start { r | section = s |> Maybe.withDefault r.section } |> Global.ChangePage
+                , ids = [ New, Join model.gameCode, Find, About ]
+                , tab = tabFor shared
                 , equals = sectionsMatch
+                , stacked = False
                 }
             , sectionContent shared model
             ]
@@ -280,20 +281,24 @@ view shared model =
 {- Private -}
 
 
-tabFor : Section -> Tabs.TabModel
-tabFor section =
-    case section of
-        New ->
-            Tabs.TabModel Strings.NewGame (Just Icon.new)
+tabFor : Shared -> Section -> Tabs.TabModel msg
+tabFor shared section =
+    let
+        ( name, icon ) =
+            case section of
+                New ->
+                    ( Strings.NewGame, Icon.new )
 
-        Join _ ->
-            Tabs.TabModel Strings.JoinPrivateGame (Just Icon.join)
+                Join _ ->
+                    ( Strings.JoinPrivateGame, Icon.join )
 
-        Find ->
-            Tabs.TabModel Strings.FindPublicGame (Just Icon.find)
+                Find ->
+                    ( Strings.FindPublicGame, Icon.find )
 
-        About ->
-            Tabs.TabModel Strings.AboutTheGame (Just Icon.about)
+                About ->
+                    ( Strings.AboutTheGame, Icon.about )
+    in
+    Tabs.TabModel (name |> Lang.string shared) (icon |> Icon.view |> Just)
 
 
 overlay : Shared -> Maybe MdString -> Html Global.Msg
@@ -301,9 +306,9 @@ overlay shared content =
     case content of
         Just text ->
             Html.div [ HtmlA.id "overlay" ]
-                [ IconButton.view shared
-                    Strings.Close
-                    (Icon.close |> NeList.just)
+                [ IconButton.view
+                    (Icon.close |> Icon.view)
+                    (Strings.Close |> Lang.string shared)
                     (HideOverlay |> Global.StartMsg |> Just)
                 , Card.view []
                     [ text |> Lang.html shared
@@ -397,24 +402,20 @@ newContent shared model =
         loading =
             loadingOrLoaded model
 
-        buttonAttr =
-            if model.name == "" || loading then
-                HtmlA.disabled True
-
-            else
-                StartGame HttpData.Pull |> Global.StartMsg |> HtmlE.onClick
-
         buttonIcon =
             if loading then
-                Icon.loading |> Icon.view
+                Icon.loading
 
             else
-                Icon.view Icon.start
+                Icon.start
 
         error =
             model.newLobbyRequest.generalError
                 |> Maybe.map (Error.view shared (Route.Start model.route))
                 |> Maybe.withDefault Html.nothing
+
+        canStart =
+            not (model.name == "" || loading)
     in
     Html.div [ HtmlA.class "new-game start-tab" ]
         [ Html.div [ HtmlA.class "tab-content" ]
@@ -422,12 +423,12 @@ newContent shared model =
             , Html.p [] [ Strings.NewGameDescription |> Lang.html shared ]
             , error
             , nameField shared model Nothing
-            , Button.view shared
+            , Button.view
                 Button.Raised
-                Strings.PlayGame
-                Strings.PlayGame
-                buttonIcon
-                [ buttonAttr ]
+                Button.Padded
+                (Strings.PlayGame |> Lang.string shared)
+                (buttonIcon |> Icon.view |> Just)
+                (StartGame HttpData.Pull |> Global.StartMsg |> Maybe.justIf canStart)
             ]
         ]
 
@@ -438,19 +439,12 @@ joinContent shared model =
         loading =
             loadingOrLoaded model
 
-        buttonAttr =
-            if String.isEmpty model.name || model.gameCode == Nothing || loading then
-                HtmlA.disabled True
-
-            else
-                JoinGame HttpData.Pull |> Global.StartMsg |> HtmlE.onClick
-
         buttonIcon =
             if loading then
-                Icon.loading |> Icon.view
+                Icon.loading
 
             else
-                Icon.view Icon.start
+                Icon.start
 
         error =
             model.joinLobbyRequest.generalError
@@ -472,6 +466,9 @@ joinContent shared model =
             model.password
                 |> Maybe.map (passwordField shared passwordError)
                 |> Maybe.withDefault []
+
+        canStart =
+            not (String.isEmpty model.name || model.gameCode == Nothing || loading)
     in
     Html.div [ HtmlA.class "join-game start-tab" ]
         [ Html.div [ HtmlA.class "tab-content" ]
@@ -484,25 +481,24 @@ joinContent shared model =
                 , [ nameField shared model nameError
                   , Form.section shared
                         "game-code-input"
-                        (TextField.view shared
-                            Strings.GameCodeTerm
+                        (TextField.viewWithAttrs
+                            (Strings.GameCodeTerm |> Lang.string shared)
                             TextField.Text
                             (model.gameCode |> Maybe.map GameCode.toString |> Maybe.withDefault "")
-                            [ HtmlA.class "game-code-input"
-                            , GameCodeChanged >> Global.StartMsg |> HtmlE.onInput
-                            ]
+                            (GameCodeChanged >> Global.StartMsg |> Just)
+                            [ HtmlA.class "game-code-input" ]
                         )
                         [ Message.info Strings.GameCodeHowToAcquire
                         , gameError |> Maybe.map Message.mdError |> Maybe.withDefault Message.none
                         ]
                   ]
                 , maybePasswordField
-                , [ Button.view shared
+                , [ Button.view
                         Button.Raised
-                        Strings.PlayGame
-                        Strings.PlayGame
-                        buttonIcon
-                        [ buttonAttr ]
+                        Button.Padded
+                        (Strings.PlayGame |> Lang.string shared)
+                        (buttonIcon |> Icon.view |> Just)
+                        (JoinGame HttpData.Pull |> Global.StartMsg |> Maybe.justIf canStart)
                   ]
                 ]
             )
@@ -513,11 +509,11 @@ passwordField : Shared -> Maybe MdError -> String -> List (Html Global.Msg)
 passwordField shared error password =
     [ Form.section shared
         "password-input"
-        (TextField.view shared
-            Strings.LobbyPassword
+        (TextField.view
+            (Strings.LobbyPassword |> Lang.string shared)
             TextField.Password
             password
-            [ PasswordChanged >> Global.StartMsg |> HtmlE.onInput ]
+            (PasswordChanged >> Global.StartMsg |> Just)
         )
         [ Message.info Strings.LobbyRequiresPassword
         , error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none
@@ -561,11 +557,11 @@ nameField : Shared -> Model -> Maybe MdError -> Html Global.Msg
 nameField shared model error =
     Form.section shared
         "name-input"
-        (TextField.view shared
-            Strings.NameLabel
+        (TextField.view
+            (Strings.NameLabel |> Lang.string shared)
             TextField.Text
             model.name
-            [ NameChanged >> Global.StartMsg |> HtmlE.onInput ]
+            (NameChanged >> Global.StartMsg |> Just)
         )
         [ error |> Maybe.map (MdError.describe >> Message.error) |> Maybe.withDefault Message.none ]
 

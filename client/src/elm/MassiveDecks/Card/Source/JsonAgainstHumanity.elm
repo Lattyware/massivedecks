@@ -15,6 +15,7 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model exposing (DeckOrError)
 import MassiveDecks.Strings as Strings exposing (MdString)
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
 import Material.Select as Select
@@ -111,14 +112,16 @@ editor selected shared existing update _ _ =
                     }
             in
             Html.span [ HtmlA.id "json-against-humanity-editor", HtmlA.class "primary" ]
-                [ Select.view shared
-                    { label = Strings.Deck
+                [ Select.view
+                    { label = Strings.Deck |> Lang.string shared
                     , idToString = toString
                     , idFromString = fromString shared.sources.jsonAgainstHumanity
                     , selected = Just selected
                     , wrap = Maybe.withDefault (hardcoded "") >> Source.JsonAgainstHumanity >> update
+                    , disabled = False
+                    , fullWidth = True
+                    , attrs = [ HtmlA.id "built-in-selector" ]
                     }
-                    [ HtmlA.id "built-in-selector" ]
                     (decks |> List.map deck)
                 ]
 

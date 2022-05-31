@@ -24,7 +24,6 @@ import MassiveDecks.Strings as Strings exposing (MdString)
 import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NeList
 import Material.Button as Button
 import Material.IconButton as IconButton
 import Material.TextArea as TextArea
@@ -132,10 +131,13 @@ view wrap shared { parts, selected, error } =
         addSlot =
             addAction (Parts.Slot nextSlotIndex Part.NoTransform Part.NoStyle)
 
+        inlineButton string icon action =
+            Button.view Button.Outlined Button.Padded (string |> Lang.string shared) (Just icon) action
+
         inlineControls =
             Html.p []
-                [ Button.view shared Button.Outlined Strings.AddText Strings.AddText (Icon.add |> Icon.view) [ addAction (Parts.Text "..." Part.NoStyle) |> HtmlE.onClick ]
-                , Button.view shared Button.Outlined Strings.AddSlot Strings.AddSlot (Icon.add |> Icon.view) [ addSlot |> HtmlE.onClick ]
+                [ inlineButton Strings.AddText (Icon.add |> Icon.view) (Parts.Text "..." Part.NoStyle |> addAction |> Just)
+                , inlineButton Strings.AddSlot (Icon.add |> Icon.view) (Just addSlot)
                 ]
 
         selectedPart =
@@ -166,13 +168,12 @@ view wrap shared { parts, selected, error } =
                     in
                     Form.section shared
                         "part-editor"
-                        (TextField.view shared
-                            Strings.Blank
+                        (TextField.viewWithAttrs
+                            (Strings.Blank |> Lang.string shared)
                             TextField.Number
                             (slotIndex + 1 |> String.fromInt)
-                            [ HtmlA.min "1"
-                            , HtmlE.onInput setSlotIndex
-                            ]
+                            (setSlotIndex |> Just)
+                            [ HtmlA.min "1" ]
                         )
                         [ Message.info Strings.SlotIndexExplanation ]
 
@@ -242,18 +243,21 @@ controls wrap shared max selected =
         move by test =
             index |> Maybe.andThen (\i -> Move i by |> wrap |> Maybe.justIf (test i))
 
+        iconButton string icon action =
+            IconButton.view icon (string |> Lang.string shared) action
+
         generalControls =
-            [ IconButton.view shared Strings.Remove (Icon.remove |> NeList.just) (index |> Maybe.map (Remove >> wrap))
-            , IconButton.view shared Strings.MoveLeft (Icon.left |> NeList.just) (move -1 ((<) 0))
-            , IconButton.view shared Strings.MoveRight (Icon.right |> NeList.just) (move 1 ((>) max))
+            [ iconButton Strings.Remove (Icon.remove |> Icon.view) (index |> Maybe.map (Remove >> wrap))
+            , iconButton Strings.MoveLeft (Icon.left |> Icon.view) (move -1 ((<) 0))
+            , iconButton Strings.MoveRight (Icon.right |> Icon.view) (move 1 ((>) max))
             ]
 
         setIfDifferent old updated new =
             index |> Maybe.andThen (\i -> Set i (updated new) |> wrap |> Maybe.justIf (old /= new))
 
         styleControls setStyle =
-            [ IconButton.view shared Strings.Normal (Icon.normalText |> NeList.just) (setStyle Part.NoStyle)
-            , IconButton.view shared Strings.Emphasise (Icon.italicText |> NeList.just) (setStyle Part.Em)
+            [ iconButton Strings.Normal (Icon.normalText |> Icon.view) (setStyle Part.NoStyle)
+            , iconButton Strings.Emphasise (Icon.italicText |> Icon.view) (setStyle Part.Em)
             ]
 
         transformControls setTransform =
@@ -261,9 +265,9 @@ controls wrap shared max selected =
                 textIcon text =
                     Icon.layers [] [ Icon.text [] text ]
             in
-            [ IconButton.viewCustomIcon shared Strings.Normal (textIcon "aa") (setTransform Part.NoTransform)
-            , IconButton.viewCustomIcon shared Strings.Capitalise (textIcon "Aa") (setTransform Part.Capitalize)
-            , IconButton.viewCustomIcon shared Strings.UpperCase (textIcon "AA") (setTransform Part.UpperCase)
+            [ iconButton Strings.Normal (textIcon "aa") (setTransform Part.NoTransform)
+            , iconButton Strings.Capitalise (textIcon "Aa") (setTransform Part.Capitalize)
+            , iconButton Strings.UpperCase (textIcon "AA") (setTransform Part.UpperCase)
             ]
 
         ( replaceStyle, replaceTransform ) =

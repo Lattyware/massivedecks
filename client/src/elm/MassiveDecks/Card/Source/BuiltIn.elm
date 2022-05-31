@@ -125,14 +125,16 @@ editor selected shared existing update _ _ =
                     }
             in
             Html.div [ HtmlA.class "primary" ]
-                [ Select.view shared
-                    { label = Strings.Deck
+                [ Select.view
+                    { label = Strings.Deck |> Lang.string shared
                     , idToString = toString
                     , idFromString = fromString shared.sources.builtIn
                     , selected = Just selected
                     , wrap = Maybe.withDefault (hardcoded "") >> Source.BuiltIn >> update
+                    , disabled = False
+                    , fullWidth = True
+                    , attrs = [ HtmlA.id "built-in-selector" ]
                     }
-                    [ HtmlA.id "built-in-selector" ]
                     (decks
                         |> NeList.toList
                         |> List.sortWith (sortClosestFirst (Lang.currentLanguage shared |> Lang.code) |> Order.map .language)

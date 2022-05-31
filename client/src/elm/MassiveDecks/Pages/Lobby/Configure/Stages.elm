@@ -85,7 +85,11 @@ starting wrap =
                     always
                         [ Message.info Strings.StartingTimeLimitDescription
                         , Message.infoWithFix (Strings.SeeAlso { rule = Strings.HouseRuleCzarChoices })
-                            [ { description = Strings.ConfigureRules, icon = Icon.show, action = Rules |> ChangeTab |> wrap } ]
+                            [ { description = Strings.ConfigureRules
+                              , icon = Icon.show
+                              , action = Rules |> Just |> ChangeTab |> wrap
+                              }
+                            ]
                         ]
                 }
             ]

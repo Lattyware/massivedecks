@@ -20,6 +20,7 @@ import MassiveDecks.Requests.HttpData.Messages exposing (..)
 import MassiveDecks.Requests.HttpData.Model exposing (..)
 import MassiveDecks.Requests.Request as Request
 import MassiveDecks.Strings as Strings
+import MassiveDecks.Strings.Languages as Lang
 import MassiveDecks.Util.Maybe as Maybe
 import MassiveDecks.Util.NeList as NeList exposing (NeList(..))
 import Material.IconButton as IconButton
@@ -119,7 +120,7 @@ refreshButton shared { loading } =
             else
                 identity
     in
-    IconButton.view shared
-        Strings.Refresh
-        (Icon.refresh |> applyStyle |> NeList.just)
+    IconButton.view
+        (Icon.refresh |> applyStyle |> Icon.view)
+        (Strings.Refresh |> Lang.string shared)
         (Pull |> Maybe.justIf (not loading))

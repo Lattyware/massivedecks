@@ -30,13 +30,13 @@ view shared route model =
     else
         [ Html.div [ HtmlA.class "error-overlay" ]
             [ Html.div [ HtmlA.class "actions" ]
-                [ IconButton.view shared
-                    Strings.Close
-                    (Icon.close |> NeList.just)
+                [ IconButton.view
+                    (Icon.close |> Icon.view)
+                    (Strings.Close |> Lang.string shared)
                     (Clear |> Global.ErrorMsg |> Just)
-                , IconButton.view shared
-                    Strings.Refresh
-                    (Icon.redo |> NeList.just)
+                , IconButton.view
+                    (Icon.redo |> Icon.view)
+                    (Strings.Refresh |> Lang.string shared)
                     (Just Global.Refresh)
                 ]
             , Card.view [ HtmlA.class "help" ]

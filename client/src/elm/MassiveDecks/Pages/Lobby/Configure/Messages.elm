@@ -7,7 +7,7 @@ import MassiveDecks.Pages.Lobby.Configure.Model exposing (..)
 type Msg
     = ApplyChange Id Config
     | DecksMsg Decks.Msg
-    | ChangeTab Tab
+    | ChangeTab (Maybe Tab)
     | StartGame
     | ResolveConflict Source Id
     | SetPasswordVisibility Bool

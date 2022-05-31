@@ -162,9 +162,8 @@ lobby : Shared -> Summary -> ( String, Html Global.Msg )
 lobby shared data =
     ( data.gameCode |> GameCode.toString
     , ListView.viewItem
-        (ListView.Enabled (Route.Start { section = Start.Join (Just data.gameCode) } |> Global.ChangePage))
+        (Route.Start { section = Start.Join (Just data.gameCode) } |> Global.ChangePage |> Just |> ListView.Button)
         Nothing
-        data.name
         ([ Html.span [ HtmlA.class "lobby-game-code" ]
             [ Strings.GameCode { code = GameCode.toString data.gameCode } |> Lang.html shared ]
          ]

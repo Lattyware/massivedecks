@@ -1,7 +1,6 @@
 module MassiveDecks.Pages.Lobby.Messages exposing (Msg(..))
 
 import MassiveDecks.Animated as Animated
-import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError exposing (MdError)
@@ -11,6 +10,7 @@ import MassiveDecks.Pages.Lobby.Model exposing (..)
 import MassiveDecks.Pages.Lobby.Route exposing (Section)
 import MassiveDecks.Pages.Lobby.Spectate.Messages as Spectate
 import MassiveDecks.User as User
+import Material.Menu as Menu
 
 
 type Msg

@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository.
         uses: actions/checkout@v3
+        with:
+          submodules: true
 
       - name: Get version from tag.
         uses: little-core-labs/get-git-tag@v3.0.2

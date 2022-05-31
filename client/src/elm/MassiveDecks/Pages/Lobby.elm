@@ -23,9 +23,9 @@ import MassiveDecks.Animated as Animated exposing (Animated)
 import MassiveDecks.Card.Model as Card
 import MassiveDecks.Cast.Client as Cast
 import MassiveDecks.Cast.Model as Cast
+import MassiveDecks.Components.ContextMenu as ContextMenu
+import MassiveDecks.Components.ContextMenu.Model as ContextMenu
 import MassiveDecks.Components.Form.Message as Message exposing (Message)
-import MassiveDecks.Components.Menu as Menu
-import MassiveDecks.Components.Menu.Model as Menu
 import MassiveDecks.Error as MdError
 import MassiveDecks.Error.Model as Error exposing (Error)
 import MassiveDecks.Game as Game
@@ -64,6 +64,7 @@ import MassiveDecks.Util.NeList as NeList
 import Material.Button as Button
 import Material.Card as Card
 import Material.IconButton as IconButton
+import Material.Menu as Menu
 
 
 changeRoute : Shared -> Route -> Model -> Route.Fork ( Model, Cmd msg )
@@ -573,9 +574,9 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
         (Html.div [ HtmlA.id "top-bar" ]
             [ Html.div [ HtmlA.class "left" ]
                 (List.concat
-                    [ [ IconButton.view shared
-                            Strings.ToggleUserList
-                            (usersIcon |> Icon.styled [ Icon.lg ] |> NeList.just)
+                    [ [ IconButton.view
+                            (usersIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
+                            (Strings.ToggleUserList |> Lang.string shared)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
                       , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
@@ -654,7 +655,7 @@ lobbyMenu : (Msg -> msg) -> Shared -> Menu.State -> Route -> Section -> Bool -> 
 lobbyMenu wrap shared menuState r s audienceMode user player game =
     let
         lobbyMenuItems =
-            [ Menu.button Icon.invite Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
+            [ ContextMenu.button Icon.invite Strings.InvitePlayers Strings.InvitePlayersDescription (ToggleInviteDialog |> wrap |> Just) ]
 
         setPresence =
             setPresenceMenuItem wrap player
@@ -662,17 +663,17 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
         playerState role =
             case role of
                 User.Player ->
-                    Menu.button Icon.spectator Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole Nothing User.Spectator |> wrap |> Just)
+                    ContextMenu.button Icon.spectator Strings.BecomeSpectator Strings.BecomeSpectatorDescription (SetUserRole Nothing User.Spectator |> wrap |> Just)
 
                 User.Spectator ->
-                    Menu.button Icon.player Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole Nothing User.Player |> wrap |> Just)
+                    ContextMenu.button Icon.player Strings.BecomePlayer Strings.BecomePlayerDescription (SetUserRole Nothing User.Player |> wrap |> Just)
 
         userLobbyMenuItems =
             [ setPresence |> Just
             , user
                 |> Maybe.andThen (\u -> u |> Maybe.justIf (u.privilege == User.Privileged || not audienceMode))
                 |> Maybe.map (.role >> playerState)
-            , Menu.button
+            , ContextMenu.button
                 Icon.leave
                 Strings.LeaveGame
                 Strings.LeaveGameDescription
@@ -682,22 +683,22 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
                 |> List.filterMap identity
 
         viewMenuItems =
-            [ Menu.link Icon.spectator Strings.Spectate Strings.SpectateDescription ({ r | section = Just Spectate } |> Route.Lobby |> Route.url |> Just)
+            [ ContextMenu.link Icon.spectator Strings.Spectate Strings.SpectateDescription ({ r | section = Just Spectate } |> Route.Lobby |> Route.url |> Just)
             , case s of
                 Configure ->
-                    Menu.button Icon.start Strings.ReturnViewToGame Strings.ReturnViewToGameDescription (Nothing |> ChangeSection |> wrap |> Maybe.justIf (game /= Nothing))
+                    ContextMenu.button Icon.start Strings.ReturnViewToGame Strings.ReturnViewToGameDescription (Nothing |> ChangeSection |> wrap |> Maybe.justIf (game /= Nothing))
 
                 _ ->
-                    Menu.button Icon.configure Strings.ViewConfiguration Strings.ViewConfigurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
+                    ContextMenu.button Icon.configure Strings.ViewConfiguration Strings.ViewConfigurationDescription (Configure |> Just |> ChangeSection |> wrap |> Just)
             ]
 
         privilegedLobbyMenuItems =
-            [ Menu.button Icon.end Strings.EndGame Strings.EndGameDescription (game |> Maybe.andThen (\g -> EndGame |> wrap |> Maybe.justIf (g.winner == Nothing)))
+            [ ContextMenu.button Icon.end Strings.EndGame Strings.EndGameDescription (game |> Maybe.andThen (\g -> EndGame |> wrap |> Maybe.justIf (g.winner == Nothing)))
             ]
 
         mdMenuItems =
-            [ Menu.link Icon.info Strings.AboutTheGame Strings.AboutTheGameDescription (Just "https://github.com/lattyware/massivedecks")
-            , Menu.link Icon.bug Strings.ReportError Strings.ReportErrorDescription (Just "https://github.com/Lattyware/massivedecks/issues/new")
+            [ ContextMenu.link Icon.info Strings.AboutTheGame Strings.AboutTheGameDescription (Just "https://github.com/lattyware/massivedecks")
+            , ContextMenu.link Icon.bug Strings.ReportError Strings.ReportErrorDescription (Just "https://github.com/Lattyware/massivedecks/issues/new")
             ]
 
         menuItems =
@@ -709,16 +710,16 @@ lobbyMenu wrap shared menuState r s audienceMode user player game =
             ]
 
         separatedMenuItems =
-            menuItems |> List.filterMap identity |> List.intersperse [ Menu.Separator ] |> List.concat
+            menuItems |> List.filterMap identity |> List.intersperse [ ContextMenu.Separator ] |> List.concat
     in
-    Menu.view shared
+    ContextMenu.view shared
         (Menu.Closed |> SetGameMenuState |> wrap)
         menuState
         Menu.BottomEnd
-        (IconButton.view shared
-            Strings.GameMenu
-            (Icon.menu |> Icon.styled [ Icon.lg ] |> NeList.just)
-            (menuState |> Menu.toggle |> SetGameMenuState |> wrap |> Just)
+        (IconButton.view
+            (Icon.menu |> Icon.styled [ Icon.lg ] |> Icon.view)
+            (Strings.GameMenu |> Lang.string shared)
+            (menuState |> ContextMenu.toggle |> SetGameMenuState |> wrap |> Just)
         )
         separatedMenuItems
 
@@ -871,14 +872,13 @@ viewNotification wrap shared users animationState notification =
         [ Html.div [ HtmlA.class "content" ]
             [ Html.span [ HtmlA.class "icon" ] [ icon ]
             , Html.span [ HtmlA.class "message" ] [ message ]
-            , Button.view shared
+            , Button.viewWithAttrs
                 Button.Standard
-                Strings.Dismiss
-                Strings.Dismiss
-                Html.nothing
-                [ notification |> Animated.Exit |> NotificationMsg |> wrap |> HtmlE.onClick
-                , HtmlA.class "action"
-                ]
+                Button.Padded
+                (Strings.Dismiss |> Lang.string shared)
+                Nothing
+                (notification |> Animated.Exit |> NotificationMsg |> wrap |> Just)
+                [ HtmlA.class "action" ]
             ]
         ]
 
@@ -990,7 +990,8 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                 if localUserId /= userId then
                                     case user.privilege of
                                         User.Unprivileged ->
-                                            [ Menu.button Icon.userPromote
+                                            [ ContextMenu.button
+                                                Icon.userPromote
                                                 Strings.Promote
                                                 Strings.Promote
                                                 (SetPrivilege userId User.Privileged |> wrap |> Just)
@@ -998,7 +999,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                             ]
 
                                         User.Privileged ->
-                                            [ Menu.button
+                                            [ ContextMenu.button
                                                 Icon.userDemote
                                                 Strings.Demote
                                                 Strings.Demote
@@ -1016,7 +1017,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                         if (localUserId == userId && not audienceMode) || localUserPrivilege == User.Privileged then
                             case user.role of
                                 User.Player ->
-                                    [ Menu.button Icon.spectator
+                                    [ ContextMenu.button Icon.spectator
                                         Strings.BecomeSpectator
                                         Strings.BecomeSpectatorDescription
                                         (SetUserRole (Just userId) User.Spectator |> wrap |> Just)
@@ -1024,7 +1025,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                     ]
 
                                 User.Spectator ->
-                                    [ Menu.button Icon.player
+                                    [ ContextMenu.button Icon.player
                                         Strings.BecomePlayer
                                         Strings.BecomePlayerDescription
                                         (SetUserRole (Just userId) User.Player |> wrap |> Just)
@@ -1040,12 +1041,12 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                 let
                                     kickOrLeave =
                                         if userId == localUserId then
-                                            Menu.button Icon.leave Strings.LeaveGame Strings.LeaveGame (Leave |> wrap |> Just) |> Just
+                                            ContextMenu.button Icon.leave Strings.LeaveGame Strings.LeaveGame (Leave |> wrap |> Just) |> Just
 
                                         else
                                             case localUserPrivilege of
                                                 User.Privileged ->
-                                                    Menu.button Icon.userKick Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
+                                                    ContextMenu.button Icon.userKick Strings.KickUser Strings.KickUser (userId |> Kick |> wrap |> Just) |> Just
 
                                                 User.Unprivileged ->
                                                     Nothing
@@ -1058,7 +1059,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                                         else if not isAway && game /= Nothing then
                                             case localUserPrivilege of
                                                 User.Privileged ->
-                                                    Menu.button Icon.userAway Strings.SetAway Strings.SetAway (userId |> SetAway |> wrap |> Just) |> Just
+                                                    ContextMenu.button Icon.userAway Strings.SetAway Strings.SetAway (userId |> SetAway |> wrap |> Just) |> Just
 
                                                 User.Unprivileged ->
                                                     Nothing
@@ -1078,7 +1079,7 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                 , presenceMenuItems
                 ]
                     |> List.filterMap (\part -> part |> List.filterMap identity |> (\l -> l |> Maybe.justIf (l |> List.isEmpty >> not)))
-                    |> List.intersperse [ Menu.Separator ]
+                    |> List.intersperse [ ContextMenu.Separator ]
                     |> List.concat
 
             else
@@ -1094,13 +1095,13 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
                         Just userId == openUserMenu
                 in
                 ( \c ->
-                    Menu.view shared
+                    ContextMenu.view shared
                         (SetUserMenuState userId Menu.Closed |> wrap)
-                        (isOpen |> Menu.open)
+                        (isOpen |> ContextMenu.open)
                         Menu.BottomRight
                         c
                         menuItems
-                , [ not isOpen |> Menu.open |> SetUserMenuState userId |> wrap |> HtmlE.onClick
+                , [ not isOpen |> ContextMenu.open |> SetUserMenuState userId |> wrap |> HtmlE.onClick
                   , HtmlA.classList [ ( "active", isOpen ), ( "has-menu", True ) ]
                   ]
                 )
@@ -1120,17 +1121,17 @@ viewUser wrap shared localUserId localUserPrivilege audienceMode openUserMenu ga
     )
 
 
-setPresenceMenuItem : (Msg -> msg) -> Maybe Player -> Menu.Part msg
+setPresenceMenuItem : (Msg -> msg) -> Maybe Player -> ContextMenu.Part msg
 setPresenceMenuItem wrap player =
     case player |> Maybe.map .presence of
         Just Player.Active ->
-            Menu.button Icon.userAway Strings.SetAway Strings.SetAway (Player.Away |> Game.SetPresence |> GameMsg |> wrap |> Just)
+            ContextMenu.button Icon.userAway Strings.SetAway Strings.SetAway (Player.Away |> Game.SetPresence |> GameMsg |> wrap |> Just)
 
         Just Player.Away ->
-            Menu.button Icon.userBack Strings.SetBack Strings.SetBack (Player.Active |> Game.SetPresence |> GameMsg |> wrap |> Just)
+            ContextMenu.button Icon.userBack Strings.SetBack Strings.SetBack (Player.Active |> Game.SetPresence |> GameMsg |> wrap |> Just)
 
         Nothing ->
-            Menu.button Icon.userAway Strings.SetAway Strings.SetAway Nothing
+            ContextMenu.button Icon.userAway Strings.SetAway Strings.SetAway Nothing
 
 
 userDetails : Shared -> Maybe Game -> User.Id -> User -> ( List (Html msg), List (Html msg) )
@@ -1191,9 +1192,9 @@ viewDetails shared =
 viewCastButton : (Msg -> msg) -> Shared -> Auth -> List (Html.Attribute msg) -> List (Html msg)
 viewCastButton wrap shared auth attrs =
     [ Html.div (HtmlA.class "cast-button" :: attrs)
-        [ IconButton.view shared
-            Strings.Cast
-            (Icon.chromecast |> Icon.styled [ Icon.lg ] |> NeList.just)
+        [ IconButton.view
+            (Icon.chromecast |> Icon.styled [ Icon.lg ] |> Icon.view)
+            (Strings.Cast |> Lang.string shared)
             (auth |> TryCast |> wrap |> Just)
         ]
     ]

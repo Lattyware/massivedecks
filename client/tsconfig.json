@@ -5,17 +5,12 @@
     "noImplicitAny": true,
     "preserveConstEnums": true,
     "outDir": "dist",
-    "strict":  true,
+    "strict": true,
     "sourceMap": true,
-    "baseUrl":  ".",
+    "baseUrl": ".",
     "moduleResolution": "node",
-    "lib": [ "es2015", "dom" ]
+    "lib": ["es2015", "dom"]
   },
-  "include":  [
-    "src/ts/**/*"
-  ],
-  "exclude":  [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/ts/**/*", "elm-material/src/ts/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

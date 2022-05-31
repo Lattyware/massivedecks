@@ -1,0 +1,3 @@
+[submodule "client/elm-material"]
+	path = client/elm-material
+	url = git@github.com:Lattyware/elm-material.git

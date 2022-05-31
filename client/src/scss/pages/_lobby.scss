@@ -14,9 +14,6 @@ $users-width: 18rem;
   }
 }
 
-#lobby {
-}
-
 #top-bar {
   position: absolute;
   top: 0;
@@ -98,6 +95,8 @@ $users-width: 18rem;
   width: $users-width;
 
   transition: width 0.3s;
+
+  --mdc-menu-max-width: #{calc($users-width - 2em)};
 
   mwc-menu {
     left: 0;
@@ -210,7 +209,7 @@ $users-width: 18rem;
   z-index: 500;
 }
 
-.notification {
+div.notification {
   position: fixed;
   left: 0;
   bottom: 0;

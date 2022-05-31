@@ -196,14 +196,16 @@ generalEditor shared existing currentValue update submit noOp =
             , meta = Nothing
             }
     in
-    ( Select.view shared
-        { label = Strings.DeckSource
+    ( Select.view
+        { label = Strings.DeckSource |> Lang.string shared
         , idToString = generalToString
         , idFromString = generalFromString
         , selected = currentValue |> generalMatching |> Just
         , wrap = Maybe.map (empty shared) >> Maybe.withDefault (default shared) >> update
+        , disabled = False
+        , fullWidth = True
+        , attrs = [ HtmlA.id "source-selector", HtmlA.class "primary" ]
         }
-        [ HtmlA.id "source-selector", HtmlA.class "primary" ]
         (enabledSources |> List.filterMap (Maybe.map toItem))
     , editor shared existing currentValue update submit noOp
     )

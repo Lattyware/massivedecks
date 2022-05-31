@@ -1,16 +1,17 @@
-@use "_colors";
-@use "_fonts";
-@use "_material";
+@use "./colors";
+@use "./fonts";
+@use "./material";
 
-@use "_game";
-@use "pages/_start";
-@use "pages/_lobby";
-@use "pages/_spectate";
-@use "pages/_unknown-page";
-@use "_settings";
-@use "_error";
+@use "./game";
+@use "./pages/start";
+@use "./pages/lobby";
+@use "./pages/spectate";
+@use "./pages/unknown-page";
+@use "./settings";
+@use "./error";
 
-@use "@fortawesome/fontawesome-svg-core/styles.css";
+@import "../../elm-material/src/scss/material";
+@import "@fortawesome/fontawesome-svg-core/styles.css";
 
 $min-page-width: 320px;
 

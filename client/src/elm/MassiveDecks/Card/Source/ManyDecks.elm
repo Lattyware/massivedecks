@@ -6,8 +6,6 @@ module MassiveDecks.Card.Source.ManyDecks exposing
 import FontAwesome as Icon
 import Html as Html exposing (Html)
 import Html.Attributes as HtmlA
-import Html.Events as HtmlE
-import Json.Decode as Json
 import MassiveDecks.Card.Source.ManyDecks.Model exposing (..)
 import MassiveDecks.Card.Source.Methods as Source
 import MassiveDecks.Card.Source.Model as Source
@@ -93,15 +91,13 @@ problems dc () =
 editor : DeckCode -> Shared -> List DeckOrError -> (Source.External -> msg) -> Maybe msg -> msg -> Html msg
 editor dc shared _ update submit noOp =
     Html.div [ HtmlA.class "primary" ]
-        [ TextField.view shared
-            Strings.ManyDecksDeckCodeTitle
+        [ TextField.viewWithReturn
+            (Strings.ManyDecksDeckCodeTitle |> Lang.string shared)
             TextField.Text
             (dc |> toString)
-            [ HtmlE.onInput (deckCode >> Source.ManyDecks >> update)
-            , HtmlE.keyCode
-                |> Json.map (\k -> submit |> Maybe.andThen (Maybe.justIf (k == 13)) |> Maybe.withDefault noOp)
-                |> HtmlE.on "keydown"
-            ]
+            (deckCode >> Source.ManyDecks >> update |> Just)
+            (submit |> Maybe.withDefault noOp)
+            noOp
         ]
 
 
