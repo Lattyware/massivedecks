@@ -39,36 +39,43 @@ translate _ mdString =
             [ Text "Massive Decks" ]
 
         Close ->
-            [ Text "Close" ]
+            [ Text "Fermer" ]
 
         Noun { noun, quantity } ->
-            let
-                singular =
+            case quantity of
+                Quantity 1 ->
                     case noun of
                         Call ->
-                            [ Text "Black Card" ]
+                            [ Text "Carte Noire" ]
 
                         Response ->
-                            [ Text "White Card" ]
+                            [ Text "Carte Blanche" ]
 
                         Point ->
-                            [ Text "Awesome Point" ]
+                            [ Text "Point" ]
 
                         Player ->
-                            [ Text "Player" ]
+                            [ Text "Joueur" ]
 
                         Spectator ->
-                            [ Text "Spectator" ]
+                            [ Text "Spectateur" ]
 
-                plural =
-                    case quantity of
-                        Quantity 1 ->
-                            []
+                _ ->
+                    case noun of
+                        Call ->
+                            [ Text "Cartes Noires" ]
 
-                        _ ->
-                            [ Text "s" ]
-            in
-            List.concat [ singular, plural ]
+                        Response ->
+                            [ Text "Cartes Blanches" ]
+
+                        Point ->
+                            [ Text "Points" ]
+
+                        Player ->
+                            [ Text "Joueurs" ]
+
+                        Spectator ->
+                            [ Text "Spectateur" ]
 
         -- Start screen.
         Version { clientVersion, serverVersion } ->
@@ -84,126 +91,126 @@ translate _ mdString =
                 ]
 
         ShortGameDescription ->
-            [ Text "A comedy party game." ]
+            [ Text "Un party game humoristique." ]
 
         WhatIsThis ->
-            [ Text "What is ", ref MassiveDecks, Text "?" ]
+            [ Text "Qu'est-ce que ", ref MassiveDecks, Text "?" ]
 
         GameDescription ->
             [ ref MassiveDecks
-            , Text " is a comedy party game based on "
+            , Text " est un party game humoristique basé sur "
             , ref CardsAgainstHumanity
-            , Text ", developed by "
+            , Text ", développé par "
             , ref RereadGames
-            , Text " and other contributors—the game is open source under "
+            , Text " et d'autres contributeurs — le jeu est open source sous "
             , ref License
-            , Text ", so you can help improve the game, access the source code, or just find out more at "
+            , Text ", ce qui vous permet d'améliorer le jeu, accéder au code source, ou simplement à en savoir plus sur "
             , ref MDProject
             , Text "."
             ]
 
         NewGame ->
-            [ Text "New" ]
+            [ Text "Nouveau" ]
 
         NewGameDescription ->
-            [ Text "Start a new game of ", ref MassiveDecks, Text "." ]
+            [ Text "Démarrer une nouvelle partie de ", ref MassiveDecks, Text "." ]
 
         FindPublicGame ->
-            [ Text "Find" ]
+            [ Text "Chercher" ]
 
         JoinPrivateGame ->
-            [ Text "Join" ]
+            [ Text "Rejoindre" ]
 
         JoinPrivateGameDescription ->
-            [ Text "Join a game someone invited you to." ]
+            [ Text "Rejoindre une partie à laquelle vous avez été invité." ]
 
         PlayGame ->
-            [ Text "Play" ]
+            [ Text "Jouer" ]
 
         AboutTheGame ->
-            [ Text "About" ]
+            [ Text "À propos" ]
 
         AboutTheGameDescription ->
-            [ Text "Find out about ", ref MassiveDecks, Text " and how it is developed." ]
+            [ Text "En savoir plus sur ", ref MassiveDecks, Text "." ]
 
         MDLogoDescription ->
-            [ Text "A ", ref (noun Call 1), Text " and a ", ref (noun Response 1), Text " marked with an “M” and a “D”." ]
+            [ Text "Une ", ref (noun Call 1), Text " et une ", ref (noun Response 1), Text " marquées avec un “M” et un “D”." ]
 
         RereadLogoDescription ->
-            [ Text "A book circled by a recycling arrow." ]
+            [ Text "Un livre encerclé par une flèche circulaire." ]
 
         MDProject ->
-            [ Text "the GitHub project" ]
+            [ Text "le projet GitHub" ]
 
         License ->
-            [ Text "the AGPLv3 license" ]
+            [ Text "la license AGPLv3" ]
 
         DevelopedByReread ->
-            [ Text "Developed by ", ref RereadGames, Text "." ]
+            [ Text "Développé par ", ref RereadGames, Text "." ]
 
         RereadGames ->
             [ Text "Reread Games" ]
 
         NameLabel ->
-            [ Text "Your Name" ]
+            [ Text "Votre nom" ]
 
         NameInUse ->
-            [ Text "Someone else is using this name in the game—please try a different one." ]
+            [ Text "Quelqu'un utilise déjà ce nom dans la partie. Veuillez en choisir un autre." ]
 
         RejoinTitle ->
-            [ Text "Rejoin Game" ]
+            [ Text "Rejoindre une partie" ]
 
         RejoinGame { code } ->
-            [ Text "Rejoin “", GameCode { code = code } |> ref, Text "”." ]
+            [ Text "Rejoindre “", GameCode { code = code } |> ref, Text "”." ]
 
         LobbyRequiresPassword ->
-            [ Text "You need a password to join this game. Try asking the person that invited you." ]
+            [ Text "Vous avez besoin d'un mot de passe pour rejoindre cette partie. Essayez de demander à la personne qui vous a invité." ]
 
         YouWereKicked ->
-            [ Text "You were kicked from the game." ]
+            [ Text "Vous avez été expulsé de la partie." ]
 
         ScrollToTop ->
-            [ Text "Scroll to the top." ]
+            [ Text "Faire défiler vers le haut." ]
 
         Copy ->
-            [ Text "Copy" ]
+            [ Text "Copier" ]
 
         -- Rules
         CardsAgainstHumanity ->
             [ Text "Cards Against Humanity" ]
 
         Rules ->
-            [ Text "How to play." ]
+            [ Text "Comment jouer." ]
 
         RulesHand ->
-            [ Text "Each player has a hand of ", ref (nounUnknownQuantity Response), Text "." ]
+            [ Text "Chaque joueur a une main de ", ref (nounUnknownQuantity Response), Text "." ]
 
         RulesCzar ->
-            [ Text "The first player begins as the "
+            [ Text "Le premier joueur commence en tant que "
             , ref Czar
-            , Text ". the "
+            , Text ". Le "
             , ref Czar
-            , Text " reads the question or fill-in-the-blank phrase on the "
+            , Text " lit la question ou la phrase à compléter de la "
             , ref (noun Call 1)
-            , Text " out loud."
+            , Text " à haute voix."
             ]
 
         RulesPlaying ->
-            [ Text "Everyone else answers the question or fills in the blank by choosing a "
+            [ Text "Tous les autres répondent à la question ou remplissent les blancs en choisissant une "
             , ref (noun Response 1)
-            , Text " from their hand to play for the round."
+            , Text " de leur main."
             ]
 
         RulesJudging ->
-            [ Text "The answers are then shuffled and the "
+            [ Text "Les réponses sont ensuite mélangées et le "
             , ref Czar
-            , Text " reads them out to the other players—for full effect, the "
+            , Text " les lit aux autres joueurs. Pour un meilleur effet, le "
             , ref Czar
-            , Text " should usually re-read the "
+            , Text " peut lire de nouveau la "
             , ref (noun Call 1)
-            , Text " before presenting each answer. The "
+            , Text " avant de présenter chaque réponse. Le "
             , ref Czar
-            , Text " then picks the funniest play, and whoever played it gets one "
+            , Text " choisit ensuite la meilleur réponse, et celui l'ayant jouée remporte un "
             , ref (noun Point 1)
             , Text "."
             ]
@@ -212,336 +219,336 @@ translate _ mdString =
             [ ref (Pick { numberOfCards = 2 }) ]
 
         RulesPick ->
-            [ Text "Some cards will need more than one "
+            [ Text "Certaines cartes nécessitent plus d'une "
             , ref (noun Response 1)
-            , Text " as an answer. Play the cards in the order the "
+            , Text " comme réponse. Jouez les cartes dans l'ordre que le "
             , ref Czar
-            , Text " should read them—the order matters."
+            , Text " devrait les lire."
             ]
 
         ExamplePickDescription ->
             [ ref (nounUnknownQuantity Call)
-            , Text " like this will require picking more "
+            , Text " comme celle-ci requièrent de choisir davantage de "
             , ref (nounUnknownQuantity Response)
-            , Text ", but give you more to pick from."
+            , Text ", mais vous en aurez plus dans votre main."
             ]
 
         RulesDraw ->
-            [ Text "Some "
+            [ Text "Certaines "
             , ref (nounUnknownQuantity Call)
-            , Text " will need even more "
+            , Text " ont besoin d'encore plus de "
             , ref (nounUnknownQuantity Response)
-            , Text "—these will say "
+            , Text ". Celles-ci indiqueront "
             , ref (Draw { numberOfCards = 2 })
-            , Text " or more, and you’ll get that many extra cards before you play."
+            , Text " ou plus, et vous aurez d'autant plus de cartes avant de jouer."
             ]
 
         GameRulesTitle ->
-            [ Text "Game Rules" ]
+            [ Text "Règles du jeu" ]
 
         HouseRulesTitle ->
-            [ Text "House Rules" ]
+            [ Text "Règles personnalisables" ]
 
         HouseRules ->
-            [ Text "You can change the way the game is played in a variety of ways. While setting up the game, choose "
-            , Text "as many house rules as you would like to use."
+            [ Text "Vous pouvez changer la manière de jouer au jeu de multiples façons. Pendant la configuration de la partie, choisissez "
+            , Text "autant de règles que vous le souhaitez."
             ]
 
         HouseRuleReboot ->
-            [ Text "Rebooting the Universe" ]
+            [ Text "Reboot de l'univers" ]
 
         HouseRuleRebootDescription { cost } ->
-            [ Text "At any time, players may trade in "
+            [ Text "À n'importe quel moment, les joueurs peuvent échanger "
             , Text (an cost)
             , ref (nounMaybe Point cost)
-            , Text " to discard their hand and draw a new one."
+            , Text " pour défausser leur main et en piocher une nouvelle."
             ]
 
         HouseRuleRebootAction { cost } ->
-            [ Text "Spend "
+            [ Text "Utiliser "
             , Text (asWord cost)
             , Text " "
             , ref (noun Point cost)
-            , Text " to discard your hand and draw a new one."
+            , Text " pour défausser votre main et en piocher une nouvelle."
             ]
 
         HouseRuleRebootCost ->
-            [ ref (noun Point 1), Text " Cost" ]
+            [ Text "Coût en ", ref (nounUnknownQuantity Point) ]
 
         HouseRuleRebootCostDescription ->
-            [ Text "How many ", ref (nounUnknownQuantity Point), Text " it costs to redraw." ]
+            [ Text "Combien de ", ref (nounUnknownQuantity Point), Text " sont nécessaires pour avoir une nouvelle main." ]
 
         HouseRulePackingHeat ->
-            [ Text "Packing Heat" ]
+            [ Text "Livraison Express" ]
 
         HouseRulePackingHeatDescription ->
-            [ Text "Any "
+            [ Text "Toutes les "
             , ref (nounUnknownQuantity Call)
-            , Text " with "
+            , Text " avec "
             , ref (Pick { numberOfCards = 2 })
-            , Text " also get "
+            , Text " ont aussi "
             , ref (Draw { numberOfCards = 1 })
-            , Text ", so everyone has more options."
+            , Text ", de manière à ce que tout le monde ait plus d'options."
             ]
 
         HouseRuleComedyWriter ->
-            [ Text "Comedy Writer" ]
+            [ Text "Comique Apprenti" ]
 
         HouseRuleComedyWriterDescription ->
-            [ Text "Add blank "
+            [ Text "Ajoute une "
             , ref (nounUnknownQuantity Response)
-            , Text " where players can write custom responses."
+            , Text " vide où chaque joueur peut écrire sa propre réponse."
             ]
 
         HouseRuleComedyWriterNumber ->
-            [ Text "Blank ", ref (nounUnknownQuantity Response) ]
+            [ ref (nounUnknownQuantity Response), Text " vides" ]
 
         HouseRuleComedyWriterNumberDescription ->
-            [ Text "The number of Blank "
+            [ Text "Le nombre de "
             , ref (nounUnknownQuantity Response)
-            , Text " that will be in the game."
+            , Text " à ajouter dans le jeu."
             ]
 
         HouseRuleComedyWriterExclusive ->
-            [ Text "Only Blank ", ref (nounUnknownQuantity Response) ]
+            [ ref (nounUnknownQuantity Response), Text " vides uniquement" ]
 
         HouseRuleComedyWriterExclusiveDescription ->
-            [ Text "If enabled, all other "
+            [ Text "Si cette option est activée, toutes les "
             , ref (nounUnknownQuantity Response)
-            , Text " will be ignored, only blank ones will exist in-game."
+            , Text " seront ignorées, et le jeu sera uniquement composé de cartes vides."
             ]
 
         HouseRuleRandoCardrissian ->
-            [ Text "Rando Cardrissian" ]
+            [ Text "Aléa Toire" ]
 
         HouseRuleRandoCardrissianDescription ->
-            [ Text "Every round, the first "
+            [ Text "Chaque round, la première "
             , ref (noun Response 1)
-            , Text " in the deck will be played as an answer. This play belongs to an AI player named "
-            , Text "Rando Cardrissian, and if he wins the game, all players go home in a state of everlasting shame."
+            , Text " du deck sera jouée comme une réponse. Ce coup appartient à une joueuse robot appelée "
+            , Text "Aléa Toire, et si elle gagne le jeu, tous les joueurs rentreront chez eux avec un sentiment de honte pour l'éternité."
             ]
 
         HouseRuleRandoCardrissianNumber ->
-            [ Text "AI Players" ]
+            [ Text "Joueurs robots" ]
 
         HouseRuleRandoCardrissianNumberDescription ->
-            [ Text "The number of AI players that will be in the game." ]
+            [ Text "Le nombre de joueurs robots qui seront dans la partie." ]
 
         HouseRuleNeverHaveIEver ->
-            [ Text "Never Have I Ever" ]
+            [ Text "J'ai jamais" ]
 
         HouseRuleNeverHaveIEverDescription ->
-            [ Text "At any time, a player may discard cards they don't understand, however, they must confess their "
-            , Text "ignorance: the card is shared publicly."
+            [ Text "À tout moment, un joueur peut se défausser de cartes qu'il ne comprend pas. Il devra cependant confesser son"
+            , Text "ignorance : la carte est révélée aux autres joueurs."
             ]
 
         HouseRuleHappyEnding ->
-            [ Text "Happy Ending" ]
+            [ Text "Fin heureuse" ]
 
         HouseRuleHappyEndingDescription ->
-            [ Text "When the game ends, the final round is a 'Make a Haiku' ", ref (noun Call 1), Text "." ]
+            [ Text "Lorsque la partie se termine, les joueurs effectuent un round final avec une ", ref (noun Call 1), Text " 'Haiku'." ]
 
         HouseRuleCzarChoices ->
-            [ ref Czar, Text " Choices" ]
+            [ Text "Le choix du ", ref Czar ]
 
         HouseRuleCzarChoicesDescription ->
-            [ Text "At the beginning of the round, the "
+            [ Text "Au début du round, le "
             , ref Czar
-            , Text " draws multiple "
+            , Text " tire plusieurs "
             , ref (nounUnknownQuantity Call)
-            , Text " and chooses one of them, and/or has the choice to write their own."
+            , Text " et en choisis une, et/ou peut avoir le choix d'en écrire une lui-même."
             ]
 
         HouseRuleCzarChoicesNumber ->
-            [ Text "Number" ]
+            [ Text "Nombre" ]
 
         HouseRuleCzarChoicesNumberDescription ->
-            [ Text "The number of choices to give the ", ref Czar, Text " to pick between." ]
+            [ Text "Le nombre d'options dont dispose le ", ref Czar, Text "." ]
 
         HouseRuleCzarChoicesCustom ->
-            [ Text "Custom" ]
+            [ Text "Personnalisé" ]
 
         HouseRuleCzarChoicesCustomDescription ->
-            [ Text "If the ", ref Czar, Text " can write custom calls. This takes up one of the choices." ]
+            [ Text "Si le ", ref Czar, Text " peut écrire une carte personnalisée. Cela éliminera l'un de ses choix possibles." ]
 
         HouseRuleWinnersPick ->
-            [ Text "Winner's Pick" ]
+            [ Text "Au tour du gagnant" ]
 
         HouseRuleWinnersPickDescription ->
-            [ Text "The winner of each round becomes the ", ref Czar, Text " for the next round." ]
+            [ Text "Le vainqueur du round devient le ", ref Czar, Text " au prochain tour." ]
 
         SeeAlso { rule } ->
-            [ Text "See also: ", ref rule ]
+            [ Text "Voir aussi : ", ref rule ]
 
         MustBeMoreThanOrEqualValidationError { min } ->
-            [ Text "The value must be at least ", Text (String.fromInt min), Text "." ]
+            [ Text "La valeur ne doit pas être en dessous de ", Text (String.fromInt min), Text "." ]
 
         MustBeLessThanOrEqualValidationError { max } ->
-            [ Text "The value must be at most ", Text (String.fromInt max), Text "." ]
+            [ Text "La valeur ne doit pas dépasser ", Text (String.fromInt max), Text "." ]
 
         SetValue { value } ->
-            [ Text "Set the value to ", Text (String.fromInt value), Text "." ]
+            [ Text "Définir la valeur à ", Text (String.fromInt value), Text "." ]
 
         CantBeEmpty ->
-            [ Text "This can't be empty." ]
+            [ Text "Cela ne peut être vide." ]
 
         SettingsTitle ->
-            [ Text "Settings" ]
+            [ Text "Réglages" ]
 
         LanguageSetting ->
-            [ Text "Language" ]
+            [ Text "Langue" ]
 
         MissingLanguage ->
-            [ Text "Don’t see your language? ", ref TranslationBeg ]
+            [ Text "Vous ne voyez pas votre langue ? ", ref TranslationBeg ]
 
         AutonymFormat { autonym } ->
             [ Text "(", Text autonym, Text ")" ]
 
         TranslationBeg ->
-            [ Text "Help translate "
+            [ Text "Aidez à la traduction de "
             , ref MassiveDecks
-            , Text "!"
+            , Text " !"
             ]
 
         CardSizeSetting ->
-            [ Text "Compact Cards" ]
+            [ Text "Cartes compactes" ]
 
         CardSizeExplanation ->
-            [ Text "Adjust how big cards are—this can be useful on small screens to scroll less." ]
+            [ Text "Ajuster la taille des cartes. Cela peut s'avérer utile sur des petits écrans pour moins scroller." ]
 
         AutoAdvanceSetting ->
-            [ Text "Automatically Advance Round" ]
+            [ Text "Passage de round automatique" ]
 
         AutoAdvanceExplanation ->
-            [ Text "When a round ends, automatically advance to the next one rather than waiting." ]
+            [ Text "Quand un round se termine, passe automatiquement au suivant au lieu d'attendre." ]
 
         SpeechSetting ->
-            [ Text "Text To Speech" ]
+            [ Text "Synthèse vocale" ]
 
         SpeechExplanation ->
-            [ Text "Read out cards using text to speech." ]
+            [ Text "Lire les cartes en utilisant la synthèse vocale." ]
 
         SpeechNotSupportedExplanation ->
-            [ Text "Your browser does not support text to speech, or has no voices installed." ]
+            [ Text "Votre navigateur ne supporte pas la synthèse vocale, ou n'a pas de voix installées." ]
 
         VoiceSetting ->
-            [ Text "Speech Voice" ]
+            [ Text "Voix de la synthèse vocale" ]
 
         NotificationsSetting ->
-            [ Text "Browser Notifications" ]
+            [ Text "Notifications du navigateur" ]
 
         NotificationsExplanation ->
-            [ Text "Alert you when you need to do something in the game using browser notifications."
+            [ Text "Vous préviens lorsque votre attention est requise dans le jeu à l'aide des notifications du navigateur."
             ]
 
         NotificationsUnsupportedExplanation ->
-            [ Text "Your browser doesn't support notifications." ]
+            [ Text "Votre navigateur ne supporte pas les notifications." ]
 
         NotificationsBrowserPermissions ->
-            [ Text "You will need to give permission for "
+            [ Text "Vous allez devoir autoriser "
             , ref MassiveDecks
-            , Text " to notify you. This will only be used while the game is open and while you have this enabled."
+            , Text " à pouvoir vous notifier. Cela sera uniquement utilisé tant que le jeu est ouvert et que vous avez cette option activée."
             ]
 
         NotificationOnlyWhenHiddenSetting ->
-            [ Text "Only When Hidden" ]
+            [ Text "Uniquement en arrière-plan" ]
 
         NotificationsOnlyWhenHiddenExplanation ->
-            [ Text "Only send notifications when you are not looking at the page (e.g: on another tab or minimised)." ]
+            [ Text "Envoie des notifications uniquement lorsque le jeu n'est pas au premier plan (e.g. : si vous êtes sur un autre onglet, ou si le navigateur est minimisé)." ]
 
         NotificationsOnlyWhenHiddenUnsupportedExplanation ->
-            [ Text "Your browser doesn't support checking for page visibility." ]
+            [ Text "Votre navigateur ne supporte pas la vérification de la visibilité des pages." ]
 
         -- Terms
         Czar ->
-            [ Text "Card Czar" ]
+            [ Text "Tsar" ]
 
         CzarDescription ->
-            [ Text "The player judging the round." ]
+            [ Text "Le joueur qui juge pendant le round." ]
 
         CallDescription ->
-            [ Text "A black card with a question or fill-in-the-blank phrase." ]
+            [ Text "Une carte noire avec une question ou une phrase à trous." ]
 
         ResponseDescription ->
-            [ Text "A white card with a phrase played into rounds." ]
+            [ Text "Une carte blanche avec une phrase jouée pendant les rounds." ]
 
         PointDescription ->
-            [ Text "A point—having more means winning." ]
+            [ Text "Un point, celui qui en a le plus à la fin du jeu remporte la partie." ]
 
         GameCodeTerm ->
-            [ Text "Game Code" ]
+            [ Text "Code de la partie" ]
 
         GameCodeDescription ->
-            [ Text "A code that lets other people find and join your game." ]
+            [ Text "Un code qui permet à d'autres personnes de chercher et de rejoindre votre partie." ]
 
         GameCode { code } ->
             [ Text code ]
 
         GameCodeSpecificDescription ->
-            [ Text "Give this game code to people and they can join the game." ]
+            [ Text "Donnez ce code à d'autres joueurs pour qu'ils puissent rejoindre la partie." ]
 
         GameCodeHowToAcquire ->
-            [ Text "Ask the person who invited you for the game’s ", ref GameCodeTerm, Text "." ]
+            [ Text "Demandez le ", ref GameCodeTerm, Text " à la personne qui vous a invité." ]
 
         Deck ->
             [ Text "Deck" ]
 
         DeckSource ->
-            [ ref Deck, Text " Source" ]
+            [ Text "Origine du ", ref Deck ]
 
         DeckLanguage { language } ->
-            [ Text "in ", Text language ]
+            [ Text "en ", Text language ]
 
         DeckAuthor { author } ->
-            [ Text "by ", Text author ]
+            [ Text "par ", Text author ]
 
         DeckTranslator { translator } ->
-            [ Text "translation by ", Text translator ]
+            [ Text "traduction réalisée par ", Text translator ]
 
         StillPlaying ->
-            [ Text "Playing" ]
+            [ Text "En train de jouer" ]
 
         PlayingDescription ->
-            [ Text "This player is in the round, but has not yet submitted a play." ]
+            [ Text "Ce joueur est dans le round, mais n'a pas encore joué." ]
 
         Played ->
-            [ Text "Played" ]
+            [ Text "A joué" ]
 
         PlayedDescription ->
-            [ Text "This player has submitted their play for the round." ]
+            [ Text "Ce joueur a déjà joué pour ce round." ]
 
         -- Lobby Browser
         LobbyBrowserTitle ->
-            [ Text "Public Games" ]
+            [ Text "Parties publiques" ]
 
         NoPublicGames ->
-            [ Text "No public games available." ]
+            [ Text "Aucune partie publique disponible." ]
 
         PlayingGame ->
-            [ Text "Games that are in progress." ]
+            [ Text "Parties en cours." ]
 
         SettingUpGame ->
-            [ Text "Games that have not yet started." ]
+            [ Text "Parties n'ayant pas commencé." ]
 
         StartYourOwn ->
-            [ Text "Start a new game?" ]
+            [ Text "Démarrer une nouvelle partie ?" ]
 
         -- Spectation
         JoinTheGame ->
-            [ Text "Join the game!" ]
+            [ Text "Rejoindre la partie !" ]
 
         ToggleAdvertDescription ->
-            [ Text "Toggle showing the information on joining the game." ]
+            [ Text "Activer l'affichage des informations en rejoignant le jeu." ]
 
         -- Cards
         Pick numberOfCards ->
-            [ Text "Pick", ref (NumberOfCards numberOfCards) ]
+            [ Text "Choisir", ref (NumberOfCards numberOfCards) ]
 
         Draw numberOfCards ->
-            [ Text "Draw", ref (NumberOfCards numberOfCards) ]
+            [ Text "Piocher", ref (NumberOfCards numberOfCards) ]
 
         PickDescription { numberOfCards } ->
-            [ Text "You need to play "
+            [ Text "Vous devez jouer "
             , Text (asWord numberOfCards)
             , Text " "
             , ref (noun Response numberOfCards)
@@ -549,11 +556,11 @@ translate _ mdString =
             ]
 
         DrawDescription { numberOfCards } ->
-            [ Text "You get "
+            [ Text "Vous recevez "
             , Text (asWord numberOfCards)
             , Text " extra "
             , ref (noun Response numberOfCards)
-            , Text " before playing."
+            , Text " avant de jouer."
             ]
 
         NumberOfCards { numberOfCards } ->
@@ -561,16 +568,16 @@ translate _ mdString =
 
         -- Lobby
         LobbyNameLabel ->
-            [ Text "Game Name" ]
+            [ Text "Nom de la partie" ]
 
         DefaultLobbyName { owner } ->
-            [ Text owner, Text "'s Game" ]
+            [ Text "Partie de ", Text owner ]
 
         Invite ->
-            [ Text "Invite players to the game." ]
+            [ Text "Inviter des joueurs à la partie." ]
 
         InviteLinkHelp ->
-            [ Text "Send this link to players to invite them to the game, or let them scan the QR code below." ]
+            [ Text "Envoyer ce lien aux joueurs pour les inviter dans la partie, ou laissez-les scanner le QR code ci-dessous." ]
 
         InviteExplanation { gameCode, password } ->
             let
@@ -578,7 +585,7 @@ translate _ mdString =
                     password
                         |> Maybe.map
                             (\p ->
-                                [ Text " and the game password “"
+                                [ Text " et le mot de passe de la partie “"
                                 , Text p
                                 , Text "”"
                                 ]
@@ -586,11 +593,11 @@ translate _ mdString =
                         |> Maybe.withDefault []
             in
             List.concat
-                [ [ Text "Your game code is "
+                [ [ Text "Votre code de partie est "
                   , ref (GameCode { code = gameCode })
-                  , Text ". Players can join the game by loading "
+                  , Text ". Les joueurs peuvent rejoindre la partie en ouvrant "
                   , ref MassiveDecks
-                  , Text " and entering that code"
+                  , Text " et en entrant le code"
                   ]
                 , extra
                 , [ Text "."
@@ -598,52 +605,52 @@ translate _ mdString =
                 ]
 
         Cast ->
-            [ Text "Cast to TV." ]
+            [ Text "Caster sur la TV." ]
 
         CastConnecting ->
-            [ Text "Connecting…" ]
+            [ Text "Connexion…" ]
 
         CastConnected { deviceName } ->
-            [ Text "Casting to ", Text deviceName, Text "." ]
+            [ Text "Cast vers ", Text deviceName, Text "." ]
 
         Players ->
             [ ref (nounUnknownQuantity Player) ]
 
         PlayersDescription ->
-            [ Text "Users playing the game." ]
+            [ Text "Joueurs dans la partie." ]
 
         Spectators ->
             [ ref (nounUnknownQuantity Spectator) ]
 
         SpectatorsDescription ->
-            [ Text "Users watching the game without playing." ]
+            [ Text "Utilisateurs regardant la partie." ]
 
         Left ->
-            [ Text "Left" ]
+            [ Text "Est parti" ]
 
         LeftDescription ->
-            [ Text "Users who have left the game." ]
+            [ Text "Utilisateurs ayant quitté la partie." ]
 
         Away ->
-            [ Text "Away" ]
+            [ Text "Absent" ]
 
         AwayDescription ->
-            [ Text "This user is temporarily away from the game." ]
+            [ Text "Cet utilisateur est actuellement absent de la partie." ]
 
         Disconnected ->
-            [ Text "Disconnected" ]
+            [ Text "Déconnecté" ]
 
         DisconnectedDescription ->
-            [ Text "This user is not connected to the game." ]
+            [ Text "Cet utilisateur n'est pas connecté à la partie." ]
 
         Privileged ->
-            [ Text "Owner" ]
+            [ Text "Hôte" ]
 
         PrivilegedDescription ->
-            [ Text "This user can adjust settings in the game." ]
+            [ Text "Cet utilisateur peut modifier les options de la partie." ]
 
         Ai ->
-            [ Text "AI" ]
+            [ Text "Bot" ]
 
         AiDescription ->
             [ Text "This player is controlled by the computer." ]
@@ -652,708 +659,708 @@ translate _ mdString =
             [ Text (String.fromInt total) ]
 
         ScoreDescription ->
-            [ Text "The number of "
+            [ Text "Le nombre de "
             , ref (nounUnknownQuantity Point)
-            , Text " this player has."
+            , Text " de ce joueur."
             ]
 
         Likes { total } ->
             [ Text (String.fromInt total) ]
 
         LikesDescription ->
-            [ Text "The number of likes received."
+            [ Text "Le nombre de likes reçus."
             ]
 
         ToggleUserList ->
-            [ Text "Show or hide the scoreboard." ]
+            [ Text "Montrer ou cacher le tableau des scores." ]
 
         GameMenu ->
-            [ Text "Game menu." ]
+            [ Text "Menu de la partie." ]
 
         UnknownUser ->
-            [ Text "An unknown user" ]
+            [ Text "Un utilisateur inconnu" ]
 
         InvitePlayers ->
-            [ Text "Invite Players" ]
+            [ Text "Inviter des joueurs" ]
 
         InvitePlayersDescription ->
-            [ Text "Get the game code/link/qr code to let others join this game." ]
+            [ Text "Obtenir le code/lien/qr code de la partie pour permettre aux autres joueurs de rejoindre la partie." ]
 
         SetAway ->
-            [ Text "Mark As Away" ]
+            [ Text "Marquer comme absent" ]
 
         SetBack ->
-            [ Text "Mark As Back" ]
+            [ Text "Marquer comme de retour" ]
 
         LeaveGame ->
-            [ Text "Leave Game" ]
+            [ Text "Quitter la partie" ]
 
         LeaveGameDescription ->
-            [ Text "Permanently leave the game." ]
+            [ Text "Quitter la partie définitivement." ]
 
         Spectate ->
-            [ Text "Spectator View" ]
+            [ Text "Vue spectateur" ]
 
         SpectateDescription ->
-            [ Text "Open a spectator's view of the game in a new tab/window." ]
+            [ Text "Ouvrir la vue d'un spectateur de la partie dans un nouvel onglet/une nouvelle fenêtre." ]
 
         BecomeSpectator ->
-            [ Text "Spectate" ]
+            [ Text "Devenir spectateur" ]
 
         BecomeSpectatorDescription ->
-            [ Text "Just watch the game without playing." ]
+            [ Text "Regarder la partie sans jouer." ]
 
         BecomePlayer ->
-            [ Text "Play" ]
+            [ Text "Jouer" ]
 
         BecomePlayerDescription ->
-            [ Text "Play in the game." ]
+            [ Text "Jouer à la partie." ]
 
         EndGame ->
-            [ Text "End Game" ]
+            [ Text "Terminer la partie" ]
 
         EndGameDescription ->
-            [ Text "End the game now." ]
+            [ Text "Termine la partie maintenant." ]
 
         ReturnViewToGame ->
-            [ Text "Return to game" ]
+            [ Text "Retourner dans la partie" ]
 
         ReturnViewToGameDescription ->
-            [ Text "Return to the main game view." ]
+            [ Text "Retourner à la vue principale de la partie." ]
 
         ViewConfiguration ->
-            [ Text "Configure" ]
+            [ Text "Configurer" ]
 
         ViewConfigurationDescription ->
-            [ Text "Switch to view the game's configuration." ]
+            [ Text "Passer à la vue de configuration de la partie." ]
 
         KickUser ->
-            [ Text "Kick" ]
+            [ Text "Expulser" ]
 
         Promote ->
-            [ Text "Promote" ]
+            [ Text "Promouvoir" ]
 
         Demote ->
-            [ Text "Demote" ]
+            [ Text "Rétrograder" ]
 
         -- Notifications
         UserConnected { username } ->
-            [ Text username, Text " has reconnected to the game." ]
+            [ Text username, Text " s'est reconnecté à la partie." ]
 
         UserDisconnected { username } ->
-            [ Text username, Text " has disconnected from the game." ]
+            [ Text username, Text " s'est déconnecté de la partie." ]
 
         UserJoined { username } ->
-            [ Text username, Text " has joined the game." ]
+            [ Text username, Text " a rejoint la partie." ]
 
         UserLeft { username } ->
-            [ Text username, Text " has left the game." ]
+            [ Text username, Text " a quitté la partie." ]
 
         UserKicked { username } ->
-            [ Text username, Text " has been kicked from the game." ]
+            [ Text username, Text " a été expulsé de la partie." ]
 
         Dismiss ->
-            [ Text "Dismiss" ]
+            [ Text "Supprimer" ]
 
         -- Configuration
         ConfigureTitle ->
-            [ Text "Game Setup" ]
+            [ Text "Configuration de la partie" ]
 
         NoDecks ->
-            [ Segment [ Text "No decks. " ]
+            [ Segment [ Text "Aucun deck. " ]
             , Text " "
-            , Segment [ Text "You will need to add at least one to the game." ]
+            , Segment [ Text "Vous avez besoin d'au moins un deck pour débuter la partie." ]
             ]
 
         NoDecksHint ->
-            [ Text "Not sure? Add the original ", raw CardsAgainstHumanity, Text " deck." ]
+            [ Text "Un doute ? Ajouter le deck original de", raw CardsAgainstHumanity, Text " ." ]
 
         WaitForDecks ->
-            [ Text "The decks must load before you can start the game." ]
+            [ Text "Les decks doivent être chargés avant de pouvoir débuter la partie." ]
 
         MissingCardType { cardType } ->
-            [ Text "None of your decks contain any "
+            [ Text "Aucun de vos decks ne contient de "
             , ref (nounUnknownQuantity cardType)
-            , Text ". You need a deck that does to start the game."
+            , Text ". Vous avez besoin d'un de ces decks pour pouvoir débuter la partie."
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
-            [ Text "For the number of players in the game, you need at least "
+            [ Text "Pour le nombre de joueurs dans cette partie, vous avez besoin d'au moins "
             , Text (needed |> String.fromInt)
             , Text " "
             , ref (noun cardType needed)
-            , Text " but you only have "
+            , Text " mais vous en avez seulement "
             , Text (have |> String.fromInt)
             , Text "."
             ]
 
         AddBlankCards { amount } ->
-            [ Text "Add "
+            [ Text "Ajouter "
             , amount |> String.fromInt |> Text
-            , Text " blank "
             , ref (noun Response amount)
+            , Text " vides "
             ]
 
         AddDeck ->
-            [ Text "Add deck." ]
+            [ Text "Ajouter un deck." ]
 
         RemoveDeck ->
-            [ Text "Remove deck." ]
+            [ Text "Supprimer un deck." ]
 
         SourceNotFound { source } ->
-            [ ref source, Text " doesn't recognise the deck you asked for. Check the details you gave are correct." ]
+            [ ref source, Text " ne reconnaît pas le deck que vous avez demandé. Vérifier que les informations que vous avez rentrées sont correctes." ]
 
         SourceServiceFailure { source } ->
-            [ ref source, Text " failed to provide the deck. Please try again later or try another source." ]
+            [ ref source, Text " a échoué à charger le deck. Merci d'essayer plus tard ou d'essayer avec une autre source." ]
 
         ManyDecks ->
             [ Text "Many Decks" ]
 
         ManyDecksDeckCodeTitle ->
-            [ Text "Deck Code" ]
+            [ Text "Code du deck" ]
 
         ManyDecksDeckCodeShort ->
-            [ Text "A deck code must be at least five characters long." ]
+            [ Text "Un code de deck doit être faire au minimum cinq caractères." ]
 
         ManyDecksWhereToGet ->
-            [ Text "You can create and find decks to play with at ", ref ManyDecks, Text "." ]
+            [ Text "Vous pouvez créer et trouver des decks sur ", ref ManyDecks, Text "." ]
 
         JsonAgainstHumanity ->
             [ Text "JSON Against Humanity" ]
 
         JsonAgainstHumanityAbout ->
-            [ Text "Decks provided by ", ref JsonAgainstHumanity ]
+            [ Text "Decks fournis par ", ref JsonAgainstHumanity ]
 
         BuiltIn ->
-            [ Text "Built-in" ]
+            [ Text "Intégré" ]
 
         APlayer ->
-            [ Text "A Player" ]
+            [ Text "Un joueur" ]
 
         Generated { by } ->
-            [ Text "Generated by ", ref by ]
+            [ Text "Genéré par ", ref by ]
 
         DeckAlreadyAdded ->
-            [ Text "This deck is already in the game." ]
+            [ Text "Ce deck est déjà dans la partie." ]
 
         ConfigureDecks ->
             [ Text "Decks" ]
 
         ConfigureRules ->
-            [ Text "Rules" ]
+            [ Text "Règles" ]
 
         ConfigureTimeLimits ->
-            [ Text "Time Limits" ]
+            [ Text "Limites de temps" ]
 
         ConfigurePrivacy ->
-            [ Text "Privacy" ]
+            [ Text "Confidentialité" ]
 
         HandSize ->
-            [ Text "Hand Size" ]
+            [ Text "Taille de la main" ]
 
         HandSizeDescription ->
-            [ Text "The base number of cards each player has in their hand during the game." ]
+            [ Text "Le nombre de cartes dont chaque joueur dispose durant la partie." ]
 
         ScoreLimit ->
-            [ ref (noun Point 1), Text " Limit" ]
+            [ Text "Limite de ", ref (nounUnknownQuantity Point) ]
 
         ScoreLimitDescription ->
             [ Segment
-                [ Text "The number of "
+                [ Text "Le nombre de "
                 , ref (nounUnknownQuantity Point)
-                , Text " a player needs to win the game."
+                , Text " dont un joueur a besoin pour gagner la partie."
                 ]
             , Text " "
-            , Segment [ Text "If disabled, the game continues indefinitely." ]
+            , Segment [ Text "Si désactivé, la partie continue indéfiniment." ]
             ]
 
         UnsavedChangesWarning ->
-            [ Text "You have unsaved changes to the configuration, they must be saved first if you want them to apply "
-            , Text "to the game."
+            [ Text "Vous avez des modifications en cours, elles doivent être sauvegardées si vous voulez les appliquer "
+            , Text "à la partie."
             ]
 
         SaveChanges ->
-            [ Text "Save your changes." ]
+            [ Text "Sauvegarder les modifications." ]
 
         RevertChanges ->
-            [ Text "Discard your unsaved changes." ]
+            [ Text "Ignorer les modifications en cours." ]
 
         NeedAtLeastOneDeck ->
-            [ Text "You need a deck of cards added to start the game." ]
+            [ Text "Vous avez besoin d'un deck de cartes pour débuter la partie." ]
 
         NeedAtLeastThreePlayers ->
-            [ Text "You need at least three players to start the game." ]
+            [ Text "Vous avez besoin d'au minimum trois joueurs pour débuter la partie." ]
 
         NeedAtLeastOneHuman ->
-            [ Text "Unfortunately computer players can't be the "
+            [ Text "Malheureusement, les bots ne peuvent pas être le "
             , ref Czar
-            , Text ", so you need at least one human player to start the game."
-            , Text " (Although only one human might be a bit boring!)"
+            , Text ", vous avez donc besoin au minimum d'un joueur humain pour débuter la partie."
+            , Text " (Bien qu'un seul humain risque d'être un peu ennuyant !)"
             ]
 
         RandoCantWrite ->
-            [ Text "Computer players can't write their own cards." ]
+            [ Text "Les bots ne peuvent pas écrire leurs propres cartes." ]
 
         DisableComedyWriter ->
-            [ Text "Disable ", ref HouseRuleComedyWriter ]
+            [ Text "Désactiver ", ref HouseRuleComedyWriter ]
 
         DisableRando ->
-            [ Text "Disable ", ref HouseRuleRandoCardrissian ]
+            [ Text "Désactiver ", ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
-            [ Text "Add an AI player to the game." ]
+            [ Text "Ajouter un bot à la partie." ]
 
         PasswordShared ->
-            [ Text "Anyone in the game can see the password! "
-            , Text "Hiding it above only affects you (useful if streaming, etc…)."
+            [ Text "N'importe qui dans la partie peut voir le code ! "
+            , Text "Le cacher ne s'appliquera qu'à vous (utile pour les streamers, etc.)."
             ]
 
         PasswordNotSecured ->
-            [ Text "Game passwords are "
-            , Em [ Text "not" ]
-            , Text " stored securely—given this, please "
-            , Em [ Text "do not" ]
-            , Text " use serious passwords you use elsewhere!"
+            [ Text "Les mots de passe de partie "
+            , Em [ Text "ne sont pas" ]
+            , Text " stockés de manière sécurisés. Sachant cela, vous êtes priés de "
+            , Em [ Text "ne pas" ]
+            , Text " utiliser un de vos mots de passe personnel !"
             ]
 
         LobbyPassword ->
-            [ Text "Game Password" ]
+            [ Text "Mot de passe de la partie" ]
 
         LobbyPasswordDescription ->
-            [ Text "A password the users must enter before they can join the game." ]
+            [ Text "Le mot de passe que les utilisateurs doivent rentrer pour rejoindre la partie." ]
 
         AudienceMode ->
-            [ Text "Audience Mode" ]
+            [ Text "Mode audience" ]
 
         AudienceModeDescription ->
-            [ Text "If enabled, newly joining users will be spectators by default, and only you will be able to "
-            , Text "make them players."
+            [ Text "Si activé, les nouveaux utilisateurs seront spectateurs par défaut, et vous seul serez capable de "
+            , Text "les faire devenir joueurs."
             ]
 
         StartGame ->
-            [ Text "Start Game" ]
+            [ Text "Démarrer la partie" ]
 
         Public ->
-            [ Text "Public Game" ]
+            [ Text "Partie publique" ]
 
         PublicDescription ->
-            [ Text "If enabled, the game will show up in the public game list for anyone to find." ]
+            [ Text "Si activé, la partie sera présente dans la liste des parties publiques en cours." ]
 
         ApplyConfiguration ->
-            [ Text "Apply this change." ]
+            [ Text "Appliquer les modifications." ]
 
         AppliedConfiguration ->
-            [ Text "Saved." ]
+            [ Text "Sauvegardé." ]
 
         InvalidConfiguration ->
-            [ Text "This configuration value isn't valid." ]
+            [ Text "Cette valeur de configuration n'est pas valide." ]
 
         Automatic ->
-            [ Text "Automatically Mark Players As Away" ]
+            [ Text "Automatiquement marquer les joueurs comme absent" ]
 
         AutomaticDescription ->
-            [ Text "If enabled, when the time limit runs out players will automatically be marked as away. "
-            , Text "Otherwise someone will need to press the button to do so."
+            [ Text "Si activé, quand la limite de temps est atteinte, les joueurs seront automatiquement marqués comme absent. "
+            , Text "Sinon, quelqu'un devra appuyer sur le bouton pour le faire."
             ]
 
         TimeLimit { stage } ->
-            [ ref stage, Text " Time Limit" ]
+            [ Text "Temps limite ", ref stage ]
 
         StartingTimeLimitDescription ->
-            [ Text "How long (in seconds) the "
+            [ Text "De combien de temps (en secondes) dispose le "
             , ref Czar
-            , Text " has to choose/write a "
+            , Text " pour choisir/écrire une "
             , ref (noun Call 1)
-            , Text ", when the "
+            , Text ", quand "
             , raw HouseRuleCzarChoices
-            , Text " house rule is enabled."
+            , Text " est activé."
             ]
 
         PlayingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Players, Text " have to make their plays." ]
+            [ Text "Combien de temps (en secondes) disposent les ", ref Players, Text " pour jouer." ]
 
         PlayingAfterDescription ->
-            [ Text "How long (in seconds) players have to change their play before the next stage starts." ]
+            [ Text "Combien de temps (en secondes) disposent les joueurs pour changer leur jeu avant le prochain round." ]
 
         RevealingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Czar, Text " has to reveal the plays." ]
+            [ Text "Combien de temps (en secondes) dispose le ", ref Czar, Text " pour révéler les réponses." ]
 
         RevealingAfterDescription ->
-            [ Text "How long (in seconds) to wait after the last card is revealed before the next stage starts." ]
+            [ Text "Combien de temps (en secondes) entre la révélation de la dernière réponse et le début du prochain round." ]
 
         JudgingTimeLimitDescription ->
-            [ Text "How long (in seconds) the ", ref Czar, Text " has to judge the plays." ]
+            [ Text "Combien de temps (en secondes) dispose le ", ref Czar, Text " pour juger les réponses." ]
 
         CompleteTimeLimitDescription ->
-            [ Text "How much time (in seconds) to wait after one round ends before starting the next one." ]
+            [ Text "Combien de temps (en secondes) entre la fin du round et le début du prochain round." ]
 
         RevealingEnabledTitle ->
-            [ Text "Czar Reveals Plays" ]
+            [ Text "Le Tsar dévoile les réponses" ]
 
         RevealingEnabled ->
-            [ Text "If this is enabled, the "
+            [ Text "Si activé, le "
             , ref Czar
-            , Text " reveals one play at a time before picking a winner."
+            , Text " dévoile une réponse à la fois avant de choisir un gagnant."
             ]
 
         DuringTitle ->
-            [ Text "Time Limit" ]
+            [ Text "Limite de temps" ]
 
         AfterTitle ->
-            [ Text "After" ]
+            [ Text "Suite" ]
 
         Conflict ->
-            [ Text "Conflict" ]
+            [ Text "Conflit" ]
 
         ConflictDescription ->
-            [ Text "Someone else made changes to this while you were also making changes. "
-            , Text "Please choose if you want to keep your changes or theirs."
+            [ Text "Quelqu'un d'autre a réalisé des modifications en même temps que vous. "
+            , Text "Veuillez choisir si vous désirez conserver vos changements, ou les siens."
             ]
 
         YourChanges ->
-            [ Text "Your Changes" ]
+            [ Text "Vos changements" ]
 
         TheirChanges ->
-            [ Text "Their Changes" ]
+            [ Text "Ses changements" ]
 
         ConfigurationDisabledWhileInGame ->
-            [ Text "While the game in progress, you can't change the configuration." ]
+            [ Text "Lorsque la partie est en cours, vous ne pouvez pas modifier la configuration." ]
 
         ConfigurationDisabledIfNotPrivileged ->
-            [ Text "You can't change the configuration of this game." ]
+            [ Text "Vous ne pouvez pas modifier la configuration de cette partie." ]
 
         ConfigureNextGame ->
-            [ Text "Configure Next Game" ]
+            [ Text "Configurer la partie suivante" ]
 
         -- Game
         PickCall ->
-            [ Text "Pick this ", ref (noun Call 1), Text " for the others to play into for the round." ]
+            [ Text "Choisir cette ", ref (noun Call 1), Text " à proposer aux autres joueurs pour ce round." ]
 
         WriteCall ->
-            [ Text "Write a custom ", ref (noun Call 1), Text " for the others to play into for the round." ]
+            [ Text "Écrire une ", ref (noun Call 1), Text " personnalisée à proposer aux autres joueurs pour ce round." ]
 
         SubmitPlay ->
-            [ Text "Give these cards to the ", ref Czar, Text " as your play for the round." ]
+            [ Text "Proposer ces cartes au ", ref Czar, Text " comme votre réponse pour ce round." ]
 
         TakeBackPlay ->
-            [ Text "Take back your cards to change your play for the round." ]
+            [ Text "Récupérer vos cartes pour changer votre réponse pour ce round." ]
 
         JudgePlay ->
-            [ Text "Pick this play as the winner for the round." ]
+            [ Text "Choisir cette réponse comme étant la meilleur du round." ]
 
         LikePlay ->
-            [ Text "Add a like to this play." ]
+            [ Text "Ajouter un like à cette réponse." ]
 
         AdvanceRound ->
-            [ Text "Next round." ]
+            [ Text "Round suivant." ]
 
         Starting ->
             [ raw HouseRuleCzarChoices ]
 
         Playing ->
-            [ Text "Playing" ]
+            [ Text "En train de jouer" ]
 
         Revealing ->
-            [ Text "Revealing" ]
+            [ Text "En train de révéler" ]
 
         Judging ->
-            [ Text "Judging" ]
+            [ Text "En train de juger" ]
 
         Complete ->
-            [ Text "Finished" ]
+            [ Text "Terminé" ]
 
         ViewGameHistoryAction ->
-            [ Text "View previous rounds from this game." ]
+            [ Text "Voir les précédents rounds de cette partie." ]
 
         ViewHelpAction ->
-            [ Text "Help" ]
+            [ Text "Aide" ]
 
         EnforceTimeLimitAction ->
-            [ Text "Set all players the game is waiting on to away and skip them until they return." ]
+            [ Text "Marquer tous les joueurs en attente comme absents et les ignorer jusqu'à leur retour." ]
 
         Blank ->
-            [ Text "Blank" ]
+            [ Text "Espace vide" ]
 
         RoundStarted ->
-            [ Text "Round Started" ]
+            [ Text "Début du round" ]
 
         JudgingStarted ->
-            [ Text "Judging Started" ]
+            [ Text "Le jugement a commencé" ]
 
         Paused ->
-            [ Text "The game has been paused because there are not enough active players to continue."
-            , Text "When someone joins or returns it will continue automatically."
+            [ Text "La partie a été mise en pause car il n'y a pas assez de joueurs actifs pour continuer."
+            , Text "Lorsque que quelqu'un rejoint ou se reconnecte, la partie continuera automatiquement."
             ]
 
         ClientAway ->
-            [ Text "You are currently set as away from the game, and are not playing." ]
+            [ Text "Vous êtes actuellement marqué comme absent de la partie, et ne jouez pas." ]
 
         Discard ->
-            [ Text "Discard the selected card, revealing it to the other users in the game." ]
+            [ Text "Défausse la carte sélectionnée, la révélant aux autres utilisateurs de la partie." ]
 
         Discarded { player } ->
             [ Text player
-            , Text " discarded the following card:"
+            , Text " a défaussé la carte suivante :"
             ]
 
         -- Instructions
         PickCallInstruction ->
-            [ Text "Pick a ", ref (noun Call 1), Text " for the others to play into." ]
+            [ Text "Choisissez une ", ref (noun Call 1), Text " à jouer pour ce round." ]
 
         WaitForCallInstruction ->
-            [ Text "You are waiting for the "
+            [ Text "Vous attendez que le "
             , ref Czar
-            , Text " to pick a "
+            , Text " choisisse une "
             , ref (noun Call 1)
-            , Text " for you to play into."
+            , Text " pour pouvoir jouer."
             ]
 
         PlayInstruction { numberOfCards } ->
-            [ Text "You need to choose "
+            [ Text "Vous devez choisir "
             , Text (asWord numberOfCards)
-            , Text " more "
+            , Text " "
             , ref (noun Response numberOfCards)
-            , Text " from your hand into this round before you can submit your play."
+            , Text " de plus de votre main avant de pouvoir soumettre votre réponse pour ce round."
             ]
 
         SubmitInstruction ->
-            [ Text "You need to submit your play for this round." ]
+            [ Text "Vous devez soumettre votre réponse pour ce round." ]
 
         WaitingForPlaysInstruction ->
-            [ Text "You are waiting for other players to play into the round." ]
+            [ Text "Vous attendez la réponse des autres joueurs pour ce round." ]
 
         CzarsDontPlayInstruction ->
-            [ Text "You are the "
+            [ Text "Vous êtes le "
             , ref Czar
-            , Text " for the round - you don't submit any "
+            , Text " pour ce round - vous ne soumettez pas de "
             , ref (nounUnknownQuantity Response)
-            , Text ". Instead you choose the winner once everyone else has submitted theirs."
+            , Text ". À la place, vous choisissez le gagnant une fois que tous les joueurs ont joué leur réponse."
             ]
 
         NotInRoundInstruction ->
-            [ Text "You are not in this round. You will play in the next one unless you are set to away." ]
+            [ Text "Vous n'êtes pas dans ce round. Vous jouerez au prochain round, sauf si vous êtes marqués comme absent." ]
 
         RevealPlaysInstruction ->
-            [ Text "Click on the plays to flip them, then pick the one you think is best." ]
+            [ Text "Cliquez sur les réponses pour les révéler, et choisissez ensuite celle qui vous semble être la meilleure." ]
 
         WaitingForCzarInstruction ->
-            [ Text "You can like plays while you wait for the ", ref Czar, Text " to reveal the plays and pick a winner for the round." ]
+            [ Text "Vous pouvez liker des réponses pendant que vous attendez que le ", ref Czar, Text " révèle les réponses et choisisse un gagnant pour ce round." ]
 
         AdvanceRoundInstruction ->
-            [ Text "The next round has started, you can advance." ]
+            [ Text "Le prochain round a commencé, vous pouvez continuer." ]
 
         -- 404 Unknown
         UnknownPageTitle ->
-            [ Text "404 Error: Unknown page." ]
+            [ Text "Erreur 404 : Page inconnue." ]
 
         GoBackHome ->
-            [ Text "Go to the main page." ]
+            [ Text "Revenir à la page principale." ]
 
         -- Actions
         Refresh ->
-            [ Text "Refresh" ]
+            [ Text "Rafraîchir" ]
 
         Accept ->
             [ Text "OK" ]
 
         -- Editor
         AddSlot ->
-            [ Text "Add ", ref Blank ]
+            [ Text "Ajouter ", ref Blank ]
 
         AddText ->
-            [ Text "Add Text" ]
+            [ Text "Ajouter texte" ]
 
         EditText ->
-            [ Text "Edit" ]
+            [ Text "Éditer" ]
 
         EditSlotIndex ->
-            [ Text "Edit" ]
+            [ Text "Éditer" ]
 
         MoveLeft ->
-            [ Text "Move Earlier" ]
+            [ Text "Déplacer avant" ]
 
         Remove ->
-            [ Text "Remove" ]
+            [ Text "Supprimer" ]
 
         MoveRight ->
-            [ Text "Move Later" ]
+            [ Text "Déplacer après" ]
 
         Normal ->
             [ Text "Normal" ]
 
         Capitalise ->
-            [ Text "Capitalise" ]
+            [ Text "Première lettre en majuscule" ]
 
         UpperCase ->
-            [ Text "Upper Case" ]
+            [ Text "Tout en majuscules" ]
 
         Emphasise ->
-            [ Text "Emphasise" ]
+            [ Text "Souligner" ]
 
         MustContainAtLeastOneSlot ->
-            [ Text "You must have at least one ", ref Blank, Text " for people to play into." ]
+            [ Text "Vous devez avoir au moins un ", ref Blank, Text " pour que les joueurs puissent jouer." ]
 
         SlotIndexExplanation ->
-            [ Text "What number "
-            , ref (noun Response 1)
-            , Text " played will be used for this "
+            [ Text "Combien de "
+            , ref (noun nounUnknownQuantity Response)
+            , Text " seront nécessaires pour cet "
             , ref Blank
-            , Text ". This lets you repeat a "
+            , Text ". Cela vous permettra de répéter une même  "
             , ref (noun Response 1)
             , Text "."
             ]
 
         -- Errors
         Error ->
-            [ Text "Error" ]
+            [ Text "Erreur" ]
 
         ErrorHelp ->
-            [ Text "The game server might be down, or this might be a bug. Refreshing the page should get you going "
-            , Text "again. More details can be found below."
+            [ Text "Le serveur de jeu est peut-être en panne, ou il s'agit peut-être d'un bug. Rafraîchir la page devrait vous "
+            , Text "aider. Plus d'informations ci-dessous."
             ]
 
         ErrorHelpTitle ->
-            [ Text "Sorry, something went wrong." ]
+            [ Text "Désolé, nous avons rencontré un problème." ]
 
         ErrorCheckOutOfBand ->
-            [ Text "Please check ", ref TwitterHandle, Text " for updates and service status. The game server will go down for a short time when a new version is released, so if you see a recent update, try again in a few minutes." ]
+            [ Text "S'il vous plaît, visiter ", ref TwitterHandle, Text " pour des informations de mise à jour et d'état du service. Le serveur de jeu sera coupé pendant un court instant quand une nouvelle version est disponible, donc si vous voyez une mise à jour récente, veuillez réessayer d'ici quelques minutes." ]
 
         TwitterHandle ->
             [ Text "@Massive_Decks" ]
 
         ReportError ->
-            [ Text "Report Bug" ]
+            [ Text "Signaler un bug" ]
 
         ReportErrorDescription ->
-            [ Text "Let the developers know about a bug you encountered so they can fix it." ]
+            [ Text "Signaler un bug que vous avez rencontré aux développeurs pour qu'ils puissent le résoudre." ]
 
         ReportErrorBody ->
-            [ Text "I was [replace with a short explanation of what you were doing] when I got the following error:" ]
+            [ Text "J'étais en train de [remplacer avec une courte description de ce que vous étiez en train de faire] quand j'ai rencontré cette erreur :" ]
 
         BadUrlError ->
-            [ Text "We tried to make a request to an invalid page." ]
+            [ Text "Nous avons essayé de faire une requête vers une page non valide." ]
 
         TimeoutError ->
-            [ Text "The server didn’t respond for too long. It may be down, please try again after a short delay." ]
+            [ Text "Le serveur n'a pas répondu depuis un moment. Il est peut-être hors-ligne, veuillez réessayer dans quelques instants." ]
 
         NetworkError ->
-            [ Text "Your internet connection was interrupted." ]
+            [ Text "Votre connexion internet a été interrompue." ]
 
         ServerDownError ->
-            [ Text "The game server is currently offline. Please try again later." ]
+            [ Text "Le serveur de jeu est actuellement hors-ligne. Veuillez réessayer plus tard." ]
 
         BadStatusError ->
-            [ Text "The server gave a response we didn’t expect." ]
+            [ Text "Le serveur a renvoyé une réponse inattendue." ]
 
         BadPayloadError ->
-            [ Text "The server gave a response we didn’t understand." ]
+            [ Text "Le serveur a renvoyé une réponse que nous n'avons pas compris." ]
 
         PatchError ->
-            [ Text "The server gave a patch we couldn't apply." ]
+            [ Text "Le serveur a renvoyé un patch que nous n'avons pas pu appliquer." ]
 
         VersionMismatch ->
-            [ Text "The server gave a config change for a different version than we expected." ]
+            [ Text "Le serveur a renvoyé un changement de configuration pour une version différente de celle attendue." ]
 
         CastError ->
-            [ Text "Sorry, something went wrong trying to connect to the game." ]
+            [ Text "Désolé, un problème a été rencontré lors de la connexion à la partie." ]
 
         ActionExecutionError ->
-            [ Text "You can't perform that action." ]
+            [ Text "Vous ne pouvez pas réaliser cette action." ]
 
         IncorrectPlayerRoleError { role, expected } ->
-            [ Text "You need to be a ", ref expected, Text " to do that, but you are a ", ref role, Text "." ]
+            [ Text "Vous devez être un ", ref expected, Text " pour faire cela, mais vous êtes un ", ref role, Text "." ]
 
         IncorrectUserRoleError { role, expected } ->
-            [ Text "You need to be a ", ref expected, Text " to do that, but you are a ", ref role, Text "." ]
+            [ Text "Vous devez être un ", ref expected, Text " pour faire cela, mais vous êtes un ", ref role, Text "." ]
 
         IncorrectRoundStageError { stage, expected } ->
-            [ Text "The round needs to be at the ", ref expected, Text " stage to do that, but it is at the ", ref stage, Text " stage." ]
+            [ Text "Le round doit être au stade ", ref expected, Text " pour pouvoir faire cela, mais il est au stage ", ref stage, Text "." ]
 
         ConfigEditConflictError ->
-            [ Text "Someone else changed the configuration before you, your change was not saved." ]
+            [ Text "Quelqu'un d'autre a changé la configuration avant vous, vos changements n'ont pas été sauvegardés." ]
 
         UnprivilegedError ->
-            [ Text "You don't have the privileges to do that." ]
+            [ Text "Vous n'avez pas la permission de faire cela." ]
 
         GameNotStartedError ->
-            [ Text "The game needs to started to do that." ]
+            [ Text "La partie doit être démarrée pour pouvoir faire ça." ]
 
         InvalidActionError { reason } ->
-            [ Text "The server didn't understand a request from the client. Details: ", Text reason ]
+            [ Text "Le serveur n'a pas compris une requête du client. Détails : ", Text reason ]
 
         AuthenticationError ->
-            [ Text "You can't join that game." ]
+            [ Text "Vous ne pouvez pas rejoindre la partie." ]
 
         IncorrectIssuerError ->
-            [ Text "Your credentials to join this game are out of date, the game no longer exists." ]
+            [ Text "Vos identifiants pour rejoindre la partie sont obsolètes, la partie n'existe plus." ]
 
         InvalidAuthenticationError ->
-            [ Text "Your credentials to join this game are corrupt." ]
+            [ Text "Vos identifiants pour rejoindre la partie sont corrompus." ]
 
         InvalidLobbyPasswordError ->
-            [ Text "The game password you gave was wrong. Try typing it again and if it still doesn't work, ask the person who invited you again." ]
+            [ Text "Le mot de passe de la partie fourni est incorrect. Veuillez l'entrer à nouveau et si cela ne fonctionne toujours pas, demandez à nouveau à la personne qui vous a invité." ]
 
         AlreadyLeftError ->
-            [ Text "You have already left this game." ]
+            [ Text "Vous avez déjà quitté la partie." ]
 
         LobbyNotFoundError ->
-            [ Text "That game doesn't exist." ]
+            [ Text "Cette partie n'existe pas." ]
 
         LobbyClosedError { gameCode } ->
-            [ Text "The game you wish to join (", ref (GameCode { code = gameCode }), Text ") has ended." ]
+            [ Text "La partie que vous souhaitez rejoindre (", ref (GameCode { code = gameCode }), Text ") est terminée." ]
 
         LobbyDoesNotExistError { gameCode } ->
-            [ Text "The game code you entered ("
+            [ Text "Le code de jeu que vous avez entré ("
             , ref (GameCode { code = gameCode })
-            , Text ") doesn't exist. "
-            , Text "Try typing it again and if it still doesn't work, ask the person who invited you again."
+            , Text ") n'existe pas. "
+            , Text "Veuillez l'entrer à nouveau et si cela ne fonctionne toujours pas, demandez à nouveau à la personne qui vous a invité."
             ]
 
         RegistrationError ->
-            [ Text "Problem while joining the game." ]
+            [ Text "Problème lors de la connexion à la partie." ]
 
         UsernameAlreadyInUseError { username } ->
-            [ Text "Someone is already using the username “"
+            [ Text "Quelqu'un utilise déjà le nom d'utilisateur “"
             , Text username
-            , Text "”—try a different name."
+            , Text "”. Essayez avec un autre nom."
             ]
 
         GameError ->
-            [ Text "Something has gone wrong in the game." ]
+            [ Text "Une erreur s'est produite dans la partie." ]
 
         OutOfCardsError ->
-            [ Text "There were not enough cards in the deck to deal everyone a hand! Try adding more decks in the game configuration." ]
+            [ Text "Il n'y avait pas assez de cartes dans le deck pour distribuer une main à chaque joueur ! Essayez d'ajouter plus de decks dans la configuration de la partie." ]
 
         -- Language Names
         English ->
-            [ Text "English" ]
+            [ Text "Anglais" ]
 
         BritishEnglish ->
-            [ Text "English (British)" ]
+            [ Text "Anglais (Britanique)" ]
 
         Italian ->
-            [ Text "Italian" ]
+            [ Text "Italien" ]
 
         BrazilianPortuguese ->
-            [ Text "Portuguese (Brazilian)" ]
+            [ Text "Portugais (Brésilien)" ]
 
         German ->
-            [ Text "German (Formal)" ]
+            [ Text "Allemand (formel)" ]
 
         GermanInformal ->
-            [ Text "German (Informal)" ]
+            [ Text "Allemand (informel)" ]
 
         Polish ->
-            [ Text "Polish" ]
+            [ Text "Polonais" ]
 
         Indonesian ->
-            [ Text "Indonesian" ]
+            [ Text "Indonésien" ]
 
         Spanish ->
-            [ Text "Spanish" ]
+            [ Text "Espagnol" ]
 
         Korean ->
-            [ Text "Korean" ]
+            [ Text "Coréen" ]
 
 
 
@@ -1389,40 +1396,40 @@ asWord number =
             "zero"
 
         1 ->
-            "one"
+            "un"
 
         2 ->
-            "two"
+            "deux"
 
         3 ->
-            "three"
+            "trois"
 
         4 ->
-            "four"
+            "quatre"
 
         5 ->
-            "five"
+            "cinq"
 
         6 ->
             "six"
 
         7 ->
-            "seven"
+            "sept"
 
         8 ->
-            "eight"
+            "huit"
 
         9 ->
-            "nine"
+            "neuf"
 
         10 ->
-            "ten"
+            "dix"
 
         11 ->
-            "eleven"
+            "onze"
 
         12 ->
-            "twelve"
+            "douze"
 
         other ->
             String.fromInt other
