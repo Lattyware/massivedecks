@@ -1377,6 +1377,9 @@ translate _ mdString =
         Korean ->
             [ Text "Coreano" ]
 
+        French ->
+            [ Text "Francês" ]
+
 
 an : Maybe Int -> String
 an amount =
