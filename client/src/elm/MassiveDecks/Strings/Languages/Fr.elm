@@ -1366,7 +1366,6 @@ translate _ mdString =
             [ Text "Français" ]
 
 
-
 {- Private -}
 
 
