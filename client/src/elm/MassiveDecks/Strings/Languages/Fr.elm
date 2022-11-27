@@ -1362,6 +1362,9 @@ translate _ mdString =
         Korean ->
             [ Text "Coréen" ]
 
+        French ->
+            [ Text "Français" ]
+
 
 
 {- Private -}

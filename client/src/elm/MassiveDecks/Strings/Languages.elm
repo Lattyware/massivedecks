@@ -32,7 +32,7 @@ import MassiveDecks.Strings.Languages.De as DeLang
 import MassiveDecks.Strings.Languages.DeXInformal as DeXInformalLang
 import MassiveDecks.Strings.Languages.En as EnLang
 import MassiveDecks.Strings.Languages.Es as EsLang
-import MassiveDecks.Strings.Languages.Fr as FrFRLang
+import MassiveDecks.Strings.Languages.Fr as FrLang
 import MassiveDecks.Strings.Languages.Id as IdLang
 import MassiveDecks.Strings.Languages.It as ItLang
 import MassiveDecks.Strings.Languages.Ko as KoLang
