@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.9",
-    "@types/express-serve-static-core": "^4.17.17",
+    "@types/express-serve-static-core": "^4.17.32",
     "@types/express-ws": "^3.0.1",
     "@types/generic-pool": "^3.1.9",
     "@types/jsonwebtoken": "^8.5.0",
