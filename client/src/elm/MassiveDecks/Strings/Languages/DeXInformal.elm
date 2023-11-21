@@ -692,6 +692,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Anzeigen oder Ausblenden der Anzeigetafel." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Spiel-Menü." ]
 

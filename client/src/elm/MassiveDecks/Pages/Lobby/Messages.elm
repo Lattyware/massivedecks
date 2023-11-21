@@ -4,6 +4,7 @@ import MassiveDecks.Animated as Animated
 import MassiveDecks.Game.Messages as Game
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError exposing (MdError)
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Configure.Messages as Configure
 import MassiveDecks.Pages.Lobby.Events exposing (Event)
 import MassiveDecks.Pages.Lobby.Model exposing (..)
@@ -33,4 +34,5 @@ type Msg
     | SetGameMenuState Menu.State
     | SetUserMenuState User.Id Menu.State
     | EndGame
+    | ChatMsg Chat.Msg
     | NoOp

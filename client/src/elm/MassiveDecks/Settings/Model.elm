@@ -28,6 +28,7 @@ This is really more than just user settings, it's any persistent data we store i
 type alias Settings =
     { tokens : Dict String Lobby.Token
     , openUserList : Bool
+    , openChat : Bool
     , lastUsedName : Maybe String
     , recentDecks : List Source.External
     , chosenLanguage : Maybe Language

@@ -305,6 +305,7 @@ settings s =
             List.concat
                 [ [ ( "tokens", s.tokens |> Dict.toList |> List.map (\( gc, t ) -> ( gc, Json.string t )) |> Json.object )
                   , ( "openUserList", Json.bool s.openUserList )
+                  , ( "openChat", Json.bool s.openChat )
                   , ( "recentDecks", Json.list source s.recentDecks )
                   , ( "compactCards", s.cardSize |> cardSize )
                   , ( "speech", s.speech |> speech )

@@ -6,7 +6,7 @@
 @use "../cards/_colors" as card-colors;
 
 $top-bar-height: 4rem;
-$users-width: 18rem;
+$side-bar-width: 18rem;
 
 @keyframes fadeIn {
   from {
@@ -54,14 +54,14 @@ $users-width: 18rem;
 #scroll-frame {
   position: absolute;
   top: 0;
-  left: $users-width;
+  left: $side-bar-width;
   right: 0;
   bottom: 0;
   overflow: auto;
   transition: left 0.3s;
 }
 
-.collapsed-users #scroll-frame {
+.collapsed-users.collapsed-chat #scroll-frame {
   left: 0;
 }
 
@@ -92,11 +92,11 @@ $users-width: 18rem;
   left: 0;
   top: 0;
   bottom: 0;
-  width: $users-width;
+  width: $side-bar-width;
 
   transition: width 0.3s;
 
-  --mdc-menu-max-width: #{calc($users-width - 2em)};
+  --mdc-menu-max-width: #{calc($side-bar-width - 2em)};
 
   mwc-menu {
     left: 0;
@@ -173,18 +173,69 @@ $users-width: 18rem;
   }
 }
 
-@media screen and (max-width: $users-width * 2) {
+@media screen and (max-width: $side-bar-width * 2) {
   #scroll-frame {
     left: 100vw;
   }
 
-  #users {
+  #side-bar {
     width: 100vw;
   }
 }
 
 .collapsed-users #users {
   width: 0;
+}
+
+.collapsed-chat #chat {
+  width: 0;
+}
+
+#chat {
+  font-size: 1rem;
+  overflow-y: auto;
+
+  z-index: 2;
+
+  border-radius: 0;
+
+  padding: 0;
+
+  min-height: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: $side-bar-width;
+
+  transition: width 0.3s;
+
+  .collapsible {
+    padding: 1em;
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    margin-top: 0.5em;
+  }
+
+  display: flex;
+  flex-direction: column-reverse;
+
+  .message {
+    margin: 0.5em;
+  }
+
+  input {
+    position: absolute;
+    bottom: 0;
+  }
 }
 
 .cast-button {

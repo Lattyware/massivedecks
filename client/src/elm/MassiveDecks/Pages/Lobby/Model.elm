@@ -18,6 +18,7 @@ import MassiveDecks.Error.Model exposing (Error)
 import MassiveDecks.Game.Model as Game
 import MassiveDecks.Game.Time as Time
 import MassiveDecks.Models.MdError exposing (GameStateError, MdError)
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.GameCode exposing (GameCode)
 import MassiveDecks.Pages.Lobby.Route exposing (..)
@@ -49,6 +50,7 @@ type alias Model =
     , spectate : Spectate.Model
     , gameMenu : Menu.State
     , userMenu : Maybe User.Id
+    , chatInput : String
     }
 
 
@@ -64,6 +66,7 @@ type alias Lobby =
     { users : Dict User.Id User
     , owner : User.Id
     , config : Configure.Config
+    , messages : List Chat.Message
     , game : Maybe Game.Model
     , errors : List GameStateError
     }

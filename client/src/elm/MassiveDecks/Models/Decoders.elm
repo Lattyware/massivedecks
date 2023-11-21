@@ -47,6 +47,7 @@ import MassiveDecks.Game.Time as Time
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError exposing (MdError)
 import MassiveDecks.Notifications.Model as Notifications
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Configure.Decks.Model as DeckConfig
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Configure.Privacy.Model as PrivacyConfig
@@ -196,6 +197,7 @@ settings =
     Json.succeed Settings
         |> Json.required "tokens" (Json.dict lobbyToken)
         |> Json.required "openUserList" Json.bool
+        |> Json.required "openChat" Json.bool
         |> Json.optional "lastUsedName" (Json.string |> Json.map Just) Nothing
         |> Json.required "recentDecks" (Json.list externalSource)
         |> Json.optional "chosenLanguage" (language |> Json.map Just) Nothing
@@ -316,8 +318,16 @@ lobby ld calls =
         |> Json.required "users" users
         |> Json.required "owner" userId
         |> Json.required "config" config
+        |> Json.required "messages" (Json.list message)
         |> Json.optional "game" (game ld calls |> Json.map (Game.emptyModel >> Just)) Nothing
         |> Json.optional "errors" (Json.list gameStateError) []
+
+
+message : Json.Decoder Chat.Message
+message =
+    Json.succeed Chat.Message
+        |> Json.required "content" Json.string
+        |> Json.required "author" Json.string
 
 
 game : Maybe LikeDetail -> Maybe (List Card.Call) -> Json.Decoder Game
@@ -776,6 +786,9 @@ eventByName name =
         "GameEnded" ->
             gameEvent ended
 
+        "ReceiveChatMessage" ->
+            receiveChatMessage
+
         "ErrorEncountered" ->
             errorEncountered
 
@@ -807,6 +820,12 @@ ended : Json.Decoder Events.GameEvent
 ended =
     Json.map (\w -> Events.GameEnded { winner = w })
         (Json.field "winner" (Json.list userId |> Json.map Set.fromList))
+
+
+receiveChatMessage : Json.Decoder Events.Event
+receiveChatMessage =
+    Json.map (\m -> Events.ReceiveChatMessage { message = m })
+        (Json.field "message" message)
 
 
 stageTimerDone : Json.Decoder Events.GameEvent

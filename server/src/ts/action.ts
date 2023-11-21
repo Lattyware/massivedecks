@@ -4,6 +4,7 @@ import * as GameAction from "./action/game-action.js";
 import type * as Handler from "./action/handler.js";
 import * as Leave from "./action/leave.js";
 import * as Privileged from "./action/privileged.js";
+import * as SendChatMessage from "./action/send-chat-message.js";
 import * as SetUserRole from "./action/set-user-role.js";
 import * as Validation from "./action/validation.validator.js";
 import { AlreadyAuthenticatedError } from "./errors/authentication.js";
@@ -18,12 +19,14 @@ export type Action =
   | GameAction.GameAction
   | Privileged.Privileged
   | SetUserRole.SetUserRole
+  | SendChatMessage.SendChatMessage
   | Leave.Leave;
 
 const allActions = new Actions.PassThroughGroup(
   GameAction.actions,
   Privileged.actions,
   SetUserRole.actions,
+  SendChatMessage.actions,
   Leave.actions,
 );
 

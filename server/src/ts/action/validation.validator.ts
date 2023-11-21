@@ -81,6 +81,9 @@ export const Schema = {
           $ref: "#/definitions/SetUserRole",
         },
         {
+          $ref: "#/definitions/SendChatMessage",
+        },
+        {
           $ref: "#/definitions/Leave",
         },
       ],
@@ -759,7 +762,6 @@ export const Schema = {
           description: "The name the user wishes to use.",
           maxLength: 100,
           minLength: 1,
-          type: "string",
         },
         password: {
           description:
@@ -820,6 +822,21 @@ export const Schema = {
       description: "If the user is a spectator or a player.",
       enum: ["Player", "Spectator"],
       type: "string",
+    },
+    SendChatMessage: {
+      additionalProperties: false,
+      description: "A player sends a message in the chat.",
+      properties: {
+        action: {
+          enum: ["SendChatMessage"],
+          type: "string",
+        },
+        message: {
+          type: "string",
+        },
+      },
+      required: ["action", "message"],
+      type: "object",
     },
     SetPlayerAway: {
       additionalProperties: false,

@@ -703,6 +703,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Mostra o nascondi la classifica." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Menu del gioco." ]
 

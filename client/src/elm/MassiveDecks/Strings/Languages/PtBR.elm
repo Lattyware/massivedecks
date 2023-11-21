@@ -690,6 +690,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "Mostrar ou ocultar a lista de pontuação." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Menu do jogo." ]
 

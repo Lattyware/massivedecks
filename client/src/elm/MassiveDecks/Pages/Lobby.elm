@@ -18,6 +18,7 @@ import Html exposing (Html)
 import Html.Attributes as HtmlA
 import Html.Events as HtmlE
 import Html.Keyed as HtmlK
+import Json.Decode as Json
 import Json.Patch as Json
 import MassiveDecks.Animated as Animated exposing (Animated)
 import MassiveDecks.Card.Model as Card
@@ -38,6 +39,7 @@ import MassiveDecks.Icon as Icon
 import MassiveDecks.Model exposing (..)
 import MassiveDecks.Models.MdError as MdError
 import MassiveDecks.Pages.Lobby.Actions as Actions
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Configure as Configure
 import MassiveDecks.Pages.Lobby.Configure.Model as Configure
 import MassiveDecks.Pages.Lobby.Events as Events
@@ -60,7 +62,6 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NeList
 import Material.Button as Button
 import Material.Card as Card
 import Material.IconButton as IconButton
@@ -102,6 +103,7 @@ initWithAuth _ r auth =
       , spectate = Spectate.init
       , gameMenu = Menu.Closed
       , userMenu = Nothing
+      , chatInput = ""
       }
     , ServerConnection.connect auth.claims.gc auth.token
     )
@@ -343,6 +345,13 @@ update wrap shared msg model =
                             , Cmd.none
                             )
 
+                        Events.ReceiveChatMessage message ->
+                            let
+                                m =
+                                    lobby.messages ++ [ message.message ]
+                            in
+                            ( Stay { model | lobbyAndConfigure = model.lobbyAndConfigure |> Maybe.map (\l -> { l | lobby = { lobby | messages = m } }) }, shared, Cmd.none )
+
                 Nothing ->
                     case event of
                         Events.Sync { state, hand, play, partialTimeAnchor } ->
@@ -420,6 +429,18 @@ update wrap shared msg model =
 
         Copy id ->
             ( Stay model, shared, Ports.copyText id )
+
+        ChatMsg m ->
+            case m of
+                Chat.KeyDown key ->
+                    if key == 13 then
+                        ( Stay { model | chatInput = "" }, shared, Actions.sendChatMessage model.chatInput )
+
+                    else
+                        ( Stay model, shared, Cmd.none )
+
+                Chat.Input content ->
+                    ( Stay { model | chatInput = content }, shared, Cmd.none )
 
         ChangeSection s ->
             let
@@ -522,6 +543,9 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
         usersShown =
             shared.settings.settings.openUserList
 
+        chatShown =
+            shared.settings.settings.openChat
+
         castAttrs =
             case shared.castStatus of
                 Cast.NoDevicesAvailable ->
@@ -548,6 +572,13 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             else
                 Icon.users
 
+        chatIcon =
+            if chatShown then
+                Icon.hide
+
+            else
+                Icon.facebookMessenger
+
         lobby =
             model.lobbyAndConfigure |> Maybe.map .lobby
 
@@ -568,7 +599,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
     in
     [ Html.div
         [ HtmlA.id "lobby"
-        , HtmlA.classList [ ( "collapsed-users", not usersShown ) ]
+        , HtmlA.classList [ ( "collapsed-users", not usersShown ), ( "collapsed-chat", not chatShown ) ]
         , shared.settings.settings.cardSize |> cardSizeToAttr
         ]
         (Html.div [ HtmlA.id "top-bar" ]
@@ -578,6 +609,10 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                             (usersIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
                             (Strings.ToggleUserList |> Lang.string shared)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
+                      , IconButton.view
+                            (chatIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
+                            (Strings.ToggleChat |> Lang.string shared)
+                            (chatShown |> not |> Settings.ChangeOpenChat |> wrapSettings |> Just)
                       , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
                     , castButton
@@ -587,7 +622,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
             ]
             :: HtmlK.ol [ HtmlA.class "notifications" ] notifications
             :: (model.lobbyAndConfigure
-                    |> Maybe.map2 (viewLobby wrap shared model.auth model.userMenu viewContent) model.timeAnchor
+                    |> Maybe.map2 (viewLobby wrap shared model.auth model.userMenu viewContent model) model.timeAnchor
                     |> Maybe.withDefault
                         [ Html.div [ HtmlA.class "loading" ]
                             [ Icon.loading |> Icon.styled [ Icon.fa3x ] |> Icon.view ]
@@ -603,8 +638,8 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
     ]
 
 
-viewLobby : (Msg -> msg) -> Shared -> Auth -> Maybe User.Id -> ViewContent msg -> Time.Anchor -> LobbyAndConfigure -> List (Html msg)
-viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobbyAndConfigure =
+viewLobby : (Msg -> msg) -> Shared -> Auth -> Maybe User.Id -> ViewContent msg -> Model -> Time.Anchor -> LobbyAndConfigure -> List (Html msg)
+viewLobby wrap shared auth openUserMenu viewContent model timeAnchor lobbyAndConfigure =
     let
         lobby =
             lobbyAndConfigure.lobby
@@ -632,6 +667,7 @@ viewLobby wrap shared auth openUserMenu viewContent timeAnchor lobbyAndConfigure
     in
     [ Html.div [ HtmlA.id "lobby-content" ]
         [ viewUsers wrap shared auth.claims.uid lobby openUserMenu game
+        , viewChat wrap lobby model
         , Html.div [ HtmlA.id "scroll-frame" ] [ viewContent configDisabledReason auth timeAnchor lobbyAndConfigure ]
         , lobby.errors |> viewErrors shared
         ]
@@ -930,7 +966,27 @@ viewUsers wrap shared localUserId lobby openUserMenu game =
         groups =
             List.concat [ activeGroups, inactiveGroup ]
     in
-    Card.view [ HtmlA.id "users" ] [ Html.div [ HtmlA.class "collapsible" ] [ HtmlK.ol [] groups ] ]
+    Card.view [ HtmlA.id "users" ]
+        [ Html.div [ HtmlA.class "collapsible" ]
+            [ HtmlK.ol [] groups ]
+        ]
+
+
+viewChat : (Msg -> msg) -> Lobby -> Model -> Html msg
+viewChat wrap lobby model =
+    let
+        users =
+            lobby.users
+
+        messages =
+            lobby.messages |> List.map (\message -> (users |> Dict.get message.author |> Maybe.map .name |> Maybe.withDefault "Unknown User") ++ ": " ++ message.content) |> List.map (Html.text >> (\t -> [ t ]) >> Html.p [ HtmlA.class "message" ])
+    in
+    Card.view [ HtmlA.id "chat" ]
+        [ Html.div [ HtmlA.class "collapsible" ]
+            [ Html.ol [] messages
+            , Html.input [ HtmlA.placeholder "Message", HtmlE.on "keydown" (Json.map (Chat.KeyDown >> ChatMsg >> wrap) HtmlE.keyCode), HtmlE.onInput (Chat.Input >> ChatMsg >> wrap), HtmlA.value model.chatInput ] []
+            ]
+        ]
 
 
 viewRoleGroup : (Msg -> msg) -> Shared -> User.Id -> User.Privilege -> Bool -> Maybe User.Id -> Maybe Game -> ( User.Role, List ( User.Id, User ) ) -> ( String, Html msg )

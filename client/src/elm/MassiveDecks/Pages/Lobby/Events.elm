@@ -15,6 +15,7 @@ import MassiveDecks.Card.Play as Play
 import MassiveDecks.Game.Round as Round exposing (Round)
 import MassiveDecks.Game.Time as Time exposing (Time)
 import MassiveDecks.Models.MdError as MdError
+import MassiveDecks.Pages.Lobby.Chat as Chat
 import MassiveDecks.Pages.Lobby.Model exposing (Lobby)
 import MassiveDecks.User as User
 import Set exposing (Set)
@@ -38,6 +39,7 @@ type Event
     | PrivilegeChanged { user : User.Id, privilege : User.Privilege }
     | UserRoleChanged { user : User.Id, role : User.Role, hand : Maybe (List Card.Response) }
     | ErrorEncountered { error : MdError.GameStateError }
+    | ReceiveChatMessage { message : Chat.Message }
 
 
 {-| The user's intentional presence in the lobby.

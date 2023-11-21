@@ -659,6 +659,10 @@ translate _ mdString =
         ToggleUserList ->
             [ Text "스코어보드를 보이거나 숨깁니다." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "게임 메뉴." ]
 

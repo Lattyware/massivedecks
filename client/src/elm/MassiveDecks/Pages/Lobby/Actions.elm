@@ -11,6 +11,7 @@ module MassiveDecks.Pages.Lobby.Actions exposing
     , pickCall
     , redraw
     , reveal
+    , sendChatMessage
     , setPlayerAway
     , setPresence
     , setPrivilege
@@ -140,6 +141,11 @@ enforceTimeLimit round stage =
         [ ( "round", Encoders.roundId round )
         , ( "stage", Encoders.stage stage )
         ]
+
+
+sendChatMessage : String -> Cmd msg
+sendChatMessage message =
+    action "SendChatMessage" [ ( "message", message |> Json.string ) ]
 
 
 

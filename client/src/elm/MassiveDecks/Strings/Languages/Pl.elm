@@ -770,6 +770,10 @@ translate maybeDeclCase mdString =
         ToggleUserList ->
             [ Text "Ukryj lub pokaż listę graczy." ]
 
+        -- TODO: Translate
+        ToggleChat ->
+            [ Missing ]
+
         GameMenu ->
             [ Text "Menu gry." ]
 
