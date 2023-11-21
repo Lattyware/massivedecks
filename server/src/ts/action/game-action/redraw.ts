@@ -41,7 +41,10 @@ class RedrawActions extends Actions.Implementation<
       throw new InvalidActionError("Can't afford to redraw.");
     }
     player.score -= cost;
-    player.hand = game.decks.responses.replace(...player.hand);
+    player.hand = game.decks.responses.replace(
+      lobby.config.rules.houseRules.rando.current.includes(auth.uid),
+      ...player.hand,
+    );
     return {
       lobby,
       events: [

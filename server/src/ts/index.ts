@@ -158,7 +158,10 @@ async function main(): Promise<void> {
         game.playerOrder.push(id);
         if (newUser.role === "Player") {
           game.players[id] = Player.initial(
-            game.decks.responses.draw(game.rules.handSize),
+            game.decks.responses.draw(
+              game.rules.handSize,
+              game.rules.houseRules.rando.current.includes(id),
+            ),
           );
         }
       }

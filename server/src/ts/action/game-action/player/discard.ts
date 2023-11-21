@@ -42,7 +42,10 @@ class DiscardActions extends Actions.Implementation<
       throw new InvalidActionError("Must have the card to discard it.");
     }
     player.hand = player.hand.filter((c) => c.id !== action.card);
-    const [replacement] = lobby.game.decks.responses.replace(card);
+    const [replacement] = lobby.game.decks.responses.replace(
+      lobby.config.rules.houseRules.rando.current.includes(id),
+      card,
+    );
     player.hand.push(replacement);
     const events = Util.asOptionalIterable(
       Event.playerSpecificAddition(CardDiscarded.of(id, card), (to) =>

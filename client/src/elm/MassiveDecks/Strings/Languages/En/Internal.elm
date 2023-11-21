@@ -753,9 +753,19 @@ translate _ mdString =
             ]
 
         NotEnoughCardsOfType { cardType, needed, have } ->
-            [ Text "For the number of players in the game, you need at least "
+            [ Text "For the number of humans in the game, you need at least "
             , Text (needed |> String.fromInt)
             , Text " "
+            , ref (noun cardType needed)
+            , Text " but you only have "
+            , Text (have |> String.fromInt)
+            , Text "."
+            ]
+
+        NotEnoughNonBlankCardsOfType { cardType, needed, have } ->
+            [ Text "For the number of bots in the game, you need at least "
+            , Text (needed |> String.fromInt)
+            , Text " non-blank "
             , ref (noun cardType needed)
             , Text " but you only have "
             , Text (have |> String.fromInt)
@@ -865,15 +875,6 @@ translate _ mdString =
             , Text ", so you need at least one human player to start the game."
             , Text " (Although only one human might be a bit boring!)"
             ]
-
-        RandoCantWrite ->
-            [ Text "Computer players can't write their own cards." ]
-
-        DisableComedyWriter ->
-            [ Text "Disable ", ref HouseRuleComedyWriter ]
-
-        DisableRando ->
-            [ Text "Disable ", ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
             [ Text "Add an AI player to the game." ]

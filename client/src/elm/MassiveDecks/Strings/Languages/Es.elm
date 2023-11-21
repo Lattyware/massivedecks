@@ -796,6 +796,10 @@ translate _ mdString =
             , Text "."
             ]
 
+        -- TODO: Translate
+        NotEnoughNonBlankCardsOfType _ ->
+            [ Missing ]
+
         AddBlankCards { amount } ->
             [ Text "Añadir "
             , amount |> String.fromInt |> Text
@@ -899,15 +903,6 @@ translate _ mdString =
             , Text ", por lo que se necesita al menos un jugador humano para empezar la partida."
             , Text " (¡Aunque solo un humano puede ser un poco aburrido!)"
             ]
-
-        RandoCantWrite ->
-            [ Text "Los bots no pueden escribir sus propias cartas." ]
-
-        DisableComedyWriter ->
-            [ Text "Desactivar ", ref HouseRuleComedyWriter ]
-
-        DisableRando ->
-            [ Text "Desactivar ", ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
             [ Text "Añadir un bot a la partida." ]
@@ -1362,6 +1357,7 @@ translate _ mdString =
 
         Korean ->
             [ Text "Coreano" ]
+
 
 raw : MdString -> Translation.Result never
 raw =
