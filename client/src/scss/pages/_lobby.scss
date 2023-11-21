@@ -96,7 +96,7 @@ $side-bar-width: 18rem;
 
   transition: width 0.3s;
 
-  --mdc-menu-max-width: #{calc($users-width - 2em)};
+  --mdc-menu-max-width: #{calc($side-bar-width - 2em)};
 
   mwc-menu {
     left: 0;

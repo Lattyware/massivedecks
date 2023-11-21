@@ -62,7 +62,6 @@ import MassiveDecks.User as User exposing (User)
 import MassiveDecks.Util.Html as Html
 import MassiveDecks.Util.Html.Attributes as HtmlA
 import MassiveDecks.Util.Maybe as Maybe
-import MassiveDecks.Util.NeList as NeList
 import Material.Button as Button
 import Material.Card as Card
 import Material.IconButton as IconButton
@@ -575,7 +574,7 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
 
         chatIcon =
             if chatShown then
-                Icon.eyeSlash
+                Icon.hide
 
             else
                 Icon.facebookMessenger
@@ -610,9 +609,9 @@ viewWithUsers wrap wrapSettings shared s viewContent model =
                             (usersIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
                             (Strings.ToggleUserList |> Lang.string shared)
                             (usersShown |> not |> Settings.ChangeOpenUserList |> wrapSettings |> Just)
-                      , IconButton.view shared
-                            Strings.ToggleChat
-                            (chatIcon |> Icon.present |> Icon.styled [ Icon.lg ] |> NeList.just)
+                      , IconButton.view
+                            (chatIcon |> Icon.styled [ Icon.lg ] |> Icon.view)
+                            (Strings.ToggleChat |> Lang.string shared)
                             (chatShown |> not |> Settings.ChangeOpenChat |> wrapSettings |> Just)
                       , lobbyMenu wrap shared model.gameMenu model.route s audienceMode localUser localPlayer (maybeGame |> Maybe.map .game)
                       ]
