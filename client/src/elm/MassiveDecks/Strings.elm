@@ -252,6 +252,7 @@ type MdString
     | WaitForDecks -- A hint that the user has to wait for decks to load before starting the game.
     | MissingCardType { cardType : Noun } -- An error explaining that the user needs a deck with the given type of card (call/response).
     | NotEnoughCardsOfType { cardType : Noun, needed : Int, have : Int } -- An error explaining that the user needs to add more cards of the given type for the number of players.
+    | NotEnoughNonBlankCardsOfType { cardType : Noun, needed : Int, have : Int } -- An error explaining that the user needs to add more non-blank white cards for the number of players.
     | AddBlankCards { amount : Int } -- A description of the action of adding the given number of blank cards to the game.
     | AddDeck -- A description of the action of adding a deck to the game configuration.
     | RemoveDeck -- A description of the action of removing a deck from the game configuration.
@@ -281,9 +282,6 @@ type MdString
     | NeedAtLeastOneDeck -- A description of the problem that the game needs at least one deck to start.
     | NeedAtLeastThreePlayers -- A description of the problem that the game needs at least three players to start.
     | NeedAtLeastOneHuman -- A description of the problem that the game needs at least one human player.
-    | RandoCantWrite -- A description of the problem that the AI players can't use blank cards.
-    | DisableRando -- A description of disabling the "Rando Cardrissian" house rule.
-    | DisableComedyWriter -- A description of disabling the "Comedy Writer" house rule.
     | AddAnAiPlayer -- A description of adding an AI player to the game.
     | PasswordShared -- A warning that game passwords are visible to anyone else in the game.
     | PasswordNotSecured -- A warning that game passwords are not stored securely and should not be used elsewhere.

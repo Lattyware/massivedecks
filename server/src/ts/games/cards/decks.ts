@@ -43,29 +43,35 @@ export abstract class Deck<C extends Card.BaseCard> {
     this.discarded.add(card);
   }
 
-  public draw(cards: 1): [C];
-  public draw(cards: 2): [C, C];
-  public draw(cards: 3): [C, C, C];
-  public draw(cards: number): C[];
-  public draw(cards: number): C[] {
+  public draw(cards: 1, bot?: boolean): [C];
+  public draw(cards: 2, bot?: boolean): [C, C];
+  public draw(cards: 3, bot?: boolean): [C, C, C];
+  public draw(cards: number, bot?: boolean): C[];
+  public draw(cards: number, bot?: boolean): C[] {
     const cardsLeft = this.cards.length;
     const toDraw = Math.min(cardsLeft, cards);
-    const result = this.cards.splice(0, toDraw);
+    const result = this.cards
+      .splice(0, toDraw)
+      .filter((card) => card.source.source !== "Custom");
+    // Only reshuffle if we don;t have enough cards left to draw.
     if (toDraw < cards) {
       this.reshuffle();
-      return [...result, ...this.draw(cards - toDraw)];
+    }
+    // If there weren't enough cards, or a bot drew custom cards, draw more.
+    if (result.length < cards) {
+      return [...result, ...this.draw(cards - result.length, bot)];
     } else {
       return result;
     }
   }
 
-  public replace(...cards: [C]): [C];
-  public replace(...cards: [C, C]): [C, C];
-  public replace(...cards: [C, C, C]): [C, C, C];
-  public replace(...cards: C[]): C[];
-  public replace(...cards: C[]): C[] {
+  public replace(bot: boolean, ...cards: [C]): [C];
+  public replace(bot: boolean, ...cards: [C, C]): [C, C];
+  public replace(bot: boolean, ...cards: [C, C, C]): [C, C, C];
+  public replace(bot: boolean, ...cards: C[]): C[];
+  public replace(bot: boolean, ...cards: C[]): C[] {
     this.discard(cards);
-    return this.draw(cards.length);
+    return this.draw(cards.length, bot);
   }
 
   protected reshuffle(): void {

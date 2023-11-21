@@ -779,6 +779,10 @@ translate _ mdString =
             , Text "장입니다."
             ]
 
+        -- TODO: Translate
+        NotEnoughNonBlankCardsOfType _ ->
+            [ Missing ]
+
         AddBlankCards { amount } ->
             [ amount |> String.fromInt |> Text
             , Text "장의 공백 "
@@ -881,15 +885,6 @@ translate _ mdString =
             , Text "가 될 수 없으므로, 인간 플레이어가 최소한 1명 필요합니다."
             , Text " (인간 1명은 좀 재미가 없을 것 같기도 하지만요!)"
             ]
-
-        RandoCantWrite ->
-            [ Text "컴퓨터 플레이어들은 자신의 커스텀 카드는 쓸 수 없습니다." ]
-
-        DisableComedyWriter ->
-            [ ref HouseRuleComedyWriter, Text " 비활성화" ]
-
-        DisableRando ->
-            [ ref HouseRuleRandoCardrissian, Text "비활성화" ]
 
         AddAnAiPlayer ->
             [ Text "게임에 AI 플레이어를 추가합니다." ]

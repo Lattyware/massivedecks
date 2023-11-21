@@ -810,6 +810,10 @@ translate _ mdString =
             , Text "."
             ]
 
+        -- TODO: Translate
+        NotEnoughNonBlankCardsOfType _ ->
+            [ Missing ]
+
         AddBlankCards { amount } ->
             [ Text "Adicionar "
             , amount |> String.fromInt |> Text
@@ -913,15 +917,6 @@ translate _ mdString =
             , Text ", então você precisa de pelo menos um jogador humano para iniciar o jogo."
             , Text " (apesar de que só um humano seja meio chato!)"
             ]
-
-        RandoCantWrite ->
-            [ Text "Jogadores IA não podem escrever cartas." ]
-
-        DisableComedyWriter ->
-            [ Text "Desativar ", ref HouseRuleComedyWriter ]
-
-        DisableRando ->
-            [ Text "Desativar ", ref HouseRuleRandoCardrissian ]
 
         AddAnAiPlayer ->
             [ Text "Adicionar um jogador IA ao jogo." ]

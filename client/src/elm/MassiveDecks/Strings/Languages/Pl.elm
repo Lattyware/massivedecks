@@ -893,6 +893,10 @@ translate maybeDeclCase mdString =
             , Text "."
             ]
 
+        -- TODO: Translate
+        NotEnoughNonBlankCardsOfType _ ->
+            [ Missing ]
+
         AddBlankCards { amount } ->
             [ Text "Dodaj "
             , Text (asWord amount Feminine Accusative)
@@ -1011,15 +1015,6 @@ translate maybeDeclCase mdString =
             , Text ", więc potrzebujesz minimum jednego ludzkiego gracza."
             , Text " (Chociaż z tylko jednym człowiekiem może być nudno!)"
             ]
-
-        RandoCantWrite ->
-            [ Text "Boty nie mogą pisać własnych kart." ]
-
-        DisableComedyWriter ->
-            [ Text "Wyłącz Memiarza" ]
-
-        DisableRando ->
-            [ Text "Wyłącz Rando Cardrissiana" ]
 
         AddAnAiPlayer ->
             [ Text "Dodaj bota do gry." ]

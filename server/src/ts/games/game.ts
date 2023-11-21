@@ -202,7 +202,12 @@ export class Game {
         .filter(([_, user]) => user.role === "Player")
         .map(([id, _]) => [
           id,
-          Player.initial(gameDecks.responses.draw(rules.handSize)),
+          Player.initial(
+            gameDecks.responses.draw(
+              rules.handSize,
+              rules.houseRules.rando.current.includes(id),
+            ),
+          ),
         ]),
     );
     const czar = Game.internalNextCzar(0, users, playerMap, playerOrder);
@@ -447,7 +452,10 @@ export class Game {
       const responseDeck = this.decks.responses;
       for (const [id, playerState] of Object.entries(this.players)) {
         if (Player.role(id, this) === "Player") {
-          const drawn = responseDeck.draw(slotCount - 1);
+          const drawn = responseDeck.draw(
+            slotCount - 1,
+            this.rules.houseRules.rando.current.includes(id),
+          );
           if (!first) {
             additionallyByPlayer.set(id, { drawn });
           }

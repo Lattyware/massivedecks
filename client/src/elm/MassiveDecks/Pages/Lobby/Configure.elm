@@ -455,21 +455,43 @@ startGameProblems shared wrap wrapLobby users model remote =
                 Nothing ->
                     summaries .responses
 
+        -- Catch the case where "only blank white cards" is enabled.
+        numberOfNonBlankResponses =
+            case hr.comedyWriter of
+                Just { exclusive } ->
+                    if exclusive then
+                        0
+
+                    else
+                        summaries .responses
+
+                Nothing ->
+                    summaries .responses
+
         humanPlayerCount =
             users
                 |> Dict.values
                 |> List.filter (\u -> u.role == User.Player && u.presence == User.Joined && u.control == User.Human)
                 |> List.length
 
-        computerPlayers =
+        computerPlayerCount =
             config.rules.houseRules.rando |> Maybe.map .number |> Maybe.withDefault 0
 
         playerCount =
-            humanPlayerCount + computerPlayers
+            humanPlayerCount + computerPlayerCount
 
         -- 5 is arbitrary, but we have to deal with an additional cards for each slot.
-        requiredResponses =
-            playerCount * 5 + playerCount * rules.handSize
+        requiredHumanResponses =
+            humanPlayerCount * 5 + humanPlayerCount * rules.handSize
+
+        -- We need enough non-blank responses for every player to have a full hand
+        -- otherwise there is a chance humans will hog all the non-blank responses.
+        requiredComputerResponses =
+            if computerPlayerCount > 0 then
+                playerCount * 5 + playerCount * rules.handSize
+
+            else
+                0
 
         deckIssues =
             if noDecks then
@@ -489,7 +511,7 @@ startGameProblems shared wrap wrapLobby users model remote =
             else
                 let
                     diff =
-                        requiredResponses - numberOfResponses
+                        requiredHumanResponses - numberOfResponses
 
                     old =
                         config.rules.houseRules.comedyWriter |> Maybe.map .number |> Maybe.withDefault 0
@@ -515,9 +537,12 @@ startGameProblems shared wrap wrapLobby users model remote =
                     |> Message.error
                     |> Maybe.justIf (summaries .calls < 1)
                 , Message.errorWithFix
-                    (Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredResponses, have = numberOfResponses })
+                    (Strings.NotEnoughCardsOfType { cardType = Strings.Response, needed = requiredHumanResponses, have = numberOfResponses })
                     [ Message.Fix (Strings.AddBlankCards { amount = diff }) Icon.add fixMsg ]
-                    |> Maybe.justIf (numberOfResponses < requiredResponses)
+                    |> Maybe.justIf (numberOfResponses < requiredHumanResponses)
+                , Message.error
+                    (Strings.NotEnoughNonBlankCardsOfType { cardType = Strings.Response, needed = requiredComputerResponses, have = numberOfNonBlankResponses })
+                    |> Maybe.justIf (numberOfResponses >= requiredHumanResponses && numberOfNonBlankResponses < requiredComputerResponses)
                 ]
 
         rando =
@@ -560,47 +585,6 @@ startGameProblems shared wrap wrapLobby users model remote =
                 |> Maybe.justIf (humanPlayerCount < 1)
             ]
 
-        disableRandoConfig =
-            { config | rules = { rules | houseRules = { houseRules | rando = Nothing } } }
-
-        disableRandoFixMsg =
-            ApplyChange
-                (Rando.Enabled
-                    |> HouseRules.RandoId
-                    |> Rules.HouseRulesId
-                    |> RulesId
-                )
-                disableRandoConfig
-                |> wrap
-
-        disableComedyWriterConfig =
-            { config | rules = { rules | houseRules = { houseRules | comedyWriter = Nothing } } }
-
-        disableComedyWriterFixMsg =
-            ApplyChange
-                (ComedyWriter.Enabled
-                    |> HouseRules.ComedyWriterId
-                    |> Rules.HouseRulesId
-                    |> RulesId
-                )
-                disableComedyWriterConfig
-                |> wrap
-
-        aisNoWriteGoodIssues =
-            [ Message.errorWithFix
-                Strings.RandoCantWrite
-                [ { description = Strings.DisableRando
-                  , icon = Icon.disableAi
-                  , action = disableRandoFixMsg
-                  }
-                , { description = Strings.DisableComedyWriter
-                  , icon = Icon.disableEdit
-                  , action = disableComedyWriterFixMsg
-                  }
-                ]
-                |> Maybe.justIf (hr.rando /= Nothing && hr.comedyWriter /= Nothing)
-            ]
-
         configurationIssues =
             [ Message.errorWithFix Strings.UnsavedChangesWarning
                 (List.filterMap identity
@@ -619,7 +603,7 @@ startGameProblems shared wrap wrapLobby users model remote =
                 |> Maybe.justIf (config /= remote)
             ]
     in
-    [ deckIssues, playerIssues, aisNoWriteGoodIssues, configurationIssues ] |> List.concat |> List.filterMap identity
+    [ deckIssues, playerIssues, configurationIssues ] |> List.concat |> List.filterMap identity
 
 
 tabs : List Tab
